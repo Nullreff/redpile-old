@@ -41,3 +41,7 @@ Toggles power in the block at the coordinates `(x, y, z)`
 
 Advances the redstone state by the number of ticks specified in `count`
 
+License
+-------
+
+Release under GPLv3, see LICENSE.txt for more information.
