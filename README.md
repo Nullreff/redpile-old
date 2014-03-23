@@ -13,6 +13,8 @@ cmake ../src/
 make
 ```
 
+Once it's build, tests can be run using [rspec](http://rspec.info/)
+
 Usage
 -----
 
