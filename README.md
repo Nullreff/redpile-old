@@ -1,7 +1,7 @@
-Redpile - High Performance Redstone
+Redpile
 =======
 
-Redpile is a high performance implementation of redstone from Minecraft.  It is currently a work in progress and should not be used for anything important.  What follows is a specification for what I anticipate building.  None of this is actually implemented...  yet.
+Redpile is a high performance implementation of redstone for Minecraft.  It is currently a work in progress and should not be used for anything important.  What follows is a specification for what I anticipate building.  None of this is actually implemented...  yet.
 
 Buiding
 -------
@@ -13,7 +13,7 @@ cmake ../src/
 make
 ```
 
-Once it's build, tests can be run using [rspec](http://rspec.info/)
+Once it's built, tests can be run using [rspec](http://rspec.info/)
 
 Usage
 -----
