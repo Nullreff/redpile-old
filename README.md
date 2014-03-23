@@ -3,26 +3,20 @@ Redpile - High Performance Redstone
 
 Redpile is a high performance implementation of redstone from Minecraft.  It is currently a work in progress and should not be used for anything important.  What follows is a specification for what I anticipate building.  None of this is actually implemented...  yet.
 
+Buiding
+-------
+
+```bash
+mkdir -p build
+cd build
+cmake ../src/
+make
+```
+
 Usage
 -----
 
-By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.  It then reads commands for block updates from STDIN and writes the resulting commands to STDOUT.  
-
-```text
-Redpile - High Performance Redstone
-
-Usage: redpile [options] [map directory]
-
-Options:
-    -i, --interactive
-        Run in interactive mode with a prompt for reading commands
-
-    -v, --version
-        Print the current version
-
-    -h, --help
-        Print this message
-```
+By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.  It then reads commands for block updates from STDIN and writes the resulting commands to STDOUT.  For command line options, try `redpile --help`.
 
 Commands
 --------
