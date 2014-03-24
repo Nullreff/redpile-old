@@ -29,7 +29,7 @@ Commands are sent and received the format `COMMAND x y z`.
 
 Sends power to the block at the coordinates `(x, y, z)`
 
-**OFF x, y, z**
+**OFF x y z**
 
 Removes power from the block at the coordinates `(x, y, z)`
 
