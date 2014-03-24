@@ -1,11 +1,7 @@
 #ifndef REDPILE_INSTRUCTION_H
 #define REDPILE_INSTRUCTION_H
 
-typedef struct {
-    long x;
-    long y;
-    long z;
-} Location;
+#include "location.h"
 
 typedef enum {
     CMD_ON,

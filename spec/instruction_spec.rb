@@ -1,38 +1,6 @@
 require 'ffi'
-
-class FFI::MemoryPointer
-  def read_enum(enum)
-    enum[read_int]
-  end
-end
-
-module Redpile
-  extend FFI::Library
-  ffi_lib 'build/libredpile-test.so'
-
-  COMMANDS = {
-    cmd_on: 'ON',
-    cmd_off: 'OFF',
-    cmd_toggle: 'TOGGLE',
-    cmd_tick: 'TICK'
-  }
-
-  Command = enum(COMMANDS.keys)
-
-  class Location < FFI::Struct
-    layout :x, :long,
-           :y, :long,
-           :z, :long
-  end
-
-  class Instruction < FFI::Struct
-    layout :cmd, Command,
-           :target, Location
-  end
-
-  attach_function :command_parse, [:string, :pointer], :int
-  attach_function :instruction_parse, [:string, :pointer], :int
-end
+require 'support/ffi_monkeypatch'
+require 'support/redpile'
 
 describe Redpile::Instruction do
   Redpile::COMMANDS.each do |key, val|

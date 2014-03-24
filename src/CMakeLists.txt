@@ -1,4 +1,4 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}")
-ADD_LIBRARY(redpile-test SHARED instruction)
+ADD_LIBRARY(redpiletest SHARED instruction world)
 ADD_EXECUTABLE(redpile main)

@@ -3,8 +3,7 @@
 #include <getopt.h>
 #include "version.h"
 
-static struct option
-long_options[] =
+static struct option long_options[] =
 {
     {"interactive", no_argument, NULL, 'i'},
     {"version",     no_argument, NULL, 'v'},
@@ -12,14 +11,12 @@ long_options[] =
     {NULL,          0,           NULL,  0 }
 };
 
-static void
-print_version()
+static void print_version()
 {
     printf("Redpile %s\n", REDPILE_VERSION);
 }
 
-static void
-print_help()
+static void print_help()
 {
     printf("Redpile - High Performance Redstone\n\n"
            "Usage: redpile [options] [map directory]\n"
@@ -32,8 +29,7 @@ print_help()
            "        Print this message\n");
 }
 
-int
-main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     int interactive = 0;
 
@@ -66,3 +62,4 @@ main(int argc, char* argv[])
         printf("Running in normal mode\n");
     }
 }
+

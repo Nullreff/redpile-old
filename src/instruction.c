@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "instruction.h"
-#include "common.h"
+#include "location.h"
+#include "redpile.h"
 
 #define PARSE_NUMBER(NAME)\
     char* str_ ## NAME = strtok(NULL, " ");\
