@@ -10,6 +10,25 @@ def location(x, y, z)
   location
 end
 
+def locations_from(range)
+  range.each do |x|
+    range.each do |y|
+      range.each do |z|
+        yield location(x, y, z)
+      end
+    end
+  end
+end
+
+def build_block(loc)
+  number = loc[:x] + loc[:y] + loc[:z]
+  block = Redpile::Block.new
+  block[:power] = number % 15
+  block[:location] = loc
+  block[:material] = Redpile::Material.symbols[number % Redpile::Material.symbols.count]
+  block
+end
+
 def single_section_world
   FFI::MemoryPointer.new(Redpile::World) do |world_ptr|
     Redpile.world_intialize(world_ptr)
@@ -20,27 +39,21 @@ def single_section_world
 end
 
 describe Redpile::World do
-  it 'stores a block in a world' do
+  it 'stores and reads from blocks in a world' do
     single_section_world do |world_ptr|
-      block = Redpile::Block.new
-      block[:power] = 5
-      block[:location] = location(6, 7, 8)
-      block[:material] = :wire
-      Redpile.world_add_block(world_ptr, block)
+      locations_from(0..15) do |loc|
+        block = build_block(loc)
+        Redpile.world_add_block(world_ptr, block)
 
-      block_ptr = Redpile.world_get_block(world_ptr, location(6, 7, 8))
-      block = Redpile::Block.new(block_ptr)
-      block[:power].should == 5
-      block[:location][:x].should == 6
-      block[:location][:y].should == 7
-      block[:location][:z].should == 8
-      block[:material].should == :wire
+        block_ptr = Redpile.world_get_block(world_ptr, loc)
+        found_block = Redpile::Block.new(block_ptr)
+        found_block[:power].should == block[:power]
+        found_block[:location][:x].should == loc[:x]
+        found_block[:location][:y].should == loc[:y]
+        found_block[:location][:z].should == loc[:z]
+        found_block[:material].should == block[:material]
+      end
     end
   end
 end
 
-
-# attach_function :world_intialize, [:pointer], :void
-# attach_function :world_free, [:pointer], :void
-# attach_function :world_initialize_section, [:pointer, Location], :void
-# attach_function :world_get_block, [:pointer, Location], :pointer

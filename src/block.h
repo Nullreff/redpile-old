@@ -4,7 +4,10 @@
 #include "location.h"
 
 typedef enum {
-    WIRE
+    WIRE,
+    CONDUCTOR,
+    INSULATOR,
+    AIR
 } Material;
 
 typedef struct {

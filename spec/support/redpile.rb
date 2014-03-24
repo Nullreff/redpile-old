@@ -15,6 +15,10 @@ module Redpile
     layout :x, :long,
            :y, :long,
            :z, :long
+
+    def to_s
+      "(#{self[:x]}, #{self[:y]}, #{self[:z]})"
+    end
   end
 
   class Instruction < FFI::Struct
@@ -22,7 +26,12 @@ module Redpile
            :target, Location
   end
 
-  Material = enum(:wire)
+  Material = enum(
+    :wire,
+    :conductor,
+    :insulator,
+    :air
+  )
 
   class Block <FFI::Struct
     layout :location, Location,
