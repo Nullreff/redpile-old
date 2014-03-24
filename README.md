@@ -23,23 +23,23 @@ By default, Redpile will load redstone from a Minecraft map directory passed to 
 Commands
 --------
 
-Commands are sent and received the format `Command(params, go, here)`.
+Commands are sent and received the format `COMMAND x y z`.
 
-**On(x, y, z)**
+**ON x y z**
 
 Sends power to the block at the coordinates `(x, y, z)`
 
-**Off(x, y, z)**
+**OFF x, y, z**
 
 Removes power from the block at the coordinates `(x, y, z)`
 
-**Toggle(x, y, z)**
+**TOGGLE x y z**
 
 Toggles power in the block at the coordinates `(x, y, z)`
 
-**Tick(count)**
+**TICK**
 
-Advances the redstone state by the number of ticks specified in `count`
+Advances the redstone state
 
 License
 -------
