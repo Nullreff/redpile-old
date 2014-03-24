@@ -54,6 +54,7 @@ int instruction_parse(char* instruction, Instruction* result)
 
 success:
     *result = (Instruction){command, (Location){x, y, z}};
+    free(parts_ptr);
     return 0;
 
 error:
