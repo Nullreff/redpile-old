@@ -4,5 +4,4 @@ cd build/
 cmake ../src/
 make
 cd -
-bundle install
 bundle exec rspec
