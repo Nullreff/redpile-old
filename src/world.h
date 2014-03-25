@@ -5,21 +5,19 @@
 #include "block.h"
 #include "instruction.h"
 
-// Sections are areas of 16x16x16 blocks
-typedef struct {
-    Location location;
-    Block* blocks;
-} Section;
+typedef struct BlockBucket {
+    Block* block;
+    struct BlockBucket* next;
+} BlockBucket;
 
 typedef struct {
-    int count;
-    Section* sections;  
+    int size;
+    BlockBucket* blocks;  
 } World;
 
-void world_intialize(World* world);
+void world_intialize(World* world, int size);
 void world_free(World* world);
-void world_initialize_section(World* world, Location location);
-int world_add_block(World* world, Block block);
+void world_add_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
 
 #endif

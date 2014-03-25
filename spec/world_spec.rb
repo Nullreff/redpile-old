@@ -2,19 +2,15 @@ require 'ffi'
 require 'support/ffi_monkeypatch'
 require 'support/redpile'
 
-def location(x, y, z)
-  location = Redpile::Location.new
-  location[:x] = x
-  location[:y] = y
-  location[:z] = z
-  location
-end
-
 def locations_from(range)
   range.each do |x|
     range.each do |y|
       range.each do |z|
-        yield location(x, y, z)
+        location = Redpile::Location.new
+        location[:x] = x
+        location[:y] = y
+        location[:z] = z
+        yield location
       end
     end
   end
@@ -31,8 +27,7 @@ end
 
 def single_section_world
   FFI::MemoryPointer.new(Redpile::World) do |world_ptr|
-    Redpile.world_intialize(world_ptr)
-    Redpile.world_initialize_section(world_ptr, location(0, 0, 0))
+    Redpile.world_intialize(world_ptr, 16)
     yield world_ptr
     Redpile.world_free(world_ptr)
   end
@@ -41,7 +36,7 @@ end
 describe Redpile::World do
   it 'stores and reads from blocks in a world' do
     single_section_world do |world_ptr|
-      locations_from(0..15) do |loc|
+      locations_from(-5..5) do |loc|
         block = build_block(loc)
         Redpile.world_add_block(world_ptr, block)
 

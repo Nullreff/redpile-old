@@ -52,10 +52,9 @@ module Redpile
   attach_function :command_parse, [:string, :pointer], :int
   attach_function :instruction_parse, [:string, :pointer], :int
 
-  attach_function :world_intialize, [World], :void
+  attach_function :world_intialize, [World, :int], :void
   attach_function :world_free, [World], :void
-  attach_function :world_initialize_section, [World, Location.by_value], :void
-  attach_function :world_add_block, [World, Block.by_value], :int
+  attach_function :world_add_block, [World, Block], :int
   attach_function :world_get_block, [World, Location.by_value], :pointer
 end
 
