@@ -10,7 +10,8 @@
 void world_intialize(World* world, int size)
 {
     assert(size > 0);
-    *world = (World){size, malloc(size * sizeof(BlockBucket))};
+    world->size = size;
+    world->blocks = malloc(size * sizeof(BlockBucket));
 
     int i;
     for (i = 0; i < size; i++)
@@ -27,6 +28,10 @@ void world_free(World* world)
     int i;
     for (i = 0; i < world->size; i++)
     {
+        if (world->blocks[i].block != NULL)
+        {
+            free(world->blocks[i].block);
+        }
         bucket = world->blocks[i].next;
         while (bucket != NULL)
         {

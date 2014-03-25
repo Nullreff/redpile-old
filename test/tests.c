@@ -69,7 +69,7 @@ static char* test_instruction_parsing()
 const Material MATERIALS[4] = { WIRE, CONDUCTOR, INSULATOR, AIR };
 
 static char* test_world_block_creation() {
-    World* world = malloc(sizeof(world));
+    World* world = malloc(sizeof(World));
     world_intialize(world, 16);
 
     CUBE_RANGE(-5,5)
