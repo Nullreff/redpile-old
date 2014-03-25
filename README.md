@@ -6,14 +6,7 @@ Redpile is a high performance implementation of redstone for Minecraft.  It is c
 Buiding
 -------
 
-```bash
-mkdir -p build
-cd build
-cmake ../src/
-make
-```
-
-Once it's built, tests can be run using [rspec](http://rspec.info/)
+Requireds [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.info/) for CLI tests.  Run `./build.sh` to compile or `./test.sh` to run tests.
 
 Usage
 -----

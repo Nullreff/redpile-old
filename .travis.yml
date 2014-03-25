@@ -1,2 +1,4 @@
-before_install: sudo apt-get install cmake
+before_install:
+  - sudo apt-get install cmake
+  - gem install rspec
 script: ./test.sh

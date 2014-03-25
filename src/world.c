@@ -10,9 +10,7 @@
 void world_intialize(World* world, int size)
 {
     assert(size > 0);
-
-    world->size = size;
-    world->blocks = malloc(size * sizeof(BlockBucket));
+    *world = (World){size, malloc(size * sizeof(BlockBucket))};
 
     int i;
     for (i = 0; i < size; i++)

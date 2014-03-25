@@ -1,0 +1,5 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(test)
+ADD_EXECUTABLE(redpile src/main.c)
+ADD_EXECUTABLE(redpiletest test/tests.c src/world.c src/instruction.c)
