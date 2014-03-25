@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "minunit.h"
+#include "common.h"
 #include "../src/instruction.h"
 #include "../src/location.h"
 #include "../src/world.h"
@@ -60,12 +61,6 @@ static char* test_instruction_parsing()
     return 0;
 }
 
-#define RANGE(var,start,end) int var; for (var = start; var <= end; var++)
-#define CUBE_RANGE(start,end)\
-    RANGE(x,start,end) {\
-    RANGE(y,start,end) {\
-    RANGE(z,start,end) {
-#define CUBE_RANGE_END }}}
 const Material MATERIALS[4] = { WIRE, CONDUCTOR, INSULATOR, AIR };
 
 static char* test_world_block_creation() {
