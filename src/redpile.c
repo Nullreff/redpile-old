@@ -1,10 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>
+#include <signal.h>
 #include "version.h"
 #include "redpile.h"
+#include "world.h"
+#include "instruction.h"
 
 RedpileConfig config;
+World* world;
 
 static void print_version()
 {
@@ -53,9 +57,35 @@ void load_config(int argc, char* argv[])
     }
 }
 
+void setup()
+{
+    world = malloc(sizeof(World));
+    world_intialize(world, 256);
+}
+
+void cleanup()
+{
+    if (world != NULL)
+    {
+        world_free(world);
+        free(world);
+    }
+}
+
+void handle_signal(int signal)
+{
+    if (signal == SIGINT)
+    {
+        cleanup();
+        exit(EXIT_SUCCESS);
+    }
+}
+
 int main(int argc, char* argv[])
 {
     load_config(argc, argv);
+    signal(SIGINT, handle_signal);
+    setup();
 
     if (config.interactive)
     {
@@ -65,5 +95,7 @@ int main(int argc, char* argv[])
     {
         printf("Running in normal mode\n");
     }
+
+    cleanup();
 }
 
