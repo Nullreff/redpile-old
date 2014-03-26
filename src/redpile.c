@@ -78,6 +78,7 @@ void handle_signal(int signal)
     if (signal == SIGINT)
     {
         cleanup();
+        printf("\n");
         exit(EXIT_SUCCESS);
     }
 }
@@ -95,6 +96,7 @@ int read_next_instruction(Instruction* instruction)
     size_t size;
     if (getline(&line, &size, stdin) == -1) {
         cleanup();
+        printf("\n");
         exit(EXIT_SUCCESS);
     }
 
