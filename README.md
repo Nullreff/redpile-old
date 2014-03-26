@@ -32,6 +32,10 @@ Sets the block at `(x, y, z)` to have a material of `type`.
 
 Sets the block at `(x, y, z)` to have a power of `power`.
 
+**GET x y z**
+
+Gets information about the block at `(x, y, z)`.
+
 **TICK**
 
 Advances the redstone state by one tick.
