@@ -5,10 +5,10 @@
 
 typedef enum {
     EMPTY,
+    AIR,
     WIRE,
     CONDUCTOR,
-    INSULATOR,
-    AIR
+    INSULATOR
 } Material;
 
 typedef struct {

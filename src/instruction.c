@@ -15,12 +15,10 @@
 
 int command_parse(char* command, Command* result)
 {
-    if (strcmp(command, "ON") == 0)
-        *result = CMD_ON;
-    else if (strcmp(command, "OFF") == 0)
-        *result = CMD_OFF;
-    else if (strcmp(command, "TOGGLE") == 0)
-        *result = CMD_TOGGLE;
+    if (strcmp(command, "ADD") == 0)
+        *result = CMD_ADD;
+    else if (strcmp(command, "SET") == 0)
+        *result = CMD_SET;
     else if (strcmp(command, "TICK") == 0)
         *result = CMD_TICK;
     else
@@ -36,7 +34,7 @@ int instruction_parse(char* instruction, Instruction* result)
     CHECK_OOM(parts);
 
     Command command;
-    long x, y, z;
+    int x, y, z, value;
 
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
@@ -52,9 +50,10 @@ int instruction_parse(char* instruction, Instruction* result)
     PARSE_NUMBER(x)
     PARSE_NUMBER(y)
     PARSE_NUMBER(z)
+    PARSE_NUMBER(value)
 
 success:
-    *result = (Instruction){command, (Location){x, y, z}};
+    *result = (Instruction){command, (Location){x, y, z}, value};
     free(parts_ptr);
     return 0;
 

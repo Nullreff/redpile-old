@@ -4,15 +4,15 @@
 #include "location.h"
 
 typedef enum {
-    CMD_ON,
-    CMD_OFF,
-    CMD_TOGGLE,
+    CMD_ADD,
+    CMD_SET,
     CMD_TICK
 } Command;
 
 typedef struct {
     Command cmd;
     Location target;
+    int value;
 } Instruction;
 
 int command_parse(char* command, Command* result);

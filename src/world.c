@@ -50,7 +50,7 @@ void world_free(World* world)
 
 Bucket* world_get_bucket(World* world, Location location)
 {
-    long hash = LOCATION_HASH(location, world->buckets_size);
+    int hash = LOCATION_HASH(location, world->buckets_size);
     return world->buckets + hash;
 }
 

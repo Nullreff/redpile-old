@@ -16,23 +16,25 @@ By default, Redpile will load redstone from a Minecraft map directory passed to 
 Commands
 --------
 
-Commands are sent and received the format `COMMAND x y z`.
+Commands are sent and received the format `COMMAND params`.
 
-**ON x y z**
+**ADD x y z material**
 
-Sends power to the block at the coordinates `(x, y, z)`
+Sets the block at `(x, y, z)` to have a material of `type`.
 
-**OFF x y z**
+* 0 - EMPTY
+* 1 - AIR
+* 2 - WIRE
+* 3 - CONDUCTOR
+* 4 - INSULATOR
 
-Removes power from the block at the coordinates `(x, y, z)`
+**SET x y z power**
 
-**TOGGLE x y z**
-
-Toggles power in the block at the coordinates `(x, y, z)`
+Sets the block at `(x, y, z)` to have a power of `power`.
 
 **TICK**
 
-Advances the redstone state
+Advances the redstone state by one tick.
 
 License
 -------

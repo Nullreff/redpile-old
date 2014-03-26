@@ -20,9 +20,8 @@ static char* test_command_parsing()
 {
     Command command;
 
-    TEST_COMMAND(ON)
-    TEST_COMMAND(OFF)
-    TEST_COMMAND(TOGGLE)
+    TEST_COMMAND(ADD)
+    TEST_COMMAND(SET)
     TEST_COMMAND(TICK)
     MU_ASSERT("Invalid command didn't fail parsing", 
             command_parse("BADCMD", &command) == -1);
@@ -34,9 +33,10 @@ static char* test_command_parsing()
     MU_ASSERT("Incorrect "#coord" when parsing the '"#inst"' instruction", instruction.target.coord == val)
 
 #define TEST_INSTRUCTION(inst) do {\
-    int success = instruction_parse(#inst" 5 4 3", &instruction);\
+    int success = instruction_parse(#inst" 5 4 3 2", &instruction);\
     MU_ASSERT("Falied to parse the '"#inst"' instruction", success == 0);\
     MU_ASSERT("Incorrect command when parsing the '"#inst"' instruction", instruction.cmd == CMD_ ## inst);\
+    MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", instruction.value == 2);\
     TEST_INSTRUCTION_LOCATION(inst,x,5);\
     TEST_INSTRUCTION_LOCATION(inst,y,4);\
     TEST_INSTRUCTION_LOCATION(inst,z,3);\
@@ -46,18 +46,17 @@ static char* test_instruction_parsing()
 {
     Instruction instruction;
 
-    TEST_INSTRUCTION(ON);
-    TEST_INSTRUCTION(OFF);
-    TEST_INSTRUCTION(TOGGLE);
-    int success = instruction_parse("TICK 5 4 3", &instruction);
+    TEST_INSTRUCTION(ADD);
+    TEST_INSTRUCTION(SET);
+    int success = instruction_parse("TICK", &instruction);
     MU_ASSERT("Falied to parse the 'TICK' instruction", success == 0);
     MU_ASSERT("Incorrect command when parsing the 'TICK' instruction", instruction.cmd == CMD_TICK);
     MU_ASSERT("Invalid instruction didn't fail parsing", 
-            instruction_parse("BADCMD 0 0 0", &instruction) == -1);
+            instruction_parse("BADCMD 0 0 0 0", &instruction) == -1);
     MU_ASSERT("Instruction with missing parameter didn't fail parsing", 
-            instruction_parse("ON 0 0", &instruction) == -1);
+            instruction_parse("ON 0 0 0", &instruction) == -1);
     MU_ASSERT("Instruction with non numeric parameter didn't fail parsing", 
-            instruction_parse("ON 0 0 a", &instruction) == -1);
+            instruction_parse("ON 0 0 0 a", &instruction) == -1);
     return 0;
 }
 
