@@ -21,4 +21,42 @@ describe 'Redpile' do
       end
     end
   end
+
+  it 'parses the SET command' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 1'
+      p.close_write
+      p.gets.should == "(0,0,0) AIR 0\n"
+    end
+  end
+
+  it 'parses the POWER command' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 2'
+      p.puts 'POWER 0 0 0 15'
+      p.close_write
+      p.gets # SET
+      p.gets.should == "(0,0,0) WIRE 15\n"
+    end
+  end
+
+  it 'parses the GET command' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 2'
+      p.puts 'POWER 0 0 0 15'
+      p.puts 'GET 0 0 0'
+      p.close_write
+      p.gets # SET
+      p.gets # POWER
+      p.gets.should == "(0,0,0) WIRE 15\n"
+    end
+  end
+
+  it 'parses the TICK command' do
+    redpile do |p|
+      p.puts 'TICK'
+      p.close_write
+      p.gets.should == "Not implemented...\n"
+    end
+  end
 end
