@@ -1,5 +1,7 @@
-def redpile(opts = '')
-  `./build/redpile #{opts}`
+require 'timeout'
+
+def redpile(opts = '', &block)
+  IO.popen("./build/redpile #{opts}", 'r+', &block)
 end
 
 def redpile_version
@@ -11,19 +13,11 @@ describe 'Redpile' do
     context "using #{short ? 'short' : 'long'} arguments" do
 
       it 'prints the current version' do
-        redpile(short ? '-v' : '--version').should == "Redpile #{redpile_version}\n"
+        redpile(short ? '-v' : '--version') {|p| p.gets.should == "Redpile #{redpile_version}\n" }
       end
 
       it 'prints a help message' do
-        redpile(short ? '-h' : '--help').should =~ /^Redpile - High Performance Redstone/
-      end
-
-      it 'runs in interactive mode' do
-        redpile(short ? '-i' : '--interactive').should == "Running in interactive mode\n";
-      end
-
-      it 'runs in normal mode' do
-        redpile.should == "Running in normal mode\n";
+        redpile(short ? '-h' : '--help') {|p| p.gets.should =~ /^Redpile - High Performance Redstone/ }
       end
     end
   end

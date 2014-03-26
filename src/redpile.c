@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <signal.h>
+#include <string.h>
 #include "version.h"
 #include "redpile.h"
 #include "world.h"
@@ -81,21 +82,77 @@ void handle_signal(int signal)
     }
 }
 
+void redpile_panic(char* message)
+{
+    printf(message);
+    cleanup();
+    exit(EXIT_FAILURE);
+}
+
+int read_next_instruction(Instruction* instruction)
+{
+    char* line = NULL;
+    size_t size;
+    if (getline(&line, &size, stdin) == -1) {
+        cleanup();
+        exit(EXIT_SUCCESS);
+    }
+
+    if (size == 0)
+        return -2;
+
+    // Trim the trailing line return
+    size_t ln = strlen(line) - 1;
+    if (line[ln] == '\n')
+        line[ln] = '\0';
+
+    return instruction_parse(line, instruction);
+}
+
 int main(int argc, char* argv[])
 {
     load_config(argc, argv);
     signal(SIGINT, handle_signal);
     setup();
 
-    if (config.interactive)
+    Instruction instruction;
+    Block* block;
+    while (1)
     {
-        printf("Running in interactive mode\n");
-    }
-    else
-    {
-        printf("Running in normal mode\n");
+        if (config.interactive)
+        {
+            printf("> ");
+        }
+
+        int result = read_next_instruction(&instruction);
+        if (result == -1)
+        {
+            printf("Invalid Command\n");
+        }
+        else if (result != 0)
+        {
+            continue;
+        }
+
+        switch (instruction.cmd)
+        {
+            case CMD_ADD:
+                block = &(Block){(Material)instruction.value, instruction.target, 0};
+                world_add_block(world, block);
+                break;
+
+            case CMD_SET:
+                block = world_get_block(world, instruction.target);
+                block->power = instruction.value;
+                break;
+
+            case CMD_TICK:
+                printf("Not implemented...\n");
+                break;
+        }
     }
 
     cleanup();
+    return EXIT_SUCCESS;
 }
 

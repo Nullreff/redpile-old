@@ -42,7 +42,7 @@ int instruction_parse(char* instruction, Instruction* result)
 
     if (command == CMD_TICK)
     {
-        x = y = z = 0;
+        x = y = z = value = 0;
         goto success;
     }
 
