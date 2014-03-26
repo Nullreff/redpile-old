@@ -4,6 +4,7 @@
 #include "location.h"
 
 typedef enum {
+    EMPTY,
     WIRE,
     CONDUCTOR,
     INSULATOR,
@@ -11,8 +12,8 @@ typedef enum {
 } Material;
 
 typedef struct {
-    Location location;
     Material material;
+    Location location;
     int power;
 } Block;
 

@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
     BENCHMARK_START(world_add_block)
     CUBE_RANGE(-16,16)
-        Block block = {(Location){x,y,z}, WIRE, 0};
+        Block block = {WIRE, (Location){x,y,z}, 0};
         world_add_block(world, &block);
     CUBE_RANGE_END
     BENCHMARK_END
