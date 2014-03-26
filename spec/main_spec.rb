@@ -19,6 +19,20 @@ describe 'Redpile' do
       it 'prints a help message' do
         redpile(short ? '-h' : '--help') {|p| p.gets.should =~ /^Redpile - High Performance Redstone/ }
       end
+
+      it 'runs in interactive mode' do
+        redpile(short ? '-i' : '--interactive') do |p|
+          p.close_write
+          p.gets.should == "> \n"
+        end
+      end
+    end
+  end
+
+  it 'runs in non interactive mode' do
+    redpile do |p|
+      p.close_write
+      p.gets.should == "\n"
     end
   end
 
