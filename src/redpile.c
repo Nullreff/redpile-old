@@ -123,10 +123,12 @@ int main(int argc, char* argv[])
     signal(SIGINT, handle_signal);
     setup();
 
-    Instruction instruction;
-    Block* block;
     while (1)
     {
+        Instruction instruction;
+        Block* block;
+        int block_count = 0;
+
         if (config.interactive)
         {
             printf("> ");
@@ -141,12 +143,14 @@ int main(int argc, char* argv[])
         switch (instruction.cmd)
         {
             case CMD_SET:
-                block = &(Block){(Material)instruction.value, instruction.target, 0};
-                world_add_block(world, block);
+                block = world_add_block(world,
+                    &(Block){(Material)instruction.value, instruction.target, 0});
+                block_count = 1;
                 break;
 
             case CMD_POWER:
                 block = world_get_block(world, instruction.target);
+                block_count = 1;
                 if (block != NULL)
                 {
                     block->power = instruction.value;
@@ -155,28 +159,33 @@ int main(int argc, char* argv[])
 
             case CMD_GET:
                 block = world_get_block(world, instruction.target);
+                block_count = 1;
                 break;
 
             case CMD_TICK:
                 printf("Not implemented...\n");
-                continue;
+                break;
         }
 
-        if (block == NULL)
+        int i;
+        for (i = 0; i < block_count; i++)
         {
-            printf("(%d,%d,%d) EMPTY 0\n",
-                    instruction.target.x,
-                    instruction.target.y,
-                    instruction.target.z);
-        }
-        else
-        {
-            printf("(%d,%d,%d) %s %d\n",
-                    block->location.x,
-                    block->location.y,
-                    block->location.z,
-                    Materials[block->material],
-                    block->power);
+            if (block + i == NULL)
+            {
+                printf("(%d,%d,%d) EMPTY 0\n",
+                        instruction.target.x,
+                        instruction.target.y,
+                        instruction.target.z);
+            }
+            else
+            {
+                printf("(%d,%d,%d) %s %d\n",
+                        block->location.x,
+                        block->location.y,
+                        block->location.z,
+                        Materials[block->material],
+                        block->power);
+            }
         }
     }
 

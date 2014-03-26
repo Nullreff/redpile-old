@@ -20,7 +20,7 @@ typedef struct {
 
 void world_intialize(World* world, int size);
 void world_free(World* world);
-void world_add_block(World* world, Block* block);
+Block* world_add_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
 void world_print_buckets(World* world);
 

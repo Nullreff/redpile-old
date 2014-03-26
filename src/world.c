@@ -76,7 +76,7 @@ Block* world_next_block(World* world)
     return block;
 }
 
-void world_add_block(World* world, Block* block)
+Block* world_add_block(World* world, Block* block)
 {
     Bucket* bucket = world_get_bucket(world, block->location);
 
@@ -101,6 +101,7 @@ void world_add_block(World* world, Block* block)
     }
 
     memcpy(bucket->block, block, sizeof(Block));
+    return bucket->block;
 }
 
 Block* world_get_block(World* world, Location location)
