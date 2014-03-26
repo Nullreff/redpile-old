@@ -15,10 +15,10 @@
 
 int command_parse(char* command, Command* result)
 {
-    if (strcmp(command, "ADD") == 0)
-        *result = CMD_ADD;
-    else if (strcmp(command, "SET") == 0)
+    if (strcmp(command, "SET") == 0)
         *result = CMD_SET;
+    else if (strcmp(command, "POWER") == 0)
+        *result = CMD_POWER;
     else if (strcmp(command, "GET") == 0)
         *result = CMD_GET;
     else if (strcmp(command, "TICK") == 0)

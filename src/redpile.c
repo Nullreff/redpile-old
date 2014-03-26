@@ -136,12 +136,12 @@ int main(int argc, char* argv[])
 
         switch (instruction.cmd)
         {
-            case CMD_ADD:
+            case CMD_SET:
                 block = &(Block){(Material)instruction.value, instruction.target, 0};
                 world_add_block(world, block);
                 break;
 
-            case CMD_SET:
+            case CMD_POWER:
                 block = world_get_block(world, instruction.target);
                 if (block != NULL)
                 {

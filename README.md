@@ -18,7 +18,7 @@ Commands
 
 Commands are sent and received the format `COMMAND params`.
 
-**ADD x y z material**
+**SET x y z material**
 
 Sets the block at `(x, y, z)` to have a material of `type`.
 
@@ -28,7 +28,7 @@ Sets the block at `(x, y, z)` to have a material of `type`.
 * 3 - CONDUCTOR
 * 4 - INSULATOR
 
-**SET x y z power**
+**POWER x y z power**
 
 Sets the block at `(x, y, z)` to have a power of `power`.
 

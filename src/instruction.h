@@ -4,8 +4,8 @@
 #include "location.h"
 
 typedef enum {
-    CMD_ADD,
     CMD_SET,
+    CMD_POWER,
     CMD_GET,
     CMD_TICK
 } Command;
