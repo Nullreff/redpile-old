@@ -2,14 +2,9 @@
 #include <stdio.h>
 #include <getopt.h>
 #include "version.h"
+#include "redpile.h"
 
-static struct option long_options[] =
-{
-    {"interactive", no_argument, NULL, 'i'},
-    {"version",     no_argument, NULL, 'v'},
-    {"help",        no_argument, NULL, 'h'},
-    {NULL,          0,           NULL,  0 }
-};
+RedpileConfig config;
 
 static void print_version()
 {
@@ -29,31 +24,40 @@ static void print_help()
            "        Print this message\n");
 }
 
-int main(int argc, char* argv[])
+void load_config(int argc, char* argv[])
 {
-    int interactive = 0;
+    static struct option long_options[] =
+    {
+        {"interactive", no_argument, NULL, 'i'},
+        {"version",     no_argument, NULL, 'v'},
+        {"help",        no_argument, NULL, 'h'},
+        {NULL,          0,           NULL,  0 }
+    };
 
     int opt = getopt_long(argc, argv, "ivh", long_options, NULL);
+    switch (opt)
     {
-        switch (opt)
-        {
-            case -1:
-                break;
-            case 'i':
-                interactive = 1;
-                break;
-            case 'v':
-                print_version();
-                return EXIT_SUCCESS;
-            case 'h':
-                print_help();
-                return EXIT_SUCCESS;
-            default:
-                return EXIT_FAILURE;
-        }
+        case -1:
+            break;
+        case 'v':
+            print_version();
+            exit(EXIT_SUCCESS);
+        case 'h':
+            print_help();
+            exit(EXIT_SUCCESS);
+        case 'i':
+            config.interactive = 1;
+            break;
+        default:
+            exit(EXIT_FAILURE);
     }
+}
 
-    if (interactive)
+int main(int argc, char* argv[])
+{
+    load_config(argc, argv);
+
+    if (config.interactive)
     {
         printf("Running in interactive mode\n");
     }
