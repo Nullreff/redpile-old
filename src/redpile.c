@@ -143,19 +143,36 @@ int main(int argc, char* argv[])
 
             case CMD_SET:
                 block = world_get_block(world, instruction.target);
-                block->power = instruction.value;
+                if (block != NULL)
+                {
+                    block->power = instruction.value;
+                }
                 break;
 
             case CMD_GET:
                 block = world_get_block(world, instruction.target);
-                printf("%s %d\n",
-                        Materials[block != NULL ? block->material : EMPTY],
-                        block != NULL ? block->power : 0);
                 break;
 
             case CMD_TICK:
                 printf("Not implemented...\n");
-                break;
+                continue;
+        }
+
+        if (block == NULL)
+        {
+            printf("(%d,%d,%d) EMPTY 0\n",
+                    instruction.target.x,
+                    instruction.target.y,
+                    instruction.target.z);
+        }
+        else
+        {
+            printf("(%d,%d,%d) %s %d\n",
+                    block->location.x,
+                    block->location.y,
+                    block->location.z,
+                    Materials[block->material],
+                    block->power);
         }
     }
 
