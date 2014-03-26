@@ -146,6 +146,13 @@ int main(int argc, char* argv[])
                 block->power = instruction.value;
                 break;
 
+            case CMD_GET:
+                block = world_get_block(world, instruction.target);
+                printf("%s %d\n",
+                        Materials[block != NULL ? block->material : EMPTY],
+                        block != NULL ? block->power : 0);
+                break;
+
             case CMD_TICK:
                 printf("Not implemented...\n");
                 break;

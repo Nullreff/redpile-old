@@ -3,6 +3,8 @@
 
 #include "location.h"
 
+char* Materials[5];
+
 typedef enum {
     EMPTY,
     AIR,

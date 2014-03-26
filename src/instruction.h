@@ -6,6 +6,7 @@
 typedef enum {
     CMD_ADD,
     CMD_SET,
+    CMD_GET,
     CMD_TICK
 } Command;
 

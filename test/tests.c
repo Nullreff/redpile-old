@@ -22,6 +22,7 @@ static char* test_command_parsing()
 
     TEST_COMMAND(ADD)
     TEST_COMMAND(SET)
+    TEST_COMMAND(GET)
     TEST_COMMAND(TICK)
     MU_ASSERT("Invalid command didn't fail parsing", 
             command_parse("BADCMD", &command) == -1);
@@ -32,11 +33,11 @@ static char* test_command_parsing()
 #define TEST_INSTRUCTION_LOCATION(inst,coord,val) \
     MU_ASSERT("Incorrect "#coord" when parsing the '"#inst"' instruction", instruction.target.coord == val)
 
-#define TEST_INSTRUCTION(inst) do {\
+#define TEST_INSTRUCTION(inst,last) do {\
     int success = instruction_parse(#inst" 5 4 3 2", &instruction);\
     MU_ASSERT("Falied to parse the '"#inst"' instruction", success == 0);\
     MU_ASSERT("Incorrect command when parsing the '"#inst"' instruction", instruction.cmd == CMD_ ## inst);\
-    MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", instruction.value == 2);\
+    MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", last || instruction.value == 2);\
     TEST_INSTRUCTION_LOCATION(inst,x,5);\
     TEST_INSTRUCTION_LOCATION(inst,y,4);\
     TEST_INSTRUCTION_LOCATION(inst,z,3);\
@@ -46,8 +47,9 @@ static char* test_instruction_parsing()
 {
     Instruction instruction;
 
-    TEST_INSTRUCTION(ADD);
-    TEST_INSTRUCTION(SET);
+    TEST_INSTRUCTION(ADD,0);
+    TEST_INSTRUCTION(SET,0);
+    TEST_INSTRUCTION(GET,1);
     int success = instruction_parse("TICK", &instruction);
     MU_ASSERT("Falied to parse the 'TICK' instruction", success == 0);
     MU_ASSERT("Incorrect command when parsing the 'TICK' instruction", instruction.cmd == CMD_TICK);

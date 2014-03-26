@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(test)
-ADD_EXECUTABLE(redpile src/redpile.c src/world.c src/instruction.c)
+ADD_EXECUTABLE(redpile src/redpile.c src/world.c src/instruction.c src/block.c)
 ADD_EXECUTABLE(redpiletest test/tests.c src/world.c src/instruction.c)
 ADD_EXECUTABLE(redpilebench test/bench.c src/world.c)
 TARGET_LINK_LIBRARIES(redpilebench rt)

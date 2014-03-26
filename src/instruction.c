@@ -19,6 +19,8 @@ int command_parse(char* command, Command* result)
         *result = CMD_ADD;
     else if (strcmp(command, "SET") == 0)
         *result = CMD_SET;
+    else if (strcmp(command, "GET") == 0)
+        *result = CMD_GET;
     else if (strcmp(command, "TICK") == 0)
         *result = CMD_TICK;
     else
@@ -35,6 +37,7 @@ int instruction_parse(char* instruction, Instruction* result)
 
     Command command;
     int x, y, z, value;
+    x = y = z = value = 0;
 
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
@@ -42,7 +45,6 @@ int instruction_parse(char* instruction, Instruction* result)
 
     if (command == CMD_TICK)
     {
-        x = y = z = value = 0;
         goto success;
     }
 
@@ -50,6 +52,12 @@ int instruction_parse(char* instruction, Instruction* result)
     PARSE_NUMBER(x)
     PARSE_NUMBER(y)
     PARSE_NUMBER(z)
+
+    if (command == CMD_GET)
+    {
+        goto success;
+    }
+
     PARSE_NUMBER(value)
 
 success:
