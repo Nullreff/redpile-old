@@ -94,7 +94,7 @@ int read_next_instruction(Instruction* instruction)
 {
     char* line = NULL;
     size_t size;
-    if (getline(&line, &size, stdin) == -1) {
+    if (getline(&line, &size, stdin) == EOF) {
         cleanup();
         printf("\n");
         exit(EXIT_SUCCESS);
@@ -108,7 +108,13 @@ int read_next_instruction(Instruction* instruction)
     if (line[ln] == '\n')
         line[ln] = '\0';
 
-    return instruction_parse(line, instruction);
+    int result = instruction_parse(line, instruction);
+    if (result != 0)
+    {
+        printf("Invalid Command\n");
+    }
+
+    return result;
 }
 
 int main(int argc, char* argv[])
@@ -127,11 +133,7 @@ int main(int argc, char* argv[])
         }
 
         int result = read_next_instruction(&instruction);
-        if (result == -1)
-        {
-            printf("Invalid Command\n");
-        }
-        else if (result != 0)
+        if (result != 0)
         {
             continue;
         }
