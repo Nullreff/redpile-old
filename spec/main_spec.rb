@@ -8,6 +8,10 @@ def redpile_version
   File.read('src/version.h')[/\d+\.\d+\.\d+/]
 end
 
+def blocks
+  {'AIR' => 1, 'WIRE' => 2, 'CONDUCTOR' => 3, 'INSULATOR' => 4}
+end
+
 describe 'Redpile' do
   [true, false].each do |short|
     context "using #{short ? 'short' : 'long'} arguments" do
@@ -38,23 +42,47 @@ describe 'Redpile' do
 
   it 'parses the SET command' do
     redpile do |p|
-      p.puts 'SET 0 0 0 1'
+      p.puts 'SET 0 0 0 0'
       p.close_write
-      p.gets.should == "(0,0,0) AIR 0\n"
+      p.gets.should == "(0,0,0) EMPTY 0\n"
     end
   end
 
   it 'parses the POWER command' do
     redpile do |p|
-      p.puts 'SET 0 0 0 2'
       p.puts 'POWER 0 0 0 15'
       p.close_write
-      p.gets # SET
-      p.gets.should == "(0,0,0) WIRE 15\n"
+      p.gets.should == "\n"
     end
   end
 
   it 'parses the GET command' do
+    redpile do |p|
+      p.puts 'GET 0 0 0'
+      p.close_write
+      p.gets.should == "(0,0,0) EMPTY 0\n"
+    end
+  end
+
+  it 'parses the TICK command' do
+    redpile do |p|
+      p.puts 'TICK'
+      p.close_write
+      p.gets.should == "\n"
+    end
+  end
+
+  blocks.each do |block, num|
+    it "inserts an #{block} block" do
+      redpile do |p|
+        p.puts "SET 0 0 0 #{num}"
+        p.close_write
+        p.gets.should == "(0,0,0) #{block} 0\n"
+      end
+    end
+  end
+
+  it 'retreives the power and material of a block' do
     redpile do |p|
       p.puts 'SET 0 0 0 2'
       p.puts 'POWER 0 0 0 15'
@@ -66,11 +94,25 @@ describe 'Redpile' do
     end
   end
 
-  it 'parses the TICK command' do
+  it 'set the power and material of a block' do
     redpile do |p|
+      p.puts 'SET 0 0 0 2'
+      p.puts 'POWER 0 0 0 15'
+      p.close_write
+      p.gets # SET
+      p.gets.should == "(0,0,0) WIRE 15\n"
+    end
+  end
+
+  it 'deincrements the power of a block on tick' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 2'
+      p.puts 'POWER 0 0 0 15'
       p.puts 'TICK'
       p.close_write
-      p.gets.should == "\n"
+      p.gets # SET
+      p.gets # POWER
+      p.gets.should == "(0,0,0) WIRE 14\n"
     end
   end
 end
