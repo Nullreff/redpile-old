@@ -117,75 +117,34 @@ int read_next_instruction(Instruction* instruction)
     return result;
 }
 
+void instruction_callback(Block* block)
+{
+    printf("(%d,%d,%d) %s %d\n",
+            block->location.x,
+            block->location.y,
+            block->location.z,
+            Materials[block->material],
+            block->power);
+}
+
 int main(int argc, char* argv[])
 {
     load_config(argc, argv);
     signal(SIGINT, handle_signal);
     setup();
 
+    Instruction instruction;
     while (1)
     {
-        Instruction instruction;
-        Block* block;
-        int block_count = 0;
-
         if (config.interactive)
         {
             printf("> ");
         }
 
         int result = read_next_instruction(&instruction);
-        if (result != 0)
+        if (result == 0)
         {
-            continue;
-        }
-
-        switch (instruction.cmd)
-        {
-            case CMD_SET:
-                block = world_add_block(world,
-                    &(Block){(Material)instruction.value, instruction.target, 0});
-                block_count = 1;
-                break;
-
-            case CMD_POWER:
-                block = world_get_block(world, instruction.target);
-                block_count = 1;
-                if (block != NULL)
-                {
-                    block->power = instruction.value;
-                }
-                break;
-
-            case CMD_GET:
-                block = world_get_block(world, instruction.target);
-                block_count = 1;
-                break;
-
-            case CMD_TICK:
-                printf("Not implemented...\n");
-                break;
-        }
-
-        int i;
-        for (i = 0; i < block_count; i++)
-        {
-            if (block + i == NULL)
-            {
-                printf("(%d,%d,%d) EMPTY 0\n",
-                        instruction.target.x,
-                        instruction.target.y,
-                        instruction.target.z);
-            }
-            else
-            {
-                printf("(%d,%d,%d) %s %d\n",
-                        block->location.x,
-                        block->location.y,
-                        block->location.z,
-                        Materials[block->material],
-                        block->power);
-            }
+            world_run_instuction(world, &instruction, instruction_callback);
         }
     }
 

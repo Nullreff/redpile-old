@@ -16,7 +16,7 @@ By default, Redpile will load redstone from a Minecraft map directory passed to 
 Commands
 --------
 
-Commands are sent and received the format `COMMAND params`.
+Commands are sent and received the format `COMMAND params`.  Any blocks affected by the command will be returned in the format `(x,y,z) material power`.
 
 **SET x y z material**
 
@@ -38,7 +38,7 @@ Gets information about the block at `(x, y, z)`.
 
 **TICK**
 
-Advances the redstone state by one tick.
+Currently decrements the power every block by one.  This is for testing purposes and will change in the future.
 
 License
 -------

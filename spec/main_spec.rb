@@ -70,7 +70,7 @@ describe 'Redpile' do
     redpile do |p|
       p.puts 'TICK'
       p.close_write
-      p.gets.should == "Not implemented...\n"
+      p.gets.should == "\n"
     end
   end
 end
