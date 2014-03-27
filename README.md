@@ -11,7 +11,7 @@ Requireds [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.i
 Usage
 -----
 
-By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.  It then reads commands for block updates from STDIN and writes the resulting commands to STDOUT.  For command line options, try `redpile --help`.
+By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.  It then reads commands for block updates from STDIN and writes the resulting changes to STDOUT.  For command line options, try `redpile --help`.
 
 Commands
 --------
@@ -38,7 +38,7 @@ Gets information about the block at `(x, y, z)`.
 
 **TICK**
 
-Currently decrements the power every block by one.  This is for testing purposes and will change in the future.
+Currently decrements the power of every block by one.  This is for testing purposes and will change in the future.
 
 License
 -------
