@@ -1,1 +1,0 @@
-#define REDPILE_VERSION "0.0.1"

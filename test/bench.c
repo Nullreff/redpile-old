@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include "common.h"
-#include "../src/location.h"
 #include "../src/world.h"
 #include "../src/block.h"
 

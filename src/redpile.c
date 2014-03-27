@@ -3,7 +3,6 @@
 #include <getopt.h>
 #include <signal.h>
 #include <string.h>
-#include "version.h"
 #include "redpile.h"
 #include "world.h"
 #include "instruction.h"
@@ -144,7 +143,7 @@ int main(int argc, char* argv[])
         int result = read_next_instruction(&instruction);
         if (result == 0)
         {
-            world_run_instuction(world, &instruction, instruction_callback);
+            instruction_run(world, &instruction, instruction_callback);
         }
     }
 

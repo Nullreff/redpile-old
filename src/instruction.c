@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "instruction.h"
-#include "location.h"
 #include "redpile.h"
+#include "block.h"
+#include "world.h"
 
 #define PARSE_NUMBER(NAME)\
     char* str_ ## NAME = strtok(NULL, " ");\
@@ -69,3 +70,45 @@ error:
     free(parts_ptr);
     return -1;
 }
+
+void instruction_run(World* world, Instruction* inst, void (*block_modified_callback)(Block*))
+{
+    Block new_block;
+    Block* block;
+
+    switch (inst->cmd)
+    {
+        case CMD_SET:
+            new_block = (Block){(Material)inst->value, inst->target, 0};
+            block = world_add_block(world, &new_block);
+            block_modified_callback(block);
+            return;
+
+        case CMD_POWER:
+            block = world_get_block(world, inst->target);
+            if (block != NULL)
+            {
+                block->power = inst->value;
+                block_modified_callback(block);
+            }
+            break;
+
+        case CMD_GET:
+            block = world_get_block(world, inst->target);
+            if (block == NULL)
+            {
+                new_block = (Block){EMPTY, inst->target, 0};
+                block_modified_callback(&new_block);
+            }
+            else
+            {
+                block_modified_callback(block);
+            }
+            break;
+
+        case CMD_TICK:
+            world_run_tick(world, block_modified_callback);
+            break;
+    }
+}
+

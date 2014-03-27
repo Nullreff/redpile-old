@@ -3,7 +3,6 @@
 #include "minunit.h"
 #include "common.h"
 #include "../src/instruction.h"
-#include "../src/location.h"
 #include "../src/world.h"
 #include "../src/block.h"
 

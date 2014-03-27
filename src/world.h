@@ -1,9 +1,7 @@
 #ifndef REDPILE_WORLD_H
 #define REDPILE_WORLD_H
 
-#include "location.h"
 #include "block.h"
-#include "instruction.h"
 
 typedef struct Bucket {
     Block* block;
@@ -23,7 +21,6 @@ void world_free(World* world);
 Block* world_add_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
 void world_run_tick(World* world, void(*block_modified_callback)(Block*));
-void world_run_instuction(World* world, Instruction* inst, void (*block_modified_callback)(Block*));
 void world_print_buckets(World* world);
 
 #endif

@@ -5,7 +5,7 @@ def redpile(opts = '', &block)
 end
 
 def redpile_version
-  File.read('src/version.h')[/\d+\.\d+\.\d+/]
+  File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
 end
 
 def blocks

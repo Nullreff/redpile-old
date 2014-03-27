@@ -1,7 +1,8 @@
 #ifndef REDPILE_INSTRUCTION_H
 #define REDPILE_INSTRUCTION_H
 
-#include "location.h"
+#include "world.h"
+#include "block.h"
 
 typedef enum {
     CMD_SET,
@@ -18,6 +19,7 @@ typedef struct {
 
 int command_parse(char* command, Command* result);
 int instruction_parse(char* instruction, Instruction* result);
+void instruction_run(World* world, Instruction* inst, void (*block_modified_callback)(Block*));
 
 #endif
 
