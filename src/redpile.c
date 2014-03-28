@@ -82,13 +82,6 @@ void handle_signal(int signal)
     }
 }
 
-void redpile_panic(char* message)
-{
-    printf(message);
-    cleanup();
-    exit(EXIT_FAILURE);
-}
-
 int read_next_instruction(Instruction* instruction)
 {
     char* line = NULL;
