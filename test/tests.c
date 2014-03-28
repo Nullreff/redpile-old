@@ -83,7 +83,8 @@ static char* test_world_block_creation() {
         sprintf(message, "Block at (%d, %d, %d) has incorrect material (%d != %d)", x, y, z, found_block->material, block.material);
         MU_ASSERT(message, found_block->material == block.material);
 
-        sprintf(message, "Block at (%d, %d, %d) has incorrect location (%d, %d, %d)", x, y, z, found_block->location);
+        Location l = found_block->location;
+        sprintf(message, "Block at (%d, %d, %d) has incorrect location (%d, %d, %d)", x, y, z, l.x, l.y, l.z);
         MU_ASSERT(message, LOCATION_EQUALS(found_block->location, block.location));
 
     CUBE_RANGE_END
