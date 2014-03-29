@@ -1,14 +1,15 @@
 #ifndef REDPILE_BLOCK_H
 #define REDPILE_BLOCK_H
 
-char* Materials[5];
+char* Materials[6];
 
 typedef enum {
-    EMPTY,
-    AIR,
-    WIRE,
-    CONDUCTOR,
-    INSULATOR
+    M_EMPTY,
+    M_AIR,
+    M_WIRE,
+    M_CONDUCTOR,
+    M_INSULATOR,
+    M_TORCH
 } Material;
 
 typedef struct {

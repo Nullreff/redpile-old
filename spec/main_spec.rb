@@ -9,7 +9,7 @@ def redpile_version
 end
 
 def blocks
-  {'AIR' => 1, 'WIRE' => 2, 'CONDUCTOR' => 3, 'INSULATOR' => 4}
+  {'AIR' => 1, 'WIRE' => 2, 'CONDUCTOR' => 3, 'INSULATOR' => 4, 'TORCH' => 5}
 end
 
 describe 'Redpile' do

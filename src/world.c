@@ -22,7 +22,7 @@ void world_intialize(World* world, int size)
     for (i = 0; i < size; i++)
     {
         world->buckets[i] = (Bucket){NULL, NULL};
-        world->blocks[i] = (Block){EMPTY, (Location){0, 0, 0}, 0};
+        world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0};
     }
 }
 
@@ -66,7 +66,7 @@ Block* world_next_block(World* world)
         int i;
         for (i = world->count; i < world->blocks_size; i++)
         {
-            world->blocks[i] = (Block){EMPTY, (Location){0, 0, 0}, 0};
+            world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0};
         }
     }
 
@@ -157,7 +157,7 @@ void world_print_buckets(World* world)
             {
                 printf("*");
             }
-            else if (bucket->block->material == EMPTY)
+            else if (bucket->block->material == M_EMPTY)
             {
                 printf("O");
             }

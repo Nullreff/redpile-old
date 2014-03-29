@@ -61,7 +61,7 @@ static char* test_instruction_parsing()
     return 0;
 }
 
-const Material MATERIALS[4] = { WIRE, CONDUCTOR, INSULATOR, AIR };
+const Material MATERIALS[4] = { M_WIRE, M_CONDUCTOR, M_INSULATOR, M_AIR, M_TORCH };
 
 static char* test_world_block_creation() {
     World* world = malloc(sizeof(World));

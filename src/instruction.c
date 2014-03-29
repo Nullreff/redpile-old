@@ -97,7 +97,7 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             block = world_get_block(world, inst->target);
             if (block == NULL)
             {
-                new_block = (Block){EMPTY, inst->target, 0};
+                new_block = (Block){M_EMPTY, inst->target, 0};
                 block_modified_callback(&new_block);
             }
             else
