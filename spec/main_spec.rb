@@ -104,15 +104,16 @@ describe 'Redpile' do
     end
   end
 
-  it 'deincrements the power of a block on tick' do
+  it 'propigates power on tick' do
     redpile do |p|
-      p.puts 'SET 0 0 0 2'
-      p.puts 'POWER 0 0 0 15'
+      p.puts 'SET 0 0 0 5'
+      p.puts 'SET 0 0 1 2'
       p.puts 'TICK'
       p.close_write
       p.gets # SET
-      p.gets # POWER
-      p.gets.should == "(0,0,0) WIRE 14\n"
+      p.gets # SET
+      p.gets.should == "(0,0,0) TORCH 15\n"
+      p.gets.should == "(0,0,1) WIRE 14\n"
     end
   end
 end

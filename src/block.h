@@ -12,6 +12,15 @@ typedef enum {
     M_TORCH
 } Material;
 
+typedef enum {
+    D_NORTH,
+    D_SOUTH,
+    D_EAST,
+    D_WEST,
+    D_UP,
+    D_DOWN
+} Direction;
+
 typedef struct {
     int x;
     int y;
@@ -21,10 +30,12 @@ typedef struct {
 typedef struct {
     Material material;
     Location location;
-    int power;
+    unsigned int power:4; // 0 - 15
+    unsigned int updated:1;
 } Block;
 
-#define LOCATION_EQUALS(l1,l2) ((l1).x == (l2).x && (l1).y == (l2).y && (l1).z == (l2).z)
-#define LOCATION_HASH(loc, max) abs((loc).x ^ (loc).y ^ (loc).z) % max
+Location location_move(Location loc, Direction dir, int length);
+int location_equals(Location l1, Location l2);
+int location_hash(Location loc, int max);
 
 #endif

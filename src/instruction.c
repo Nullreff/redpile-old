@@ -5,6 +5,7 @@
 #include "redpile.h"
 #include "block.h"
 #include "world.h"
+#include "redstone.h"
 
 #define PARSE_NUMBER(NAME)\
     char* str_ ## NAME = strtok(NULL, " ");\
@@ -107,7 +108,7 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             break;
 
         case CMD_TICK:
-            world_run_tick(world, block_modified_callback);
+            redstone_tick(world, block_modified_callback);
             break;
     }
 }

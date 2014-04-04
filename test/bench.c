@@ -56,6 +56,8 @@ int main(int argc, char* argv[])
     CUBE_RANGE_END
     BENCHMARK_END
 
+    world_print_buckets(world);
+
     BENCHMARK_START(world_free)
     world_free(world);
     BENCHMARK_END

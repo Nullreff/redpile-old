@@ -13,8 +13,10 @@ void world_intialize(World* world, int size)
     world->count = 0;
     world->buckets_size = size;
     world->blocks_size = size;
+
     world->buckets = malloc(size * sizeof(Bucket));
     CHECK_OOM(world->buckets);
+
     world->blocks = malloc(size * sizeof(Block));
     CHECK_OOM(world->blocks);
 
@@ -22,7 +24,7 @@ void world_intialize(World* world, int size)
     for (i = 0; i < size; i++)
     {
         world->buckets[i] = (Bucket){NULL, NULL};
-        world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0};
+        world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0, 0};
     }
 }
 
@@ -49,7 +51,7 @@ void world_free(World* world)
 
 Bucket* world_get_bucket(World* world, Location location)
 {
-    int hash = LOCATION_HASH(location, world->buckets_size);
+    int hash = location_hash(location, world->buckets_size);
     return world->buckets + hash;
 }
 
@@ -85,7 +87,7 @@ Block* world_add_block(World* world, Block* block)
     }
     else
     {
-        while (!LOCATION_EQUALS(bucket->block->location, block->location))
+        while (!location_equals(bucket->block->location, block->location))
         {
             if (bucket->next == NULL)
             {
@@ -114,7 +116,7 @@ Block* world_get_block(World* world, Location location)
 
     while (1)
     {
-        if LOCATION_EQUALS(bucket->block->location, location)
+        if (location_equals(bucket->block->location, location))
         {
             return bucket->block;
         }
@@ -128,20 +130,6 @@ Block* world_get_block(World* world, Location location)
     }
 }
 
-void world_run_tick(World* world, void (*block_modified_callback)(Block*))
-{
-    int i;
-    for (i = 0; i < world->blocks_size; i++)
-    {
-        Block* block = world->blocks + i;
-        if (block->power > 0)
-        {
-            block->power--;
-            block_modified_callback(block);
-        }
-    }
-}
-
 void world_print_buckets(World* world)
 {
     printf("\n");
@@ -149,8 +137,13 @@ void world_print_buckets(World* world)
     int i;
     for (i = 0; i < world->buckets_size; i++)
     {
-        printf("%d: ", i);
         Bucket* bucket = world->buckets + i;
+        if (bucket == NULL || bucket->block == NULL)
+        {
+            continue;
+        }
+
+        printf("%d: ", i);
         while (bucket != NULL)
         {
             if (bucket->block == NULL)

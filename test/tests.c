@@ -61,7 +61,7 @@ static char* test_instruction_parsing()
     return 0;
 }
 
-const Material MATERIALS[4] = { M_WIRE, M_CONDUCTOR, M_INSULATOR, M_AIR, M_TORCH };
+const Material MATERIALS[5] = { M_WIRE, M_CONDUCTOR, M_INSULATOR, M_AIR, M_TORCH };
 
 static char* test_world_block_creation() {
     World* world = malloc(sizeof(World));
@@ -70,7 +70,7 @@ static char* test_world_block_creation() {
     CUBE_RANGE(-5,5)
         Location loc = {x,y,z};
         int val = x + y + z;
-        Block block = {MATERIALS[val % 4], loc, val % 12};
+        Block block = {MATERIALS[val % 5], loc, NULL, val % 16, 0};
         world_add_block(world, &block);
         Block* found_block = world_get_block(world, block.location);
 
@@ -85,7 +85,7 @@ static char* test_world_block_creation() {
 
         Location l = found_block->location;
         sprintf(message, "Block at (%d, %d, %d) has incorrect location (%d, %d, %d)", x, y, z, l.x, l.y, l.z);
-        MU_ASSERT(message, LOCATION_EQUALS(found_block->location, block.location));
+        MU_ASSERT(message, location_equals(found_block->location, block.location));
 
     CUBE_RANGE_END
 
