@@ -85,27 +85,29 @@ void handle_signal(int signal)
 int read_next_instruction(Instruction* instruction)
 {
     char* line = NULL;
+    int result;
     size_t size;
+
     if (getline(&line, &size, stdin) == EOF) {
-        cleanup();
-        printf("\n");
-        exit(EXIT_SUCCESS);
+        result = -3;
+        goto cleanup;
     }
 
     if (size == 0)
-        return -2;
+    {
+        result = -2;
+        goto cleanup;
+    }
 
     // Trim the trailing line return
     size_t ln = strlen(line) - 1;
     if (line[ln] == '\n')
         line[ln] = '\0';
 
-    int result = instruction_parse(line, instruction);
-    if (result != 0)
-    {
-        printf("Invalid Command\n");
-    }
+    result = instruction_parse(line, instruction);
 
+cleanup:
+    free(line);
     return result;
 }
 
@@ -134,13 +136,25 @@ int main(int argc, char* argv[])
         }
 
         int result = read_next_instruction(&instruction);
-        if (result == 0)
+
+        switch (result)
         {
-            instruction_run(world, &instruction, instruction_callback);
+            case 0: // Valid command
+                instruction_run(world, &instruction, instruction_callback);
+                break;
+
+            case -1: // Parse error
+                printf("Invalid Command\n");
+                break;
+
+            case -2: // No command
+                break;
+
+            case -3: // Exit
+                cleanup();
+                printf("\n");
+                return EXIT_SUCCESS;
         }
     }
-
-    cleanup();
-    return EXIT_SUCCESS;
 }
 
