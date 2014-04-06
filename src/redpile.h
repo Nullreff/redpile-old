@@ -7,7 +7,8 @@
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
 
 typedef struct {
-    int interactive;
+    int world_size;
+    int interactive:1;
 } RedpileConfig;
 
 #endif

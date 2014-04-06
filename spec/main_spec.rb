@@ -1,7 +1,7 @@
 require 'timeout'
 
 def redpile(opts = '', &block)
-  IO.popen("./build/redpile #{opts}", 'r+', &block)
+  IO.popen("./build/redpile #{opts} 2>&1", 'r+', &block)
 end
 
 def redpile_version
@@ -28,6 +28,33 @@ describe 'Redpile' do
         redpile(short ? '-i' : '--interactive') do |p|
           p.close_write
           p.gets.should == "> \n"
+        end
+      end
+
+      [1, 20, 2000].each do |size|
+        it "runs with a custom world size of '#{size}'" do
+          redpile(short ? "-s #{size}" : "--world-size #{size}") do |p|
+            p.close_write
+            p.gets.should == "\n"
+          end
+        end
+      end
+
+      ['abc', 'a12', '12c'].each do |size|
+        it "errors when run with a world size of '#{size}'" do
+          redpile(short ? "-s #{size}" : "--world-size #{size}") do |p|
+            p.close_write
+            p.gets.should == "You must pass an integer as the world size\n"
+          end
+        end
+      end
+
+      [0, -1, -20].each do |size|
+        it "errors when run with a world size of '#{size}'" do
+          redpile(short ? "-s #{size}" : "--world-size #{size}") do |p|
+            p.close_write
+            p.gets.should == "You must provide a world size larger than zero\n"
+          end
         end
       end
     end

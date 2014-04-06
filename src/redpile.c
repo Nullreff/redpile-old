@@ -28,39 +28,68 @@ static void print_help()
            "        Print this message\n");
 }
 
+static unsigned int parse_world_size(char* string)
+{
+    char* parse_error = NULL;
+    int value = strtol(string, &parse_error, 10);
+
+    ERROR_IF(*parse_error, "You must pass an integer as the world size\n");
+    ERROR_IF(value <= 0, "You must provide a world size larger than zero\n");
+
+    return (unsigned int)value;
+}
+
 void load_config(int argc, char* argv[])
 {
+    // Default options
+    config.interactive = 0;
+    config.world_size = 1024;
+
     static struct option long_options[] =
     {
-        {"interactive", no_argument, NULL, 'i'},
-        {"version",     no_argument, NULL, 'v'},
-        {"help",        no_argument, NULL, 'h'},
-        {NULL,          0,           NULL,  0 }
+        {"world-size",  required_argument, NULL, 's'},
+        {"interactive", no_argument,       NULL, 'i'},
+        {"version",     no_argument,       NULL, 'v'},
+        {"help",        no_argument,       NULL, 'h'},
+        {NULL,          0,                 NULL,  0 }
     };
 
-    int opt = getopt_long(argc, argv, "ivh", long_options, NULL);
-    switch (opt)
+    int opt;
+    while (1)
     {
-        case -1:
-            break;
-        case 'v':
-            print_version();
-            exit(EXIT_SUCCESS);
-        case 'h':
-            print_help();
-            exit(EXIT_SUCCESS);
-        case 'i':
-            config.interactive = 1;
-            break;
-        default:
-            exit(EXIT_FAILURE);
+        opt = getopt_long(argc, argv, "s:ivh", long_options, NULL);
+
+        switch (opt)
+        {
+            case -1:
+                return;
+
+            case 's':
+                config.world_size = parse_world_size(optarg);
+                break;
+
+            case 'v':
+                print_version();
+                exit(EXIT_SUCCESS);
+
+            case 'h':
+                print_help();
+                exit(EXIT_SUCCESS);
+
+            case 'i':
+                config.interactive = 1;
+                break;
+
+            default:
+                exit(EXIT_FAILURE);
+        }
     }
 }
 
 void setup()
 {
     world = malloc(sizeof(World));
-    world_intialize(world, 256);
+    world_intialize(world, config.world_size);
 }
 
 void cleanup()

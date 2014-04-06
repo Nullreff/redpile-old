@@ -6,7 +6,7 @@
 #include "block.h"
 #include "redpile.h"
 
-void world_intialize(World* world, int size)
+void world_intialize(World* world, unsigned int size)
 {
     assert(size > 0);
 
