@@ -38,7 +38,7 @@ Gets information about the block at `(x, y, z)`.
 
 **TICK**
 
-Currently decrements the power of every block by one.  This is for testing purposes and will change in the future.
+Sets all torches to have a power of 15 and propigates the signal out to nearby wire, decreasing by one every time.
 
 License
 -------
