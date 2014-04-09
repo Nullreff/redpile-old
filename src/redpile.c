@@ -99,6 +99,7 @@ void cleanup()
         world_free(world);
         free(world);
     }
+    printf("\n");
 }
 
 void handle_signal(int signal)
@@ -106,7 +107,6 @@ void handle_signal(int signal)
     if (signal == SIGINT)
     {
         cleanup();
-        printf("\n");
         exit(EXIT_SUCCESS);
     }
 }
@@ -181,7 +181,6 @@ int main(int argc, char* argv[])
 
             case -3: // Exit
                 cleanup();
-                printf("\n");
                 return EXIT_SUCCESS;
         }
     }
