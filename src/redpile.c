@@ -54,11 +54,9 @@ void load_config(int argc, char* argv[])
         {NULL,          0,                 NULL,  0 }
     };
 
-    int opt;
     while (1)
     {
-        opt = getopt_long(argc, argv, "s:ivh", long_options, NULL);
-
+        int opt = getopt_long(argc, argv, "s:ivh", long_options, NULL);
         switch (opt)
         {
             case -1:
@@ -117,7 +115,8 @@ int read_next_instruction(Instruction* instruction)
     int result;
     size_t size;
 
-    if (getline(&line, &size, stdin) == EOF) {
+    if (getline(&line, &size, stdin) == EOF)
+    {
         result = -3;
         goto cleanup;
     }
@@ -131,7 +130,9 @@ int read_next_instruction(Instruction* instruction)
     // Trim the trailing line return
     size_t ln = strlen(line) - 1;
     if (line[ln] == '\n')
+    {
         line[ln] = '\0';
+    }
 
     result = instruction_parse(line, instruction);
 
@@ -165,7 +166,6 @@ int main(int argc, char* argv[])
         }
 
         int result = read_next_instruction(&instruction);
-
         switch (result)
         {
             case 0: // Valid command
