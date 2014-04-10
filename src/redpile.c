@@ -40,6 +40,8 @@ static void print_help()
            "Options:\n"
            "    -i, --interactive\n"
            "        Run in interactive mode with a prompt for reading commands\n\n"
+           "    -w, --world-size\n"
+           "        The number of blocks to allocate initially\n\n"
            "    -v, --version\n"
            "        Print the current version\n\n"
            "    -h, --help\n"
@@ -65,7 +67,7 @@ void load_config(int argc, char* argv[])
 
     static struct option long_options[] =
     {
-        {"world-size",  required_argument, NULL, 's'},
+        {"world-size",  required_argument, NULL, 'w'},
         {"interactive", no_argument,       NULL, 'i'},
         {"version",     no_argument,       NULL, 'v'},
         {"help",        no_argument,       NULL, 'h'},
@@ -74,13 +76,13 @@ void load_config(int argc, char* argv[])
 
     while (1)
     {
-        int opt = getopt_long(argc, argv, "s:ivh", long_options, NULL);
+        int opt = getopt_long(argc, argv, "w:ivh", long_options, NULL);
         switch (opt)
         {
             case -1:
                 return;
 
-            case 's':
+            case 'w':
                 config.world_size = parse_world_size(optarg);
                 break;
 
