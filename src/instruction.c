@@ -57,7 +57,7 @@ int instruction_parse(char* instruction, Instruction* result)
 
     Command command;
     Material material;
-    int x, y, z;
+    Coord x, y, z;
     x = y = z = 0;
 
     char* str_command = strtok(parts, " ");

@@ -39,10 +39,11 @@ typedef enum {
     D_DOWN
 } Direction;
 
+typedef int Coord;
 typedef struct {
-    int x;
-    int y;
-    int z;
+    Coord x;
+    Coord y;
+    Coord z;
 } Location;
 
 typedef struct {

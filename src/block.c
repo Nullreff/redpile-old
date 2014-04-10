@@ -64,5 +64,6 @@ int location_equals(Location l1, Location l2)
 
 int location_hash(Location loc, int max)
 {
+    // TODO: Use a better hashing method
     return abs(loc.x ^ loc.y ^ loc.z) % max;
 }

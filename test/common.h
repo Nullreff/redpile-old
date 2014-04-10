@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define RANGE(var,start,end) int var; for (var = start; var <= end; var++)
+#define RANGE(var,start,end) Coord var; for (var = start; var <= end; var++)
 #define CUBE_RANGE(start,end)\
     RANGE(x,start,end) {\
     RANGE(y,start,end) {\
