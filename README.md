@@ -28,10 +28,6 @@ Sets the block at `(x, y, z)` to have a material of `type`.
 * 3 - CONDUCTOR
 * 4 - INSULATOR
 
-**POWER x y z power**
-
-Sets the block at `(x, y, z)` to have a power of `power`.
-
 **GET x y z**
 
 Gets information about the block at `(x, y, z)`.

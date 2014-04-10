@@ -75,14 +75,6 @@ describe 'Redpile' do
     end
   end
 
-  it 'parses the POWER command' do
-    redpile do |p|
-      p.puts 'POWER 0 0 0 15'
-      p.close_write
-      p.gets.should == "\n"
-    end
-  end
-
   it 'parses the GET command' do
     redpile do |p|
       p.puts 'GET 0 0 0'
@@ -109,25 +101,13 @@ describe 'Redpile' do
     end
   end
 
-  it 'retreives the power and material of a block' do
+  it 'retreives the material of a block' do
     redpile do |p|
       p.puts 'SET 0 0 0 2'
-      p.puts 'POWER 0 0 0 15'
       p.puts 'GET 0 0 0'
       p.close_write
       p.gets # SET
-      p.gets # POWER
-      p.gets.should == "(0,0,0) WIRE 15\n"
-    end
-  end
-
-  it 'set the power and material of a block' do
-    redpile do |p|
-      p.puts 'SET 0 0 0 2'
-      p.puts 'POWER 0 0 0 15'
-      p.close_write
-      p.gets # SET
-      p.gets.should == "(0,0,0) WIRE 15\n"
+      p.gets.should == "(0,0,0) WIRE 0\n"
     end
   end
 

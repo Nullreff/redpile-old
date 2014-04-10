@@ -20,7 +20,6 @@ static char* test_command_parsing()
     Command command;
 
     TEST_COMMAND(SET)
-    TEST_COMMAND(POWER)
     TEST_COMMAND(GET)
     TEST_COMMAND(TICK)
     MU_ASSERT("Invalid command didn't fail parsing", 
@@ -47,7 +46,6 @@ static char* test_instruction_parsing()
     Instruction instruction;
 
     TEST_INSTRUCTION(SET,0);
-    TEST_INSTRUCTION(POWER,0);
     TEST_INSTRUCTION(GET,1);
     int success = instruction_parse("TICK", &instruction);
     MU_ASSERT("Falied to parse the 'TICK' instruction", success == 0);
