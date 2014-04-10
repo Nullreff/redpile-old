@@ -49,7 +49,7 @@ void print_time(char* message, struct timespec start, struct timespec end)
         result.tv_nsec = end.tv_nsec - start.tv_nsec;
     }
 
-    printf("%s - %d:%d\n", message, result.tv_sec, result.tv_nsec);
+    printf("%s - %ld:%ld\n", message, result.tv_sec, result.tv_nsec);
 }
 
 int main(int argc, char* argv[])
