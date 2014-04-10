@@ -23,6 +23,8 @@ int command_parse(char* command, Command* result)
         *result = CMD_GET;
     else if (strcmp(command, "TICK") == 0)
         *result = CMD_TICK;
+    else if (strcmp(command, "STATUS") == 0)
+        *result = CMD_STATUS;
     else
         return -1;
 
@@ -43,7 +45,7 @@ int instruction_parse(char* instruction, Instruction* result)
     if (str_command == NULL || command_parse(str_command, &command) == -1)
         goto error;
 
-    if (command == CMD_TICK)
+    if (command == CMD_TICK || command == CMD_STATUS)
     {
         goto success;
     }
@@ -98,6 +100,10 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
 
         case CMD_TICK:
             redstone_tick(world, block_modified_callback);
+            break;
+
+        case CMD_STATUS:
+            world_print_status(world);
             break;
     }
 }

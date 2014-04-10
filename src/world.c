@@ -10,9 +10,13 @@ void world_intialize(World* world, unsigned int size)
 {
     assert(size > 0);
 
-    world->count = 0;
     world->buckets_size = size;
     world->blocks_size = size;
+
+    world->count = 0;
+    world->ticks = 0;
+    world->max_depth = 1;
+    world->collisions = 0;
 
     world->buckets = malloc(size * sizeof(Bucket));
     CHECK_OOM(world->buckets);
@@ -80,6 +84,7 @@ Block* world_next_block(World* world)
 Block* world_add_block(World* world, Block* block)
 {
     Bucket* bucket = world_get_bucket(world, block->location);
+    int depth = 1;
 
     if (bucket->block == NULL)
     {
@@ -98,7 +103,18 @@ Block* world_add_block(World* world, Block* block)
             }
 
             bucket = bucket->next;
+            depth++;
         }
+    }
+
+    if (depth > world->max_depth)
+    {
+        world->max_depth = depth;
+    }
+
+    if (depth == 2)
+    {
+        world->collisions++;
     }
 
     memcpy(bucket->block, block, sizeof(Block));
@@ -130,36 +146,12 @@ Block* world_get_block(World* world, Location location)
     }
 }
 
-void world_print_buckets(World* world)
+void world_print_status(World* world)
 {
-    printf("\n");
-
-    int i;
-    for (i = 0; i < world->buckets_size; i++)
-    {
-        Bucket* bucket = world->buckets + i;
-        if (bucket == NULL || bucket->block == NULL)
-        {
-            continue;
-        }
-
-        printf("%d: ", i);
-        while (bucket != NULL)
-        {
-            if (bucket->block == NULL)
-            {
-                printf("*");
-            }
-            else if (bucket->block->material == M_EMPTY)
-            {
-                printf("O");
-            }
-            else
-            {
-                printf("#");
-            }
-            bucket = bucket->next;
-        }
-        printf("\n");
-    }
+    printf("Ticks: %d\n", world->ticks);
+    printf("Blocks: %d\n", world->count);
+    printf("Allocated Blocks: %d\n", world->blocks_size);
+    printf("Allocated Buckets: %d\n", world->buckets_size);
+    printf("Bucket Collisions: %d\n", world->collisions);
+    printf("Max Bucket Depth: %d\n", world->max_depth);
 }

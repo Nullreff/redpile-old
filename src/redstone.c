@@ -120,5 +120,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
             block_modified_callback(block);
         }
     }
+
+    world->ticks++;
 }
 
