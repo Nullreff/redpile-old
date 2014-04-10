@@ -89,7 +89,7 @@ describe 'Redpile' do
     redpile do |p|
       p.puts 'SET 0 0 0 0'
       p.close_write
-      p.gets.should == "(0,0,0) EMPTY 0\n"
+      p.gets.should == "\n"
     end
   end
 
@@ -113,19 +113,10 @@ describe 'Redpile' do
     it "inserts an #{block} block" do
       redpile do |p|
         p.puts "SET 0 0 0 #{num}"
+        p.puts "GET 0 0 0 #{num}"
         p.close_write
         p.gets.should == "(0,0,0) #{block} 0\n"
       end
-    end
-  end
-
-  it 'retreives the material of a block' do
-    redpile do |p|
-      p.puts 'SET 0 0 0 2'
-      p.puts 'GET 0 0 0'
-      p.close_write
-      p.gets # SET
-      p.gets.should == "(0,0,0) WIRE 0\n"
     end
   end
 
@@ -137,7 +128,7 @@ describe 'Redpile' do
         (1..range).each {|r| p.puts "SET 0 0 #{r} 2"}
         p.puts 'TICK'
         p.close_write
-        (range * 2 + 1).times {p.gets}
+        range.times {p.gets}
         p.gets.should == "(0,0,#{range}) WIRE #{16 - range}\n"
       end
     end
@@ -150,7 +141,7 @@ describe 'Redpile' do
       (1..end_block).each {|r| p.puts "SET 0 0 #{r} 2"}
       p.puts 'TICK'
       p.close_write
-      (end_block * 2 + 1).times {p.gets}
+      end_block.times {p.gets}
       p.gets.should == "(0,0,#{end_block}) WIRE 0\n"
     end
   end
