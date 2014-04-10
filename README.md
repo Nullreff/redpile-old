@@ -50,11 +50,11 @@ Prints information about the current state of the world.
 * Blocks -  The total number of blocks with unique locations that have been added via `SET`.
 * Allocated Blocks - The number of blocks Redpile can store before it needs to allocate more memory.
 * Allocated Buckets - The number of hash buckets Redpile uses to keep track of blocks.
-* Bucket Collisions - How many collisions of hash values are there.  Lower is better.
-* Max Bucket Depth - The maximum number of buckets Redpile may have to traverse looking for a block.  Lower is better.
+* Bucket Collisions - How many collisions of hash values are there, lower is better.
+* Max Bucket Depth - The maximum number of buckets Redpile will traverse to find a block, lower is better.
 
 License
 -------
 
-Release under GPLv3, see LICENSE.txt for more information.
+Released under GPLv3, see LICENSE.txt for more information.
 
