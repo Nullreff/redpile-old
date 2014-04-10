@@ -45,7 +45,7 @@ void world_intialize(World* world, unsigned int size)
     int i;
     for (i = 0; i < size; i++)
     {
-        world->buckets[i] = (Bucket){NULL, NULL};
+        world->buckets[i] = (Bucket){-1, NULL};
         world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0, 0};
     }
 }
@@ -77,14 +77,16 @@ Bucket* world_get_bucket(World* world, Location location)
     return world->buckets + hash;
 }
 
-Block* world_next_block(World* world)
+int world_next_block(World* world, Block** block)
 {
     if (world->count >= world->blocks_size)
     {
-        Block* temp = realloc(world->blocks, world->blocks_size * 2 * sizeof(Block));
+        int new_size = world->blocks_size * 2;
+
+        Block* temp = realloc(world->blocks, new_size * sizeof(Block));
         CHECK_OOM(temp);
 
-        world->blocks_size *= 2;
+        world->blocks_size = new_size;
         world->blocks = temp;
 
         int i;
@@ -94,29 +96,35 @@ Block* world_next_block(World* world)
         }
     }
 
-    Block* block = world->blocks + world->count;
-    world->count++;
-    return block;
+    *block = world->blocks + world->count;
+    return world->count++;
 }
 
 Block* world_add_block(World* world, Block* block)
 {
     Bucket* bucket = world_get_bucket(world, block->location);
+    Block* target;
     int depth = 1;
 
-    if (bucket->block == NULL)
+    if (bucket->index == -1)
     {
-        bucket->block = world_next_block(world);
+        bucket->index = world_next_block(world, &target);
     }
     else
     {
-        while (!location_equals(bucket->block->location, block->location))
+        while (1)
         {
+            target = world->blocks + bucket->index;
+            if (!location_equals(target->location, block->location))
+            {
+                break;
+            }
+
             if (bucket->next == NULL)
             {
                 bucket->next = malloc(sizeof(Bucket));
                 bucket = bucket->next;
-                *bucket = (Bucket){world_next_block(world), NULL};
+                *bucket = (Bucket){world_next_block(world, &target), NULL};
                 break;
             }
 
@@ -135,33 +143,40 @@ Block* world_add_block(World* world, Block* block)
         world->collisions++;
     }
 
-    memcpy(bucket->block, block, sizeof(Block));
-    return bucket->block;
+    memcpy(target, block, sizeof(Block));
+    return target;
 }
 
 Block* world_get_block(World* world, Location location)
 {
     Bucket* bucket = world_get_bucket(world, location);
+    Block* target;
 
-    if (bucket->block == NULL)
+    if (bucket->index == -1)
     {
-        return NULL;
+        target = NULL;
+    }
+    else
+    {
+        while (1)
+        {
+            target = world->blocks + bucket->index;
+            if (location_equals(target->location, location))
+            {
+                break;
+            }
+
+            if (bucket->next == NULL)
+            {
+                target = NULL;
+                break;
+            }
+
+            bucket = bucket->next;
+        }
     }
 
-    while (1)
-    {
-        if (location_equals(bucket->block->location, location))
-        {
-            return bucket->block;
-        }
-
-        if (bucket->next == NULL)
-        {
-            return NULL;
-        }
-
-        bucket = bucket->next;
-    }
+    return target;
 }
 
 void world_print_status(World* world)

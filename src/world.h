@@ -22,7 +22,7 @@
 #include "block.h"
 
 typedef struct Bucket {
-    Block* block;
+    int index;
     struct Bucket* next;
 } Bucket;
 
