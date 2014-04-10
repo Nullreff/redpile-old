@@ -49,7 +49,7 @@ static char* test_command_parsing()
     MU_ASSERT("Incorrect "#coord" when parsing the '"#inst"' instruction", instruction.target.coord == val)
 
 #define TEST_INSTRUCTION(inst,last) do {\
-    int success = instruction_parse(#inst" 5 4 3 2", &instruction);\
+    int success = instruction_parse(#inst" 5 4 3 WIRE", &instruction);\
     MU_ASSERT("Falied to parse the '"#inst"' instruction", success == 0);\
     MU_ASSERT("Incorrect command when parsing the '"#inst"' instruction", instruction.cmd == CMD_ ## inst);\
     MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", last || instruction.value == 2);\

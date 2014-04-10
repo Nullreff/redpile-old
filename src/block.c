@@ -17,9 +17,32 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "block.h"
 
-char* Materials[6] = {"EMPTY", "AIR", "WIRE", "CONDUCTOR", "INSULATOR", "TORCH"};
+char* Materials[MATERIALS_COUNT] = {
+    "EMPTY",
+    "AIR",
+    "WIRE",
+    "CONDUCTOR",
+    "INSULATOR",
+    "TORCH"
+};
+
+int material_parse(char* material, Material* result)
+{
+    int i;
+    for (i = 0; i < MATERIALS_COUNT; i++)
+    {
+        if (strcmp(material, Materials[i]) == 0)
+        {
+            *result = (Material)i;
+            return 0;
+        }
+    }
+
+    return -1;
+}
 
 Location location_move(Location loc, Direction dir, int length)
 {

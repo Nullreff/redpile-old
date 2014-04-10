@@ -18,16 +18,11 @@
 
 require 'timeout'
 
+redpile_version = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
+redpile_blocks = %w(AIR WIRE CONDUCTOR INSULATOR TORCH)
+
 def redpile(opts = '', &block)
   IO.popen("./build/redpile #{opts} 2>&1", 'r+', &block)
-end
-
-def redpile_version
-  File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
-end
-
-def blocks
-  {'AIR' => 1, 'WIRE' => 2, 'CONDUCTOR' => 3, 'INSULATOR' => 4, 'TORCH' => 5}
 end
 
 describe 'Redpile' do
@@ -87,7 +82,7 @@ describe 'Redpile' do
 
   it 'parses the SET command' do
     redpile do |p|
-      p.puts 'SET 0 0 0 0'
+      p.puts 'SET 0 0 0 EMPTY'
       p.close_write
       p.gets.should == "\n"
     end
@@ -109,11 +104,19 @@ describe 'Redpile' do
     end
   end
 
-  blocks.each do |block, num|
+  it 'error if given an incorrect material' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 INVALID'
+      p.close_write
+      p.gets.should == "Invalid Command\n"
+    end
+  end
+
+  redpile_blocks.each do |block|
     it "inserts an #{block} block" do
       redpile do |p|
-        p.puts "SET 0 0 0 #{num}"
-        p.puts "GET 0 0 0 #{num}"
+        p.puts "SET 0 0 0 #{block}"
+        p.puts "GET 0 0 0 #{block}"
         p.close_write
         p.gets.should == "(0,0,0) #{block} 0\n"
       end
@@ -124,8 +127,8 @@ describe 'Redpile' do
   (1..MAX_RANGE).each do |range|
     it "propigates power #{range} blocks" do
       redpile do |p|
-        p.puts 'SET 0 0 0 5'
-        (1..range).each {|r| p.puts "SET 0 0 #{r} 2"}
+        p.puts 'SET 0 0 0 TORCH'
+        (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
         p.puts 'TICK'
         p.close_write
         range.times {p.gets}
@@ -137,8 +140,8 @@ describe 'Redpile' do
   it "stops propigating power after #{MAX_RANGE} blocks" do
     end_block = MAX_RANGE + 1
     redpile do |p|
-      p.puts 'SET 0 0 0 5'
-      (1..end_block).each {|r| p.puts "SET 0 0 #{r} 2"}
+      p.puts 'SET 0 0 0 TORCH'
+      (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
       p.puts 'TICK'
       p.close_write
       end_block.times {p.gets}

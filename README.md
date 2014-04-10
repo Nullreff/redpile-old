@@ -24,14 +24,14 @@ Commands
 
 **SET x y z material**
 
-Sets the block at `(x, y, z)` to have a material of `type`.
+Sets the block at `(x, y, z)` to have a material of `material`.  Possible values for `material` are:
 
-* 0 - EMPTY
-* 1 - AIR
-* 2 - WIRE
-* 3 - CONDUCTOR
-* 4 - INSULATOR
-* 5 - TORCH
+* EMPTY
+* AIR
+* WIRE
+* CONDUCTOR
+* INSULATOR
+* TORCH
 
 **GET x y z**
 

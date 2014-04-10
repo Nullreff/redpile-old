@@ -10,7 +10,7 @@ range.each do |x|
       torch = counter % 30 == 0
 
       puts 'TICK' if tick
-      puts "SET #{x} #{y} #{z} #{torch ? 5 : 2}"
+      puts "SET #{x} #{y} #{z} #{torch ? 'TORCH' : 'WIRE'}"
       counter += 1
     end
   end

@@ -56,12 +56,15 @@ int instruction_parse(char* instruction, Instruction* result)
     CHECK_OOM(parts);
 
     Command command;
-    int x, y, z, value;
-    x = y = z = value = 0;
+    Material material;
+    int x, y, z;
+    x = y = z = 0;
 
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
+    {
         goto error;
+    }
 
     if (command == CMD_TICK || command == CMD_STATUS)
     {
@@ -78,10 +81,14 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
-    PARSE_NUMBER(value)
+    char* str_material = strtok(NULL, " ");
+    if (str_material == NULL || material_parse(str_material, &material) == -1)
+    {
+        goto error;
+    }
 
 success:
-    *result = (Instruction){command, (Location){x, y, z}, value};
+    *result = (Instruction){command, (Location){x, y, z}, material};
     free(parts_ptr);
     return 0;
 

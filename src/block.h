@@ -19,8 +19,8 @@
 #ifndef REDPILE_BLOCK_H
 #define REDPILE_BLOCK_H
 
-char* Materials[6];
-
+#define MATERIALS_COUNT 6
+char* Materials[MATERIALS_COUNT];
 typedef enum {
     M_EMPTY,
     M_AIR,
@@ -52,6 +52,7 @@ typedef struct {
     unsigned int updated:1;
 } Block;
 
+int material_parse(char* material, Material* result);
 Location location_move(Location loc, Direction dir, int length);
 int location_equals(Location l1, Location l2);
 int location_hash(Location loc, int max);
