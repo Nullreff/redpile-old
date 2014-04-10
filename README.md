@@ -27,6 +27,7 @@ Sets the block at `(x, y, z)` to have a material of `type`.
 * 2 - WIRE
 * 3 - CONDUCTOR
 * 4 - INSULATOR
+* 5 - TORCH
 
 **GET x y z**
 
