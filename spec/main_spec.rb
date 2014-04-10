@@ -131,16 +131,29 @@ describe 'Redpile' do
     end
   end
 
-  it 'propigates power on tick' do
+  MAX_RANGE = 15
+  (1..MAX_RANGE).each do |range|
+    it "propigates power #{range} blocks" do
+      redpile do |p|
+        p.puts 'SET 0 0 0 5'
+        (1..range).each {|r| p.puts "SET 0 0 #{r} 2"}
+        p.puts 'TICK'
+        p.close_write
+        (range * 2 + 1).times {p.gets}
+        p.gets.should == "(0,0,#{range}) WIRE #{16 - range}\n"
+      end
+    end
+  end
+
+  it "stops propigating power after #{MAX_RANGE} blocks" do
+    end_block = MAX_RANGE + 1
     redpile do |p|
       p.puts 'SET 0 0 0 5'
-      p.puts 'SET 0 0 1 2'
+      (1..end_block).each {|r| p.puts "SET 0 0 #{r} 2"}
       p.puts 'TICK'
       p.close_write
-      p.gets # SET
-      p.gets # SET
-      p.gets.should == "(0,0,0) TORCH 15\n"
-      p.gets.should == "(0,0,1) WIRE 14\n"
+      (end_block * 2 + 1).times {p.gets}
+      p.gets.should == "(0,0,#{end_block}) WIRE 0\n"
     end
   end
 end

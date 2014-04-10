@@ -75,7 +75,7 @@ void redstone_torch_update(World* world, Block* block)
     {
         if (blocks[i] != NULL && blocks[i]->material == M_WIRE)
         {
-            blocks[i]->power = block->power - 1;
+            blocks[i]->power = block->power;
             redstone_wire_update(world, blocks[i]);
         }
         // TODO: Propigate to more materials
