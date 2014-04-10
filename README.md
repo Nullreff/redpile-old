@@ -1,22 +1,28 @@
 Redpile [![Build Status](https://travis-ci.org/Nullreff/redpile.svg?branch=master)](https://travis-ci.org/Nullreff/redpile)
 =======
 
-Redpile is a high performance implementation of redstone for Minecraft.  It is currently a work in progress and should not be used for anything important.
+**THIS IS A WORK IN PROGRESS**
 
-Buiding
--------
+Redpile is a high performance implementation of redstone for Minecraft.
+It can be run from the command line or as a sub-process of a larger program.
+When started, it creates a simulation of a Minecraft world focused solely on redstone.
+Commands are sent on the standard input and block updates are received on the standard output.
+It's intended to be very simple: You can set blocks, get blocks and run redstone ticks.
 
-Requireds [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.info/) for CLI tests.  Run `./build.sh` to compile or `./test.sh` to run tests.
+Building & Usage
+----------------
 
-Usage
------
+Requires [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.info/) for CLI tests.
+Run `./build.sh` to compile or `./test.sh` to run tests.
 
-By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.  It then reads commands for block updates from STDIN and writes the resulting changes to STDOUT.  For command line options, try `redpile --help`.
+~~By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.~~ (WIP)
+It then reads commands for block updates from the standard input and writes the resulting changes to the standard output.
+For command line options, try `redpile --help`.
 
 Commands
 --------
 
-Commands are sent and received the format `COMMAND params`.  Any blocks affected by the command will be returned in the format `(x,y,z) material powerk
+Any blocks affected by a command will be returned in the format `(x,y,z) material power`.
 
 **SET x y z material**
 
@@ -52,3 +58,4 @@ License
 -------
 
 Release under GPLv3, see LICENSE.txt for more information.
+
