@@ -27,6 +27,7 @@
 typedef struct {
     int world_size;
     int interactive:1;
+    int silent:1;
 } RedpileConfig;
 
 #endif

@@ -44,6 +44,14 @@ describe 'Redpile' do
         end
       end
 
+      it 'runs silently' do
+        redpile(short ? '-s' : '--silent') do |p|
+          p.puts 'GET 0 0 0'
+          p.close_write
+          p.gets.should == "\n"
+        end
+      end
+
       [1, 20, 2000].each do |size|
         it "runs with a custom world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
