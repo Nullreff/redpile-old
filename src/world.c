@@ -115,7 +115,7 @@ Block* world_add_block(World* world, Block* block)
         while (1)
         {
             target = world->blocks + bucket->index;
-            if (!location_equals(target->location, block->location))
+            if (location_equals(target->location, block->location))
             {
                 break;
             }
