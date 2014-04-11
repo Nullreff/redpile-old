@@ -69,3 +69,20 @@ int location_hash(Location loc, int max)
     // If you know of a better hashing method, feel free to alter this one
     return abs((loc.x * MAGIC_HASH_NUBER + loc.y) * MAGIC_HASH_NUBER + loc.z) % max;
 }
+
+Block block_empty(void)
+{
+    return block_create(M_EMPTY, (Location){0, 0, 0});
+}
+
+Block block_create(Material material, Location location)
+{
+    return (Block){material, location, 0, 0};
+}
+
+void block_allocate(Block** block, Material material, Location location)
+{
+    *block = malloc(sizeof(Block));
+    **block = block_create(material, location);
+}
+

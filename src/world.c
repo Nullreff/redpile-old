@@ -23,6 +23,7 @@
 #include "world.h"
 #include "block.h"
 #include "redpile.h"
+#include "bucket.h"
 
 void world_intialize(World* world, unsigned int size)
 {
@@ -46,8 +47,8 @@ void world_intialize(World* world, unsigned int size)
     int i;
     for (i = 0; i < size; i++)
     {
-        world->buckets[i] = (Bucket){-1, NULL};
-        world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0, 0};
+        world->buckets[i] = bucket_empty();
+        world->blocks[i] = block_empty();
     }
 }
 
@@ -72,7 +73,7 @@ void world_free(World* world)
     free(world->blocks);
 }
 
-Bucket* world_get_bucket(World* world, Location location)
+Bucket* world_get_top_bucket(World* world, Location location)
 {
     int hash = location_hash(location, world->buckets_size);
     return world->buckets + hash;
@@ -93,7 +94,7 @@ int world_next_block(World* world, Block** block)
         int i;
         for (i = world->count; i < world->blocks_size; i++)
         {
-            world->blocks[i] = (Block){M_EMPTY, (Location){0, 0, 0}, 0};
+            world->blocks[i] = block_empty();
         }
     }
 
@@ -103,7 +104,7 @@ int world_next_block(World* world, Block** block)
 
 Block* world_add_block(World* world, Block* block)
 {
-    Bucket* bucket = world_get_bucket(world, block->location);
+    Bucket* bucket = world_get_top_bucket(world, block->location);
     Block* target;
     int depth = 1;
 
@@ -123,9 +124,8 @@ Block* world_add_block(World* world, Block* block)
 
             if (bucket->next == NULL)
             {
-                bucket->next = malloc(sizeof(Bucket));
+                bucket_allocate(&bucket->next, world_next_block(world, &target));
                 bucket = bucket->next;
-                *bucket = (Bucket){world_next_block(world, &target), NULL};
                 break;
             }
 
@@ -166,7 +166,7 @@ Block* world_add_block(World* world, Block* block)
 
 Block* world_get_block(World* world, Location location)
 {
-    Bucket* bucket = world_get_bucket(world, location);
+    Bucket* bucket = world_get_top_bucket(world, location);
     Block* target;
 
     if (bucket->index == -1)

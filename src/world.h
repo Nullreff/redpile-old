@@ -20,11 +20,7 @@
 #define REDPILE_WORLD_H
 
 #include "block.h"
-
-typedef struct Bucket {
-    int index;
-    struct Bucket* next;
-} Bucket;
+#include "bucket.h"
 
 typedef struct {
     // Block storage/lookup using a basic hashmap

@@ -59,5 +59,8 @@ int material_parse(char* material, Material* result);
 Location location_move(Location loc, Direction dir, int length);
 int location_equals(Location l1, Location l2);
 int location_hash(Location loc, int max);
+Block block_empty(void);
+Block block_create(Material material, Location location);
+void block_allocate(Block** block, Material material, Location location);
 
 #endif
