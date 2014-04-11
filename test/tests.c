@@ -86,7 +86,7 @@ static char* test_world_block_creation() {
         Location loc = {x,y,z};
         int val = x + y + z;
         Block block = {MATERIALS[val % 5], loc, val % 16, 0};
-        world_add_block(world, &block);
+        world_set_block(world, &block);
         Block* found_block = world_get_block(world, block.location);
 
         sprintf(message, "Unable to find stored block at (%d, %d, %d)", x, y, z);

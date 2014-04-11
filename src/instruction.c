@@ -106,7 +106,7 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
     {
         case CMD_SET:
             new_block = block_create((Material)inst->value, inst->target);
-            block = world_add_block(world, &new_block);
+            block = world_set_block(world, &new_block);
             return;
 
         case CMD_GET:

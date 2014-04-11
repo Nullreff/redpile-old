@@ -159,7 +159,7 @@ Bucket* world_get_bucket(World* world, Location location, bool allocate)
     return bucket;
 }
 
-Block* world_add_block(World* world, Block* block)
+Block* world_set_block(World* world, Block* block)
 {
     Bucket* bucket = world_get_bucket(world, block->location, true);
     Block* target = BLOCK_FROM_BUCKET(world, bucket);

@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
         Location loc = (Location){x,y,z};
         int torch = !location_hash(loc, 20000);
         Block block = {torch ? M_TORCH : M_WIRE, loc, 0, 0};
-        world_add_block(world, &block);
+        world_set_block(world, &block);
     CUBE_RANGE_END
     BENCHMARK_END
 
