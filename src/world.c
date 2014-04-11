@@ -26,10 +26,11 @@
 #include "redpile.h"
 #include "bucket.h"
 
-void world_intialize(World* world, unsigned int size)
+void world_allocate(World** world_ptr, unsigned int size)
 {
-    assert(size > 0);
+    *world_ptr = malloc(sizeof(World));
 
+    World* world = *world_ptr;
     world->buckets_size = size;
     world->blocks_size = size;
 
@@ -53,8 +54,9 @@ void world_intialize(World* world, unsigned int size)
     }
 }
 
-void world_free(World* world)
+void world_free(World** world_ptr)
 {
+    World* world = *world_ptr;
     Bucket* bucket;
     Bucket* next;
 
@@ -72,6 +74,7 @@ void world_free(World* world)
 
     free(world->buckets);
     free(world->blocks);
+    free(*world_ptr);
 }
 
 // Retreives the index of the next available block in the world

@@ -113,28 +113,21 @@ void load_config(int argc, char* argv[])
     }
 }
 
-void setup()
-{
-    world = malloc(sizeof(World));
-    world_intialize(world, config.world_size);
-}
-
-void cleanup()
+void redpile_exit(void)
 {
     if (world != NULL)
     {
-        world_free(world);
-        free(world);
+        world_free(&world);
     }
     printf("\n");
+    exit(EXIT_SUCCESS);
 }
 
 void handle_signal(int signal)
 {
     if (signal == SIGINT)
     {
-        cleanup();
-        exit(EXIT_SUCCESS);
+        redpile_exit();
     }
 }
 
@@ -189,7 +182,7 @@ int main(int argc, char* argv[])
 {
     load_config(argc, argv);
     signal(SIGINT, handle_signal);
-    setup();
+    world_allocate(&world, config.world_size);
 
     Instruction instruction;
     while (1)
@@ -214,8 +207,7 @@ int main(int argc, char* argv[])
                 break;
 
             case -3: // Exit
-                cleanup();
-                return EXIT_SUCCESS;
+                redpile_exit();
         }
     }
 }

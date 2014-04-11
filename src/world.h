@@ -42,8 +42,8 @@ typedef struct {
     int power_sources; // Number of blocks that are power sources
 } World;
 
-void world_intialize(World* world, unsigned int size);
-void world_free(World* world);
+void world_allocate(World** world_ptr, unsigned int size);
+void world_free(World** world_ptr);
 Bucket* world_get_bucket(World* world, Location location, bool allocate);
 Block* world_add_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);

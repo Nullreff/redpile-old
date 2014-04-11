@@ -79,8 +79,8 @@ static char* test_instruction_parsing()
 const Material MATERIALS[5] = { M_WIRE, M_CONDUCTOR, M_INSULATOR, M_AIR, M_TORCH };
 
 static char* test_world_block_creation() {
-    World* world = malloc(sizeof(World));
-    world_intialize(world, 16);
+    World* world;
+    world_allocate(&world, 16);
 
     CUBE_RANGE(-5,5)
         Location loc = {x,y,z};
@@ -104,8 +104,7 @@ static char* test_world_block_creation() {
 
     CUBE_RANGE_END
 
-    world_free(world);
-    free(world);
+    world_free(&world);
     return 0;
 }
 
