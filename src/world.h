@@ -36,10 +36,11 @@ typedef struct {
     Block* blocks;
 
     // Stats used by `world_print_status`
-    int count;      // Total blocks
-    int ticks;      // Redstone ticks
-    int max_depth;  // Deepest bucket
-    int collisions; // Number of hash collisions
+    int count;         // Total blocks
+    int ticks;         // Redstone ticks
+    int max_depth;     // Deepest bucket
+    int collisions;    // Number of hash collisions
+    int power_sources; // Number of blocks that are power sources
 } World;
 
 void world_intialize(World* world, unsigned int size);

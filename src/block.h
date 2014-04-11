@@ -19,6 +19,8 @@
 #ifndef REDPILE_BLOCK_H
 #define REDPILE_BLOCK_H
 
+#define POWER_SOURCE(material) (material == M_TORCH)
+
 #define MATERIALS_COUNT 6
 char* Materials[MATERIALS_COUNT];
 typedef enum {

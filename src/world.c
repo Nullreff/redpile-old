@@ -35,6 +35,7 @@ void world_intialize(World* world, unsigned int size)
     world->ticks = 0;
     world->max_depth = 1;
     world->collisions = 0;
+    world->power_sources = 0;
 
     world->buckets = malloc(size * sizeof(Bucket));
     CHECK_OOM(world->buckets);
@@ -133,6 +134,7 @@ Block* world_add_block(World* world, Block* block)
         }
     }
 
+    // Stats tracking
     if (depth > world->max_depth)
     {
         world->max_depth = depth;
@@ -141,6 +143,21 @@ Block* world_add_block(World* world, Block* block)
     if (depth == 2)
     {
         world->collisions++;
+    }
+
+    if (POWER_SOURCE(block->material))
+    {
+        if (!POWER_SOURCE(target->material))
+        {
+            world->power_sources++;
+        }
+    }
+    else
+    {
+        if (POWER_SOURCE(target->material))
+        {
+            world->power_sources--;
+        }
     }
 
     memcpy(target, block, sizeof(Block));
@@ -183,6 +200,7 @@ void world_print_status(World* world)
 {
     printf("Ticks: %d\n", world->ticks);
     printf("Blocks: %d\n", world->count);
+    printf("Power Sources: %d\n", world->power_sources);
     printf("Allocated Blocks: %d\n", world->blocks_size);
     printf("Allocated Buckets: %d\n", world->buckets_size);
     printf("Bucket Collisions: %d\n", world->collisions);
