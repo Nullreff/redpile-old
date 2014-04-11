@@ -19,9 +19,12 @@
 #ifndef REDPILE_BLOCK_H
 #define REDPILE_BLOCK_H
 
+// I chose 101 because it kind of looks like two redstone torches
+// If you have a better prime number, feel free to use it :)
+#define MAGIC_HASH_NUMBER 101
+#define MATERIALS_COUNT 6
 #define POWER_SOURCE(material) (material == M_TORCH)
 
-#define MATERIALS_COUNT 6
 char* Materials[MATERIALS_COUNT];
 typedef enum {
     M_EMPTY,
@@ -56,9 +59,11 @@ typedef struct {
 } Block;
 
 int material_parse(char* material, Material* result);
+
 Location location_move(Location loc, Direction dir, int length);
 int location_equals(Location l1, Location l2);
 int location_hash(Location loc, int max);
+
 Block block_empty(void);
 Block block_create(Material material, Location location);
 void block_allocate(Block** block, Material material, Location location);

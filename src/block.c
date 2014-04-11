@@ -62,12 +62,9 @@ int location_equals(Location l1, Location l2)
     return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
 }
 
-// I chose 101 because it kind of looks like two redstone torches :)
-#define MAGIC_HASH_NUBER 101
 int location_hash(Location loc, int max)
 {
-    // If you know of a better hashing method, feel free to alter this one
-    return abs((loc.x * MAGIC_HASH_NUBER + loc.y) * MAGIC_HASH_NUBER + loc.z) % max;
+    return abs((loc.x * MAGIC_HASH_NUMBER + loc.y) * MAGIC_HASH_NUMBER + loc.z) % max;
 }
 
 Block block_empty(void)
