@@ -124,7 +124,7 @@ Bucket* world_get_bucket(World* world, Location location, bool allocate)
     {
         while (1)
         {
-            Block* target = world->blocks + bucket->index;
+            Block* target = BLOCK_FROM_BUCKET(world, bucket);
             if (location_equals(target->location, location))
             {
                 break;
@@ -207,7 +207,7 @@ Block* world_set_block(World* world, Block* block)
 Block* world_get_block(World* world, Location location)
 {
     Bucket* bucket = world_get_bucket(world, location, false);
-    return BLOCK_FROM_BUCKET(world, bucket);
+    return BUCKET_FILLED(bucket) ? BLOCK_FROM_BUCKET(world, bucket) : NULL;
 }
 
 void world_print_status(World* world)

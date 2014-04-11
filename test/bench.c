@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     BENCHMARK_END
 
     BENCHMARK_START(redstone_tick)
-    RANGE(i,1,10 * 10 * 10 * 10)
+    RANGE(i,1,10 * 10 * 10)
     {
         redstone_tick(world, block_modified);
     }

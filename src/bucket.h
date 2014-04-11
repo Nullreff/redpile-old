@@ -19,6 +19,8 @@
 #ifndef REDPILE_BUCKET_H
 #define REDPILE_BUCKET_H
 
+#define BUCKET_FILLED(bucket) (bucket != NULL && bucket->index != -1)
+
 typedef struct Bucket {
     int index;
     struct Bucket* adjacent[6];

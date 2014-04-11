@@ -23,7 +23,7 @@
 #include "block.h"
 #include "bucket.h"
 
-#define BLOCK_FROM_BUCKET(world,bucket) (bucket != NULL && bucket->index != -1 ? world->blocks + bucket->index : NULL)
+#define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks + (bucket)->index)
 
 typedef struct {
     // Block storage/lookup using a basic hashmap

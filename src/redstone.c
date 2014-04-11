@@ -21,7 +21,6 @@
 #include "block.h"
 #include "redstone.h"
 
-
 void redstone_wire_update(World* world, Bucket* bucket)
 {
     Block* block = BLOCK_FROM_BUCKET(world, bucket);
@@ -36,6 +35,9 @@ void redstone_wire_update(World* world, Bucket* bucket)
     int i;
     for (i = 0; i < 4; i++)
     {
+        if (!BUCKET_FILLED(buckets[i]))
+            continue;
+
         Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
         if (found_block != NULL && found_block->material == M_WIRE)
         {
@@ -70,6 +72,9 @@ void redstone_torch_update(World* world, Bucket* bucket)
     int i;
     for (i = 0; i < 5; i++)
     {
+        if (!BUCKET_FILLED(buckets[i]))
+            continue;
+
         Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
         if (found_block != NULL && found_block->material == M_WIRE)
         {
@@ -88,16 +93,21 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     for (i = 0; i < world->buckets_size; i++)
     {
         Bucket* bucket = world->buckets + i;
-        Block* block = BLOCK_FROM_BUCKET(world, bucket);
-
-        if (block == NULL || block->updated)
-            continue;
-
-        switch (block->material)
+        while BUCKET_FILLED(bucket)
         {
-            // Add more powers sources here as needed
-            case M_TORCH:
-                redstone_torch_update(world, bucket);
+            Block* block = BLOCK_FROM_BUCKET(world, bucket);
+
+            if (block != NULL && !block->updated)
+            {
+                switch (block->material)
+                {
+                    // Add more powers sources here as needed
+                    case M_TORCH:
+                        redstone_torch_update(world, bucket);
+                }
+            }
+
+            bucket = bucket->next;
         }
     }
 
