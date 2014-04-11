@@ -22,6 +22,7 @@
 #include "common.h"
 #include "../src/world.h"
 #include "../src/block.h"
+#include "../src/redstone.h"
 
 
 #define BENCHMARK_START(name) do {\
@@ -52,26 +53,37 @@ void print_time(char* message, struct timespec start, struct timespec end)
     printf("%s - %ld:%ld\n", message, result.tv_sec, result.tv_nsec);
 }
 
+void block_modified(Block* b) {}
+
 int main(int argc, char* argv[])
 {
     World* world = malloc(sizeof(World));
 
     BENCHMARK_START(world_intialize)
-    world_intialize(world, 16 * 16 * 16 * 16);
+    world_intialize(world, 20 * 20 * 20);
     BENCHMARK_END
 
     BENCHMARK_START(world_add_block)
-    CUBE_RANGE(-16,16)
-        Block block = {M_WIRE, (Location){x,y,z}, 0};
+    CUBE_RANGE(-20,20)
+        Location loc = (Location){x,y,z};
+        int torch = !location_hash(loc, 20000);
+        Block block = {torch ? M_TORCH : M_WIRE, loc, 0, 0};
         world_add_block(world, &block);
     CUBE_RANGE_END
     BENCHMARK_END
 
     Block* found_block;
     BENCHMARK_START(world_get_block)
-    CUBE_RANGE(-16,16)
+    CUBE_RANGE(-20,20)
         found_block = world_get_block(world, (Location){x, y, z});
     CUBE_RANGE_END
+    BENCHMARK_END
+
+    BENCHMARK_START(redstone_tick)
+    RANGE(i,1,100)
+    {
+        redstone_tick(world, block_modified);
+    }
     BENCHMARK_END
 
     world_print_status(world);
