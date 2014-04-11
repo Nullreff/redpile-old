@@ -44,16 +44,29 @@ int material_parse(char* material, Material* result)
     return -1;
 }
 
+Direction direction_invert(Direction dir)
+{
+    switch (dir)
+    {
+        case D_NORTH: return D_SOUTH;
+        case D_SOUTH: return D_NORTH;
+        case D_EAST:  return D_WEST;
+        case D_WEST:  return D_EAST;
+        case D_UP:    return D_DOWN;
+        case D_DOWN:  return D_UP;
+    }
+}
+
 Location location_move(Location loc, Direction dir, int length)
 {
     switch (dir)
     {
         case D_NORTH: return (Location){loc.x, loc.y, loc.z - length};
         case D_SOUTH: return (Location){loc.x, loc.y, loc.z + length};
-        case D_EAST: return (Location){loc.x + length, loc.y, loc.z};
-        case D_WEST: return (Location){loc.x - length, loc.y, loc.z};
-        case D_UP: return (Location){loc.x, loc.y + length, loc.z};
-        case D_DOWN: return (Location){loc.x, loc.y - length, loc.z};
+        case D_EAST:  return (Location){loc.x + length, loc.y, loc.z};
+        case D_WEST:  return (Location){loc.x - length, loc.y, loc.z};
+        case D_UP:    return (Location){loc.x, loc.y + length, loc.z};
+        case D_DOWN:  return (Location){loc.x, loc.y - length, loc.z};
     }
 }
 

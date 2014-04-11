@@ -15,3 +15,5 @@ range.each do |x|
     end
   end
 end
+
+puts 'STATUS'

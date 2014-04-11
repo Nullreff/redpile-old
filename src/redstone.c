@@ -21,58 +21,37 @@
 #include "block.h"
 #include "redstone.h"
 
-void (*redstone_propigate[6])(World*, Block*) = {
-    redstone_noop_update,
-    redstone_noop_update,
-    redstone_wire_update,
-    redstone_conductor_update,
-    redstone_noop_update,
-    redstone_torch_update
-};
 
-void redstone_propigate_power(World* world, Block* block)
+void redstone_wire_update(World* world, Bucket* bucket)
 {
-    redstone_propigate[block->material](world, block);
-}
-
-void redstone_noop_update(World* world, Block* block)
-{
-    block->updated = 1;
-}
-
-void redstone_wire_update(World* world, Block* block)
-{
+    Block* block = BLOCK_FROM_BUCKET(world, bucket);
     block->updated = 1;
 
-    Block* blocks[4];
-    blocks[0] = world_get_block(world, location_move(block->location, D_NORTH, 1));
-    blocks[1] = world_get_block(world, location_move(block->location, D_SOUTH, 1));
-    blocks[2] = world_get_block(world, location_move(block->location, D_EAST, 1));
-    blocks[3] = world_get_block(world, location_move(block->location, D_WEST, 1));
+    Bucket* buckets[4];
+    buckets[0] = bucket->adjacent[D_NORTH];
+    buckets[1] = bucket->adjacent[D_SOUTH];
+    buckets[2] = bucket->adjacent[D_EAST];
+    buckets[3] = bucket->adjacent[D_WEST];
 
     int i;
     for (i = 0; i < 4; i++)
     {
-        if (blocks[i] != NULL && blocks[i]->material == M_WIRE)
+        Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
+        if (found_block != NULL && found_block->material == M_WIRE)
         {
-            if (!blocks[i]->updated || blocks[i]->power < (block->power - 1))
+            if (!found_block->updated || found_block->power < (block->power - 1))
             {
-                blocks[i]->power = block->power - 1;
-                redstone_wire_update(world, blocks[i]);
+                found_block->power = block->power - 1;
+                redstone_wire_update(world, buckets[i]);
             }
         }
         // TODO: Propigate to more materials
     }
 }
 
-void redstone_conductor_update(World* world, Block* block)
+void redstone_torch_update(World* world, Bucket* bucket)
 {
-    block->updated = 1;
-    // TODO: Propigate power
-}
-
-void redstone_torch_update(World* world, Block* block)
-{
+    Block* block = BLOCK_FROM_BUCKET(world, bucket);
     block->updated = 1;
 
     // TODO: Replace with check for if the torch should turn on or off
@@ -81,20 +60,21 @@ void redstone_torch_update(World* world, Block* block)
         block->power = 15;
     }
 
-    Block* blocks[5];
-    blocks[0] = world_get_block(world, location_move(block->location, D_NORTH, 1));
-    blocks[1] = world_get_block(world, location_move(block->location, D_SOUTH, 1));
-    blocks[2] = world_get_block(world, location_move(block->location, D_EAST, 1));
-    blocks[3] = world_get_block(world, location_move(block->location, D_WEST, 1));
-    blocks[4] = world_get_block(world, location_move(block->location, D_DOWN, 1));
+    Bucket* buckets[5];
+    buckets[0] = bucket->adjacent[D_NORTH];
+    buckets[1] = bucket->adjacent[D_SOUTH];
+    buckets[2] = bucket->adjacent[D_EAST];
+    buckets[3] = bucket->adjacent[D_WEST];
+    buckets[4] = bucket->adjacent[D_DOWN];
 
     int i;
     for (i = 0; i < 5; i++)
     {
-        if (blocks[i] != NULL && blocks[i]->material == M_WIRE)
+        Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
+        if (found_block != NULL && found_block->material == M_WIRE)
         {
-            blocks[i]->power = block->power;
-            redstone_wire_update(world, blocks[i]);
+            found_block->power = block->power;
+            redstone_wire_update(world, buckets[i]);
         }
         // TODO: Propigate to more materials
     }
@@ -105,19 +85,19 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     int i;
 
     // Process all power sources
-    for (i = 0; i < world->blocks_size; i++)
+    for (i = 0; i < world->buckets_size; i++)
     {
-        Block* block = world->blocks + i;
+        Bucket* bucket = world->buckets + i;
+        Block* block = BLOCK_FROM_BUCKET(world, bucket);
 
-        // Skip any blocks that have already been processed
-        if (block->updated)
+        if (block == NULL || block->updated)
             continue;
 
         switch (block->material)
         {
             // Add more powers sources here as needed
             case M_TORCH:
-                redstone_torch_update(world, block);
+                redstone_torch_update(world, bucket);
         }
     }
 

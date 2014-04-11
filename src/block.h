@@ -60,6 +60,8 @@ typedef struct {
 
 int material_parse(char* material, Material* result);
 
+Direction direction_invert(Direction dir);
+
 Location location_move(Location loc, Direction dir, int length);
 int location_equals(Location l1, Location l2);
 int location_hash(Location loc, int max);

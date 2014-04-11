@@ -19,8 +19,11 @@
 #ifndef REDPILE_WORLD_H
 #define REDPILE_WORLD_H
 
+#include <stdbool.h>
 #include "block.h"
 #include "bucket.h"
+
+#define BLOCK_FROM_BUCKET(world,bucket) (bucket != NULL && bucket->index != -1 ? world->blocks + bucket->index : NULL)
 
 typedef struct {
     // Block storage/lookup using a basic hashmap
@@ -41,6 +44,7 @@ typedef struct {
 
 void world_intialize(World* world, unsigned int size);
 void world_free(World* world);
+Bucket* world_get_bucket(World* world, Location location, bool allocate);
 Block* world_add_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
 void world_print_status(World* world);

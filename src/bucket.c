@@ -26,7 +26,7 @@ Bucket bucket_empty(void)
 
 Bucket bucket_create(int index)
 {
-    return (Bucket){index, NULL};
+    return (Bucket){index, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL};
 }
 
 void bucket_allocate(Bucket** bucket, int index)

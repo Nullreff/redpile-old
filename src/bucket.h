@@ -21,6 +21,7 @@
 
 typedef struct Bucket {
     int index;
+    struct Bucket* adjacent[6];
     struct Bucket* next;
 } Bucket;
 

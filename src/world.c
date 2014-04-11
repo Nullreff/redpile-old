@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <stdbool.h>
 #include "world.h"
 #include "block.h"
 #include "redpile.h"
@@ -73,13 +74,8 @@ void world_free(World* world)
     free(world->blocks);
 }
 
-Bucket* world_get_top_bucket(World* world, Location location)
-{
-    int hash = location_hash(location, world->buckets_size);
-    return world->buckets + hash;
-}
-
-int world_next_block(World* world, Block** block)
+// Retreives the index of the next available block in the world
+int world_next_block(World* world)
 {
     if (world->count >= world->blocks_size)
     {
@@ -98,33 +94,45 @@ int world_next_block(World* world, Block** block)
         }
     }
 
-    *block = world->blocks + world->count;
     return world->count++;
 }
 
-Block* world_add_block(World* world, Block* block)
+// Finds the bucket used to store the block at the specified location
+// If the bucket can't be found and alocate is true, a new bucket and
+// block will be created.  If allocate is false, it will return NULL.
+Bucket* world_get_bucket(World* world, Location location, bool allocate)
 {
-    Bucket* bucket = world_get_top_bucket(world, block->location);
-    Block* target;
+    int hash = location_hash(location, world->buckets_size);
+    Bucket* bucket = world->buckets + hash;
     int depth = 1;
 
     if (bucket->index == -1)
     {
-        bucket->index = world_next_block(world, &target);
+        if (allocate)
+        {
+            bucket->index = world_next_block(world);
+        }
+        else
+        {
+            bucket = NULL;
+        }
     }
     else
     {
         while (1)
         {
-            target = world->blocks + bucket->index;
-            if (location_equals(target->location, block->location))
+            Block* target = world->blocks + bucket->index;
+            if (location_equals(target->location, location))
             {
                 break;
             }
 
             if (bucket->next == NULL)
             {
-                bucket_allocate(&bucket->next, world_next_block(world, &target));
+                if (allocate)
+                {
+                    bucket_allocate(&bucket->next, world_next_block(world));
+                }
                 bucket = bucket->next;
                 break;
             }
@@ -145,6 +153,35 @@ Block* world_add_block(World* world, Block* block)
         world->collisions++;
     }
 
+    return bucket;
+}
+
+Block* world_add_block(World* world, Block* block)
+{
+    Bucket* bucket = world_get_bucket(world, block->location, true);
+    Block* target = BLOCK_FROM_BUCKET(world, bucket);
+
+    // Update references to nearby buckets
+    int i;
+    for (i = 0; i < 6; i++)
+    {
+        if (bucket->adjacent[i] == NULL)
+        {
+            // Find the bucket next to us
+            Direction dir = (Direction)i;
+            Location location = location_move(block->location, dir, 1);
+            Bucket* found_bucket = world_get_bucket(world, location, false);
+
+            if (found_bucket != NULL)
+            {
+                // Update it to point both ways
+                found_bucket->adjacent[direction_invert(dir)] = bucket;
+                bucket->adjacent[i] = found_bucket;
+            }
+        }
+    }
+
+    // Check if we're adding or removing a power source
     if (POWER_SOURCE(block->material))
     {
         if (!POWER_SOURCE(target->material))
@@ -166,34 +203,8 @@ Block* world_add_block(World* world, Block* block)
 
 Block* world_get_block(World* world, Location location)
 {
-    Bucket* bucket = world_get_top_bucket(world, location);
-    Block* target;
-
-    if (bucket->index == -1)
-    {
-        target = NULL;
-    }
-    else
-    {
-        while (1)
-        {
-            target = world->blocks + bucket->index;
-            if (location_equals(target->location, location))
-            {
-                break;
-            }
-
-            if (bucket->next == NULL)
-            {
-                target = NULL;
-                break;
-            }
-
-            bucket = bucket->next;
-        }
-    }
-
-    return target;
+    Bucket* bucket = world_get_bucket(world, location, false);
+    return BLOCK_FROM_BUCKET(world, bucket);
 }
 
 void world_print_status(World* world)

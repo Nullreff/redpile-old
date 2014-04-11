@@ -60,11 +60,11 @@ int main(int argc, char* argv[])
     World* world = malloc(sizeof(World));
 
     BENCHMARK_START(world_intialize)
-    world_intialize(world, 20 * 20 * 20);
+    world_intialize(world, 10 * 10 * 10);
     BENCHMARK_END
 
     BENCHMARK_START(world_add_block)
-    CUBE_RANGE(-20,20)
+    CUBE_RANGE(-10,10)
         Location loc = (Location){x,y,z};
         int torch = !location_hash(loc, 20000);
         Block block = {torch ? M_TORCH : M_WIRE, loc, 0, 0};
@@ -74,13 +74,13 @@ int main(int argc, char* argv[])
 
     Block* found_block;
     BENCHMARK_START(world_get_block)
-    CUBE_RANGE(-20,20)
+    CUBE_RANGE(-10,10)
         found_block = world_get_block(world, (Location){x, y, z});
     CUBE_RANGE_END
     BENCHMARK_END
 
     BENCHMARK_START(redstone_tick)
-    RANGE(i,1,100)
+    RANGE(i,1,10 * 10 * 10)
     {
         redstone_tick(world, block_modified);
     }
