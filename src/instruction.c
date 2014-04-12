@@ -79,7 +79,7 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
-    Material material;
+    Material material = EMPTY;
     char* str_material = strtok(NULL, " ");
     if (str_material == NULL || material_parse(str_material, &material) == -1)
     {
@@ -91,7 +91,7 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
-    Direction direction;
+    Direction direction = NORTH;
     char* str_direction = strtok(NULL, " ");
     if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
     {
