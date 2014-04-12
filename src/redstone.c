@@ -27,10 +27,10 @@ void redstone_wire_update(World* world, Bucket* bucket)
     block->updated = 1;
 
     Bucket* buckets[4];
-    buckets[0] = bucket->adjacent[D_NORTH];
-    buckets[1] = bucket->adjacent[D_SOUTH];
-    buckets[2] = bucket->adjacent[D_EAST];
-    buckets[3] = bucket->adjacent[D_WEST];
+    buckets[0] = bucket->adjacent[NORTH];
+    buckets[1] = bucket->adjacent[SOUTH];
+    buckets[2] = bucket->adjacent[EAST];
+    buckets[3] = bucket->adjacent[WEST];
 
     int i;
     for (i = 0; i < 4; i++)
@@ -39,7 +39,7 @@ void redstone_wire_update(World* world, Bucket* bucket)
             continue;
 
         Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
-        if (found_block != NULL && found_block->material == M_WIRE)
+        if (found_block != NULL && found_block->material == WIRE)
         {
             if (!found_block->updated || found_block->power < (block->power - 1))
             {
@@ -63,11 +63,11 @@ void redstone_torch_update(World* world, Bucket* bucket)
     }
 
     Bucket* buckets[5];
-    buckets[0] = bucket->adjacent[D_NORTH];
-    buckets[1] = bucket->adjacent[D_SOUTH];
-    buckets[2] = bucket->adjacent[D_EAST];
-    buckets[3] = bucket->adjacent[D_WEST];
-    buckets[4] = bucket->adjacent[D_DOWN];
+    buckets[0] = bucket->adjacent[NORTH];
+    buckets[1] = bucket->adjacent[SOUTH];
+    buckets[2] = bucket->adjacent[EAST];
+    buckets[3] = bucket->adjacent[WEST];
+    buckets[4] = bucket->adjacent[DOWN];
 
     int i;
     for (i = 0; i < 5; i++)
@@ -76,7 +76,7 @@ void redstone_torch_update(World* world, Bucket* bucket)
             continue;
 
         Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
-        if (found_block != NULL && found_block->material == M_WIRE)
+        if (found_block != NULL && found_block->material == WIRE)
         {
             found_block->power = block->power;
             redstone_wire_update(world, buckets[i]);
@@ -102,7 +102,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
                 switch (block->material)
                 {
                     // Add more powers sources here as needed
-                    case M_TORCH:
+                    case TORCH:
                         redstone_torch_update(world, bucket);
                 }
             }

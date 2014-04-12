@@ -48,12 +48,12 @@ Direction direction_invert(Direction dir)
 {
     switch (dir)
     {
-        case D_NORTH: return D_SOUTH;
-        case D_SOUTH: return D_NORTH;
-        case D_EAST:  return D_WEST;
-        case D_WEST:  return D_EAST;
-        case D_UP:    return D_DOWN;
-        case D_DOWN:  return D_UP;
+        case NORTH: return SOUTH;
+        case SOUTH: return NORTH;
+        case EAST:  return WEST;
+        case WEST:  return EAST;
+        case UP:    return DOWN;
+        case DOWN:  return UP;
     }
 }
 
@@ -61,12 +61,12 @@ Location location_move(Location loc, Direction dir, int length)
 {
     switch (dir)
     {
-        case D_NORTH: return (Location){loc.x, loc.y, loc.z - length};
-        case D_SOUTH: return (Location){loc.x, loc.y, loc.z + length};
-        case D_EAST:  return (Location){loc.x + length, loc.y, loc.z};
-        case D_WEST:  return (Location){loc.x - length, loc.y, loc.z};
-        case D_UP:    return (Location){loc.x, loc.y + length, loc.z};
-        case D_DOWN:  return (Location){loc.x, loc.y - length, loc.z};
+        case NORTH: return (Location){loc.x, loc.y, loc.z - length};
+        case SOUTH: return (Location){loc.x, loc.y, loc.z + length};
+        case EAST:  return (Location){loc.x + length, loc.y, loc.z};
+        case WEST:  return (Location){loc.x - length, loc.y, loc.z};
+        case UP:    return (Location){loc.x, loc.y + length, loc.z};
+        case DOWN:  return (Location){loc.x, loc.y - length, loc.z};
     }
 }
 
@@ -82,7 +82,7 @@ int location_hash(Location loc, int max)
 
 Block block_empty(void)
 {
-    return block_create(M_EMPTY, (Location){0, 0, 0});
+    return block_create(EMPTY, (Location){0, 0, 0});
 }
 
 Block block_create(Material material, Location location)

@@ -29,7 +29,7 @@ char* message;
 #define TEST_COMMAND(cmd) do {\
     int success = command_parse(#cmd, &command);\
     MU_ASSERT("Failed to parse the '"#cmd"' command", success == 0);\
-    MU_ASSERT("Incorrect result when parsing the '"#cmd"' command", command == CMD_ ## cmd);\
+    MU_ASSERT("Incorrect result when parsing the '"#cmd"' command", command == cmd);\
 } while(0);
 
 static char* test_command_parsing()
@@ -51,7 +51,7 @@ static char* test_command_parsing()
 #define TEST_INSTRUCTION(inst,last) do {\
     int success = instruction_parse(#inst" 5 4 3 WIRE", &instruction);\
     MU_ASSERT("Falied to parse the '"#inst"' instruction", success == 0);\
-    MU_ASSERT("Incorrect command when parsing the '"#inst"' instruction", instruction.cmd == CMD_ ## inst);\
+    MU_ASSERT("Incorrect command when parsing the '"#inst"' instruction", instruction.cmd == inst);\
     MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", last || instruction.value == 2);\
     TEST_INSTRUCTION_LOCATION(inst,x,5);\
     TEST_INSTRUCTION_LOCATION(inst,y,4);\
@@ -66,7 +66,7 @@ static char* test_instruction_parsing()
     TEST_INSTRUCTION(GET,1);
     int success = instruction_parse("TICK", &instruction);
     MU_ASSERT("Falied to parse the 'TICK' instruction", success == 0);
-    MU_ASSERT("Incorrect command when parsing the 'TICK' instruction", instruction.cmd == CMD_TICK);
+    MU_ASSERT("Incorrect command when parsing the 'TICK' instruction", instruction.cmd == TICK);
     MU_ASSERT("Invalid instruction didn't fail parsing", 
             instruction_parse("BADCMD 0 0 0 0", &instruction) == -1);
     MU_ASSERT("Instruction with missing parameter didn't fail parsing", 
@@ -76,7 +76,7 @@ static char* test_instruction_parsing()
     return 0;
 }
 
-const Material MATERIALS[5] = { M_WIRE, M_CONDUCTOR, M_INSULATOR, M_AIR, M_TORCH };
+const Material MATERIALS[5] = { WIRE, CONDUCTOR, INSULATOR, AIR, TORCH };
 
 static char* test_world_block_creation() {
     World* world;

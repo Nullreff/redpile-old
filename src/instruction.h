@@ -23,11 +23,10 @@
 #include "block.h"
 
 typedef enum {
-    CMD_SET,
-    CMD_POWER,
-    CMD_GET,
-    CMD_TICK,
-    CMD_STATUS
+    SET,
+    GET,
+    TICK,
+    STATUS
 } Command;
 
 typedef struct {

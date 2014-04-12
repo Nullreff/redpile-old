@@ -23,25 +23,25 @@
 // If you have a better prime number, feel free to use it :)
 #define MAGIC_HASH_NUMBER 101
 #define MATERIALS_COUNT 6
-#define POWER_SOURCE(material) (material == M_TORCH)
+#define POWER_SOURCE(material) (material == TORCH)
 
 char* Materials[MATERIALS_COUNT];
 typedef enum {
-    M_EMPTY,
-    M_AIR,
-    M_WIRE,
-    M_CONDUCTOR,
-    M_INSULATOR,
-    M_TORCH
+    EMPTY,
+    AIR,
+    WIRE,
+    CONDUCTOR,
+    INSULATOR,
+    TORCH
 } Material;
 
 typedef enum {
-    D_NORTH,
-    D_SOUTH,
-    D_EAST,
-    D_WEST,
-    D_UP,
-    D_DOWN
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST,
+    UP,
+    DOWN
 } Direction;
 
 typedef int Coord;

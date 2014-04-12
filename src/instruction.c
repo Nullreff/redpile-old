@@ -36,13 +36,13 @@
 int command_parse(char* command, Command* result)
 {
     if (strcmp(command, "SET") == 0)
-        *result = CMD_SET;
+        *result = SET;
     else if (strcmp(command, "GET") == 0)
-        *result = CMD_GET;
+        *result = GET;
     else if (strcmp(command, "TICK") == 0)
-        *result = CMD_TICK;
+        *result = TICK;
     else if (strcmp(command, "STATUS") == 0)
-        *result = CMD_STATUS;
+        *result = STATUS;
     else
         return -1;
 
@@ -66,7 +66,7 @@ int instruction_parse(char* instruction, Instruction* result)
         goto error;
     }
 
-    if (command == CMD_TICK || command == CMD_STATUS)
+    if (command == TICK || command == STATUS)
     {
         goto success;
     }
@@ -76,7 +76,7 @@ int instruction_parse(char* instruction, Instruction* result)
     PARSE_NUMBER(y)
     PARSE_NUMBER(z)
 
-    if (command == CMD_GET)
+    if (command == GET)
     {
         goto success;
     }
@@ -104,16 +104,16 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
 
     switch (inst->cmd)
     {
-        case CMD_SET:
+        case SET:
             new_block = block_create((Material)inst->value, inst->target);
             block = world_set_block(world, &new_block);
             return;
 
-        case CMD_GET:
+        case GET:
             block = world_get_block(world, inst->target);
             if (block == NULL)
             {
-                new_block = block_create(M_EMPTY, inst->target);
+                new_block = block_create(EMPTY, inst->target);
                 block_modified_callback(&new_block);
             }
             else
@@ -122,11 +122,11 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             }
             break;
 
-        case CMD_TICK:
+        case TICK:
             redstone_tick(world, block_modified_callback);
             break;
 
-        case CMD_STATUS:
+        case STATUS:
             world_print_status(world);
             break;
     }
