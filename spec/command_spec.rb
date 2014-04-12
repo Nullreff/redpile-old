@@ -86,7 +86,7 @@ describe 'Redpile Commands' do
       (1..MAX_RANGE).each do |range|
         it "propigates power #{range} blocks" do
           redpile("-w #{size}") do |p|
-            p.puts 'SET 0 0 0 TORCH NORTH'
+            p.puts 'SET 0 0 0 TORCH UP'
             (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
             p.puts 'TICK'
             p.close_write
@@ -98,7 +98,7 @@ describe 'Redpile Commands' do
       it "stops propigating power after #{MAX_RANGE} blocks" do
         end_block = MAX_RANGE + 1
         redpile("-w #{size}") do |p|
-          p.puts 'SET 0 0 0 TORCH NORTH'
+          p.puts 'SET 0 0 0 TORCH UP'
           (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
           p.puts 'TICK'
           p.close_write

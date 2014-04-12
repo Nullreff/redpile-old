@@ -55,7 +55,8 @@ void redstone_torch_update(World* world, Bucket* bucket)
     block->updated = 1;
 
     // Set the torch power from the block behind it
-    Bucket* power_source = bucket->adjacent[direction_invert(block->direction)];
+    Direction behind = direction_invert(block->direction);
+    Bucket* power_source = bucket->adjacent[behind];
     if (power_source != NULL)
     {
         int power = world_get_last_power(world, power_source);
@@ -71,6 +72,9 @@ void redstone_torch_update(World* world, Bucket* bucket)
     int i;
     for (i = 0; i < 5; i++)
     {
+        if (directions[i] == behind)
+            continue;
+
         Bucket* adjacent = bucket->adjacent[directions[i]];
         if (!BUCKET_FILLED(adjacent))
             continue;

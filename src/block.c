@@ -127,7 +127,7 @@ int location_hash(Location loc, int max)
 
 Block block_empty(void)
 {
-    return block_create(location_empty(), EMPTY, NORTH);
+    return block_create(location_empty(), MATERIAL_DEFAULT, DIRECTION_DEFAULT);
 }
 
 Block block_from_values(int values[])

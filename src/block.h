@@ -22,10 +22,10 @@
 // I chose 101 because it kind of looks like two redstone torches
 // If you have a better prime number, feel free to use it :)
 #define MAGIC_HASH_NUMBER 101
-#define MATERIALS_COUNT 6
-#define DIRECTIONS_COUNT 6
 #define POWER_SOURCE(material) (material == TORCH)
 
+#define MATERIALS_COUNT 6
+#define MATERIAL_DEFAULT EMPTY
 char* Materials[MATERIALS_COUNT];
 typedef enum {
     EMPTY,
@@ -36,6 +36,8 @@ typedef enum {
     TORCH
 } Material;
 
+#define DIRECTIONS_COUNT 6
+#define DIRECTION_DEFAULT NORTH
 char* Directions[DIRECTIONS_COUNT];
 typedef enum {
     NORTH,
