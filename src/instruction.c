@@ -125,11 +125,11 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             if (block == NULL)
             {
                 new_block = block_create(location_from_values(inst->values), EMPTY, NORTH);
-                block_modified_callback(&new_block);
+                block_print(&new_block);
             }
             else
             {
-                block_modified_callback(block);
+                block_print(block);
             }
             break;
 

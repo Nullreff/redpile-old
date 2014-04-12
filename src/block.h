@@ -80,5 +80,6 @@ Block block_create(Location location, Material material, Direction direction);
 void block_allocate(Block** block, Location location, Material material, Direction direction);
 void block_copy(Block* dest, Block* source);
 void block_print(Block* block);
+void block_print_power(Block* block);
 
 #endif

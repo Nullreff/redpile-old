@@ -39,8 +39,13 @@ Returns information about the block at `(x, y, z)` in the format `(x,y,z) power 
 
 **TICK**
 
-Sets all torches to have a power of 15 and propagates the signal out to nearby wire, decreasing by one every time.
-Any blocks affected by the tick will be returned in the format `(x,y,z) power material direction`.
+Runs a single redstone tick.
+Any blocks affected by the tick will be returned in the format `(x,y,z) power`.
+
+Currently implemented are:
+
+* WIRE - Propigates power
+* TORCH - Powers wires and switches off when powered
 
 **STATUS**
 

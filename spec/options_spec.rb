@@ -43,7 +43,9 @@ describe 'Redpile Options' do
 
       it 'runs silently' do
         redpile(short ? '-s' : '--silent') do |p|
-          p.puts 'GET 0 0 0'
+          p.puts 'SET 0 0 0 TORCH UP'
+          p.puts 'SET 0 0 1 WIRE'
+          p.puts 'TICK'
           p.close_write
           p.gets.should == "\n"
         end

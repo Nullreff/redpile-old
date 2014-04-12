@@ -43,8 +43,7 @@ static void print_help()
            "    -w, --world-size\n"
            "        The number of blocks to allocate initially\n\n"
            "    -s, --silent\n"
-           "        Don't produce any output except for the STATUS command.\n"
-           "        Intended for running benchmarks and tests without all the console spam.\n\n"
+           "        Don't produce any output from TICK commands.\n\n"
            "    -v, --version\n"
            "        Print the current version\n\n"
            "    -h, --help\n"
@@ -167,7 +166,7 @@ void instruction_callback(Block* block)
 {
     if (!config.silent)
     {
-        block_print(block);
+        block_print_power(block);
     }
 }
 

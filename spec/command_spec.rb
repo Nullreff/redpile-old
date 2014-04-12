@@ -90,7 +90,7 @@ describe 'Redpile Commands' do
             (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
             p.puts 'TICK'
             p.close_write
-            p.read.should =~ /\(0,0,#{range}\) #{16 - range} WIRE\n/
+            p.read.should =~ /\(0,0,#{range}\) #{16 - range}\n/
           end
         end
       end
@@ -102,7 +102,7 @@ describe 'Redpile Commands' do
           (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
           p.puts 'TICK'
           p.close_write
-          p.read.should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
+          p.read.should =~ /\(0,0,#{end_block}\) 0\n/
         end
       end
 
@@ -116,7 +116,7 @@ describe 'Redpile Commands' do
           p.puts 'SET 0 0 2 TORCH NORTH'
           p.puts 'TICK'
           p.close_write
-          p.read.should =~ /\(0,0,0\) 14 WIRE\n/
+          p.read.should =~ /\(0,0,0\) 14\n/
         end
       end
 
@@ -128,7 +128,7 @@ describe 'Redpile Commands' do
           p.puts 'TICK'
           p.puts 'TICK'
           p.close_write
-          p.read.should =~ /\(0,0,0\) 0 TORCH SOUTH\n/
+          p.read.should =~ /\(0,0,0\) 0\n/
         end
       end
     end

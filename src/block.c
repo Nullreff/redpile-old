@@ -173,3 +173,13 @@ void block_print(Block* block)
                Materials[block->material]);
     }
 }
+
+void block_print_power(Block* block)
+{
+        printf("(%d,%d,%d) %d\n",
+               block->location.x,
+               block->location.y,
+               block->location.z,
+               block->power);
+}
+
