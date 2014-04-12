@@ -46,13 +46,13 @@ static char* test_command_parsing()
 }
 
 #define TEST_INSTRUCTION_LOCATION(inst,coord,val) \
-    MU_ASSERT("Incorrect "#coord" when parsing the '"#inst"' instruction", instruction.target.coord == val)
+    MU_ASSERT("Incorrect "#coord" when parsing the '"#inst"' instruction", location_from_values(instruction.values).coord == val)
 
 #define TEST_INSTRUCTION(inst,last) do {\
     int success = instruction_parse(#inst" 5 4 3 WIRE", &instruction);\
     MU_ASSERT("Falied to parse the '"#inst"' instruction", success == 0);\
     MU_ASSERT("Incorrect command when parsing the '"#inst"' instruction", instruction.cmd == inst);\
-    MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", last || instruction.value == 2);\
+    MU_ASSERT("Incorrect value when parsing the '"#inst"' instruction", last || instruction.values[3] == 2);\
     TEST_INSTRUCTION_LOCATION(inst,x,5);\
     TEST_INSTRUCTION_LOCATION(inst,y,4);\
     TEST_INSTRUCTION_LOCATION(inst,z,3);\

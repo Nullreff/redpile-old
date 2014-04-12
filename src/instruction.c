@@ -56,10 +56,6 @@ int instruction_parse(char* instruction, Instruction* result)
     CHECK_OOM(parts);
 
     Command command;
-    Material material;
-    Coord x, y, z;
-    x = y = z = 0;
-
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
     {
@@ -71,6 +67,8 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
+    Coord x, y, z;
+    x = y = z = 0;
     char* parse_error;
     PARSE_NUMBER(x)
     PARSE_NUMBER(y)
@@ -81,14 +79,27 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
+    Material material;
     char* str_material = strtok(NULL, " ");
     if (str_material == NULL || material_parse(str_material, &material) == -1)
     {
         goto error;
     }
 
+    if (!material_has_direction(material))
+    {
+        goto success;
+    }
+
+    Direction direction;
+    char* str_direction = strtok(NULL, " ");
+    if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
+    {
+        goto error;
+    }
+
 success:
-    *result = (Instruction){command, (Location){x, y, z}, material};
+    *result = (Instruction){command, {x, y, z, material, direction}};
     free(parts_ptr);
     return 0;
 
@@ -105,15 +116,15 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
     switch (inst->cmd)
     {
         case SET:
-            new_block = block_create((Material)inst->value, inst->target);
+            new_block = block_from_values(inst->values);
             block = world_set_block(world, &new_block);
             return;
 
         case GET:
-            block = world_get_block(world, inst->target);
+            block = world_get_block(world, location_from_values(inst->values));
             if (block == NULL)
             {
-                new_block = block_create(EMPTY, inst->target);
+                new_block = block_create(location_from_values(inst->values), EMPTY, NORTH);
                 block_modified_callback(&new_block);
             }
             else

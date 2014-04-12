@@ -22,7 +22,7 @@ For command line options, try `redpile --help`.
 Commands
 --------
 
-**SET x y z material**
+**SET x y z material [direction]**
 
 Sets the block at `(x, y, z)` to have a material of `material`.  Possible values for `material` are:
 
@@ -35,12 +35,12 @@ Sets the block at `(x, y, z)` to have a material of `material`.  Possible values
 
 **GET x y z**
 
-Returns information about the block at `(x, y, z)` in the format `(x,y,z) material power`.
+Returns information about the block at `(x, y, z)` in the format `(x,y,z) power material [direction]`.
 
 **TICK**
 
 Sets all torches to have a power of 15 and propagates the signal out to nearby wire, decreasing by one every time.
-Any blocks affected by the tick will be returned in the format `(x,y,z) material power`.
+Any blocks affected by the tick will be returned in the format `(x,y,z) power material direction`.
 
 **STATUS**
 

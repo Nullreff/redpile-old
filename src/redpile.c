@@ -165,17 +165,10 @@ cleanup:
 
 void instruction_callback(Block* block)
 {
-    if (config.silent)
+    if (!config.silent)
     {
-        return;
+        block_print(block);
     }
-
-    printf("(%d,%d,%d) %s %d\n",
-            block->location.x,
-            block->location.y,
-            block->location.z,
-            Materials[block->material],
-            block->power);
 }
 
 int main(int argc, char* argv[])

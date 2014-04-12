@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "block.h"
@@ -29,6 +30,15 @@ char* Materials[MATERIALS_COUNT] = {
     "TORCH"
 };
 
+char* Directions[6] = {
+    "NORTH",
+    "SOUTH",
+    "EAST",
+    "WEST",
+    "UP",
+    "DOWN"
+};
+
 int material_parse(char* material, Material* result)
 {
     int i;
@@ -37,6 +47,26 @@ int material_parse(char* material, Material* result)
         if (strcmp(material, Materials[i]) == 0)
         {
             *result = (Material)i;
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+int material_has_direction(Material material)
+{
+    return material == TORCH;
+}
+
+int direction_parse(char* direction, Direction* result)
+{
+    int i;
+    for (i = 0; i < DIRECTIONS_COUNT; i++)
+    {
+        if (strcmp(direction, Directions[i]) == 0)
+        {
+            *result = (Direction)i;
             return 0;
         }
     }
@@ -55,6 +85,21 @@ Direction direction_invert(Direction dir)
         case UP:    return DOWN;
         case DOWN:  return UP;
     }
+}
+
+Location location_empty(void)
+{
+    return location_create(0, 0, 0);
+}
+
+Location location_from_values(int values[])
+{
+    return location_create(values[0], values[1], values[2]);
+}
+
+Location location_create(Coord x, Coord y, Coord z)
+{
+    return (Location){x, y, z};
 }
 
 Location location_move(Location loc, Direction dir, int length)
@@ -82,17 +127,44 @@ int location_hash(Location loc, int max)
 
 Block block_empty(void)
 {
-    return block_create(EMPTY, (Location){0, 0, 0});
+    return block_create(location_empty(), EMPTY, NORTH);
 }
 
-Block block_create(Material material, Location location)
+Block block_from_values(int values[])
 {
-    return (Block){material, location, 0, 0};
+    return block_create(location_from_values(values), values[3], values[4]);
 }
 
-void block_allocate(Block** block, Material material, Location location)
+Block block_create(Location location, Material material, Direction direction)
+{
+    return (Block){material, location, direction, 0, 0};
+}
+
+void block_allocate(Block** block, Location location, Material material, Direction direction)
 {
     *block = malloc(sizeof(Block));
-    **block = block_create(material, location);
+    **block = block_create(location, material, direction);
 }
 
+void block_print(Block* block)
+{
+    if (material_has_direction(block->material))
+    {
+        printf("(%d,%d,%d) %d %s %s\n",
+               block->location.x,
+               block->location.y,
+               block->location.z,
+               block->power,
+               Materials[block->material],
+               Directions[block->direction]);
+    }
+    else
+    {
+        printf("(%d,%d,%d) %d %s\n",
+               block->location.x,
+               block->location.y,
+               block->location.z,
+               block->power,
+               Materials[block->material]);
+    }
+}

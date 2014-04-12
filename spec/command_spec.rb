@@ -19,8 +19,6 @@
 require 'spec_helper'
 include Helpers
 
-redpile_blocks = %w(AIR WIRE CONDUCTOR INSULATOR TORCH)
-
 describe 'Redpile Commands' do
   it 'parses the SET command' do
     redpile do |p|
@@ -34,7 +32,7 @@ describe 'Redpile Commands' do
     redpile do |p|
       p.puts 'GET 0 0 0'
       p.close_write
-      p.gets.should == "(0,0,0) EMPTY 0\n"
+      p.gets.should == "(0,0,0) 0 EMPTY\n"
     end
   end
 
@@ -54,13 +52,29 @@ describe 'Redpile Commands' do
     end
   end
 
-  redpile_blocks.each do |block|
+
+  normal_blocks = %w(AIR WIRE CONDUCTOR INSULATOR)
+  normal_blocks.each do |block|
     it "inserts an #{block} block" do
       redpile do |p|
         p.puts "SET 0 0 0 #{block}"
-        p.puts "GET 0 0 0 #{block}"
+        p.puts "GET 0 0 0"
         p.close_write
-        p.gets.should == "(0,0,0) #{block} 0\n"
+        p.gets.should == "(0,0,0) 0 #{block}\n"
+      end
+    end
+  end
+
+  direction_blocks = %w(TORCH)
+  direction_blocks.each do |block|
+    %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
+      it "inserts an #{block} block pointing #{dir}" do
+        redpile do |p|
+          p.puts "SET 0 0 0 #{block} #{dir}"
+          p.puts "GET 0 0 0"
+          p.close_write
+          p.gets.should == "(0,0,0) 0 #{block} #{dir}\n"
+        end
       end
     end
   end
@@ -72,12 +86,11 @@ describe 'Redpile Commands' do
       (1..MAX_RANGE).each do |range|
         it "propigates power #{range} blocks" do
           redpile("-w #{size}") do |p|
-            p.puts 'SET 0 0 0 TORCH'
+            p.puts 'SET 0 0 0 TORCH NORTH'
             (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
             p.puts 'TICK'
             p.close_write
-            range.times {p.gets}
-            p.gets.should == "(0,0,#{range}) WIRE #{16 - range}\n"
+            p.read.should =~ /\(0,0,#{range}\) #{16 - range} WIRE\n/
           end
         end
       end
@@ -85,27 +98,25 @@ describe 'Redpile Commands' do
       it "stops propigating power after #{MAX_RANGE} blocks" do
         end_block = MAX_RANGE + 1
         redpile("-w #{size}") do |p|
-          p.puts 'SET 0 0 0 TORCH'
+          p.puts 'SET 0 0 0 TORCH NORTH'
           (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
           p.puts 'TICK'
           p.close_write
-          end_block.times {p.gets}
-          p.gets.should == "(0,0,#{end_block}) WIRE 0\n"
+          p.read.should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
         end
       end
 
       it 'Takes power from the closer torch' do
         redpile("-w #{size}") do |p|
-          p.puts 'SET 0 0 -3 TORCH'
+          p.puts 'SET 0 0 -3 TORCH NORTH'
           p.puts 'SET 0 0 -2 WIRE'
           p.puts 'SET 0 0 -1 WIRE'
           p.puts 'SET 0 0 0 WIRE'
           p.puts 'SET 0 0 1 WIRE'
-          p.puts 'SET 0 0 2 TORCH'
+          p.puts 'SET 0 0 2 TORCH NORTH'
           p.puts 'TICK'
           p.close_write
-          3.times {p.gets}
-          p.gets.should == "(0,0,0) WIRE 14\n"
+          p.read.should =~ /\(0,0,0\) 14 WIRE\n/
         end
       end
     end

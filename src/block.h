@@ -23,6 +23,7 @@
 // If you have a better prime number, feel free to use it :)
 #define MAGIC_HASH_NUMBER 101
 #define MATERIALS_COUNT 6
+#define DIRECTIONS_COUNT 6
 #define POWER_SOURCE(material) (material == TORCH)
 
 char* Materials[MATERIALS_COUNT];
@@ -35,6 +36,7 @@ typedef enum {
     TORCH
 } Material;
 
+char* Directions[DIRECTIONS_COUNT];
 typedef enum {
     NORTH,
     SOUTH,
@@ -54,20 +56,28 @@ typedef struct {
 typedef struct {
     Material material;
     Location location;
+    Direction direction;
     unsigned int power:4; // 0 - 15
     unsigned int updated:1;
 } Block;
 
 int material_parse(char* material, Material* result);
+int material_has_direction(Material material);
 
+int direction_parse(char* direction, Direction* result);
 Direction direction_invert(Direction dir);
 
+Location location_empty(void);
+Location location_from_values(int values[]);
+Location location_create(Coord x, Coord y, Coord z);
 Location location_move(Location loc, Direction dir, int length);
 int location_equals(Location l1, Location l2);
 int location_hash(Location loc, int max);
 
 Block block_empty(void);
-Block block_create(Material material, Location location);
-void block_allocate(Block** block, Material material, Location location);
+Block block_from_values(int values[]);
+Block block_create(Location location, Material material, Direction direction);
+void block_allocate(Block** block, Location location, Material material, Direction direction);
+void block_print(Block* block);
 
 #endif
