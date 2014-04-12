@@ -146,6 +146,11 @@ void block_allocate(Block** block, Location location, Material material, Directi
     **block = block_create(location, material, direction);
 }
 
+void block_copy(Block* dest, Block* source)
+{
+    memcpy(dest, source, sizeof(Block));
+}
+
 void block_print(Block* block)
 {
     if (material_has_direction(block->material))

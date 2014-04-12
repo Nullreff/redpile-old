@@ -26,25 +26,23 @@ void redstone_wire_update(World* world, Bucket* bucket)
     Block* block = BLOCK_FROM_BUCKET(world, bucket);
     block->updated = 1;
 
-    Bucket* buckets[4];
-    buckets[0] = bucket->adjacent[NORTH];
-    buckets[1] = bucket->adjacent[SOUTH];
-    buckets[2] = bucket->adjacent[EAST];
-    buckets[3] = bucket->adjacent[WEST];
+    Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
 
     int i;
     for (i = 0; i < 4; i++)
     {
-        if (!BUCKET_FILLED(buckets[i]))
+        Bucket* adjacent = bucket->adjacent[directions[i]];
+        if (!BUCKET_FILLED(adjacent))
             continue;
 
-        Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
+        Block* found_block = BLOCK_FROM_BUCKET(world, adjacent);
         if (found_block != NULL && found_block->material == WIRE)
         {
             if (!found_block->updated || found_block->power < (block->power - 1))
             {
+                world_set_last_power(world, adjacent);
                 found_block->power = block->power - 1;
-                redstone_wire_update(world, buckets[i]);
+                redstone_wire_update(world, adjacent);
             }
         }
         // TODO: Propigate to more materials
@@ -56,30 +54,33 @@ void redstone_torch_update(World* world, Bucket* bucket)
     Block* block = BLOCK_FROM_BUCKET(world, bucket);
     block->updated = 1;
 
-    // TODO: Replace with check for if the torch should turn on or off
-    if (block->power < 15)
+    // Set the torch power from the block behind it
+    Bucket* power_source = bucket->adjacent[direction_invert(block->direction)];
+    if (power_source != NULL)
+    {
+        int power = world_get_last_power(world, power_source);
+        block->power = power == 0 ? 15 : 0;
+    }
+    else
     {
         block->power = 15;
     }
 
-    Bucket* buckets[5];
-    buckets[0] = bucket->adjacent[NORTH];
-    buckets[1] = bucket->adjacent[SOUTH];
-    buckets[2] = bucket->adjacent[EAST];
-    buckets[3] = bucket->adjacent[WEST];
-    buckets[4] = bucket->adjacent[DOWN];
+    Direction directions[5] = {NORTH, SOUTH, EAST, WEST, DOWN};
 
     int i;
     for (i = 0; i < 5; i++)
     {
-        if (!BUCKET_FILLED(buckets[i]))
+        Bucket* adjacent = bucket->adjacent[directions[i]];
+        if (!BUCKET_FILLED(adjacent))
             continue;
 
-        Block* found_block = BLOCK_FROM_BUCKET(world, buckets[i]);
+        Block* found_block = BLOCK_FROM_BUCKET(world, adjacent);
         if (found_block != NULL && found_block->material == WIRE)
         {
+            world_set_last_power(world, adjacent);
             found_block->power = block->power;
-            redstone_wire_update(world, buckets[i]);
+            redstone_wire_update(world, adjacent);
         }
         // TODO: Propigate to more materials
     }
@@ -127,6 +128,9 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
             block->power = 0;
             block_modified_callback(block);
         }
+
+        // Reset old power values
+        world->old_powers[i] = -1;
     }
 
     world->ticks++;

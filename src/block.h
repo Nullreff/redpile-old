@@ -78,6 +78,7 @@ Block block_empty(void);
 Block block_from_values(int values[]);
 Block block_create(Location location, Material material, Direction direction);
 void block_allocate(Block** block, Location location, Material material, Direction direction);
+void block_copy(Block* dest, Block* source);
 void block_print(Block* block);
 
 #endif

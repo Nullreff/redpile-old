@@ -46,11 +46,15 @@ void world_allocate(World** world_ptr, unsigned int size)
     world->blocks = malloc(size * sizeof(Block));
     CHECK_OOM(world->blocks);
 
+    world->old_powers = malloc(size * sizeof(int));
+    CHECK_OOM(world->old_powers);
+
     int i;
     for (i = 0; i < size; i++)
     {
         world->buckets[i] = bucket_empty();
         world->blocks[i] = block_empty();
+        world->old_powers[i] = -1;
     }
 }
 
@@ -74,6 +78,7 @@ void world_free(World** world_ptr)
 
     free(world->buckets);
     free(world->blocks);
+    free(world->old_powers);
     free(*world_ptr);
 }
 
@@ -84,16 +89,21 @@ int world_next_block(World* world)
     {
         int new_size = world->blocks_size * 2;
 
-        Block* temp = realloc(world->blocks, new_size * sizeof(Block));
-        CHECK_OOM(temp);
+        Block* temp_blocks = realloc(world->blocks, new_size * sizeof(Block));
+        CHECK_OOM(temp_blocks);
+
+        int* temp_powers = realloc(world->old_powers, new_size * sizeof(int));
+        CHECK_OOM(temp_powers);
 
         world->blocks_size = new_size;
-        world->blocks = temp;
+        world->blocks = temp_blocks;
+        world->old_powers = temp_powers;
 
         int i;
         for (i = world->count; i < world->blocks_size; i++)
         {
             world->blocks[i] = block_empty();
+            world->old_powers[i] = -1;
         }
     }
 
@@ -200,7 +210,7 @@ Block* world_set_block(World* world, Block* block)
         }
     }
 
-    memcpy(target, block, sizeof(Block));
+    block_copy(target, block);
     return target;
 }
 
@@ -208,6 +218,17 @@ Block* world_get_block(World* world, Location location)
 {
     Bucket* bucket = world_get_bucket(world, location, false);
     return BUCKET_FILLED(bucket) ? BLOCK_FROM_BUCKET(world, bucket) : NULL;
+}
+
+int world_get_last_power(World* world, Bucket* bucket)
+{
+    int power = world->old_powers[bucket->index];
+    return power != -1 ? power : BLOCK_FROM_BUCKET(world, bucket)->power;
+}
+
+void world_set_last_power(World* world, Bucket* bucket)
+{
+    world->old_powers[bucket->index] = BLOCK_FROM_BUCKET(world, bucket)->power;
 }
 
 void world_print_status(World* world)

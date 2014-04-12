@@ -119,6 +119,18 @@ describe 'Redpile Commands' do
           p.read.should =~ /\(0,0,0\) 14 WIRE\n/
         end
       end
+
+      it 'Turns a torch off with power' do
+        redpile("-w #{size}") do |p|
+          p.puts 'SET 0 0 0 TORCH SOUTH'
+          p.puts 'SET 0 0 -1 WIRE'
+          p.puts 'SET 0 0 -2 TORCH UP'
+          p.puts 'TICK'
+          p.puts 'TICK'
+          p.close_write
+          p.read.should =~ /\(0,0,0\) 0 TORCH SOUTH\n/
+        end
+      end
     end
   end
 end

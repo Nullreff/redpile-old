@@ -33,6 +33,7 @@ typedef struct {
     int blocks_size;
     Bucket* buckets;
     Block* blocks;
+    int* old_powers;
 
     // Stats used by `world_print_status`
     int count;         // Total blocks
@@ -47,6 +48,8 @@ void world_free(World** world_ptr);
 Bucket* world_get_bucket(World* world, Location location, bool allocate);
 Block* world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
+int world_get_last_power(World* world, Bucket* bucket);
+void world_set_last_power(World* world, Bucket* bucket);
 void world_print_status(World* world);
 
 #endif
