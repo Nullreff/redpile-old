@@ -66,28 +66,48 @@ describe 'Redpile Commands' do
   end
 
   MAX_RANGE = 15
-  (1..MAX_RANGE).each do |range|
-    it "propigates power #{range} blocks" do
-      redpile do |p|
-        p.puts 'SET 0 0 0 TORCH'
-        (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
-        p.puts 'TICK'
-        p.close_write
-        range.times {p.gets}
-        p.gets.should == "(0,0,#{range}) WIRE #{16 - range}\n"
-      end
-    end
-  end
+  [1, 32, 512, 1024].each do |size|
+    context "with a world size of #{size}" do
 
-  it "stops propigating power after #{MAX_RANGE} blocks" do
-    end_block = MAX_RANGE + 1
-    redpile do |p|
-      p.puts 'SET 0 0 0 TORCH'
-      (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
-      p.puts 'TICK'
-      p.close_write
-      end_block.times {p.gets}
-      p.gets.should == "(0,0,#{end_block}) WIRE 0\n"
+      (1..MAX_RANGE).each do |range|
+        it "propigates power #{range} blocks" do
+          redpile("-w #{size}") do |p|
+            p.puts 'SET 0 0 0 TORCH'
+            (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
+            p.puts 'TICK'
+            p.close_write
+            range.times {p.gets}
+            p.gets.should == "(0,0,#{range}) WIRE #{16 - range}\n"
+          end
+        end
+      end
+
+      it "stops propigating power after #{MAX_RANGE} blocks" do
+        end_block = MAX_RANGE + 1
+        redpile("-w #{size}") do |p|
+          p.puts 'SET 0 0 0 TORCH'
+          (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
+          p.puts 'TICK'
+          p.close_write
+          end_block.times {p.gets}
+          p.gets.should == "(0,0,#{end_block}) WIRE 0\n"
+        end
+      end
+
+      it 'Takes power from the closer torch' do
+        redpile("-w #{size}") do |p|
+          p.puts 'SET 0 0 -3 TORCH'
+          p.puts 'SET 0 0 -2 WIRE'
+          p.puts 'SET 0 0 -1 WIRE'
+          p.puts 'SET 0 0 0 WIRE'
+          p.puts 'SET 0 0 1 WIRE'
+          p.puts 'SET 0 0 2 TORCH'
+          p.puts 'TICK'
+          p.close_write
+          3.times {p.gets}
+          p.gets.should == "(0,0,0) WIRE 14\n"
+        end
+      end
     end
   end
 end
