@@ -24,7 +24,9 @@ Commands
 
 **SET x y z material [direction]**
 
-Sets the block at `(x, y, z)` to have a material of `material`.  Possible values for `material` are:
+Sets the block at `(x, y, z)` to have a material of `material` and a direction of `direction`.
+
+Values for `material` are:
 
 * EMPTY
 * AIR
@@ -33,9 +35,18 @@ Sets the block at `(x, y, z)` to have a material of `material`.  Possible values
 * INSULATOR
 * TORCH
 
+Values for `direction` are:
+
+* NORTH
+* SOUTH
+* EAST
+* WEST
+* UP
+* DOWN
+
 **GET x y z**
 
-Returns information about the block at `(x, y, z)` in the format `(x,y,z) power material [direction]`.
+Returns information about the block at `(x, y, z)` in the format `(x,y,z) power material [direction]`.  The value of `direction` is only returned if it's relevant to the current block.
 
 **TICK**
 
@@ -53,7 +64,7 @@ Prints information about the current state of the world.
 
 * Ticks - The total number of times the `TICK` command has been called.
 * Blocks - The total number of blocks with unique locations that have been added via `SET`.
-* Power Sources - The total number of blocks that can potentailly supply power to others.
+* Power Sources - The total number of blocks that can potentially supply power to others.
 * Allocated Blocks - The number of blocks Redpile can store before it needs to allocate more memory.
 * Allocated Buckets - The number of hash buckets Redpile uses to keep track of blocks.
 * Bucket Collisions - How many collisions of hash values are there, lower is better.
