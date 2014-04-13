@@ -25,6 +25,8 @@
 
 int tests_run = 0;
 char* message;
+World* world;
+
 
 #define TEST_COMMAND(cmd) do {\
     int success = command_parse(#cmd, &command);\
@@ -79,8 +81,6 @@ static char* test_instruction_parsing()
 const Material MATERIALS[5] = { WIRE, CONDUCTOR, INSULATOR, AIR, TORCH };
 
 static char* test_world_block_creation() {
-    World* world = world_allocate(16);
-
     CUBE_RANGE(-5,5)
         Location loc = {x,y,z};
         int val = x + y + z;
@@ -104,7 +104,6 @@ static char* test_world_block_creation() {
 
     CUBE_RANGE_END
 
-    world_free(world);
     return 0;
 }
 
@@ -118,6 +117,7 @@ static char * all_tests() {
 int main(int argc, char* argv[])
 {
     message = malloc(sizeof(char) * 200);
+    world = world_allocate(16);
     char* result = all_tests();
 
     printf("\n");
@@ -131,6 +131,8 @@ int main(int argc, char* argv[])
     }
 
     free(message);
+    world_free(world);
+
     printf("Tests run: %d\n\n", tests_run);
     return result != 0;
 }
