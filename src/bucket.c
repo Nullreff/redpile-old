@@ -1,4 +1,4 @@
-/* bucket.c - Linked list with access to adjacent elements
+/* bucket.c - Storage and fast access to blocks
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
