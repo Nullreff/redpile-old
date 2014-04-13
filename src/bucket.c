@@ -36,7 +36,7 @@ BucketList* bucket_list_allocate(unsigned int size)
     CHECK_OOM(buckets);
 
     buckets->size = size;
-    buckets->index = size / 2;
+    buckets->index = size - (size / 2);
     buckets->hashmap_size = buckets->index;
     buckets->data = malloc(size * sizeof(Bucket));
     CHECK_OOM(buckets->data);
