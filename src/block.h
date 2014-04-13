@@ -56,8 +56,8 @@ typedef struct {
 } Location;
 
 typedef struct {
-    Material material;
     Location location;
+    Material material;
     Direction direction;
     unsigned int power:4; // 0 - 15
     unsigned int updated:1;

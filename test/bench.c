@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     CUBE_RANGE(-10,10)
         Location loc = (Location){x,y,z};
         int torch = !location_hash(loc, 20000);
-        Block block = {torch ? TORCH : WIRE, loc, 0, 0};
+        Block block = block_create(loc, torch ? TORCH : WIRE, UP);
         world_set_block(world, &block);
     CUBE_RANGE_END
     BENCHMARK_END

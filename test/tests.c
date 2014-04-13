@@ -85,7 +85,8 @@ static char* test_world_block_creation() {
     CUBE_RANGE(-5,5)
         Location loc = {x,y,z};
         int val = x + y + z;
-        Block block = {MATERIALS[val % 5], loc, val % 16, 0};
+        Block block = block_create(loc, MATERIALS[val % 5], UP);
+        block.power = val % 16;
         world_set_block(world, &block);
         Block* found_block = world_get_block(world, block.location);
 

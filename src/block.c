@@ -137,7 +137,7 @@ Block block_from_values(int values[])
 
 Block block_create(Location location, Material material, Direction direction)
 {
-    return (Block){material, location, direction, 0, 0};
+    return (Block){location, material, direction, 0, 0};
 }
 
 void block_allocate(Block** block, Location location, Material material, Direction direction)
