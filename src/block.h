@@ -19,13 +19,13 @@
 #ifndef REDPILE_BLOCK_H
 #define REDPILE_BLOCK_H
 
-// I chose 101 because it kind of looks like two redstone torches
-// If you have a better prime number, feel free to use it :)
-#define MAGIC_HASH_NUMBER 101
-#define POWER_SOURCE(material) (material == TORCH)
+#include "location.h"
 
+#define POWER_SOURCE(material) (material == TORCH)
+#define HAS_DIRECTION(material) (material == TORCH)
 #define MATERIALS_COUNT 6
 #define MATERIAL_DEFAULT EMPTY
+
 char* Materials[MATERIALS_COUNT];
 typedef enum {
     EMPTY,
@@ -36,25 +36,6 @@ typedef enum {
     TORCH
 } Material;
 
-#define DIRECTIONS_COUNT 6
-#define DIRECTION_DEFAULT NORTH
-char* Directions[DIRECTIONS_COUNT];
-typedef enum {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST,
-    UP,
-    DOWN
-} Direction;
-
-typedef int Coord;
-typedef struct {
-    Coord x;
-    Coord y;
-    Coord z;
-} Location;
-
 typedef struct {
     Location location;
     Material material;
@@ -64,18 +45,6 @@ typedef struct {
 } Block;
 
 int material_parse(char* material, Material* result);
-int material_has_direction(Material material);
-
-int direction_parse(char* direction, Direction* result);
-Direction direction_invert(Direction dir);
-
-Location location_empty(void);
-Location location_from_values(int values[]);
-Location location_create(Coord x, Coord y, Coord z);
-Location location_move(Location loc, Direction dir, int length);
-int location_equals(Location l1, Location l2);
-int location_hash(Location loc, int max);
-
 Block block_empty(void);
 Block block_from_values(int values[]);
 Block block_create(Location location, Material material, Direction direction);

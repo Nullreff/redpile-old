@@ -86,7 +86,7 @@ int instruction_parse(char* instruction, Instruction* result)
         goto error;
     }
 
-    if (!material_has_direction(material))
+    if (!HAS_DIRECTION(material))
     {
         goto success;
     }
