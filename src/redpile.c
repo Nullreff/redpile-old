@@ -116,7 +116,7 @@ void redpile_exit(void)
 {
     if (world != NULL)
     {
-        world_free(&world);
+        world_free(world);
     }
     printf("\n");
     exit(EXIT_SUCCESS);
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
 {
     load_config(argc, argv);
     signal(SIGINT, handle_signal);
-    world_allocate(&world, config.world_size);
+    world = world_allocate(config.world_size);
 
     Instruction instruction;
     while (1)

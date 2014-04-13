@@ -1,4 +1,4 @@
-/* world.h - Data structure for storing and manipulating blocks
+/* world.h - Data structure for storing a redstone simulation
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -23,29 +23,27 @@
 #include "block.h"
 #include "bucket.h"
 
-#define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks + (bucket)->index)
-
 typedef struct {
-    // Block storage/lookup using a basic hashmap
-    // Blocks are placed sequentially in `blocks`
-    // with a bucket added to `buckets` for lookup
-    int buckets_size;
-    int blocks_size;
-    Bucket* buckets;
-    Block* blocks;
-    int* old_powers;
+    // All blocks are stored in an expandable array that can be resized when
+    // more are added/removed.  See block.c for more information.
+    BlockList* blocks;
 
-    // Stats used by `world_print_status`
-    int count;         // Total blocks
-    int ticks;         // Redstone ticks
-    int max_depth;     // Deepest bucket
-    int collisions;    // Number of hash collisions
-    int power_sources; // Number of blocks that are power sources
+    // Fast block lookup is done using a rather interesting hashmap
+    // implementation.  See bucket.c for more information.
+    BucketList* buckets;
+
+    // Whenever we run a tick, this stores all the previous power values.
+    // Values should remain set to -1 if no block update occured.
+    int* powers;
+
+    // Additional stats used by `world_print_status`
+    unsigned int ticks;         // Redstone ticks
 } World;
 
-void world_allocate(World** world_ptr, unsigned int size);
-void world_free(World** world_ptr);
-Bucket* world_get_bucket(World* world, Location location, bool allocate);
+#define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks->data + (bucket)->index)
+
+World* world_allocate(unsigned int size);
+void world_free(World* world);
 Block* world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
 int world_get_last_power(World* world, Bucket* bucket);

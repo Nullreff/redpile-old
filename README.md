@@ -62,13 +62,8 @@ Currently implemented are:
 
 Prints information about the current state of the world.
 
-* Ticks - The total number of times the `TICK` command has been called.
-* Blocks - The total number of blocks with unique locations that have been added via `SET`.
-* Power Sources - The total number of blocks that can potentially supply power to others.
-* Allocated Blocks - The number of blocks Redpile can store before it needs to allocate more memory.
-* Allocated Buckets - The number of hash buckets Redpile uses to keep track of blocks.
-* Bucket Collisions - How many collisions of hash values are there, lower is better.
-* Max Bucket Depth - The maximum number of buckets Redpile will traverse to find a block, lower is better.
+* ticks - The total number of times the `TICK` command has been called.
+* blocks - The total number of blocks with unique locations that have been added via `SET`.
 
 License
 -------

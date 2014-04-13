@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     World* world;
 
     BENCHMARK_START(world_intialize)
-    world_allocate(&world, 10 * 10 * 10);
+    world = world_allocate(10 * 10 * 10);
     BENCHMARK_END
 
     BENCHMARK_START(world_add_block)
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     world_print_status(world);
 
     BENCHMARK_START(world_free)
-    world_free(&world);
+    world_free(world);
     BENCHMARK_END
 
     return 0;

@@ -18,8 +18,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "block.h"
+#include "redpile.h"
 
 char* Materials[MATERIALS_COUNT] = {
     "EMPTY",
@@ -101,5 +101,60 @@ void block_print_power(Block* block)
                block->location.y,
                block->location.z,
                block->power);
+}
+
+BlockList* block_list_allocate(unsigned int size)
+{
+    BlockList* blocks = malloc(sizeof(BlockList));
+    CHECK_OOM(blocks);
+
+    blocks->size = size;
+    blocks->index = 0;
+    blocks->data = malloc(size * sizeof(Block));
+    CHECK_OOM(blocks->data);
+
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        blocks->data[i] = block_empty();
+    }
+
+    return blocks;
+}
+
+void block_list_free(BlockList* blocks)
+{
+    free(blocks->data);
+    free(blocks);
+}
+
+// Currently support increasing only
+void block_list_resize(BlockList* blocks, unsigned int new_size)
+{
+    assert(new_size > blocks->size);
+
+    Block* temp = realloc(blocks->data, new_size * sizeof(Block));
+    CHECK_OOM(temp);
+
+    blocks->data = temp;
+
+    int i;
+    for (i = blocks->size; i < new_size; i++)
+    {
+        blocks->data[i] = block_empty();
+    }
+
+    blocks->size = new_size;
+}
+
+// Retreives the index of the next available block in the world
+int block_list_next(BlockList* blocks)
+{
+    if (blocks->index >= blocks->size)
+    {
+        block_list_resize(blocks, blocks->size * 2);
+    }
+
+    return blocks->index++;
 }
 

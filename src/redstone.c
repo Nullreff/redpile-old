@@ -95,31 +95,28 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     int i;
 
     // Process all power sources
-    for (i = 0; i < world->buckets_size; i++)
+    for (i = 0; i < world->buckets->index; i++)
     {
-        Bucket* bucket = world->buckets + i;
-        while BUCKET_FILLED(bucket)
+        Bucket* bucket = world->buckets->data + i;
+        if (!BUCKET_FILLED(bucket))
+            continue;
+
+        Block* block = BLOCK_FROM_BUCKET(world, bucket);
+        if (block == NULL || block->updated)
+            continue;
+
+        switch (block->material)
         {
-            Block* block = BLOCK_FROM_BUCKET(world, bucket);
-
-            if (block != NULL && !block->updated)
-            {
-                switch (block->material)
-                {
-                    // Add more powers sources here as needed
-                    case TORCH:
-                        redstone_torch_update(world, bucket);
-                }
-            }
-
-            bucket = bucket->next;
+            // Add more powers sources here as needed
+            case TORCH:
+                redstone_torch_update(world, bucket);
         }
     }
 
     // Check for block modifications and reset flags
-    for (i = 0; i < world->blocks_size; i++)
+    for (i = 0; i < world->blocks->index; i++)
     {
-        Block* block = world->blocks + i;
+        Block* block = world->blocks->data + i;
 
         if (block->updated)
         {
@@ -134,7 +131,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
         }
 
         // Reset old power values
-        world->old_powers[i] = -1;
+        world->powers[i] = -1;
     }
 
     world->ticks++;

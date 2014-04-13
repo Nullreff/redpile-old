@@ -21,11 +21,8 @@
 
 #include "location.h"
 
-#define POWER_SOURCE(material) (material == TORCH)
-#define HAS_DIRECTION(material) (material == TORCH)
 #define MATERIALS_COUNT 6
 #define MATERIAL_DEFAULT EMPTY
-
 char* Materials[MATERIALS_COUNT];
 typedef enum {
     EMPTY,
@@ -44,7 +41,16 @@ typedef struct {
     unsigned int updated:1;
 } Block;
 
+typedef struct {
+    Block* data;
+    unsigned int index;
+    unsigned int size;
+} BlockList;
+
+#define POWER_SOURCE(material) (material == TORCH)
+#define HAS_DIRECTION(material) (material == TORCH)
 int material_parse(char* material, Material* result);
+
 Block block_empty(void);
 Block block_from_values(int values[]);
 Block block_create(Location location, Material material, Direction direction);
@@ -52,5 +58,9 @@ void block_allocate(Block** block, Location location, Material material, Directi
 void block_copy(Block* dest, Block* source);
 void block_print(Block* block);
 void block_print_power(Block* block);
+
+BlockList* block_list_allocate(unsigned int size);
+void block_list_free(BlockList* blocks);
+int block_list_next(BlockList* blocks);
 
 #endif

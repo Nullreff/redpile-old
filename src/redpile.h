@@ -19,6 +19,11 @@
 #ifndef REDPILE_H
 #define REDPILE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
 #define REDPILE_VERSION "0.2.0"
 
 #define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); }
