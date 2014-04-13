@@ -63,16 +63,20 @@ void bucket_list_resize(BucketList* buckets, int new_size)
 
     BucketList* new_buckets = bucket_list_allocate(new_size);
 
-    // TODO: Rebuild hashmap
+    int i;
+    for (i = 0; i < buckets->size; i++)
+    {
+        Bucket* bucket = buckets->data + i;
+        if BUCKET_FILLED(bucket)
+        {
+            Bucket* new_bucket = bucket_list_get(new_buckets, bucket->key, true);
+            new_bucket->index = bucket->index;
+        }
+    }
 
     free(buckets->data);
     memcpy(buckets, new_buckets, sizeof(BucketList));
     free(new_buckets);
-}
-
-void bucket_list_copy(BucketList* dest, BucketList* source)
-{
-    memcpy(dest, source, sizeof(BucketList));
 }
 
 void bucket_list_update_adjacent(BucketList* buckets, Bucket* bucket, bool force)
@@ -97,14 +101,18 @@ void bucket_list_update_adjacent(BucketList* buckets, Bucket* bucket, bool force
     }
 }
 
-Bucket* bucket_list_next(BucketList* buckets)
+Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket, Location key)
 {
     if (buckets->index >= buckets->size)
     {
         bucket_list_resize(buckets, buckets->size * 2);
+        bucket = bucket_list_get(buckets, bucket->key, false);
+        assert(bucket != NULL);
     }
 
-    return buckets->data + buckets->index++;
+    Bucket* new_bucket = buckets->data + buckets->index++;
+    bucket_list_update_adjacent(buckets, new_bucket, false);
+    return new_bucket;
 }
 
 // Finds the bucket used to store the block at the specified location
@@ -127,11 +135,12 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
             {
                 if (allocate)
                 {
-                    bucket->next = bucket_list_next(buckets);
-                    bucket->next->key = key;
-                    bucket_list_update_adjacent(buckets, bucket, false);
+                    bucket = bucket_add_next(buckets, bucket, key);
                 }
-                bucket = bucket->next;
+                else
+                {
+                    bucket = bucket->next;
+                }
                 break;
             }
 
