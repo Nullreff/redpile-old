@@ -101,16 +101,21 @@ void bucket_list_update_adjacent(BucketList* buckets, Bucket* bucket, bool force
     }
 }
 
-Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket, Location key)
+Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 {
     if (buckets->index >= buckets->size)
     {
+        Location key = bucket->key;
         bucket_list_resize(buckets, buckets->size * 2);
-        bucket = bucket_list_get(buckets, bucket->key, false);
+
+        // If we reallocate our list of buckets, the pointer to the bucket
+        // passed most likely points to old memory.
+        bucket = bucket_list_get(buckets, key, false);
         assert(bucket != NULL);
     }
 
     Bucket* new_bucket = buckets->data + buckets->index++;
+    bucket->next = new_bucket;
     bucket_list_update_adjacent(buckets, new_bucket, false);
     return new_bucket;
 }
@@ -135,7 +140,8 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
             {
                 if (allocate)
                 {
-                    bucket = bucket_add_next(buckets, bucket, key);
+                    bucket = bucket_add_next(buckets, bucket);
+                    bucket->key = key;
                 }
                 else
                 {
