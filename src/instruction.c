@@ -117,7 +117,7 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
     {
         case SET:
             new_block = block_from_values(inst->values);
-            block = world_set_block(world, &new_block);
+            world_set_block(world, &new_block);
             return;
 
         case GET:
