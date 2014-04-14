@@ -60,12 +60,6 @@ Block block_create(Location location, Material material, Direction direction)
     return (Block){location, material, direction, 0, 0};
 }
 
-void block_allocate(Block** block, Location location, Material material, Direction direction)
-{
-    *block = malloc(sizeof(Block));
-    **block = block_create(location, material, direction);
-}
-
 void block_copy(Block* dest, Block* source)
 {
     memcpy(dest, source, sizeof(Block));
