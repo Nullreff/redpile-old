@@ -56,6 +56,12 @@ int instruction_parse(char* instruction, Instruction* result)
     CHECK_OOM(parts);
 
     Command command;
+    Coord x = 0;
+    Coord y = 0;
+    Coord z = 0;
+    Material material = EMPTY;
+    Direction direction = NORTH;
+
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
     {
@@ -67,8 +73,6 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
-    Coord x, y, z;
-    x = y = z = 0;
     char* parse_error;
     PARSE_NUMBER(x)
     PARSE_NUMBER(y)
@@ -79,7 +83,6 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
-    Material material = EMPTY;
     char* str_material = strtok(NULL, " ");
     if (str_material == NULL || material_parse(str_material, &material) == -1)
     {
@@ -91,7 +94,6 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
     }
 
-    Direction direction = NORTH;
     char* str_direction = strtok(NULL, " ");
     if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
     {
