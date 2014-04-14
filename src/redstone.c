@@ -105,11 +105,10 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
         if (block == NULL || block->updated)
             continue;
 
-        switch (block->material)
+
+        if POWER_SOURCE(block->material)
         {
-            // Add more powers sources here as needed
-            case TORCH:
-                redstone_torch_update(world, bucket);
+            redstone_torch_update(world, bucket);
         }
     }
 
