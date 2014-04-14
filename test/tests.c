@@ -86,11 +86,14 @@ static char* test_world_block_creation() {
         int val = x + y + z;
         Block block = block_create(loc, MATERIALS[val % 5], UP);
         block.power = val % 16;
-        world_set_block(world, &block);
+        Block* set_block = world_set_block(world, &block);
         Block* found_block = world_get_block(world, block.location);
 
         sprintf(message, "Unable to find stored block at (%d, %d, %d)", x, y, z);
         MU_ASSERT(message, found_block != NULL);
+
+        sprintf(message, "Blocks at (%d, %d, %d) have different pointers %p != %p", x, y, z, (void*)set_block, (void*)found_block);
+        MU_ASSERT(message, found_block == set_block);
 
         sprintf(message, "Block at (%d, %d, %d) has incorrect power (%d != %d)", x, y, z, found_block->power, block.power);
         MU_ASSERT(message, found_block->power == block.power);
@@ -117,7 +120,7 @@ static char * all_tests() {
 int main(int argc, char* argv[])
 {
     message = malloc(sizeof(char) * 200);
-    world = world_allocate(16);
+    world = world_allocate(1);
     char* result = all_tests();
 
     printf("\n");
