@@ -23,7 +23,7 @@
 
 #define MATERIALS_COUNT 6
 #define MATERIAL_DEFAULT EMPTY
-char* Materials[MATERIALS_COUNT];
+extern char* Materials[MATERIALS_COUNT];
 typedef enum {
     EMPTY,
     AIR,
