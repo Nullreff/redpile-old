@@ -72,10 +72,9 @@ int main(int argc, char* argv[])
     CUBE_RANGE_END
     BENCHMARK_END
 
-    Block* found_block;
     BENCHMARK_START(world_get_block)
     CUBE_RANGE(-10,10)
-        found_block = world_get_block(world, (Location){x, y, z});
+        world_get_block(world, (Location){x, y, z});
     CUBE_RANGE_END
     BENCHMARK_END
 
