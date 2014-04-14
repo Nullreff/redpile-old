@@ -1,4 +1,21 @@
 before_install:
   - sudo apt-get install cmake
   - gem install rspec
+
 script: ./test.sh
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "Yeq5fr4B+mr7PoguIN2h4079mGHR5uNVbIffAyBRDMCsWLxhvGJqj0eWa9TbtbK9Pu4E18GdQr6TtuAcwxAwumWoUYBH8eJV3UL84oRKwtM9N7fMchtbkoz+pN38rnoJn8JgNmgOhjY2dWjP+bpxZWxJaefqPMBnYD5NjZVEYdk="
+
+addons:
+  coverity_scan:
+    project:
+      name: "Nullreff/redpile"
+      description: "Your project description here"
+    notification_email: ryan@nullreff.net
+    build_command_prepend: cmake .
+    build_command: make
+    branch_pattern:
