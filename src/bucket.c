@@ -91,7 +91,7 @@ void bucket_list_free(BucketList* buckets)
     free(buckets);
 }
 
-// Currently supports resizing only
+// Currently supports increasing only
 void bucket_list_resize(BucketList* buckets, int new_size)
 {
     assert(new_size > buckets->size);
@@ -165,7 +165,14 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
 
     if (bucket->index == -1)
     {
-        bucket->key = key;
+        if (allocate)
+        {
+            bucket->key = key;
+        }
+        else
+        {
+            bucket = NULL;
+        }
     }
     else
     {
@@ -180,7 +187,7 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
                 }
                 else
                 {
-                    bucket = bucket->next;
+                    bucket = NULL;
                 }
                 break;
             }
