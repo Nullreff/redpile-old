@@ -30,6 +30,41 @@ Bucket bucket_create(Location key, int index)
     return (Bucket){key, index, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL};
 }
 
+void bucket_print(Bucket* bucket)
+{
+    printf("%p (%d,%d,%d) %d %p\n",
+            (void*)bucket,
+            bucket->key.x,
+            bucket->key.y,
+            bucket->key.z,
+            bucket->index,
+            (void*)bucket->next);
+}
+
+void bucket_list_print(BucketList* buckets, Bucket* selected)
+{
+    printf("---Hashmap: %d---\n", buckets->hashmap_size);
+    int i;
+    for (i = 0; i < buckets->size; i++)
+    {
+        if (i == buckets->hashmap_size)
+        {
+            printf("---Overflow: %d---\n", buckets->size - buckets->hashmap_size);
+        }
+        if (i == buckets->index)
+        {
+            printf("---Index: %d---\n", buckets->index - buckets->hashmap_size);
+        }
+        Bucket* found = buckets->data + i;
+        if (found == selected)
+        {
+            printf("> ");
+        }
+        bucket_print(buckets->data + i);
+    }
+    printf("---End: %d---\n", buckets->size);
+}
+
 BucketList* bucket_list_allocate(unsigned int size)
 {
     BucketList* buckets = malloc(sizeof(BucketList));
