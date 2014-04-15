@@ -160,7 +160,12 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 
     if (bucket->index == -1)
     {
-        if (!create)
+        if (create)
+        {
+            bucket->key = key;
+            bucket_list_update_adjacent(buckets, bucket, false);
+        }
+        else
         {
             bucket = NULL;
         }
@@ -174,7 +179,12 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
                 if (create)
                 {
                     bucket = bucket_add_next(buckets, bucket);
-                    if (bucket == NULL)
+                    if (bucket != NULL)
+                    {
+                        bucket->key = key;
+                        bucket_list_update_adjacent(buckets, bucket, false);
+                    }
+                    else
                     {
                         // A reallocation occured while we were searching,
                         // start over from the begining.
@@ -190,12 +200,6 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 
             bucket = bucket->next;
         }
-    }
-
-    if (bucket != NULL && bucket->index == -1)
-    {
-        bucket->key = key;
-        bucket_list_update_adjacent(buckets, bucket, false);
     }
 
     return bucket;
