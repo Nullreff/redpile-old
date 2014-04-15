@@ -1,7 +1,9 @@
 before_install:
   - sudo apt-get install cmake
   - gem install rspec
-
+compiler:
+  - clang
+  - gcc
 script: ./test.sh
 
 env:
