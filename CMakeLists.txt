@@ -1,4 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+ADD_DEFINITIONS("-std=c99")
 
 SET(files src/world.c src/instruction.c src/block.c src/redstone.c src/bucket.c src/location.c)
 
