@@ -16,6 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef REDPILE_TEST_COMMON_H
+#define REDPILE_TEST_COMMON_H
+
+#if __STDC_VERSION__ >= 199901L
+#define _XOPEN_SOURCE 600
+#else
+#define _XOPEN_SOURCE 500
+#endif
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #define RANGE(var,start,end) Coord var; for (var = start; var <= end; var++)
 #define CUBE_RANGE(start,end)\
     RANGE(x,start,end) {\
@@ -28,3 +41,5 @@ extern int tests_run;
 #define MU_ASSERT(message, test) do { if (!(test)) return message; } while (0)
 #define MU_RUN_TEST(test) do { char *message = test(); tests_run++; \
                             if (message) return message; } while (0)
+
+#endif

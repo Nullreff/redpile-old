@@ -16,14 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
-#include <stdbool.h>
 #include "world.h"
-#include "block.h"
 #include "redpile.h"
+#include "block.h"
 #include "bucket.h"
 
 World* world_allocate(unsigned int size)

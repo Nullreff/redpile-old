@@ -19,9 +19,9 @@
 #ifndef REDPILE_WORLD_H
 #define REDPILE_WORLD_H
 
-#include <stdbool.h>
 #include "block.h"
 #include "bucket.h"
+#include <stdbool.h>
 
 typedef struct {
     // All blocks are stored in an expandable array that can be resized when

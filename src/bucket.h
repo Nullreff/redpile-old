@@ -20,6 +20,7 @@
 #define REDPILE_BUCKET_H
 
 #include "location.h"
+#include <stdbool.h>
 
 /*
 When designing Redpile, fast block storage and lookup was a top priority.

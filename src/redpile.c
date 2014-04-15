@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <getopt.h>
-#include <signal.h>
-#include <string.h>
 #include "redpile.h"
 #include "world.h"
 #include "instruction.h"
+#include <getopt.h>
+#include <signal.h>
 
 RedpileConfig config;
 World* world;
