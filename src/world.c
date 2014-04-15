@@ -60,7 +60,7 @@ Block* world_set_block(World* world, Block* block)
     }
 
     Block* target = BLOCK_FROM_BUCKET(world, bucket);
-    block_copy(target, block);
+    memcpy(target, block, sizeof(Block));
     return target;
 }
 
