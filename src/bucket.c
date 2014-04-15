@@ -44,8 +44,8 @@ void bucket_print(Bucket* bucket)
 void bucket_list_print(BucketList* buckets, Bucket* selected)
 {
     printf("---Hashmap: %d---\n", buckets->hashmap_size);
-    int i;
-    for (i = 0; i < buckets->size; i++)
+
+    for (int i = 0; i < buckets->size; i++)
     {
         if (i == buckets->hashmap_size)
         {
@@ -76,8 +76,7 @@ BucketList* bucket_list_allocate(unsigned int size)
     buckets->data = malloc(size * sizeof(Bucket));
     CHECK_OOM(buckets->data);
 
-    int i;
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
         buckets->data[i] = bucket_empty();
     }
@@ -98,8 +97,7 @@ void bucket_list_resize(BucketList* buckets, int new_size)
 
     BucketList* new_buckets = bucket_list_allocate(new_size);
 
-    int i;
-    for (i = 0; i < buckets->size; i++)
+    for (int i = 0; i < buckets->size; i++)
     {
         Bucket* bucket = buckets->data + i;
         if BUCKET_FILLED(bucket)
@@ -116,8 +114,7 @@ void bucket_list_resize(BucketList* buckets, int new_size)
 
 void bucket_list_update_adjacent(BucketList* buckets, Bucket* bucket, bool force)
 {
-    int i;
-    for (i = 0; i < 6; i++)
+    for (int i = 0; i < 6; i++)
     {
         if (force || bucket->adjacent[i] == NULL)
         {

@@ -31,8 +31,7 @@ char* Directions[6] = {
 
 int direction_parse(char* direction, Direction* result)
 {
-    int i;
-    for (i = 0; i < DIRECTIONS_COUNT; i++)
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         if (strcmp(direction, Directions[i]) == 0)
         {

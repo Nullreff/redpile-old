@@ -28,8 +28,7 @@ void redstone_wire_update(World* world, Bucket* bucket)
 
     Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
 
-    int i;
-    for (i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
         Bucket* adjacent = bucket->adjacent[directions[i]];
         if (!BUCKET_FILLED(adjacent))
@@ -69,8 +68,7 @@ void redstone_torch_update(World* world, Bucket* bucket)
 
     Direction directions[5] = {NORTH, SOUTH, EAST, WEST, DOWN};
 
-    int i;
-    for (i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++)
     {
         if (directions[i] == behind)
             continue;
@@ -92,10 +90,8 @@ void redstone_torch_update(World* world, Bucket* bucket)
 
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))
 {
-    int i;
-
     // Process all power sources
-    for (i = 0; i < world->buckets->index; i++)
+    for (int i = 0; i < world->buckets->index; i++)
     {
         Bucket* bucket = world->buckets->data + i;
         if (!BUCKET_FILLED(bucket))
@@ -113,7 +109,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     }
 
     // Check for block modifications and reset flags
-    for (i = 0; i < world->blocks->index; i++)
+    for (int i = 0; i < world->blocks->index; i++)
     {
         Block* block = world->blocks->data + i;
 

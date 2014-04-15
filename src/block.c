@@ -32,8 +32,7 @@ char* Materials[MATERIALS_COUNT] = {
 
 int material_parse(char* material, Material* result)
 {
-    int i;
-    for (i = 0; i < MATERIALS_COUNT; i++)
+    for (int i = 0; i < MATERIALS_COUNT; i++)
     {
         if (strcmp(material, Materials[i]) == 0)
         {
@@ -102,8 +101,7 @@ BlockList* block_list_allocate(unsigned int size)
     blocks->data = malloc(size * sizeof(Block));
     CHECK_OOM(blocks->data);
 
-    int i;
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
         blocks->data[i] = block_empty();
     }
@@ -127,8 +125,7 @@ void block_list_resize(BlockList* blocks, unsigned int new_size)
 
     blocks->data = temp;
 
-    int i;
-    for (i = blocks->size; i < new_size; i++)
+    for (int i = blocks->size; i < new_size; i++)
     {
         blocks->data[i] = block_empty();
     }
