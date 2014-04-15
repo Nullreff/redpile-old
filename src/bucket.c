@@ -136,19 +136,18 @@ Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 {
     if (buckets->index >= buckets->size)
     {
-        Location key = bucket->key;
         bucket_list_resize(buckets, buckets->size * 2);
 
         // If we reallocate our list of buckets, the pointer to the bucket
-        // passed most likely points to old memory.
-        bucket = bucket_list_get(buckets, key, false);
-        assert(bucket != NULL);
+        // passed in most likely points to old memory.
+        return NULL;
     }
-
-    Bucket* new_bucket = buckets->data + buckets->index++;
-    bucket->next = new_bucket;
-    bucket_list_update_adjacent(buckets, new_bucket, false);
-    return new_bucket;
+    else
+    {
+        Bucket* new_bucket = buckets->data + buckets->index++;
+        bucket->next = new_bucket;
+        return new_bucket;
+    }
 }
 
 // Finds the bucket used to store the block at the specified location
@@ -161,11 +160,7 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
 
     if (bucket->index == -1)
     {
-        if (allocate)
-        {
-            bucket->key = key;
-        }
-        else
+        if (!allocate)
         {
             bucket = NULL;
         }
@@ -179,7 +174,12 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
                 if (allocate)
                 {
                     bucket = bucket_add_next(buckets, bucket);
-                    bucket->key = key;
+                    if (bucket == NULL)
+                    {
+                        // A reallocation occured while we were searching,
+                        // start over from the begining.
+                        bucket = bucket_list_get(buckets, key, allocate);
+                    }
                 }
                 else
                 {
@@ -190,6 +190,12 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
 
             bucket = bucket->next;
         }
+    }
+
+    if (bucket != NULL && bucket->index == -1)
+    {
+        bucket->key = key;
+        bucket_list_update_adjacent(buckets, bucket, false);
     }
 
     return bucket;
