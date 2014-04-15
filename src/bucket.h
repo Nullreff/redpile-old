@@ -103,6 +103,6 @@ void bucket_print(Bucket* bucket);
 void bucket_list_print(BucketList* buckets, Bucket* selected);
 BucketList* bucket_list_allocate(unsigned int size);
 void bucket_list_free(BucketList* map);
-Bucket* bucket_list_get(BucketList* map, Location key, bool allocate);
+Bucket* bucket_list_get(BucketList* map, Location key, bool create);
 
 #endif

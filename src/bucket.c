@@ -152,15 +152,15 @@ Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 
 // Finds the bucket used to store the block at the specified location
 // If the bucket can't be found and allocate is true, a new bucket
-// will be created.  If allocate is false, it will return NULL.
-Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
+// will be created.  If create is false, it will return NULL.
+Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 {
     int hash = location_hash(key, buckets->hashmap_size);
     Bucket* bucket = buckets->data + hash;
 
     if (bucket->index == -1)
     {
-        if (!allocate)
+        if (!create)
         {
             bucket = NULL;
         }
@@ -171,14 +171,14 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool allocate)
         {
             if (bucket->next == NULL)
             {
-                if (allocate)
+                if (create)
                 {
                     bucket = bucket_add_next(buckets, bucket);
                     if (bucket == NULL)
                     {
                         // A reallocation occured while we were searching,
                         // start over from the begining.
-                        bucket = bucket_list_get(buckets, key, allocate);
+                        bucket = bucket_list_get(buckets, key, create);
                     }
                 }
                 else
