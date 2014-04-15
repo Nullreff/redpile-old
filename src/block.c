@@ -69,7 +69,7 @@ void block_print(Block* block)
 {
     if (HAS_DIRECTION(block->material))
     {
-        printf("(%d,%d,%d) %d %s %s\n",
+        printf("(%d,%d,%d) %u %s %s\n",
                block->location.x,
                block->location.y,
                block->location.z,
@@ -79,7 +79,7 @@ void block_print(Block* block)
     }
     else
     {
-        printf("(%d,%d,%d) %d %s\n",
+        printf("(%d,%d,%d) %u %s\n",
                block->location.x,
                block->location.y,
                block->location.z,
@@ -90,7 +90,7 @@ void block_print(Block* block)
 
 void block_print_power(Block* block)
 {
-        printf("(%d,%d,%d) %d\n",
+        printf("(%d,%d,%d) %u\n",
                block->location.x,
                block->location.y,
                block->location.z,
