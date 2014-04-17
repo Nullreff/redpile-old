@@ -96,10 +96,6 @@ typedef struct {
 
 #define BUCKET_FILLED(bucket) (bucket != NULL && bucket->index != -1)
 
-Bucket bucket_empty(void);
-Bucket bucket_create(Location key, int index);
-void bucket_print(Bucket* bucket);
-
 void bucket_list_print(BucketList* buckets, Bucket* selected);
 BucketList* bucket_list_allocate(unsigned int size);
 void bucket_list_free(BucketList* map);

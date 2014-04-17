@@ -19,17 +19,17 @@
 #include "bucket.h"
 #include "redpile.h"
 
-Bucket bucket_empty(void)
-{
-    return bucket_create(location_empty(), -1);
-}
-
-Bucket bucket_create(Location key, int index)
+static Bucket bucket_create(Location key, int index)
 {
     return (Bucket){key, index, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL};
 }
 
-void bucket_print(Bucket* bucket)
+static Bucket bucket_empty(void)
+{
+    return bucket_create(location_empty(), -1);
+}
+
+static void bucket_print(Bucket* bucket)
 {
     printf("%p (%d,%d,%d) %d %p\n",
             (void*)bucket,
