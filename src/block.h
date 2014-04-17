@@ -20,6 +20,7 @@
 #define REDPILE_BLOCK_H
 
 #include "location.h"
+#include "redpile.h"
 
 #define MATERIALS_COUNT 6
 #define MATERIAL_DEFAULT EMPTY
@@ -59,6 +60,6 @@ void block_print_power(Block* block);
 
 BlockList* block_list_allocate(unsigned int size);
 void block_list_free(BlockList* blocks);
-int block_list_next(BlockList* blocks);
+int block_list_next(BlockList* blocks, bool* resized);
 
 #endif

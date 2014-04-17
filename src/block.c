@@ -132,11 +132,12 @@ void block_list_resize(BlockList* blocks, unsigned int new_size)
 }
 
 // Retreives the index of the next available block in the world
-int block_list_next(BlockList* blocks)
+int block_list_next(BlockList* blocks, bool* resized)
 {
     if (blocks->index >= blocks->size)
     {
         block_list_resize(blocks, blocks->size * 2);
+        *resized = true;
     }
 
     return blocks->index++;

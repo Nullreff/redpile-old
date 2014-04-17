@@ -17,7 +17,6 @@
  */
 
 #include "world.h"
-#include "redpile.h"
 #include "block.h"
 #include "bucket.h"
 
@@ -31,6 +30,7 @@ World* world_allocate(unsigned int size)
     world->buckets = bucket_list_allocate(size);
     world->blocks = block_list_allocate(size);
     world->powers = malloc(size * sizeof(int));
+    memset(world->powers, -1, size * sizeof(int));
     CHECK_OOM(world->powers);
 
     return world;
@@ -51,7 +51,16 @@ Block* world_set_block(World* world, Block* block)
     // Attach the next availabe block to this bucket
     if (!BUCKET_FILLED(bucket))
     {
-        bucket->index = block_list_next(world->blocks);
+        bool resized = false;
+        int old_size = world->buckets->size;
+        bucket->index = block_list_next(world->blocks, &resized);
+        if (resized)
+        {
+            int* temp = realloc(world->powers, world->blocks->size * sizeof(int));
+            CHECK_OOM(temp);
+            world->powers = temp;
+            memset(world->powers, -1, world->blocks->size * sizeof(int));
+        }
     }
 
     Block* target = BLOCK_FROM_BUCKET(world, bucket);

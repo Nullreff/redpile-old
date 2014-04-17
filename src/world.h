@@ -21,7 +21,7 @@
 
 #include "block.h"
 #include "bucket.h"
-#include <stdbool.h>
+#include "redpile.h"
 
 typedef struct {
     // All blocks are stored in an expandable array that can be resized when
