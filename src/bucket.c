@@ -90,7 +90,7 @@ void bucket_list_free(BucketList* buckets)
 }
 
 // Currently supports increasing only
-void bucket_list_resize(BucketList* buckets, int new_size)
+void bucket_list_resize(BucketList* buckets, unsigned int new_size)
 {
     assert(new_size > buckets->size);
 
@@ -151,7 +151,7 @@ Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 }
 
 // Finds the bucket used to store the block at the specified location
-// If the bucket can't be found and allocate is true, a new bucket
+// If the bucket can't be found and create is true, a new bucket
 // will be created.  If create is false, it will return NULL.
 Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 {

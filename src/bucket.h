@@ -83,7 +83,7 @@ typedef struct {
     // following *next pointers.
     Bucket* data;
 
-    // The next available bucket in *data.
+    // The next available empty bucket in *data.
     unsigned int index;
 
     // Total number of allocated buckets in *data.
