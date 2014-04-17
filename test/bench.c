@@ -68,11 +68,9 @@ int main(int argc, char* argv[])
     CUBE_RANGE_END
     BENCHMARK_END
 
-    int counter;
     BENCHMARK_START(world_get_block)
     CUBE_RANGE(-10,10)
-        Block* block = world_get_block(world, (Location){x, y, z});
-        counter += block->power;
+        world_get_block(world, (Location){x, y, z});
     CUBE_RANGE_END
     BENCHMARK_END
 
@@ -83,7 +81,6 @@ int main(int argc, char* argv[])
     }
     BENCHMARK_END
 
-    printf("Total Power: %d", counter);
     world_print_status(world);
 
     BENCHMARK_START(world_free)
