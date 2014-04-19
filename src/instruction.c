@@ -137,7 +137,7 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             break;
 
         case STATUS:
-            world_print_status(world);
+            world_stats_print(world_get_stats(world));
             break;
     }
 }

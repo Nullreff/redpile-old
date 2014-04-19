@@ -57,6 +57,8 @@ void run_benchmarks(void)
 {
     World* world;
 
+    long long start = get_time();
+
     BENCHMARK_START(world_intialize)
     world = world_allocate(1);
     BENCHMARK_END
@@ -82,9 +84,14 @@ void run_benchmarks(void)
     RANGE_END
     BENCHMARK_END
 
-    world_print_status(world);
+    WorldStats stats = world_get_stats(world);
 
     BENCHMARK_START(world_free)
     world_free(world);
     BENCHMARK_END
+
+    printf("----------------------------\n");
+    print_time("Total Time", get_time() - start);
+    world_stats_print(stats);
 }
+

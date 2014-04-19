@@ -40,6 +40,11 @@ typedef struct {
     unsigned int ticks;         // Redstone ticks
 } World;
 
+typedef struct {
+    unsigned int ticks;
+    unsigned int blocks;
+} WorldStats;
+
 #define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks->data + (bucket)->index)
 
 World* world_allocate(unsigned int size);
@@ -48,7 +53,8 @@ Block* world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
 int world_get_last_power(World* world, Bucket* bucket);
 void world_set_last_power(World* world, Bucket* bucket);
-void world_print_status(World* world);
+WorldStats world_get_stats(World* world);
+void world_stats_print(WorldStats world);
 
 #endif
 

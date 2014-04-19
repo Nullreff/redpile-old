@@ -85,8 +85,17 @@ void world_set_last_power(World* world, Bucket* bucket)
     world->powers[bucket->index] = BLOCK_FROM_BUCKET(world, bucket)->power;
 }
 
-void world_print_status(World* world)
+WorldStats world_get_stats(World* world)
 {
-    printf("ticks: %d\n", world->ticks);
-    printf("blocks: %d\n", world->blocks->index);
+    return (WorldStats){
+        world->ticks,
+        world->blocks->index
+    };
 }
+
+void world_stats_print(WorldStats stats)
+{
+    printf("ticks: %d\n", stats.ticks);
+    printf("blocks: %d\n", stats.blocks);
+}
+
