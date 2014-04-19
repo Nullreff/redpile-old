@@ -37,7 +37,7 @@ describe 'Redpile Options' do
       it 'runs in interactive mode' do
         redpile(short ? '-i' : '--interactive') do |p|
           p.close_write
-          p.gets.should == "> \n"
+          p.read.should == ""
         end
       end
 
@@ -47,7 +47,7 @@ describe 'Redpile Options' do
           p.puts 'SET 0 0 1 WIRE'
           p.puts 'TICK'
           p.close_write
-          p.gets.should == "\n"
+          p.read.should == ""
         end
       end
 
@@ -55,7 +55,7 @@ describe 'Redpile Options' do
         it "runs with a custom world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
             p.close_write
-            p.gets.should == "\n"
+            p.read.should == ""
           end
         end
       end
@@ -64,7 +64,7 @@ describe 'Redpile Options' do
         it "errors when run with a world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
             p.close_write
-            p.gets.should == "You must pass an integer as the world size\n"
+            p.read.should =~ /You must pass an integer as the world size\n/
           end
         end
       end
@@ -73,7 +73,7 @@ describe 'Redpile Options' do
         it "errors when run with a world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
             p.close_write
-            p.gets.should == "You must provide a world size larger than zero\n"
+            p.read.should =~ /You must provide a world size larger than zero\n/
           end
         end
       end
@@ -83,14 +83,14 @@ describe 'Redpile Options' do
   it 'runs in non interactive mode' do
     redpile do |p|
       p.close_write
-      p.gets.should == "\n"
+      p.read.should == ""
     end
   end
 
   it 'runs benchmarks' do
     redpile('--benchmark') do |p|
       p.close_write
-      p.gets.should == "--- Benchmark Start ---\n"
+      p.read.should =~ /--- Benchmark Start ---\n/
     end
   end
 end

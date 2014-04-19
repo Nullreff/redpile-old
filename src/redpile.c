@@ -20,11 +20,13 @@
 #include "world.h"
 #include "instruction.h"
 #include "bench.h"
+#include "linenoise.h"
 #include <getopt.h>
 #include <signal.h>
 
 RedpileConfig config;
 World* world;
+char* line;
 
 static void print_version()
 {
@@ -123,48 +125,22 @@ void redpile_exit(void)
     {
         world_free(world);
     }
+
+    if (line != NULL)
+    {
+        free(line);
+    }
+
     printf("\n");
     exit(EXIT_SUCCESS);
 }
 
-void handle_signal(int signal)
+void signal_callback(int signal)
 {
     if (signal == SIGINT)
     {
         redpile_exit();
     }
-}
-
-int read_next_instruction(Instruction* instruction)
-{
-    char* line = NULL;
-    int result;
-    size_t size;
-
-    if (getline(&line, &size, stdin) == EOF)
-    {
-        result = -3;
-        goto cleanup;
-    }
-
-    if (size == 0)
-    {
-        result = -2;
-        goto cleanup;
-    }
-
-    // Trim the trailing line return
-    size_t ln = strlen(line) - 1;
-    if (line[ln] == '\n')
-    {
-        line[ln] = '\0';
-    }
-
-    result = instruction_parse(line, instruction);
-
-cleanup:
-    free(line);
-    return result;
 }
 
 void instruction_callback(Block* block)
@@ -175,22 +151,33 @@ void instruction_callback(Block* block)
     }
 }
 
+void completion_callback(const char* buffer, linenoiseCompletions* completions)
+{
+
+}
+
 int main(int argc, char* argv[])
 {
+    char* prompt;
+
+    signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    signal(SIGINT, handle_signal);
     world = world_allocate(config.world_size);
 
-    Instruction instruction;
-    while (1)
+    if (config.interactive)
     {
-        if (config.interactive)
-        {
-            printf("> ");
-        }
+        linenoiseSetCompletionCallback(completion_callback);
+        prompt = "> ";
+    }
+    else
+    {
+        prompt = "";
+    }
 
-        int result = read_next_instruction(&instruction);
-        switch (result)
+    Instruction instruction;
+    while ((line = linenoise(prompt)) != NULL)
+    {
+        switch (instruction_parse(line, &instruction))
         {
             case 0: // Valid command
                 instruction_run(world, &instruction, instruction_callback);
@@ -206,6 +193,7 @@ int main(int argc, char* argv[])
             case -3: // Exit
                 redpile_exit();
         }
+        free(line);
     }
 }
 

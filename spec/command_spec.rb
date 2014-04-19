@@ -24,7 +24,7 @@ describe 'Redpile Commands' do
     redpile do |p|
       p.puts 'SET 0 0 0 EMPTY'
       p.close_write
-      p.gets.should == "\n"
+      p.read.should == ""
     end
   end
 
@@ -32,7 +32,7 @@ describe 'Redpile Commands' do
     redpile do |p|
       p.puts 'GET 0 0 0'
       p.close_write
-      p.gets.should == "(0,0,0) 0 EMPTY\n"
+      p.read.should =~ /\(0,0,0\) 0 EMPTY/
     end
   end
 
@@ -40,7 +40,7 @@ describe 'Redpile Commands' do
     redpile do |p|
       p.puts 'TICK'
       p.close_write
-      p.gets.should == "\n"
+      p.read.should == ""
     end
   end
 
@@ -48,7 +48,7 @@ describe 'Redpile Commands' do
     redpile do |p|
       p.puts 'SET 0 0 0 INVALID'
       p.close_write
-      p.gets.should == "Invalid Command\n"
+      p.read.should =~ /Invalid Command\n/
     end
   end
 
@@ -56,7 +56,7 @@ describe 'Redpile Commands' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH INVALID'
       p.close_write
-      p.gets.should == "Invalid Command\n"
+      p.gets.should =~ /Invalid Command\n/
     end
   end
 
@@ -67,7 +67,7 @@ describe 'Redpile Commands' do
         p.puts "SET 0 0 0 #{block}"
         p.puts "GET 0 0 0"
         p.close_write
-        p.gets.should == "(0,0,0) 0 #{block}\n"
+        p.read.should =~ /\(0,0,0\) 0 #{block}\n/
       end
     end
   end
@@ -80,7 +80,7 @@ describe 'Redpile Commands' do
           p.puts "SET 0 0 0 #{block} #{dir}"
           p.puts "GET 0 0 0"
           p.close_write
-          p.gets.should == "(0,0,0) 0 #{block} #{dir}\n"
+          p.read.should =~ /\(0,0,0\) 0 #{block} #{dir}\n/
         end
       end
     end

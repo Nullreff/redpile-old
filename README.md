@@ -68,5 +68,6 @@ Prints information about the current state of the world.
 License
 -------
 
-Redpile core is GPL, see LICENSE for more information.
+Redpile is GPL, see LICENSE for more information.  
+Linenoise is BSD, see [github.com/antirez/linenoise](https://github.com/antirez/linenoise)
 
