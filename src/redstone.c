@@ -35,7 +35,10 @@ void redstone_wire_update(World* world, Bucket* bucket)
             continue;
 
         Block* found_block = BLOCK_FROM_BUCKET(world, adjacent);
-        if (found_block != NULL && found_block->material == WIRE)
+        if (found_block == NULL)
+            continue;
+
+        if (found_block->material == WIRE)
         {
             if (!found_block->updated || found_block->power < (block->power - 1))
             {
@@ -78,7 +81,10 @@ void redstone_torch_update(World* world, Bucket* bucket)
             continue;
 
         Block* found_block = BLOCK_FROM_BUCKET(world, adjacent);
-        if (found_block != NULL && found_block->material == WIRE)
+        if (found_block == NULL)
+            continue;
+
+        if (found_block->material == WIRE)
         {
             world_set_last_power(world, adjacent);
             found_block->power = block->power;
@@ -100,7 +106,6 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
         Block* block = BLOCK_FROM_BUCKET(world, bucket);
         if (block == NULL || block->updated)
             continue;
-
 
         if POWER_SOURCE(block->material)
         {
