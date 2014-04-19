@@ -52,6 +52,13 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'errors if given an incorrect direction' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH INVALID'
+      p.close_write
+      p.gets.should == "Invalid Command\n"
+    end
+  end
 
   normal_blocks = %w(AIR WIRE CONDUCTOR INSULATOR)
   normal_blocks.each do |block|
