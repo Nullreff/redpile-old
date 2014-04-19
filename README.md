@@ -68,5 +68,5 @@ Prints information about the current state of the world.
 License
 -------
 
-Released under GPLv3, see LICENSE.txt for more information.
+Redpile core is GPL, see LICENSE for more information.
 
