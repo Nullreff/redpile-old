@@ -58,7 +58,7 @@ void run_benchmarks(void)
     World* world;
 
     BENCHMARK_START(world_intialize)
-    world = world_allocate(10 * 10 * 10);
+    world = world_allocate(1);
     BENCHMARK_END
 
     BENCHMARK_START(world_add_block)
@@ -77,7 +77,7 @@ void run_benchmarks(void)
     BENCHMARK_END
 
     BENCHMARK_START(redstone_tick)
-    RANGE(i,1,10 * 10 * 10)
+    RANGE(i,1,100)
         redstone_tick(world, block_modified);
     RANGE_END
     BENCHMARK_END

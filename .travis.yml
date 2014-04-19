@@ -1,10 +1,12 @@
 before_install:
-  - sudo apt-get install cmake
+  - sudo apt-get install cmake valgrind
   - gem install rspec
 
 compiler:
   - clang
   - gcc
 
-script: make test
+script:
+  - make test
+  - make memcheck
 
