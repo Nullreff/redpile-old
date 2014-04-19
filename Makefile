@@ -13,4 +13,4 @@ build: build_dir
 
 test: build_dir
 	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE:STRING=Debug .. && make --no-print-directory
-	./build/redpiletest && rspec
+	rspec && ./build/redpile --benchmark

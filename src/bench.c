@@ -16,42 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common.h"
-#include "../src/world.h"
-#include "../src/block.h"
-#include "../src/redstone.h"
+#include "bench.h"
+#include "world.h"
+#include "block.h"
+#include "redstone.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
 
-#define BENCHMARK_START(name) do {\
-    struct timespec start, end;\
-    char* message = #name;\
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-
-#define BENCHMARK_END\
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);\
-    print_time(message, start, end);\
-} while(0);
-
-void print_time(char* message, struct timespec start, struct timespec end)
+static long long get_time(void)
 {
-    struct timespec result;
+    struct timeval value;
+    gettimeofday(&value, NULL);
 
-    if ((end.tv_nsec - start.tv_nsec) < 0)
+    long long time = ((long long)value.tv_sec) * 1000000;
+    time += value.tv_usec;
+    return time;
+}
+
+static void print_time(char* message, long long time)
+{
+    if (time > 1000 * 1000 * 1000)
     {
-        result.tv_sec = end.tv_sec - start.tv_sec - 1;
-        result.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+        printf("%s - %lld sec\n", message, time / (1000 * 1000));
+    }
+    else if (time > 1000 * 1000)
+    {
+        printf("%s - %lld ms\n", message, time / 1000);
     }
     else
     {
-        result.tv_sec = end.tv_sec - start.tv_sec;
-        result.tv_nsec = end.tv_nsec - start.tv_nsec;
+        printf("%s - %lld us\n", message, time);
     }
-
-    printf("%s - %ld:%ld\n", message, result.tv_sec, result.tv_nsec);
 }
 
-void block_modified(Block* b) {}
+static void block_modified(Block* b) {}
 
-int main(int argc, char* argv[])
+void run_benchmarks(void)
 {
     World* world;
 
@@ -76,9 +78,8 @@ int main(int argc, char* argv[])
 
     BENCHMARK_START(redstone_tick)
     RANGE(i,1,10 * 10 * 10)
-    {
         redstone_tick(world, block_modified);
-    }
+    RANGE_END
     BENCHMARK_END
 
     world_print_status(world);
@@ -86,6 +87,4 @@ int main(int argc, char* argv[])
     BENCHMARK_START(world_free)
     world_free(world);
     BENCHMARK_END
-
-    return 0;
 }

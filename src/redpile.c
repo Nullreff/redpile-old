@@ -19,6 +19,7 @@
 #include "redpile.h"
 #include "world.h"
 #include "instruction.h"
+#include "bench.h"
 #include <getopt.h>
 #include <signal.h>
 
@@ -44,7 +45,9 @@ static void print_help()
            "    -v, --version\n"
            "        Print the current version\n\n"
            "    -h, --help\n"
-           "        Print this message\n");
+           "        Print this message\n\n"
+           "    --benchmark\n"
+           "        Run benchmarks and stress tests\n");
 }
 
 static unsigned int parse_world_size(char* string)
@@ -72,6 +75,7 @@ void load_config(int argc, char* argv[])
         {"interactive", no_argument,       NULL, 'i'},
         {"version",     no_argument,       NULL, 'v'},
         {"help",        no_argument,       NULL, 'h'},
+        {"benchmark",   no_argument,       NULL, 'b'},
         {NULL,          0,                 NULL,  0 }
     };
 
@@ -91,6 +95,10 @@ void load_config(int argc, char* argv[])
                 config.silent = 1;
                 break;
 
+            case 'i':
+                config.interactive = 1;
+                break;
+
             case 'v':
                 print_version();
                 exit(EXIT_SUCCESS);
@@ -99,9 +107,9 @@ void load_config(int argc, char* argv[])
                 print_help();
                 exit(EXIT_SUCCESS);
 
-            case 'i':
-                config.interactive = 1;
-                break;
+            case 'b':
+                run_benchmarks();
+                exit(EXIT_SUCCESS);
 
             default:
                 exit(EXIT_FAILURE);
