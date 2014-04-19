@@ -36,15 +36,20 @@ typedef struct {
     // Values should remain set to -1 if no block update occured.
     int* powers;
 
-    // Additional stats used by `world_print_status`
-    unsigned int ticks;         // Redstone ticks
+    // Additional stats
+    unsigned int ticks; // Redstone ticks
 } World;
 
 typedef struct {
     unsigned int ticks;
     unsigned int blocks;
+    unsigned int hashmap_size;
+    unsigned int hashmap_overflow;
+    unsigned int blocks_allocated;
+    unsigned int buckets_allocated;
 } WorldStats;
 
+#define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)
 #define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks->data + (bucket)->index)
 
 World* world_allocate(unsigned int size);

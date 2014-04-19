@@ -91,8 +91,8 @@ void run_benchmarks(void)
     BENCHMARK_END
 
     long long end = get_time();
+    print_time("total", end - start);
     printf("--- Benchmark End ---\n");
-    print_time("Total Time", end - start);
     world_stats_print(stats);
 }
 

@@ -89,13 +89,21 @@ WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
         world->ticks,
-        world->blocks->index
+        world->blocks->index,
+        world->buckets->hashmap_size,
+        world->buckets->index - world->buckets->hashmap_size,
+        world->blocks->size,
+        world->buckets->size
     };
 }
 
 void world_stats_print(WorldStats stats)
 {
-    printf("ticks: %d\n", stats.ticks);
-    printf("blocks: %d\n", stats.blocks);
+    STAT_PRINT(stats, ticks);
+    STAT_PRINT(stats, blocks);
+    STAT_PRINT(stats, hashmap_size);
+    STAT_PRINT(stats, hashmap_overflow);
+    STAT_PRINT(stats, blocks_allocated);
+    STAT_PRINT(stats, buckets_allocated);
 }
 
