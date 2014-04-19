@@ -57,6 +57,7 @@ void run_benchmarks(void)
 {
     World* world;
 
+    printf("--- Benchmark Start ---\n");
     long long start = get_time();
 
     BENCHMARK_START(world_intialize)
@@ -90,8 +91,9 @@ void run_benchmarks(void)
     world_free(world);
     BENCHMARK_END
 
-    printf("----------------------------\n");
-    print_time("Total Time", get_time() - start);
+    long long end = get_time();
+    printf("--- Benchmark End ---\n");
+    print_time("Total Time", end - start);
     world_stats_print(stats);
 }
 

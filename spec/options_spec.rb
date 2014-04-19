@@ -86,4 +86,11 @@ describe 'Redpile Options' do
       p.gets.should == "\n"
     end
   end
+
+  it 'runs benchmarks' do
+    redpile('--benchmark') do |p|
+      p.close_write
+      p.gets.should == "--- Benchmark Start ---\n"
+    end
+  end
 end
