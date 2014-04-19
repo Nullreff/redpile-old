@@ -13,7 +13,7 @@ Building & Usage
 ----------------
 
 Requires [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.info/) for CLI tests.
-Run `./build.sh` to compile or `./test.sh` to run tests.
+Run `make` to compile or `make test` to run tests.
 
 ~~By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.~~ (WIP)
 It then reads commands for block updates from the standard input and writes the resulting changes to the standard output.
