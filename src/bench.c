@@ -22,7 +22,6 @@
 #include "redstone.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <sys/time.h>
 
 static long long get_time(void)

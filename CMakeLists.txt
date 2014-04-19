@@ -3,5 +3,4 @@ ADD_DEFINITIONS("-std=c99")
 ADD_SUBDIRECTORY(src)
 FILE(GLOB files src/*.c)
 ADD_EXECUTABLE(redpile ${files})
-TARGET_LINK_LIBRARIES(redpile rt)
 
