@@ -99,6 +99,7 @@ WorldStats world_get_stats(World* world)
 
 void world_stats_print(WorldStats stats)
 {
+    printf("Status:\n");
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
     STAT_PRINT(stats, hashmap_size);

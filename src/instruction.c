@@ -21,6 +21,7 @@
 #include "block.h"
 #include "world.h"
 #include "redstone.h"
+#include <ctype.h>
 
 #define PARSE_NUMBER(NAME)\
     char* str_ ## NAME = strtok(NULL, " ");\
@@ -30,20 +31,25 @@
     if (*parse_error)\
         goto error;
 
+char* Commands[COMMANDS_COUNT] = {
+    "SET",
+    "GET",
+    "TICK",
+    "STATUS"
+};
+
 int command_parse(char* command, Command* result)
 {
-    if (strcmp(command, "SET") == 0)
-        *result = SET;
-    else if (strcmp(command, "GET") == 0)
-        *result = GET;
-    else if (strcmp(command, "TICK") == 0)
-        *result = TICK;
-    else if (strcmp(command, "STATUS") == 0)
-        *result = STATUS;
-    else
-        return -1;
+    for (int i = 0; i < COMMANDS_COUNT; i++)
+    {
+        if (strcmp(command, Commands[i]) == 0)
+        {
+            *result = (Command)i;
+            return 0;
+        }
+    }
 
-    return 0;
+    return -1;
 }
 
 int instruction_parse(char* instruction, Instruction* result)
@@ -51,6 +57,12 @@ int instruction_parse(char* instruction, Instruction* result)
     char* parts = strdup(instruction);
     char* parts_ptr = parts;
     CHECK_OOM(parts);
+
+    // Convert to upper case
+    for (int i = 0; parts[i] != '\0'; i++)
+    {
+        parts[i] = toupper(parts[i]);
+    }
 
     Command command;
     Coord x = 0;

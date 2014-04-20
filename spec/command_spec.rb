@@ -20,27 +20,39 @@ require 'spec_helper'
 include Helpers
 
 describe 'Redpile Commands' do
-  it 'parses the SET command' do
-    redpile do |p|
-      p.puts 'SET 0 0 0 EMPTY'
-      p.close_write
-      p.read.should == ""
-    end
-  end
+  [true, false].each do |upper|
+    context "Using #{upper ? 'upper' : 'lower'} case" do
+      it 'parses the SET command' do
+        redpile do |p|
+          p.puts (upper ? 'SET 0 0 0 TORCH UP' : 'set 0 0 0 torch up')
+          p.close_write
+          p.read.should == ""
+        end
+      end
 
-  it 'parses the GET command' do
-    redpile do |p|
-      p.puts 'GET 0 0 0'
-      p.close_write
-      p.read.should =~ /\(0,0,0\) 0 EMPTY/
-    end
-  end
+      it 'parses the GET command' do
+        redpile do |p|
+          p.puts (upper ? 'GET 0 0 0' : 'get 0 0 0')
+          p.close_write
+          p.read.should =~ /\(0,0,0\) 0 EMPTY/
+        end
+      end
 
-  it 'parses the TICK command' do
-    redpile do |p|
-      p.puts 'TICK'
-      p.close_write
-      p.read.should == ""
+      it 'parses the TICK command' do
+        redpile do |p|
+          p.puts (upper ? 'TICK' : 'tick')
+          p.close_write
+          p.read.should == ""
+        end
+      end
+
+      it 'parses the STATUS command' do
+        redpile do |p|
+          p.puts (upper ? 'STATUS' : 'status')
+          p.close_write
+          p.read.should =~ /Status:\n/
+        end
+      end
     end
   end
 
