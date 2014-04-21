@@ -23,6 +23,7 @@
 #include "linenoise.h"
 #include <getopt.h>
 #include <signal.h>
+#include <ctype.h>
 
 RedpileConfig config;
 World* world;
@@ -153,7 +154,23 @@ void instruction_callback(Block* block)
 
 void completion_callback(const char* buffer, linenoiseCompletions* completions)
 {
+    for (int i = 0; i < COMMANDS_COUNT; i++)
+    {
+        bool found = true;
+        for (int j = 0; buffer[j] != '\0'; j++)
+        {
+            if (toupper(buffer[j]) != Commands[i][j])
+            {
+                found = false;
+                break;
+            }
+        }
 
+        if (found)
+        {
+            linenoiseAddCompletion(completions, Commands[i]);
+        }
+    }
 }
 
 int main(int argc, char* argv[])
@@ -177,6 +194,7 @@ int main(int argc, char* argv[])
     Instruction instruction;
     while ((line = linenoise(prompt)) != NULL)
     {
+        linenoiseHistoryAdd(line);
         switch (instruction_parse(line, &instruction))
         {
             case 0: // Valid command

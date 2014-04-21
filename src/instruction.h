@@ -22,7 +22,7 @@
 #include "world.h"
 #include "block.h"
 
-#define COMMANDS_COUNT 6
+#define COMMANDS_COUNT 4
 extern char* Commands[COMMANDS_COUNT];
 typedef enum {
     SET,
