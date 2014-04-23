@@ -22,13 +22,14 @@
 #include "world.h"
 #include "block.h"
 
-#define COMMANDS_COUNT 4
+#define COMMANDS_COUNT 5
 extern char* Commands[COMMANDS_COUNT];
 typedef enum {
     SET,
     GET,
     TICK,
-    STATUS
+    STATUS,
+    PING
 } Command;
 
 typedef struct {

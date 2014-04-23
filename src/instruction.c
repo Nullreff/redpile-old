@@ -35,7 +35,8 @@ char* Commands[COMMANDS_COUNT] = {
     "SET",
     "GET",
     "TICK",
-    "STATUS"
+    "STATUS",
+    "PING"
 };
 
 int command_parse(char* command, Command* result)
@@ -77,7 +78,7 @@ int instruction_parse(char* instruction, Instruction* result)
         goto error;
     }
 
-    if (command == TICK || command == STATUS)
+    if (command == TICK || command == STATUS || command == PING)
     {
         goto success;
     }
@@ -150,6 +151,10 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
 
         case STATUS:
             world_stats_print(world_get_stats(world));
+            break;
+
+        case PING:
+            printf("PONG\n");
             break;
     }
 }

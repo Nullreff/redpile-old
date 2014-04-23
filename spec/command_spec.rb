@@ -53,6 +53,14 @@ describe 'Redpile Commands' do
           p.read.should =~ /Status:\n/
         end
       end
+
+      it 'parses the PING command' do
+        redpile do |p|
+          p.puts (upper ? 'PING' : 'ping')
+          p.close_write
+          p.read.should =~ /PONG\n/
+        end
+      end
     end
   end
 
