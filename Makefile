@@ -13,10 +13,10 @@ clean:
 	rm -rf ${BUILD_DIR}
 
 build: build_dir
-	cd ${BUILD_DIR}; cmake .. && ${COMPILE}
+	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE=RELEASE .. && ${COMPILE}
 
 debug_build: build_dir
-	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE:STRING=Debug .. && ${COMPILE}
+	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE=DEBUG .. && ${COMPILE}
 
 test: debug_build
 	${RSPEC}
