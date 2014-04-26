@@ -39,7 +39,7 @@ describe 'Redpile Options' do
       it 'runs in interactive mode' do
         redpile(short ? '-i' : '--interactive') do |p|
           p.close_write
-          p.read.should == ""
+          p.read.should == "\n"
         end
       end
 
@@ -49,7 +49,7 @@ describe 'Redpile Options' do
           p.puts 'SET 0 0 1 WIRE'
           p.puts 'TICK'
           p.close_write
-          p.read.should == ""
+          p.read.should == "\n"
         end
       end
 
@@ -57,7 +57,7 @@ describe 'Redpile Options' do
         it "runs with a custom world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
             p.close_write
-            p.read.should == ""
+            p.read.should == "\n"
           end
         end
       end
@@ -85,7 +85,7 @@ describe 'Redpile Options' do
   it 'runs in non interactive mode' do
     redpile do |p|
       p.close_write
-      p.read.should == ""
+      p.read.should == "\n"
     end
   end
 

@@ -47,20 +47,18 @@ void bucket_list_print(BucketList* buckets, Bucket* selected)
     for (int i = 0; i < buckets->size; i++)
     {
         if (i == buckets->hashmap_size)
-        {
             printf("---Overflow: %d---\n", buckets->size - buckets->hashmap_size);
-        }
+
         if (i == buckets->index)
-        {
             printf("---Index: %d---\n", buckets->index - buckets->hashmap_size);
-        }
+
         Bucket* found = buckets->data + i;
         if (found == selected)
-        {
             printf("> ");
-        }
+
         bucket_print(buckets->data + i);
     }
+
     printf("---End: %d---\n", buckets->size);
 }
 
@@ -82,9 +80,7 @@ BucketList* bucket_list_allocate(unsigned int size)
     CHECK_OOM(buckets->data);
 
     for (int i = 0; i < size; i++)
-    {
         buckets->data[i] = bucket_empty();
-    }
 
     return buckets;
 }
@@ -167,15 +163,11 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 
     if (bucket->index == -1)
     {
-        if (create)
-        {
-            bucket->key = key;
-            bucket_list_update_adjacent(buckets, bucket, false);
-        }
-        else
-        {
-            bucket = NULL;
-        }
+        if (!create)
+            return NULL;
+
+        bucket->key = key;
+        bucket_list_update_adjacent(buckets, bucket, false);
     }
     else
     {
@@ -183,24 +175,20 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
         {
             if (bucket->next == NULL)
             {
-                if (create)
+                if (!create)
+                    return NULL;
+
+                bucket = bucket_add_next(buckets, bucket);
+                if (bucket != NULL)
                 {
-                    bucket = bucket_add_next(buckets, bucket);
-                    if (bucket != NULL)
-                    {
-                        bucket->key = key;
-                        bucket_list_update_adjacent(buckets, bucket, false);
-                    }
-                    else
-                    {
-                        // A reallocation occured while we were searching,
-                        // start over from the begining.
-                        bucket = bucket_list_get(buckets, key, create);
-                    }
+                    bucket->key = key;
+                    bucket_list_update_adjacent(buckets, bucket, false);
                 }
                 else
                 {
-                    bucket = NULL;
+                    // A reallocation occured while we were searching,
+                    // start over from the begining.
+                    bucket = bucket_list_get(buckets, key, create);
                 }
                 break;
             }

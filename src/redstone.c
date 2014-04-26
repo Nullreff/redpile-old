@@ -134,9 +134,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
             continue;
 
         if POWER_SOURCE(block->material)
-        {
             redstone_torch_update(world, bucket);
-        }
     }
 
     // Check for block modifications and reset flags

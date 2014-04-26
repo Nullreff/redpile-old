@@ -135,14 +135,10 @@ void load_config(int argc, char* argv[])
 void redpile_exit(void)
 {
     if (world != NULL)
-    {
         world_free(world);
-    }
 
     if (line != NULL)
-    {
         free(line);
-    }
 
     printf("\n");
     exit(EXIT_SUCCESS);
@@ -151,17 +147,13 @@ void redpile_exit(void)
 void signal_callback(int signal)
 {
     if (signal == SIGINT)
-    {
         redpile_exit();
-    }
 }
 
 void instruction_callback(Block* block)
 {
     if (!config.silent)
-    {
         block_print_power(block);
-    }
 }
 
 void completion_callback(const char* buffer, linenoiseCompletions* completions)
@@ -179,9 +171,7 @@ void completion_callback(const char* buffer, linenoiseCompletions* completions)
         }
 
         if (found)
-        {
             linenoiseAddCompletion(completions, Commands[i]);
-        }
     }
 }
 
@@ -213,7 +203,10 @@ int main(int argc, char* argv[])
     while ((line = linenoise(prompt)) != NULL)
     {
         linenoiseHistoryAdd(line);
-        switch (instruction_parse(line, &instruction))
+        int result = instruction_parse(line, &instruction);
+        free(line);
+
+        switch (result)
         {
             case 0: // Valid command
                 instruction_run(world, &instruction, instruction_callback);
@@ -229,7 +222,6 @@ int main(int argc, char* argv[])
             case -3: // Exit
                 redpile_exit();
         }
-        free(line);
     }
 
     redpile_exit();

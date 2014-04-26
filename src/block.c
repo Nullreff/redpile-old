@@ -82,11 +82,11 @@ void block_print(Block* block)
 
 void block_print_power(Block* block)
 {
-        printf("(%d,%d,%d) %u\n",
-               block->location.x,
-               block->location.y,
-               block->location.z,
-               block->power);
+    printf("(%d,%d,%d) %u\n",
+           block->location.x,
+           block->location.y,
+           block->location.z,
+           block->power);
 }
 
 BlockList* block_list_allocate(unsigned int size)
@@ -106,9 +106,7 @@ BlockList* block_list_allocate(unsigned int size)
     CHECK_OOM(blocks->data);
 
     for (int i = 0; i < size; i++)
-    {
         blocks->data[i] = block_empty();
-    }
 
     return blocks;
 }
@@ -130,9 +128,7 @@ void block_list_resize(BlockList* blocks, unsigned int new_size)
     blocks->data = temp;
 
     for (int i = blocks->size; i < new_size; i++)
-    {
         blocks->data[i] = block_empty();
-    }
 
     blocks->size = new_size;
     blocks->resizes++;

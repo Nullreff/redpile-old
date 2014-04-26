@@ -61,9 +61,7 @@ int instruction_parse(char* instruction, Instruction* result)
 
     // Convert to upper case
     for (int i = 0; parts[i] != '\0'; i++)
-    {
         parts[i] = toupper(parts[i]);
-    }
 
     Command command;
     Coord x = 0;
@@ -74,14 +72,10 @@ int instruction_parse(char* instruction, Instruction* result)
 
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
-    {
         goto error;
-    }
 
     if (command == TICK || command == STATUS || command == PING)
-    {
         goto success;
-    }
 
     char* parse_error;
     PARSE_NUMBER(x)
@@ -89,26 +83,18 @@ int instruction_parse(char* instruction, Instruction* result)
     PARSE_NUMBER(z)
 
     if (command == GET)
-    {
         goto success;
-    }
 
     char* str_material = strtok(NULL, " ");
     if (str_material == NULL || material_parse(str_material, &material) == -1)
-    {
         goto error;
-    }
 
     if (!HAS_DIRECTION(material))
-    {
         goto success;
-    }
 
     char* str_direction = strtok(NULL, " ");
     if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
-    {
         goto error;
-    }
 
 success:
     *result = (Instruction){command, {x, y, z, material, direction}};

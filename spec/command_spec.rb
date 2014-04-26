@@ -26,7 +26,7 @@ describe 'Redpile Commands' do
         redpile do |p|
           p.puts (upper ? 'SET 0 0 0 TORCH UP' : 'set 0 0 0 torch up')
           p.close_write
-          p.read.should == ""
+          p.read.should == "\n"
         end
       end
 
@@ -42,7 +42,7 @@ describe 'Redpile Commands' do
         redpile do |p|
           p.puts (upper ? 'TICK' : 'tick')
           p.close_write
-          p.read.should == ""
+          p.read.should == "\n"
         end
       end
 

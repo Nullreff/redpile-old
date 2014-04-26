@@ -36,17 +36,11 @@ static long long get_time(void)
 static void print_time(char* message, long long time)
 {
     if (time > 1000 * 1000 * 1000)
-    {
         printf("%s - %lld sec\n", message, time / (1000 * 1000));
-    }
     else if (time > 1000 * 1000)
-    {
         printf("%s - %lld ms\n", message, time / 1000);
-    }
     else
-    {
         printf("%s - %lld us\n", message, time);
-    }
 }
 
 static void block_modified(Block* b) {}
