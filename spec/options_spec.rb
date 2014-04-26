@@ -20,14 +20,16 @@ require 'timeout'
 require 'spec_helper'
 include Helpers
 
-redpile_version = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
+REDPILE_VERSION = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
+BAD_NEGATIVES = [0, -1, -20]
+BAD_NUMBERS = ['abc', 'a12', '12c']
 
 describe 'Redpile Options' do
   [true, false].each do |short|
     context "using #{short ? 'short' : 'long'} arguments" do
 
       it 'prints the current version' do
-        redpile(short ? '-v' : '--version') {|p| p.gets.should == "Redpile #{redpile_version}\n" }
+        redpile(short ? '-v' : '--version') {|p| p.gets.should == "Redpile #{REDPILE_VERSION}\n" }
       end
 
       it 'prints a help message' do
@@ -60,7 +62,7 @@ describe 'Redpile Options' do
         end
       end
 
-      ['abc', 'a12', '12c'].each do |size|
+      BAD_NUMBERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
             p.close_write
@@ -69,7 +71,7 @@ describe 'Redpile Options' do
         end
       end
 
-      [0, -1, -20].each do |size|
+      BAD_NEGATIVES.each do |size|
         it "errors when run with a world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}") do |p|
             p.close_write
@@ -88,9 +90,27 @@ describe 'Redpile Options' do
   end
 
   it 'runs benchmarks' do
-    redpile('--benchmark') do |p|
+    redpile('--benchmark 1') do |p|
       p.close_write
       p.read.should =~ /--- Benchmark Start ---\n/
+    end
+  end
+
+  BAD_NUMBERS.each do |count|
+    it "errors when run with '#{count}' benchmarks" do
+      redpile("--benchmark #{count}") do |p|
+        p.close_write
+        p.read.should =~ /You must pass an integer as the number of benchmarks to run\n/
+      end
+    end
+  end
+
+  BAD_NEGATIVES.each do |count|
+    it "errors when run with '#{count}' benchmarks" do
+      redpile("--benchmark #{count}") do |p|
+        p.close_write
+        p.read.should =~ /You must provide a benchmark size greater than zero\n/
+      end
     end
   end
 end

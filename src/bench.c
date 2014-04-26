@@ -17,7 +17,6 @@
  */
 
 #include "bench.h"
-#include "world.h"
 #include "block.h"
 #include "redstone.h"
 #include <stdio.h>
@@ -52,19 +51,13 @@ static void print_time(char* message, long long time)
 
 static void block_modified(Block* b) {}
 
-void run_benchmarks(void)
+void run_benchmarks(World* world, unsigned int count)
 {
-    World* world;
-
     printf("--- Benchmark Start ---\n");
     long long start = get_time();
 
-    BENCHMARK_START(world_intialize)
-    world = world_allocate(1);
-    BENCHMARK_END
-
     BENCHMARK_START(world_add_block)
-    CUBE_RANGE(-100,100)
+    CUBE_RANGE(-(int)count, (int)count)
         Location loc = (Location){x,y,z};
         int torch = !location_hash(loc, 20000);
         Block block = block_create(loc, torch ? TORCH : WIRE, UP);
@@ -73,26 +66,22 @@ void run_benchmarks(void)
     BENCHMARK_END
 
     BENCHMARK_START(world_get_block)
-    CUBE_RANGE(-100,100)
+    CUBE_RANGE(-(int)count, (int)count)
         world_get_block(world, (Location){x, y, z});
     CUBE_RANGE_END
     BENCHMARK_END
 
     BENCHMARK_START(redstone_tick)
-    RANGE(i,1,10)
+    RANGE(i, 1, count)
         redstone_tick(world, block_modified);
     RANGE_END
-    BENCHMARK_END
-
-    WorldStats stats = world_get_stats(world);
-
-    BENCHMARK_START(world_free)
-    world_free(world);
     BENCHMARK_END
 
     long long end = get_time();
     print_time("total", end - start);
     printf("--- Benchmark End ---\n");
+
+    WorldStats stats = world_get_stats(world);
     world_stats_print(stats);
 }
 

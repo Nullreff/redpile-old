@@ -19,6 +19,8 @@
 #ifndef REDPILE_BENCH_H
 #define REDPILE_BENCH_H
 
+#include "world.h"
+
 #define RANGE(var,start,end) Coord var; for (var = start; var <= end; var++) {
 
 #define RANGE_END }
@@ -38,7 +40,7 @@
     print_time(message, get_time() - start_time);\
 } while(0);
 
-void run_benchmarks(void);
+void run_benchmarks(World* world, unsigned int count);
 
 #endif
 

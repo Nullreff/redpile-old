@@ -49,7 +49,7 @@ static void print_help()
            "        Print the current version\n\n"
            "    -h, --help\n"
            "        Print this message\n\n"
-           "    --benchmark\n"
+           "    --benchmark <count>\n"
            "        Run benchmarks and stress tests\n");
 }
 
@@ -64,12 +64,24 @@ static unsigned int parse_world_size(char* string)
     return (unsigned int)value;
 }
 
+static unsigned int parse_benchmark_size(char* string)
+{
+    char* parse_error = NULL;
+    int value = strtol(string, &parse_error, 10);
+
+    ERROR_IF(*parse_error, "You must pass an integer as the number of benchmarks to run\n");
+    ERROR_IF(value <= 0, "You must provide a benchmark size greater than zero\n");
+
+    return (unsigned int)value;
+}
+
 void load_config(int argc, char* argv[])
 {
     // Default options
     config.world_size = 1024;
     config.interactive = 0;
     config.silent = 0;
+    config.benchmark = 0;
 
     static struct option long_options[] =
     {
@@ -78,7 +90,7 @@ void load_config(int argc, char* argv[])
         {"interactive", no_argument,       NULL, 'i'},
         {"version",     no_argument,       NULL, 'v'},
         {"help",        no_argument,       NULL, 'h'},
-        {"benchmark",   no_argument,       NULL, 'b'},
+        {"benchmark",   required_argument, NULL, 'b'},
         {NULL,          0,                 NULL,  0 }
     };
 
@@ -102,16 +114,16 @@ void load_config(int argc, char* argv[])
                 config.interactive = 1;
                 break;
 
+            case 'b':
+                config.benchmark = parse_benchmark_size(optarg);
+                break;
+
             case 'v':
                 print_version();
                 exit(EXIT_SUCCESS);
 
             case 'h':
                 print_help();
-                exit(EXIT_SUCCESS);
-
-            case 'b':
-                run_benchmarks();
                 exit(EXIT_SUCCESS);
 
             default:
@@ -180,6 +192,12 @@ int main(int argc, char* argv[])
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
     world = world_allocate(config.world_size);
+
+    if (config.benchmark)
+    {
+        run_benchmarks(world, config.benchmark);
+        redpile_exit();
+    }
 
     if (config.interactive)
     {
