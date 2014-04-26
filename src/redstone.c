@@ -69,8 +69,8 @@ void redstone_torch_update(World* world, Bucket* bucket)
         block->power = 15;
     }
 
+    // Pass charge to any adjacent wires
     Direction directions[5] = {NORTH, SOUTH, EAST, WEST, DOWN};
-
     for (int i = 0; i < 5; i++)
     {
         if (directions[i] == behind)
@@ -90,8 +90,35 @@ void redstone_torch_update(World* world, Bucket* bucket)
             found_block->power = block->power;
             redstone_wire_update(world, adjacent);
         }
-        // TODO: Propigate to more materials
     }
+
+    // Pass charge up through a block
+    do
+    {
+        Bucket* up_bucket = bucket->adjacent[UP];
+        if (up_bucket == NULL)
+            break;
+
+        Block* up_block = BLOCK_FROM_BUCKET(world, up_bucket);
+        if (up_block->material != CONDUCTOR)
+            break;
+
+        world_set_last_power(world, up_bucket);
+        up_block->power = block->power;
+        up_block->updated = 1;
+
+        Bucket* up_2_bucket = up_bucket->adjacent[UP];
+        if (up_2_bucket == NULL)
+            break;
+
+        Block* up_2_block = BLOCK_FROM_BUCKET(world, up_2_bucket);
+        if (up_2_block->material != WIRE)
+            break;
+
+        world_set_last_power(world, up_2_bucket);
+        up_2_block->power = block->power;
+        redstone_wire_update(world, up_2_bucket);
+    } while (0);
 }
 
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))

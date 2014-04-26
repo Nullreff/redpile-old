@@ -158,6 +158,19 @@ describe 'Redpile Commands' do
           p.read.should =~ /\(0,0,0\) 0\n/
         end
       end
+
+      it 'passes power up through a conductor' do
+        redpile("-w #{size}") do |p|
+          p.puts 'SET 0 0 0 TORCH UP'
+          p.puts 'SET 0 1 0 CONDUCTOR'
+          p.puts 'SET 0 2 0 WIRE'
+          p.puts 'TICK'
+          p.close_write
+          contents = p.read
+          contents.should =~ /\(0,1,0\) 15/
+          contents.should =~ /\(0,2,0\) 15/
+        end
+      end
     end
   end
 end
