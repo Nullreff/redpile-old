@@ -1,29 +1,31 @@
-BUILD_DIR := build/
+BUILD_DIR := build
 BENCHMARK := ./build/redpile --benchmark
 VALGRIND := valgrind --error-exitcode=1 --leak-check=full ${BENCHMARK}
 RSPEC := rspec
 COMPILE := make --no-print-directory
 
-all: build
+.PHONY: all clean cmake_release cmake_debug test bench memcheck
 
-build_dir:
+all: cmake_release
+
+${BUILD_DIR}:
 	mkdir -p ${BUILD_DIR}
 
 clean:
 	rm -rf ${BUILD_DIR}
 
-build: build_dir
+cmake_release: ${BUILD_DIR}
 	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE=RELEASE .. && ${COMPILE}
 
-debug_build: build_dir
+cmake_debug: ${BUILD_DIR}
 	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE=DEBUG .. && ${COMPILE}
 
-test: debug_build
+test: cmake_debug
 	${RSPEC}
 
-bench: build
+bench: cmake_release
 	${BENCHMARK}
 
-memcheck: debug_build
+memcheck: cmake_debug
 	${VALGRIND}
 
