@@ -50,7 +50,7 @@ describe 'Redpile Commands' do
         redpile do |p|
           p.puts (upper ? 'STATUS' : 'status')
           p.close_write
-          p.read.should =~ /Status:\n/
+          p.read.should =~ /ticks: 0/
         end
       end
 
