@@ -64,7 +64,7 @@ void run_benchmarks(void)
     BENCHMARK_END
 
     BENCHMARK_START(world_add_block)
-    CUBE_RANGE(-10,10)
+    CUBE_RANGE(-100,100)
         Location loc = (Location){x,y,z};
         int torch = !location_hash(loc, 20000);
         Block block = block_create(loc, torch ? TORCH : WIRE, UP);
@@ -73,13 +73,13 @@ void run_benchmarks(void)
     BENCHMARK_END
 
     BENCHMARK_START(world_get_block)
-    CUBE_RANGE(-10,10)
+    CUBE_RANGE(-100,100)
         world_get_block(world, (Location){x, y, z});
     CUBE_RANGE_END
     BENCHMARK_END
 
     BENCHMARK_START(redstone_tick)
-    RANGE(i,1,100)
+    RANGE(i,1,10)
         redstone_tick(world, block_modified);
     RANGE_END
     BENCHMARK_END
