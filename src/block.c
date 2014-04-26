@@ -94,8 +94,14 @@ BlockList* block_list_allocate(unsigned int size)
     BlockList* blocks = malloc(sizeof(BlockList));
     CHECK_OOM(blocks);
 
+    // General
     blocks->size = size;
     blocks->index = 0;
+
+    // Stats
+    blocks->resizes = 0;
+
+    // Data
     blocks->data = malloc(size * sizeof(Block));
     CHECK_OOM(blocks->data);
 
@@ -129,6 +135,7 @@ void block_list_resize(BlockList* blocks, unsigned int new_size)
     }
 
     blocks->size = new_size;
+    blocks->resizes++;
 }
 
 // Retreives the index of the next available block in the world

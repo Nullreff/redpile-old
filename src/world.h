@@ -47,6 +47,8 @@ typedef struct {
     unsigned int hashmap_overflow;
     unsigned int blocks_allocated;
     unsigned int buckets_allocated;
+    unsigned int bucket_resizes;
+    unsigned int block_resizes;
 } WorldStats;
 
 #define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)

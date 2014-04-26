@@ -92,6 +92,9 @@ typedef struct {
     // The number of buckets at the beginning of *data that are top level
     // buckets in the hashmap.
     unsigned int hashmap_size;
+
+    // Stats
+    unsigned int resizes;
 } BucketList;
 
 #define BUCKET_FILLED(bucket) (bucket != NULL && bucket->index != -1)

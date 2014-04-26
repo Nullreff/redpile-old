@@ -46,6 +46,9 @@ typedef struct {
     Block* data;
     unsigned int index;
     unsigned int size;
+
+    // Stats
+    unsigned int resizes;
 } BlockList;
 
 #define POWER_SOURCE(material) (material == TORCH)

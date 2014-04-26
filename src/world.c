@@ -93,18 +93,21 @@ WorldStats world_get_stats(World* world)
         world->buckets->hashmap_size,
         world->buckets->index - world->buckets->hashmap_size,
         world->blocks->size,
-        world->buckets->size
+        world->buckets->size,
+        world->buckets->resizes,
+        world->blocks->resizes
     };
 }
 
 void world_stats_print(WorldStats stats)
 {
-    printf("Status:\n");
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
     STAT_PRINT(stats, hashmap_size);
     STAT_PRINT(stats, hashmap_overflow);
     STAT_PRINT(stats, blocks_allocated);
     STAT_PRINT(stats, buckets_allocated);
+    STAT_PRINT(stats, bucket_resizes);
+    STAT_PRINT(stats, block_resizes);
 }
 

@@ -69,9 +69,15 @@ BucketList* bucket_list_allocate(unsigned int size)
     BucketList* buckets = malloc(sizeof(BucketList));
     CHECK_OOM(buckets);
 
+    // General
     buckets->size = size;
     buckets->index = size - (size / 2);
     buckets->hashmap_size = buckets->index;
+
+    // Stats
+    buckets->resizes = 0;
+
+    // Data
     buckets->data = malloc(size * sizeof(Bucket));
     CHECK_OOM(buckets->data);
 
@@ -95,6 +101,7 @@ void bucket_list_resize(BucketList* buckets, unsigned int new_size)
     assert(new_size > buckets->size);
 
     BucketList* new_buckets = bucket_list_allocate(new_size);
+    new_buckets->resizes = buckets->resizes + 1;
 
     for (int i = 0; i < buckets->size; i++)
     {
