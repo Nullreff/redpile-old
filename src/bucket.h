@@ -98,6 +98,7 @@ typedef struct {
 } BucketList;
 
 #define BUCKET_FILLED(bucket) (bucket != NULL && bucket->index != -1)
+#define BUCKET_ADJACENT(list,bucket,dir) bucket->adjacent[dir]
 
 void bucket_list_print(BucketList* buckets, Bucket* selected);
 BucketList* bucket_list_allocate(unsigned int size);

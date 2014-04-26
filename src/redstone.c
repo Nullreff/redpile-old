@@ -27,10 +27,9 @@ void redstone_wire_update(World* world, Bucket* bucket)
     block->updated = 1;
 
     Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
-
     for (int i = 0; i < 4; i++)
     {
-        Bucket* adjacent = bucket->adjacent[directions[i]];
+        Bucket* adjacent = BUCKET_ADJACENT(world->buckets, bucket, directions[i]);
         if (!BUCKET_FILLED(adjacent))
             continue;
 
@@ -58,7 +57,7 @@ void redstone_torch_update(World* world, Bucket* bucket)
 
     // Set the torch power from the block behind it
     Direction behind = direction_invert(block->direction);
-    Bucket* power_source = bucket->adjacent[behind];
+    Bucket* power_source = BUCKET_ADJACENT(world->buckets, bucket, behind);
     if (power_source != NULL)
     {
         int power = world_get_last_power(world, power_source);
@@ -76,7 +75,7 @@ void redstone_torch_update(World* world, Bucket* bucket)
         if (directions[i] == behind)
             continue;
 
-        Bucket* adjacent = bucket->adjacent[directions[i]];
+        Bucket* adjacent = BUCKET_ADJACENT(world->buckets, bucket, directions[i]);
         if (!BUCKET_FILLED(adjacent))
             continue;
 
@@ -95,7 +94,7 @@ void redstone_torch_update(World* world, Bucket* bucket)
     // Pass charge up through a block
     do
     {
-        Bucket* up_bucket = bucket->adjacent[UP];
+        Bucket* up_bucket = BUCKET_ADJACENT(world->buckets, bucket, UP);
         if (up_bucket == NULL)
             break;
 
@@ -107,7 +106,7 @@ void redstone_torch_update(World* world, Bucket* bucket)
         up_block->power = block->power;
         up_block->updated = 1;
 
-        Bucket* up_2_bucket = up_bucket->adjacent[UP];
+        Bucket* up_2_bucket = BUCKET_ADJACENT(world->buckets, up_bucket, UP);
         if (up_2_bucket == NULL)
             break;
 
