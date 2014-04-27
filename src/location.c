@@ -55,6 +55,34 @@ Direction direction_invert(Direction dir)
     }
 }
 
+Direction direction_right(Direction dir)
+{
+    assert(dir != UP);
+    assert(dir != DOWN);
+
+    switch (dir)
+    {
+        case NORTH: return EAST;
+        case SOUTH: return WEST;
+        case EAST:  return SOUTH;
+        case WEST:  return NORTH;
+    }
+}
+
+Direction direction_left(Direction dir)
+{
+    assert(dir != UP);
+    assert(dir != DOWN);
+
+    switch (dir)
+    {
+        case NORTH: return WEST;
+        case SOUTH: return EAST;
+        case EAST:  return NORTH;
+        case WEST:  return SOUTH;
+    }
+}
+
 Location location_empty(void)
 {
     return location_create(0, 0, 0);

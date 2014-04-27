@@ -45,6 +45,8 @@ typedef struct {
 
 int direction_parse(char* direction, Direction* result);
 Direction direction_invert(Direction dir);
+Direction direction_right(Direction dir);
+Direction direction_left(Direction dir);
 
 Location location_empty(void);
 Location location_from_values(int values[]);
