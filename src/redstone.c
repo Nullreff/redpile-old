@@ -99,10 +99,11 @@ void redstone_wire_update(World* world, Bucket* bucket)
         if (found_block->material != WIRE)
             continue;
 
-        if (!found_block->updated || found_block->power < (block->power - 1))
+        int new_power = block->power - 1;
+        if SHOULD_UPDATE(found_block, new_power)
         {
             world_set_last_power(world, adjacent);
-            found_block->power = block->power - 1;
+            found_block->power = new_power;
             redstone_wire_update(world, adjacent);
         }
     }
@@ -111,7 +112,7 @@ void redstone_wire_update(World* world, Bucket* bucket)
     if (down_bucket != NULL)
     {
         Block* down_block = BLOCK_FROM_BUCKET(world, down_bucket);
-        if (down_block->material == CONDUCTOR && down_block->power < block->power)
+        if (down_block->material == CONDUCTOR && SHOULD_UPDATE(down_block, block->power))
         {
             world_set_last_power(world, down_bucket);
             down_block->power = block->power;
