@@ -46,62 +46,54 @@ void redstone_wire_update(World* world, Bucket* bucket)
         if (found_block == NULL)
             continue;
 
-        Bucket* right;
-        Bucket* left;
-        Bucket* old_adjacent;
-        Block* old_block;
 
-        switch (found_block->material)
+        // Move down one
+        if (found_block->material == EMPTY || found_block->material == AIR)
         {
-            // Move down one
-            case EMPTY:
-            case AIR:
-                adjacent = BUCKET_ADJACENT(adjacent, DOWN);
+            adjacent = BUCKET_ADJACENT(adjacent, DOWN);
+            if (adjacent == NULL)
+                continue;
+
+            found_block = BLOCK_FROM_BUCKET(world, adjacent);
+            if (found_block == NULL)
+                continue;
+        }
+        else if (found_block->material == CONDUCTOR)
+        {
+            Bucket* old_adjacent = adjacent;
+
+            // Add charge to the block
+            Bucket* right = BUCKET_ADJACENT(bucket, direction_left(directions[i]));
+            Bucket* left = BUCKET_ADJACENT(bucket, direction_right(directions[i]));
+
+            if ((right == NULL || BLOCK_FROM_BUCKET(world, right)->material != WIRE) &&
+                (left == NULL || BLOCK_FROM_BUCKET(world, left)->material != WIRE))
+            {
+                world_set_last_power(world, adjacent);
+                found_block->power = block->power;
+                found_block->updated = 1;
+                old_adjacent = NULL;
+            }
+
+            // Move up one
+            if (!covered)
+            {
+                adjacent = BUCKET_ADJACENT(adjacent, UP);
                 if (adjacent == NULL)
                     continue;
 
                 found_block = BLOCK_FROM_BUCKET(world, adjacent);
                 if (found_block == NULL)
                     continue;
-                break;
 
-            case CONDUCTOR:
-                old_adjacent = adjacent;
-
-                // Add charge to the block
-                right = BUCKET_ADJACENT(bucket, direction_left(directions[i]));
-                left = BUCKET_ADJACENT(bucket, direction_right(directions[i]));
-
-                if ((right == NULL || BLOCK_FROM_BUCKET(world, right)->material != WIRE) &&
-                    (left == NULL || BLOCK_FROM_BUCKET(world, left)->material != WIRE))
+                if (found_block->material == WIRE && old_adjacent != NULL)
                 {
-                    world_set_last_power(world, adjacent);
-                    found_block->power = block->power;
-                    found_block->updated = 1;
-                    old_adjacent = NULL;
+                    world_set_last_power(world, old_adjacent);
+                    Block* old_block = BLOCK_FROM_BUCKET(world, old_adjacent);
+                    old_block->power = block->power;
+                    old_block->updated = 1;
                 }
-
-                // Move up one
-                if (!covered)
-                {
-                    adjacent = BUCKET_ADJACENT(adjacent, UP);
-                    if (adjacent == NULL)
-                        continue;
-
-                    found_block = BLOCK_FROM_BUCKET(world, adjacent);
-                    if (found_block == NULL)
-                        continue;
-
-                    if (found_block->material == WIRE && old_adjacent != NULL)
-                    {
-                        world_set_last_power(world, old_adjacent);
-                        old_block = BLOCK_FROM_BUCKET(world, old_adjacent);
-                        old_block->power = block->power;
-                        old_block->updated = 1;
-                    }
-                }
-
-                break;
+            }
         }
 
         if (found_block->material != WIRE)
