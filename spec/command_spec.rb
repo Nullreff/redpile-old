@@ -168,4 +168,41 @@ describe 'Redpile Commands' do
       contents.should =~ /\(0,2,0\) 15/
     end
   end
+
+  it 'follows wires over and down' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'SET 0 0 1 WIRE'
+      p.puts 'SET 0 0 2 AIR'
+      p.puts 'SET 0 -1 2 WIRE'
+      p.puts 'TICK'
+      p.close_write
+      p.read.should =~ /\(0,-1,2\) 14/
+    end
+  end
+
+  it 'follows wires over and up' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'SET 0 0 1 WIRE'
+      p.puts 'SET 0 0 2 CONDUCTOR'
+      p.puts 'SET 0 1 2 WIRE'
+      p.puts 'TICK'
+      p.close_write
+      p.read.should =~ /\(0,1,2\) 14/
+    end
+  end
+
+  it 'does not propigate over and up when a block is on top' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'SET 0 0 1 WIRE'
+      p.puts 'SET 0 0 2 CONDUCTOR'
+      p.puts 'SET 0 1 2 WIRE'
+      p.puts 'SET 0 1 1 CONDUCTOR'
+      p.puts 'TICK'
+      p.close_write
+      p.read.should_not =~ /\(0,1,2\)/
+    end
+  end
 end

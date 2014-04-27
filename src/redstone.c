@@ -26,6 +26,14 @@ void redstone_wire_update(World* world, Bucket* bucket)
     Block* block = BLOCK_FROM_BUCKET(world, bucket);
     block->updated = 1;
 
+    bool covered = false;
+    Bucket* above = BUCKET_ADJACENT(bucket, UP);
+    if (above != NULL)
+    {
+        Block* above_block = BLOCK_FROM_BUCKET(world, above);
+        covered = above_block->material != AIR && above_block->material != EMPTY;
+    }
+
     Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
     for (int i = 0; i < 4; i++)
     {
@@ -37,16 +45,44 @@ void redstone_wire_update(World* world, Bucket* bucket)
         if (found_block == NULL)
             continue;
 
-        if (found_block->material == WIRE)
+        switch (found_block->material)
         {
-            if (!found_block->updated || found_block->power < (block->power - 1))
-            {
-                world_set_last_power(world, adjacent);
-                found_block->power = block->power - 1;
-                redstone_wire_update(world, adjacent);
-            }
+            // Move down one
+            case EMPTY:
+            case AIR:
+                adjacent = BUCKET_ADJACENT(adjacent, DOWN);
+                if (adjacent == NULL)
+                    continue;
+
+                found_block = BLOCK_FROM_BUCKET(world, adjacent);
+                if (found_block == NULL)
+                    continue;
+                break;
+
+            // Move up one
+            case CONDUCTOR:
+                if (covered)
+                    continue;
+
+                adjacent = BUCKET_ADJACENT(adjacent, UP);
+                if (adjacent == NULL)
+                    continue;
+
+                found_block = BLOCK_FROM_BUCKET(world, adjacent);
+                if (found_block == NULL)
+                    continue;
+                break;
         }
-        // TODO: Propigate to more materials
+
+        if (found_block->material != WIRE)
+            continue;
+
+        if (!found_block->updated || found_block->power < (block->power - 1))
+        {
+            world_set_last_power(world, adjacent);
+            found_block->power = block->power - 1;
+            redstone_wire_update(world, adjacent);
+        }
     }
 }
 
