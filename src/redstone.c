@@ -114,6 +114,18 @@ void redstone_wire_update(World* world, Bucket* bucket)
             redstone_wire_update(world, adjacent);
         }
     }
+
+    Bucket* down_bucket = BUCKET_ADJACENT(bucket, DOWN);
+    if (down_bucket != NULL)
+    {
+        Block* down_block = BLOCK_FROM_BUCKET(world, down_bucket);
+        if (down_block->material == CONDUCTOR && down_block->power < block->power)
+        {
+            world_set_last_power(world, down_bucket);
+            down_block->power = block->power;
+            down_block->updated = 1;
+        }
+    }
 }
 
 void redstone_torch_update(World* world, Bucket* bucket)

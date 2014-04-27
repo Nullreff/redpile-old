@@ -279,4 +279,14 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'propigates power to a conductor underneath wire' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'SET 0 0 1 WIRE'
+      p.puts 'SET 0 -1 1 CONDUCTOR'
+      p.puts 'TICK'
+      p.close_write
+      p.read.should =~ /\(0,-1,1\) 15/
+    end
+  end
 end
