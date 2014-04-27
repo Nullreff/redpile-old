@@ -21,6 +21,75 @@
 #include "block.h"
 #include "redstone.h"
 
+void redstone_wire_update(World* world, Bucket* bucket);
+
+void redstone_wire_update_adjacent(World* world, Bucket* bucket, Block* block, Direction dir, bool covered)
+{
+    // Directly adjacent
+    Bucket* adjacent = BUCKET_ADJACENT(bucket, dir);
+    if (!BUCKET_FILLED(adjacent))
+        return;
+
+    Block* found_block = BLOCK_FROM_BUCKET(world, adjacent);
+    if (found_block == NULL)
+        return;
+
+    // Move down one
+    if (found_block->material == EMPTY || found_block->material == AIR)
+    {
+        adjacent = BUCKET_ADJACENT(adjacent, DOWN);
+        if (adjacent == NULL)
+            return;
+
+        found_block = BLOCK_FROM_BUCKET(world, adjacent);
+    }
+    else if (found_block->material == CONDUCTOR)
+    {
+        Bucket* old_adjacent = adjacent;
+
+        // Add charge to the block
+        Bucket* right = BUCKET_ADJACENT(bucket, direction_left(dir));
+        Bucket* left = BUCKET_ADJACENT(bucket, direction_right(dir));
+
+        if ((right == NULL || BLOCK_FROM_BUCKET(world, right)->material != WIRE) &&
+            (left == NULL || BLOCK_FROM_BUCKET(world, left)->material != WIRE))
+        {
+            world_set_last_power(world, adjacent);
+            found_block->power = block->power;
+            found_block->updated = 1;
+            old_adjacent = NULL;
+        }
+
+        // Move up one
+        if (!covered)
+        {
+            adjacent = BUCKET_ADJACENT(adjacent, UP);
+            if (adjacent == NULL)
+                return;
+
+            found_block = BLOCK_FROM_BUCKET(world, adjacent);
+            if (found_block->material == WIRE && old_adjacent != NULL)
+            {
+                world_set_last_power(world, old_adjacent);
+                Block* old_block = BLOCK_FROM_BUCKET(world, old_adjacent);
+                old_block->power = block->power;
+                old_block->updated = 1;
+            }
+        }
+    }
+
+    if (found_block->material != WIRE)
+        return;
+
+    int new_power = block->power - 1;
+    if SHOULD_UPDATE(found_block, new_power)
+    {
+        world_set_last_power(world, adjacent);
+        found_block->power = new_power;
+        redstone_wire_update(world, adjacent);
+    }
+}
+
 void redstone_wire_update(World* world, Bucket* bucket)
 {
     Block* block = BLOCK_FROM_BUCKET(world, bucket);
@@ -34,80 +103,12 @@ void redstone_wire_update(World* world, Bucket* bucket)
         covered = above_block->material != AIR && above_block->material != EMPTY;
     }
 
+    // Adjacent blocks
     Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
     for (int i = 0; i < 4; i++)
-    {
-        // Directly adjacent
-        Bucket* adjacent = BUCKET_ADJACENT(bucket, directions[i]);
-        if (!BUCKET_FILLED(adjacent))
-            continue;
+        redstone_wire_update_adjacent(world, bucket, block, directions[i], covered);
 
-        Block* found_block = BLOCK_FROM_BUCKET(world, adjacent);
-        if (found_block == NULL)
-            continue;
-
-
-        // Move down one
-        if (found_block->material == EMPTY || found_block->material == AIR)
-        {
-            adjacent = BUCKET_ADJACENT(adjacent, DOWN);
-            if (adjacent == NULL)
-                continue;
-
-            found_block = BLOCK_FROM_BUCKET(world, adjacent);
-            if (found_block == NULL)
-                continue;
-        }
-        else if (found_block->material == CONDUCTOR)
-        {
-            Bucket* old_adjacent = adjacent;
-
-            // Add charge to the block
-            Bucket* right = BUCKET_ADJACENT(bucket, direction_left(directions[i]));
-            Bucket* left = BUCKET_ADJACENT(bucket, direction_right(directions[i]));
-
-            if ((right == NULL || BLOCK_FROM_BUCKET(world, right)->material != WIRE) &&
-                (left == NULL || BLOCK_FROM_BUCKET(world, left)->material != WIRE))
-            {
-                world_set_last_power(world, adjacent);
-                found_block->power = block->power;
-                found_block->updated = 1;
-                old_adjacent = NULL;
-            }
-
-            // Move up one
-            if (!covered)
-            {
-                adjacent = BUCKET_ADJACENT(adjacent, UP);
-                if (adjacent == NULL)
-                    continue;
-
-                found_block = BLOCK_FROM_BUCKET(world, adjacent);
-                if (found_block == NULL)
-                    continue;
-
-                if (found_block->material == WIRE && old_adjacent != NULL)
-                {
-                    world_set_last_power(world, old_adjacent);
-                    Block* old_block = BLOCK_FROM_BUCKET(world, old_adjacent);
-                    old_block->power = block->power;
-                    old_block->updated = 1;
-                }
-            }
-        }
-
-        if (found_block->material != WIRE)
-            continue;
-
-        int new_power = block->power - 1;
-        if SHOULD_UPDATE(found_block, new_power)
-        {
-            world_set_last_power(world, adjacent);
-            found_block->power = new_power;
-            redstone_wire_update(world, adjacent);
-        }
-    }
-
+    // Block below
     Bucket* down_bucket = BUCKET_ADJACENT(bucket, DOWN);
     if (down_bucket != NULL)
     {
