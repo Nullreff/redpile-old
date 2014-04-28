@@ -53,7 +53,6 @@ typedef struct {
 
 #define POWER_SOURCE(material) (material == TORCH)
 #define HAS_DIRECTION(material) (material == TORCH)
-#define SHOULD_UPDATE(block,new_power) (!(block)->updated || (block)->power < (new_power))
 int material_parse(char* material, Material* result);
 
 Block block_empty(void);
