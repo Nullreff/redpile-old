@@ -49,44 +49,30 @@ void redstone_wire_update_adjacent(World* world, Bucket* bucket, Block* block, D
     if (found_block->material == EMPTY || found_block->material == AIR)
     {
         found_block = MOVE_TO_BLOCK(adjacent, DOWN);
-        if (found_block == NULL)
-            return;
     }
     // Up one block
     else if (found_block->material == CONDUCTOR)
     {
         // Add charge to the block
-        Bucket* conductor = adjacent;
         Block* right = FIND_BLOCK(bucket, direction_left(dir));
         Block* left = FIND_BLOCK(bucket, direction_right(dir));
 
         if ((right == NULL || right->material != WIRE) &&
-            (left == NULL || left->material != WIRE))
+            (left == NULL || left->material != WIRE) &&
+            SHOULD_UPDATE(found_block, block->power))
         {
             world_set_last_power(world, adjacent);
             found_block->power = block->power;
             found_block->updated = 1;
-            conductor = NULL;
         }
 
-        // Propigate to the redstone above the block
         if (covered)
             return;
 
         found_block = MOVE_TO_BLOCK(adjacent, UP);
-        if (found_block == NULL)
-            return;
-
-        if (found_block->material == WIRE && conductor != NULL)
-        {
-            world_set_last_power(world, conductor);
-            Block* conductor_block = BLOCK_FROM_BUCKET(world, conductor);
-            conductor_block->power = block->power;
-            conductor_block->updated = 1;
-        }
     }
 
-    if (found_block->material != WIRE)
+    if (found_block == NULL || found_block->material != WIRE)
         return;
 
     int new_power = block->power - 1;

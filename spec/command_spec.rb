@@ -272,7 +272,7 @@ describe 'Redpile Commands' do
       p.puts 'TICK'
       p.close_write
       r = p.read
-      r.should =~ /\(0,0,2\) 15/
+      r.should =~ /\(0,0,2\) 14/
       r.should =~ /\(0,1,2\) 14/
       r.should =~ /\(1,0,1\) 14/
       r.should =~ /\(-1,0,1\) 14/
