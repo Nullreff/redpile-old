@@ -34,6 +34,7 @@ Values for `material` are:
 * CONDUCTOR
 * INSULATOR
 * TORCH
+* REPEATER
 
 Values for `direction` are:
 
@@ -55,8 +56,10 @@ Any blocks affected by the tick will be returned in the format `(x,y,z) power`.
 
 Currently implemented are:
 
-* WIRE - Propigates power
+* WIRE - Propagates power
+* CONDUCTOR - Moves power from wires to power sources
 * TORCH - Powers wires and switches off when powered
+* REPEATER - Powers a block in front if it receives power from the block behind
 
 **STATUS**
 
@@ -67,7 +70,7 @@ Prints information about the current state of the world.
 
 **PING**
 
-Echos back `PONG`.
+Echoes back `PONG`.
 
 License
 -------

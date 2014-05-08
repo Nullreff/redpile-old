@@ -289,4 +289,18 @@ describe 'Redpile Commands' do
       p.read.should =~ /\(0,-1,1\) 15/
     end
   end
+
+  ['wire', 'conductor'].each do |material|
+    it "passes power through a repeater to a #{material}" do
+      redpile do |p|
+        p.puts 'SET 0 0 0 TORCH UP'
+        p.puts 'SET 0 0 1 REPEATER SOUTH'
+        p.puts "SET 0 0 2 #{material}"
+        p.puts 'TICK'
+        p.puts 'TICK'
+        p.close_write
+        p.read.should =~ /\(0,0,2\) 15/
+      end
+    end
+  end
 end

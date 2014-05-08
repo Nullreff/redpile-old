@@ -25,7 +25,8 @@ char* Materials[MATERIALS_COUNT] = {
     "WIRE",
     "CONDUCTOR",
     "INSULATOR",
-    "TORCH"
+    "TORCH",
+    "REPEATER"
 };
 
 int material_parse(char* material, Material* result)

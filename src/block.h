@@ -22,7 +22,7 @@
 #include "location.h"
 #include "redpile.h"
 
-#define MATERIALS_COUNT 6
+#define MATERIALS_COUNT 7
 #define MATERIAL_DEFAULT EMPTY
 extern char* Materials[MATERIALS_COUNT];
 typedef enum {
@@ -31,7 +31,8 @@ typedef enum {
     WIRE,
     CONDUCTOR,
     INSULATOR,
-    TORCH
+    TORCH,
+    REPEATER
 } Material;
 
 typedef struct {
@@ -51,8 +52,8 @@ typedef struct {
     unsigned int resizes;
 } BlockList;
 
-#define POWER_SOURCE(material) (material == TORCH)
-#define HAS_DIRECTION(material) (material == TORCH)
+#define POWER_SOURCE(material) (material == TORCH || material == REPEATER)
+#define HAS_DIRECTION(material) (material == TORCH || material == REPEATER)
 int material_parse(char* material, Material* result);
 
 Block block_empty(void);
