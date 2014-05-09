@@ -43,12 +43,12 @@ typedef struct {
 typedef struct {
     unsigned int ticks;
     unsigned int blocks;
-    unsigned int hashmap_size;
-    unsigned int hashmap_overflow;
     unsigned int blocks_allocated;
-    unsigned int buckets_allocated;
-    unsigned int bucket_resizes;
     unsigned int block_resizes;
+    unsigned int buckets_allocated;
+    unsigned int buckets_overflow;
+    unsigned int buckets_resizes;
+    unsigned int buckets_max_depth;
 } WorldStats;
 
 #define BLOCK_ADJACENT(world,block,dir) (block->adjacent[dir] != EMPTY_INDEX ? world->blocks->data + block->adjacent[dir] : NULL)

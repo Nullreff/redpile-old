@@ -123,12 +123,12 @@ WorldStats world_get_stats(World* world)
     return (WorldStats){
         world->ticks,
         world->blocks->index,
-        world->buckets->hashmap_size,
-        world->buckets->index - world->buckets->hashmap_size,
         world->blocks->size,
+        world->blocks->resizes,
         world->buckets->size,
+        world->buckets->overflow,
         world->buckets->resizes,
-        world->blocks->resizes
+        world->buckets->max_depth
     };
 }
 
@@ -136,11 +136,11 @@ void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
-    STAT_PRINT(stats, hashmap_size);
-    STAT_PRINT(stats, hashmap_overflow);
     STAT_PRINT(stats, blocks_allocated);
-    STAT_PRINT(stats, buckets_allocated);
-    STAT_PRINT(stats, bucket_resizes);
     STAT_PRINT(stats, block_resizes);
+    STAT_PRINT(stats, buckets_allocated);
+    STAT_PRINT(stats, buckets_overflow);
+    STAT_PRINT(stats, buckets_resizes);
+    STAT_PRINT(stats, buckets_max_depth);
 }
 

@@ -43,18 +43,13 @@ typedef struct {
     // following *next pointers.
     Bucket* data;
 
-    // The next available empty bucket in *data.
-    unsigned int index;
-
     // Total number of allocated buckets in *data.
     unsigned int size;
 
-    // The number of buckets at the beginning of *data that are top level
-    // buckets in the hashmap.
-    unsigned int hashmap_size;
-
     // Stats
+    unsigned int overflow;
     unsigned int resizes;
+    unsigned int max_depth;
 } BucketList;
 
 #define BUCKET_FILLED(bucket) (bucket != NULL && bucket->index != EMPTY_INDEX)

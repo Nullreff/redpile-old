@@ -40,28 +40,6 @@ static void bucket_print(Bucket* bucket)
             (void*)bucket->next);
 }
 
-void bucket_list_print(BucketList* buckets, Bucket* selected)
-{
-    printf("---Hashmap: %d---\n", buckets->hashmap_size);
-
-    for (int i = 0; i < buckets->size; i++)
-    {
-        if (i == buckets->hashmap_size)
-            printf("---Overflow: %d---\n", buckets->size - buckets->hashmap_size);
-
-        if (i == buckets->index)
-            printf("---Index: %d---\n", buckets->index - buckets->hashmap_size);
-
-        Bucket* found = buckets->data + i;
-        if (found == selected)
-            printf("> ");
-
-        bucket_print(buckets->data + i);
-    }
-
-    printf("---End: %d---\n", buckets->size);
-}
-
 BucketList* bucket_list_allocate(unsigned int size)
 {
     BucketList* buckets = malloc(sizeof(BucketList));
@@ -69,13 +47,9 @@ BucketList* bucket_list_allocate(unsigned int size)
 
     // General
     buckets->size = size;
-    buckets->index = size - (size / 2);
-    buckets->hashmap_size = buckets->index;
-
-    // Stats
+    buckets->overflow = 0;
     buckets->resizes = 0;
-
-    // Data
+    buckets->max_depth = 0;
     buckets->data = malloc(size * sizeof(Bucket));
     CHECK_OOM(buckets->data);
 
@@ -85,51 +59,60 @@ BucketList* bucket_list_allocate(unsigned int size)
     return buckets;
 }
 
+static void bucket_list_free_data(BucketList* buckets)
+{
+    for (int i = 0; i < buckets->size; i++)
+    {
+        Bucket* current = buckets->data[i].next;
+        while (current != NULL)
+        {
+            Bucket* temp = current->next;
+            free(current);
+            current = temp;
+        }
+    }
+
+    free(buckets->data);
+}
+
 void bucket_list_free(BucketList* buckets)
 {
-    free(buckets->data);
+    bucket_list_free_data(buckets);
     free(buckets);
 }
 
-// Currently supports increasing only
 void bucket_list_resize(BucketList* buckets, unsigned int new_size)
 {
-    assert(new_size > buckets->size);
-
     BucketList* new_buckets = bucket_list_allocate(new_size);
     new_buckets->resizes = buckets->resizes + 1;
 
     for (int i = 0; i < buckets->size; i++)
     {
         Bucket* bucket = buckets->data + i;
-        if BUCKET_FILLED(bucket)
+        do
         {
-            Bucket* new_bucket = bucket_list_get(new_buckets, bucket->key, true);
-            new_bucket->index = bucket->index;
+            if BUCKET_FILLED(bucket)
+            {
+                Bucket* new_bucket = bucket_list_get(new_buckets, bucket->key, true);
+                new_bucket->index = bucket->index;
+            }
+            bucket = bucket->next;
         }
+        while (bucket != NULL);
     }
 
-    free(buckets->data);
+    bucket_list_free_data(buckets);
     memcpy(buckets, new_buckets, sizeof(BucketList));
     free(new_buckets);
 }
 
 Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 {
-    if (buckets->index >= buckets->size)
-    {
-        bucket_list_resize(buckets, buckets->size * 2);
-
-        // If we reallocate our list of buckets, the pointer to the bucket
-        // passed in most likely points to old memory.
-        return NULL;
-    }
-    else
-    {
-        Bucket* new_bucket = buckets->data + buckets->index++;
-        bucket->next = new_bucket;
-        return new_bucket;
-    }
+    buckets->overflow++;
+    Bucket* new_bucket = malloc(sizeof(Bucket));
+    *new_bucket = bucket_empty();
+    bucket->next = new_bucket;
+    return new_bucket;
 }
 
 // Finds the bucket used to store the block at the specified location
@@ -137,7 +120,11 @@ Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 // will be created.  If create is false, it will return NULL.
 Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 {
-    int hash = location_hash(key, buckets->hashmap_size);
+    if (buckets->overflow > buckets->size)
+        bucket_list_resize(buckets, buckets->size * 2);
+
+    int depth = 0;
+    int hash = location_hash(key, buckets->size);
     Bucket* bucket = buckets->data + hash;
 
     if (bucket->index == EMPTY_INDEX)
@@ -157,22 +144,17 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
                     return NULL;
 
                 bucket = bucket_add_next(buckets, bucket);
-                if (bucket != NULL)
-                {
-                    bucket->key = key;
-                }
-                else
-                {
-                    // A reallocation occured while we were searching,
-                    // start over from the begining.
-                    bucket = bucket_list_get(buckets, key, create);
-                }
+                bucket->key = key;
                 break;
             }
 
             bucket = bucket->next;
+            depth++;
         }
     }
+
+    if (buckets->max_depth < depth)
+        buckets->max_depth = depth;
 
     return bucket;
 }
