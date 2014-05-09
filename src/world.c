@@ -30,7 +30,7 @@ World* world_allocate(unsigned int size)
     world->buckets = bucket_list_allocate(size);
     world->blocks = block_list_allocate(size);
     world->powers = malloc(size * sizeof(int));
-    memset(world->powers, -1, size * sizeof(int));
+    memset(world->powers, EMPTY_INDEX, size * sizeof(int));
     CHECK_OOM(world->powers);
 
     return world;
@@ -82,7 +82,7 @@ Block* world_set_block(World* world, Block* block)
             int* temp = realloc(world->powers, world->blocks->size * sizeof(int));
             CHECK_OOM(temp);
             world->powers = temp;
-            memset(world->powers, -1, world->blocks->size * sizeof(int));
+            memset(world->powers, EMPTY_INDEX, world->blocks->size * sizeof(int));
         }
     }
 
@@ -104,7 +104,7 @@ int world_get_last_power(World* world, Block* block)
 {
     int index = block - world->blocks->data;
     int power = world->powers[index];
-    return power != -1 ? power : block->power;
+    return power != EMPTY_INDEX ? power : block->power;
 }
 
 void world_set_last_power(World* world, Block* block)
@@ -115,7 +115,7 @@ void world_set_last_power(World* world, Block* block)
 
 void world_reset_last_power(World* world, int index)
 {
-    world->powers[index] = UINT_MAX;
+    world->powers[index] = EMPTY_INDEX;
 }
 
 WorldStats world_get_stats(World* world)
