@@ -25,11 +25,14 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define REDPILE_VERSION "0.3.0"
 
 #define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
+
+#define EMPTY_INDEX UINT_MAX
 
 typedef struct {
     int world_size;

@@ -55,7 +55,12 @@ Block block_from_values(int values[])
 
 Block block_create(Location location, Material material, Direction direction)
 {
-    return (Block){location, material, direction, 0, 0};
+    return (Block){
+        location, material, direction,
+        {EMPTY_INDEX, EMPTY_INDEX, EMPTY_INDEX,
+         EMPTY_INDEX, EMPTY_INDEX, EMPTY_INDEX},
+        0, 0
+    };
 }
 
 void block_print(Block* block)

@@ -36,9 +36,18 @@ typedef enum {
 } Material;
 
 typedef struct {
+    // General information
     Location location;
     Material material;
     Direction direction;
+
+    // We keep references to the 6 blocks adjacent to this one for faster
+    // access during redstone ticks.  This adds a bit of extra time to
+    // insertions but more than makes up for it in situation where you're
+    // following a chain of blocks.
+    unsigned int adjacent[6];
+
+    // Redstone state
     unsigned int power:4; // 0 - 15
     unsigned int updated:1;
 } Block;

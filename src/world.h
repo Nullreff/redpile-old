@@ -51,15 +51,19 @@ typedef struct {
     unsigned int block_resizes;
 } WorldStats;
 
+#define BLOCK_ADJACENT(world,block,dir) (block->adjacent[dir] != EMPTY_INDEX ? world->blocks->data + block->adjacent[dir] : NULL)
 #define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)
 #define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks->data + (bucket)->index)
+#define BLOCK_INDEX(world,block) (block - world->blocks->data)
+#define INDEX_BLOCK(world,index) (world->blocks->data + index)
 
 World* world_allocate(unsigned int size);
 void world_free(World* world);
 Block* world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
-int world_get_last_power(World* world, Bucket* bucket);
-void world_set_last_power(World* world, Bucket* bucket);
+int world_get_last_power(World* world, Block* block);
+void world_set_last_power(World* world, Block* block);
+void world_reset_last_power(World* world, int index);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
 

@@ -21,12 +21,12 @@
 
 static Bucket bucket_create(Location key, int index)
 {
-    return (Bucket){key, index, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL};
+    return (Bucket){key, index, NULL};
 }
 
 static Bucket bucket_empty(void)
 {
-    return bucket_create(location_empty(), -1);
+    return bucket_create(location_empty(), EMPTY_INDEX);
 }
 
 static void bucket_print(Bucket* bucket)
@@ -114,27 +114,6 @@ void bucket_list_resize(BucketList* buckets, unsigned int new_size)
     free(new_buckets);
 }
 
-void bucket_list_update_adjacent(BucketList* buckets, Bucket* bucket, bool force)
-{
-    for (int i = 0; i < 6; i++)
-    {
-        if (force || bucket->adjacent[i] == NULL)
-        {
-            // Find the bucket next to us
-            Direction dir = (Direction)i;
-            Location location = location_move(bucket->key, dir, 1);
-            Bucket* found_bucket = bucket_list_get(buckets, location, false);
-
-            if (found_bucket != NULL)
-            {
-                // Update it to point both ways
-                found_bucket->adjacent[direction_invert(dir)] = bucket;
-                bucket->adjacent[i] = found_bucket;
-            }
-        }
-    }
-}
-
 Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 {
     if (buckets->index >= buckets->size)
@@ -161,13 +140,12 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
     int hash = location_hash(key, buckets->hashmap_size);
     Bucket* bucket = buckets->data + hash;
 
-    if (bucket->index == -1)
+    if (bucket->index == EMPTY_INDEX)
     {
         if (!create)
             return NULL;
 
         bucket->key = key;
-        bucket_list_update_adjacent(buckets, bucket, false);
     }
     else
     {
@@ -182,7 +160,6 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
                 if (bucket != NULL)
                 {
                     bucket->key = key;
-                    bucket_list_update_adjacent(buckets, bucket, false);
                 }
                 else
                 {

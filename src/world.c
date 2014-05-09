@@ -44,6 +44,29 @@ void world_free(World* world)
     free(world);
 }
 
+static void world_update_adjacent_blocks(World* world, Block* block)
+{
+    int index = BLOCK_INDEX(world, block);
+    for (int i = 0; i < 6; i++)
+    {
+        if (block->adjacent[i] == EMPTY_INDEX)
+        {
+            // Find the bucket next to us
+            Direction dir = (Direction)i;
+            Location location = location_move(block->location, dir, 1);
+            Block* found_block = world_get_block(world, location);
+
+            if (found_block != NULL)
+            {
+                // Update it to point both ways
+                int found_index = BLOCK_INDEX(world, found_block);
+                found_block->adjacent[direction_invert(dir)] = index;
+                block->adjacent[i] = found_index;
+            }
+        }
+    }
+}
+
 Block* world_set_block(World* world, Block* block)
 {
     Bucket* bucket = bucket_list_get(world->buckets, block->location, true);
@@ -65,6 +88,9 @@ Block* world_set_block(World* world, Block* block)
 
     Block* target = BLOCK_FROM_BUCKET(world, bucket);
     memcpy(target, block, sizeof(Block));
+
+    world_update_adjacent_blocks(world, target);
+
     return target;
 }
 
@@ -74,15 +100,22 @@ Block* world_get_block(World* world, Location location)
     return BUCKET_FILLED(bucket) ? BLOCK_FROM_BUCKET(world, bucket) : NULL;
 }
 
-int world_get_last_power(World* world, Bucket* bucket)
+int world_get_last_power(World* world, Block* block)
 {
-    int power = world->powers[bucket->index];
-    return power != -1 ? power : BLOCK_FROM_BUCKET(world, bucket)->power;
+    int index = block - world->blocks->data;
+    int power = world->powers[index];
+    return power != -1 ? power : block->power;
 }
 
-void world_set_last_power(World* world, Bucket* bucket)
+void world_set_last_power(World* world, Block* block)
 {
-    world->powers[bucket->index] = BLOCK_FROM_BUCKET(world, bucket)->power;
+    int index = block - world->blocks->data;
+    world->powers[index] = block->power;
+}
+
+void world_reset_last_power(World* world, int index)
+{
+    world->powers[index] = UINT_MAX;
 }
 
 WorldStats world_get_stats(World* world)
