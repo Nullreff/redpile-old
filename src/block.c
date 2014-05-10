@@ -135,6 +135,7 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     }
 
     blocks->tail = node;
+    blocks->size++;
 
     return node;
 }
