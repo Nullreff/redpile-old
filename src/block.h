@@ -35,30 +35,34 @@ typedef enum {
     REPEATER
 } Material;
 
-typedef struct {
+typedef struct Block {
     // General information
     Location location;
     Material material;
     Direction direction;
 
+    // Redstone state
+    unsigned int power:4; // 0 - 15
+    unsigned int last_power:4;
+    unsigned int updated:1;
+} Block;
+
+typedef struct BlockNode {
+    Block block;
+
     // We keep references to the 6 blocks adjacent to this one for faster
     // access during redstone ticks.  This adds a bit of extra time to
     // insertions but more than makes up for it in situation where you're
     // following a chain of blocks.
-    unsigned int adjacent[6];
-
-    // Redstone state
-    unsigned int power:4; // 0 - 15
-    unsigned int updated:1;
-} Block;
+    struct BlockNode* adjacent[6];
+    struct BlockNode* next;
+    struct BlockNode* prev;
+} BlockNode;
 
 typedef struct {
-    Block* data;
-    unsigned int index;
+    BlockNode* head;
+    BlockNode* tail;
     unsigned int size;
-
-    // Stats
-    unsigned int resizes;
 } BlockList;
 
 #define POWER_SOURCE(material) (material == TORCH || material == REPEATER)
@@ -71,8 +75,8 @@ Block block_create(Location location, Material material, Direction direction);
 void block_print(Block* block);
 void block_print_power(Block* block);
 
-BlockList* block_list_allocate(unsigned int size);
+BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
-int block_list_next(BlockList* blocks, bool* resized);
+BlockNode* block_list_append(BlockList* blocks, Block* block);
 
 #endif

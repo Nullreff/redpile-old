@@ -55,12 +55,12 @@ Block block_from_values(int values[])
 
 Block block_create(Location location, Material material, Direction direction)
 {
-    return (Block){
-        location, material, direction,
-        {EMPTY_INDEX, EMPTY_INDEX, EMPTY_INDEX,
-         EMPTY_INDEX, EMPTY_INDEX, EMPTY_INDEX},
-        0, 0
-    };
+    return (Block){location, material, direction, 0, 0, 0};
+}
+
+static BlockNode block_node_create(Block block)
+{
+    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
 }
 
 void block_print(Block* block)
@@ -95,60 +95,46 @@ void block_print_power(Block* block)
            block->power);
 }
 
-BlockList* block_list_allocate(unsigned int size)
+BlockList* block_list_allocate(void)
 {
     BlockList* blocks = malloc(sizeof(BlockList));
     CHECK_OOM(blocks);
 
-    // General
-    blocks->size = size;
-    blocks->index = 0;
-
-    // Stats
-    blocks->resizes = 0;
-
-    // Data
-    blocks->data = malloc(size * sizeof(Block));
-    CHECK_OOM(blocks->data);
-
-    for (int i = 0; i < size; i++)
-        blocks->data[i] = block_empty();
+    blocks->head = NULL;
+    blocks->tail = NULL;
+    blocks->size = 0;
 
     return blocks;
 }
 
 void block_list_free(BlockList* blocks)
 {
-    free(blocks->data);
+    BlockNode* node = blocks->head;
+    while (node != NULL)
+    {
+        BlockNode* temp = node->next;
+        free(node);
+        node = temp;
+    }
     free(blocks);
 }
 
-// Currently support increasing only
-void block_list_resize(BlockList* blocks, unsigned int new_size)
+BlockNode* block_list_append(BlockList* blocks, Block* block)
 {
-    assert(new_size > blocks->size);
+    BlockNode* node = malloc(sizeof(BlockNode));
+    *node = block_node_create(*block);
 
-    Block* temp = realloc(blocks->data, new_size * sizeof(Block));
-    CHECK_OOM(temp);
-
-    blocks->data = temp;
-
-    for (int i = blocks->size; i < new_size; i++)
-        blocks->data[i] = block_empty();
-
-    blocks->size = new_size;
-    blocks->resizes++;
-}
-
-// Retreives the index of the next available block in the world
-int block_list_next(BlockList* blocks, bool* resized)
-{
-    if (blocks->index >= blocks->size)
+    if (blocks->head == NULL)
     {
-        block_list_resize(blocks, blocks->size * 2);
-        *resized = true;
+        blocks->head = node;
+    }
+    else
+    {
+        node->prev = blocks->tail;
+        blocks->tail->next = node;
     }
 
-    return blocks->index++;
-}
+    blocks->tail = node;
 
+    return node;
+}

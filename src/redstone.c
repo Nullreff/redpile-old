@@ -21,136 +21,115 @@
 #include "block.h"
 #include "redstone.h"
 
-#define MOVE_TO_BLOCK(block,dir) block = BLOCK_ADJACENT(world, block, dir)
-#define SHOULD_UPDATE(block,new_power) (!(block)->updated || (block)->power < (new_power))
+#define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
+#define SHOULD_UPDATE(node,new_power) (!(node)->block.updated || (node)->block.power < (new_power))
+#define UPDATE_POWER(node,new_power)\
+    node->block.last_power = node->block.power;\
+    node->block.power = new_power;\
+    node->block.updated = 1
+#define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
+#define EACH_NODE(node,blocks)\
+    for (BlockNode* node = (blocks)->head; node != NULL; node = node->next)
 
-void redstone_wire_update(World* world, Block* block);
+void redstone_wire_update(World* world, BlockNode* node);
 
-void redstone_wire_update_adjacent(World* world, Block* block, Direction dir, bool covered)
+void redstone_wire_update_adjacent(World* world, BlockNode* node, Direction dir, bool covered)
 {
     // Directly adjacent
-    Block* found_block = BLOCK_ADJACENT(world, block, dir);
-    if (found_block == NULL)
+    BlockNode* found_node = NODE_ADJACENT(node, dir);
+    if (found_node == NULL)
         return;
 
     // Down one block
-    if (found_block->material == EMPTY || found_block->material == AIR)
+    if (found_node->block.material == EMPTY || found_node->block.material == AIR)
     {
-        MOVE_TO_BLOCK(found_block, DOWN);
+        MOVE_TO_NODE(found_node, DOWN);
     }
     // Up one block
-    else if (found_block->material == CONDUCTOR)
+    else if (found_node->block.material == CONDUCTOR)
     {
         // Add charge to the block
-        Block* right = BLOCK_ADJACENT(world, block, direction_left(dir));
-        Block* left = BLOCK_ADJACENT(world, block, direction_right(dir));
+        BlockNode* right = NODE_ADJACENT(node, direction_left(dir));
+        BlockNode* left = NODE_ADJACENT(node, direction_right(dir));
 
-        if ((right == NULL || right->material != WIRE) &&
-            (left == NULL || left->material != WIRE) &&
-            SHOULD_UPDATE(found_block, block->power))
+        if ((right == NULL || right->block.material != WIRE) &&
+            (left == NULL || left->block.material != WIRE) &&
+            SHOULD_UPDATE(found_node, node->block.power))
         {
-            world_set_last_power(world, found_block);
-            found_block->power = block->power;
-            found_block->updated = 1;
+            UPDATE_POWER(found_node, node->block.power);
         }
 
         if (covered)
             return;
 
-        MOVE_TO_BLOCK(found_block, UP);
+        MOVE_TO_NODE(found_node, UP);
     }
 
-    if (found_block == NULL || found_block->material != WIRE)
+    if (found_node == NULL || found_node->block.material != WIRE)
         return;
 
-    int new_power = block->power - 1;
-    if SHOULD_UPDATE(found_block, new_power)
+    int new_power = node->block.power - 1;
+    if SHOULD_UPDATE(found_node, new_power)
     {
-        world_set_last_power(world, found_block);
-        found_block->power = new_power;
-        redstone_wire_update(world, found_block);
+        UPDATE_POWER(found_node, new_power);
+        redstone_wire_update(world, found_node);
     }
 }
 
-void redstone_wire_update(World* world, Block* block)
+void redstone_wire_update(World* world, BlockNode* node)
 {
-    block->updated = 1;
-
-    Block* above = BLOCK_ADJACENT(world, block, UP);
+    BlockNode* above = NODE_ADJACENT(node, UP);
     bool covered = above != NULL &&
-                   above->material != AIR &&
-                   above->material != EMPTY;
+                   above->block.material != AIR &&
+                   above->block.material != EMPTY;
 
     // Adjacent blocks
     Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
     for (int i = 0; i < 4; i++)
-        redstone_wire_update_adjacent(world, block, directions[i], covered);
+        redstone_wire_update_adjacent(world, node, directions[i], covered);
 
     // Block below
-    Block* down_block = BLOCK_ADJACENT(world, block, DOWN);
-    if (down_block == NULL)
+    BlockNode* down_node = NODE_ADJACENT(node, DOWN);
+    if (down_node == NULL)
         return;
 
-    if (down_block->material == CONDUCTOR && SHOULD_UPDATE(down_block, block->power))
+    if (down_node->block.material == CONDUCTOR && SHOULD_UPDATE(down_node, node->block.power))
     {
-        world_set_last_power(world, down_block);
-        down_block->power = block->power;
-        down_block->updated = 1;
+        UPDATE_POWER(down_node, node->block.power);
     }
 }
 
-void redstone_repeater_update(World* world, Block* block)
+void redstone_repeater_update(World* world, BlockNode* node)
 {
-    block->updated = 1;
-
     // Set the repeater power from the block behind it
-    Direction behind = direction_invert(block->direction);
-    Block* power_source = BLOCK_ADJACENT(world, block, behind);
-    if (power_source != NULL)
-    {
-        int power = world_get_last_power(world, power_source);
-        block->power = power == 0 ? 0 : 15;
-    }
-    else
-    {
-        block->power = 0;
-    }
+    Direction behind = direction_invert(node->block.direction);
+    BlockNode* power_source = NODE_ADJACENT(node, behind);
+    int new_power = power_source == NULL || LAST_POWER(power_source) == 0 ? 0 : 15;
+    UPDATE_POWER(node, new_power);
 
     // Pass charge to the wire or conductor in front
-    Block* found_block = BLOCK_ADJACENT(world, block, block->direction);
-    if (found_block == NULL)
+    BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
+    if (found_node == NULL)
         return;
 
-    if (found_block->material == WIRE)
+    if (found_node->block.material == WIRE)
     {
-        world_set_last_power(world, found_block);
-        found_block->power = block->power;
-        redstone_wire_update(world, found_block);
+        UPDATE_POWER(found_node, node->block.power);
+        redstone_wire_update(world, found_node);
     }
-    else if (found_block->material == CONDUCTOR)
+    else if (found_node->block.material == CONDUCTOR)
     {
-        world_set_last_power(world, found_block);
-        found_block->power = block->power;
-        found_block->updated = 1;
+        UPDATE_POWER(found_node, node->block.power);
     }
 }
 
-void redstone_torch_update(World* world, Block* block)
+void redstone_torch_update(World* world, BlockNode* node)
 {
-    block->updated = 1;
-
     // Set the torch power from the block behind it
-    Direction behind = direction_invert(block->direction);
-    Block* power_source = BLOCK_ADJACENT(world, block, behind);
-    if (power_source != NULL)
-    {
-        int power = world_get_last_power(world, power_source);
-        block->power = power == 0 ? 15 : 0;
-    }
-    else
-    {
-        block->power = 15;
-    }
+    Direction behind = direction_invert(node->block.direction);
+    BlockNode* power_source = NODE_ADJACENT(node, behind);
+    int new_power = power_source == NULL || LAST_POWER(power_source) == 0 ? 15 : 0;
+    UPDATE_POWER(node, new_power);
 
     // Pass charge to any adjacent wires
     Direction directions[5] = {NORTH, SOUTH, EAST, WEST, DOWN};
@@ -159,71 +138,67 @@ void redstone_torch_update(World* world, Block* block)
         if (directions[i] == behind)
             continue;
 
-        Block* found_block = BLOCK_ADJACENT(world, block, directions[i]);
-        if (found_block == NULL)
+        BlockNode* found_node = NODE_ADJACENT(node, directions[i]);
+        if (found_node == NULL)
             continue;
 
-        if (found_block->material == WIRE)
+        if (found_node->block.material == WIRE)
         {
-            world_set_last_power(world, found_block);
-            found_block->power = block->power;
-            redstone_wire_update(world, found_block);
+            UPDATE_POWER(found_node, node->block.power);
+            redstone_wire_update(world, found_node);
         }
     }
 
     // Pass charge up through a block
-    Block* up_block = BLOCK_ADJACENT(world, block, UP);
-    if (up_block == NULL || up_block->material != CONDUCTOR)
+    BlockNode* up_node = NODE_ADJACENT(node, UP);
+    if (up_node == NULL || up_node->block.material != CONDUCTOR)
         return;
 
-    world_set_last_power(world, up_block);
-    up_block->power = block->power;
-    up_block->updated = 1;
+    UPDATE_POWER(up_node, node->block.power);
 
-    Block* up_2_block = BLOCK_ADJACENT(world, up_block, UP);
-    if (up_2_block == NULL || up_2_block->material != WIRE)
+    BlockNode* up_2_node = NODE_ADJACENT(up_node, UP);
+    if (up_2_node == NULL || up_2_node->block.material != WIRE)
         return;
 
-    world_set_last_power(world, up_2_block);
-    up_2_block->power = block->power;
-    redstone_wire_update(world, up_2_block);
+    UPDATE_POWER(up_2_node, node->block.power);
+    redstone_wire_update(world, up_2_node);
 }
 
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))
 {
     // Process all power sources
-    for (int i = 0; i < world->blocks->index; i++)
+    EACH_NODE(node, world->blocks)
     {
-        Block* block = INDEX_BLOCK(world, i);
-        if (block == NULL || block->updated)
+        if (node->block.updated)
             continue;
 
-        switch (block->material)
+        switch (node->block.material)
         {
-            case TORCH:    redstone_torch_update(world, block);    break;
-            case REPEATER: redstone_repeater_update(world, block); break;
+            case TORCH:
+                redstone_torch_update(world, node);
+                node->block.updated = 1;
+                break;
+            case REPEATER:
+                redstone_repeater_update(world, node);
+                node->block.updated = 1;
+                break;
         }
     }
 
     // Check for block modifications and reset flags
-    for (int i = 0; i < world->blocks->index; i++)
+    EACH_NODE(node, world->blocks)
     {
-        Block* block = world->blocks->data + i;
-
-        if (block->updated)
+        if (node->block.updated)
         {
-            block_modified_callback(block);
-            block->updated = 0;
+            block_modified_callback(&node->block);
+            node->block.updated = 0;
         }
-        else if (block->power > 0)
+        else if (node->block.power > 0)
         {
             // Blocks not connected to a power source become unpowered
-            block->power = 0;
-            block_modified_callback(block);
+            node->block.power = 0;
+            block_modified_callback(&node->block);
         }
-
-        // Reset old power values
-        world_reset_last_power(world, i);
     }
 
     world->ticks++;

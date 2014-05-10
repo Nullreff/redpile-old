@@ -19,24 +19,24 @@
 #include "bucket.h"
 #include "redpile.h"
 
-static Bucket bucket_create(Location key, int index)
+static Bucket bucket_create(Location key, BlockNode* node)
 {
-    return (Bucket){key, index, NULL};
+    return (Bucket){key, node, NULL};
 }
 
 static Bucket bucket_empty(void)
 {
-    return bucket_create(location_empty(), EMPTY_INDEX);
+    return bucket_create(location_empty(), NULL);
 }
 
 static void bucket_print(Bucket* bucket)
 {
-    printf("%p (%d,%d,%d) %d %p\n",
+    printf("%p (%d,%d,%d) %p %p\n",
             (void*)bucket,
             bucket->key.x,
             bucket->key.y,
             bucket->key.z,
-            bucket->index,
+            (void*)bucket->value,
             (void*)bucket->next);
 }
 
@@ -94,7 +94,7 @@ void bucket_list_resize(BucketList* buckets, unsigned int new_size)
             if BUCKET_FILLED(bucket)
             {
                 Bucket* new_bucket = bucket_list_get(new_buckets, bucket->key, true);
-                new_bucket->index = bucket->index;
+                new_bucket->value = bucket->value;
             }
             bucket = bucket->next;
         }
@@ -127,7 +127,7 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
     int hash = location_hash(key, buckets->size);
     Bucket* bucket = buckets->data + hash;
 
-    if (bucket->index == EMPTY_INDEX)
+    if (bucket->value == NULL)
     {
         if (!create)
             return NULL;

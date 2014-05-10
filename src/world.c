@@ -28,10 +28,7 @@ World* world_allocate(unsigned int size)
     world->ticks = 0;
 
     world->buckets = bucket_list_allocate(size);
-    world->blocks = block_list_allocate(size);
-    world->powers = malloc(size * sizeof(int));
-    memset(world->powers, EMPTY_INDEX, size * sizeof(int));
-    CHECK_OOM(world->powers);
+    world->blocks = block_list_allocate();
 
     return world;
 }
@@ -40,91 +37,63 @@ void world_free(World* world)
 {
     bucket_list_free(world->buckets);
     block_list_free(world->blocks);
-    free(world->powers);
     free(world);
 }
 
-static void world_update_adjacent_blocks(World* world, Block* block)
+static void world_update_adjacent_nodes(World* world, BlockNode* node)
 {
-    int index = BLOCK_INDEX(world, block);
     for (int i = 0; i < 6; i++)
     {
-        if (block->adjacent[i] == EMPTY_INDEX)
+        if (node->adjacent[i] == NULL)
         {
             // Find the bucket next to us
             Direction dir = (Direction)i;
-            Location location = location_move(block->location, dir, 1);
-            Block* found_block = world_get_block(world, location);
+            Location location = location_move(node->block.location, dir, 1);
+            BlockNode* found_node = world_get_node(world, location);
 
-            if (found_block != NULL)
+            if (found_node != NULL)
             {
                 // Update it to point both ways
-                int found_index = BLOCK_INDEX(world, found_block);
-                found_block->adjacent[direction_invert(dir)] = index;
-                block->adjacent[i] = found_index;
+                found_node->adjacent[direction_invert(dir)] = node;
+                node->adjacent[i] = found_node;
             }
         }
     }
 }
 
-Block* world_set_block(World* world, Block* block)
+void world_set_block(World* world, Block* block)
 {
     Bucket* bucket = bucket_list_get(world->buckets, block->location, true);
 
     // Attach the next availabe block to this bucket
-    if (!BUCKET_FILLED(bucket))
+    if (bucket->value == NULL)
     {
-        bool resized = false;
-        int old_size = world->buckets->size;
-        bucket->index = block_list_next(world->blocks, &resized);
-        if (resized)
-        {
-            int* temp = realloc(world->powers, world->blocks->size * sizeof(int));
-            CHECK_OOM(temp);
-            world->powers = temp;
-            memset(world->powers, EMPTY_INDEX, world->blocks->size * sizeof(int));
-        }
+        bucket->value = block_list_append(world->blocks, block);
+        world_update_adjacent_nodes(world, bucket->value);
     }
+    else
+    {
+        memcpy(&bucket->value->block, block, sizeof(Block));
+    }
+}
 
-    Block* target = BLOCK_FROM_BUCKET(world, bucket);
-    memcpy(target, block, sizeof(Block));
-
-    world_update_adjacent_blocks(world, target);
-
-    return target;
+BlockNode* world_get_node(World* world, Location location)
+{
+    Bucket* bucket = bucket_list_get(world->buckets, location, false);
+    return BUCKET_FILLED(bucket) ? bucket->value : NULL;
 }
 
 Block* world_get_block(World* world, Location location)
 {
-    Bucket* bucket = bucket_list_get(world->buckets, location, false);
-    return BUCKET_FILLED(bucket) ? BLOCK_FROM_BUCKET(world, bucket) : NULL;
-}
-
-int world_get_last_power(World* world, Block* block)
-{
-    int index = block - world->blocks->data;
-    int power = world->powers[index];
-    return power != EMPTY_INDEX ? power : block->power;
-}
-
-void world_set_last_power(World* world, Block* block)
-{
-    int index = block - world->blocks->data;
-    world->powers[index] = block->power;
-}
-
-void world_reset_last_power(World* world, int index)
-{
-    world->powers[index] = EMPTY_INDEX;
+    BlockNode* node = world_get_node(world, location);
+    return node != NULL ? &node->block : NULL;
 }
 
 WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
         world->ticks,
-        world->blocks->index,
         world->blocks->size,
-        world->blocks->resizes,
         world->buckets->size,
         world->buckets->overflow,
         world->buckets->resizes,
@@ -136,8 +105,6 @@ void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
-    STAT_PRINT(stats, blocks_allocated);
-    STAT_PRINT(stats, block_resizes);
     STAT_PRINT(stats, buckets_allocated);
     STAT_PRINT(stats, buckets_overflow);
     STAT_PRINT(stats, buckets_resizes);

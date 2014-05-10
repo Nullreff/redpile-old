@@ -32,10 +32,6 @@ typedef struct {
     // implementation.  See bucket.c for more information.
     BucketList* buckets;
 
-    // Whenever we run a tick, this stores all the previous power values.
-    // Values should remain set to -1 if no block update occured.
-    int* powers;
-
     // Additional stats
     unsigned int ticks; // Redstone ticks
 } World;
@@ -43,23 +39,21 @@ typedef struct {
 typedef struct {
     unsigned int ticks;
     unsigned int blocks;
-    unsigned int blocks_allocated;
-    unsigned int block_resizes;
     unsigned int buckets_allocated;
     unsigned int buckets_overflow;
     unsigned int buckets_resizes;
     unsigned int buckets_max_depth;
 } WorldStats;
 
-#define BLOCK_ADJACENT(world,block,dir) (block->adjacent[dir] != EMPTY_INDEX ? world->blocks->data + block->adjacent[dir] : NULL)
+#define NODE_ADJACENT(node,dir) node->adjacent[dir]
 #define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)
-#define BLOCK_FROM_BUCKET(world,bucket) ((world)->blocks->data + (bucket)->index)
 #define BLOCK_INDEX(world,block) (block - world->blocks->data)
 #define INDEX_BLOCK(world,index) (world->blocks->data + index)
 
 World* world_allocate(unsigned int size);
 void world_free(World* world);
-Block* world_set_block(World* world, Block* block);
+void world_set_block(World* world, Block* block);
+BlockNode* world_get_node(World* world, Location location);
 Block* world_get_block(World* world, Location location);
 int world_get_last_power(World* world, Block* block);
 void world_set_last_power(World* world, Block* block);

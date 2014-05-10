@@ -21,38 +21,26 @@
 
 #include "redpile.h"
 #include "location.h"
+#include "block.h"
 #include <stdbool.h>
 
 typedef struct Bucket {
-    // Blocks are indexed by location.  A copy is stored on this struct so we
-    // don't have to look up the corresponding block to check for a match.
     Location key;
-
-    // The index in the block list where the block referenced by this bucket can
-    // be found.  We don't use a pointer because resizing the block array with
-    // realloc sometimes causes it to be moved around in memory.
-    unsigned int index;
-
-    // In cases where we run into hash collisions, a linked list of buckets is
-    // used to store extras.
+    BlockNode* value;
     struct Bucket* next;
 } Bucket;
 
 typedef struct {
-    // All buckets are stored here, both top level buckets and those found by
-    // following *next pointers.
     Bucket* data;
 
-    // Total number of allocated buckets in *data.
-    unsigned int size;
-
     // Stats
+    unsigned int size;
     unsigned int overflow;
     unsigned int resizes;
     unsigned int max_depth;
 } BucketList;
 
-#define BUCKET_FILLED(bucket) (bucket != NULL && bucket->index != EMPTY_INDEX)
+#define BUCKET_FILLED(bucket) (bucket != NULL && bucket->value != NULL)
 
 void bucket_list_print(BucketList* buckets, Bucket* selected);
 BucketList* bucket_list_allocate(unsigned int size);
