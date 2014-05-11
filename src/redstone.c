@@ -169,14 +169,9 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     {
         switch (node->block.material)
         {
-            case TORCH:
-                redstone_torch_update(world, node);
-                break;
-            case REPEATER:
-                redstone_repeater_update(world, node);
-                break;
-            default:
-                goto end;
+            case TORCH:    redstone_torch_update(world, node);    break;
+            case REPEATER: redstone_repeater_update(world, node); break;
+            default:       goto end;
         }
 
         node->block.updated = true;
