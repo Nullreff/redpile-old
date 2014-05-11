@@ -176,13 +176,15 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
         {
             case TORCH:
                 redstone_torch_update(world, node);
-                node->block.updated = 1;
                 break;
             case REPEATER:
                 redstone_repeater_update(world, node);
-                node->block.updated = 1;
                 break;
+            default:
+                continue;
         }
+
+        node->block.updated = 1;
     }
 
     // Check for block modifications and reset flags
