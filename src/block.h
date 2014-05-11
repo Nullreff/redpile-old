@@ -52,8 +52,7 @@ typedef struct BlockNode {
 
     // We keep references to the 6 blocks adjacent to this one for faster
     // access during redstone ticks.  This adds a bit of extra time to
-    // insertions but more than makes up for it in situation where you're
-    // following a chain of blocks.
+    // insertions but more than makes up for it when running ticks
     struct BlockNode* adjacent[6];
     struct BlockNode* next;
     struct BlockNode* prev;
@@ -67,6 +66,7 @@ typedef struct {
 
 #define POWER_SOURCE(material) (material == TORCH || material == REPEATER)
 #define HAS_DIRECTION(material) (material == TORCH || material == REPEATER)
+
 int material_parse(char* material, Material* result);
 
 Block block_empty(void);

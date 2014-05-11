@@ -127,15 +127,25 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     if (blocks->head == NULL)
     {
         blocks->head = node;
+        blocks->tail = node;
     }
     else
     {
-        node->prev = blocks->tail;
-        blocks->tail->next = node;
+        if POWER_SOURCE(block->material)
+        {
+            node->next = blocks->head;
+            blocks->head->prev = node;
+            blocks->head = node;
+        }
+        else
+        {
+            node->prev = blocks->tail;
+            blocks->tail->next = node;
+            blocks->tail = node;
+        }
     }
 
-    blocks->tail = node;
     blocks->size++;
-
     return node;
 }
+

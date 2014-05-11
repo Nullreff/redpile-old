@@ -28,8 +28,6 @@
     node->block.power = new_power;\
     node->block.updated = 1
 #define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
-#define EACH_NODE(node,blocks)\
-    for (BlockNode* node = (blocks)->head; node != NULL; node = node->next)
 
 void redstone_wire_update(World* world, BlockNode* node);
 
@@ -167,11 +165,8 @@ void redstone_torch_update(World* world, BlockNode* node)
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))
 {
     // Process all power sources
-    EACH_NODE(node, world->blocks)
+    for (BlockNode* node = world->blocks->head; node != NULL; node = node->next)
     {
-        if (node->block.updated)
-            continue;
-
         switch (node->block.material)
         {
             case TORCH:
@@ -181,14 +176,15 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
                 redstone_repeater_update(world, node);
                 break;
             default:
-                continue;
+                goto end;
         }
 
         node->block.updated = 1;
     }
+end:
 
     // Check for block modifications and reset flags
-    EACH_NODE(node, world->blocks)
+    for (BlockNode* node = world->blocks->tail; node != NULL; node = node->prev)
     {
         if (node->block.updated)
         {
