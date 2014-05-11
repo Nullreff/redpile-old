@@ -55,7 +55,7 @@ Block block_from_values(int values[])
 
 Block block_create(Location location, Material material, Direction direction)
 {
-    return (Block){location, material, direction, 0, 0, 0};
+    return (Block){location, material, direction, 0, 0, false};
 }
 
 static BlockNode block_node_create(Block block)

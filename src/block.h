@@ -44,7 +44,7 @@ typedef struct Block {
     // Redstone state
     unsigned int power:4; // 0 - 15
     unsigned int last_power:4;
-    unsigned int updated:1;
+    bool updated;
 } Block;
 
 typedef struct BlockNode {

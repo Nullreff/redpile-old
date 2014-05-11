@@ -26,7 +26,7 @@
 #define UPDATE_POWER(node,new_power)\
     node->block.last_power = node->block.power;\
     node->block.power = new_power;\
-    node->block.updated = 1
+    node->block.updated = true
 #define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
 
 void redstone_wire_update(World* world, BlockNode* node);
@@ -179,7 +179,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
                 goto end;
         }
 
-        node->block.updated = 1;
+        node->block.updated = true;
     }
 end:
 
@@ -189,7 +189,7 @@ end:
         if (node->block.updated)
         {
             block_modified_callback(&node->block);
-            node->block.updated = 0;
+            node->block.updated = false;
         }
         else if (node->block.power > 0)
         {
