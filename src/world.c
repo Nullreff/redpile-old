@@ -94,6 +94,7 @@ WorldStats world_get_stats(World* world)
     return (WorldStats){
         world->ticks,
         world->blocks->size,
+        world->blocks->power_sources,
         world->buckets->size,
         world->buckets->overflow,
         world->buckets->resizes,
@@ -105,6 +106,7 @@ void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
+    STAT_PRINT(stats, power_sources);
     STAT_PRINT(stats, buckets_allocated);
     STAT_PRINT(stats, buckets_overflow);
     STAT_PRINT(stats, buckets_resizes);

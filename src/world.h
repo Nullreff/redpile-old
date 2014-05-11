@@ -39,6 +39,7 @@ typedef struct {
 typedef struct {
     unsigned int ticks;
     unsigned int blocks;
+    unsigned int power_sources;
     unsigned int buckets_allocated;
     unsigned int buckets_overflow;
     unsigned int buckets_resizes;

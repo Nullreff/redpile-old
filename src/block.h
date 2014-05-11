@@ -61,7 +61,10 @@ typedef struct BlockNode {
 typedef struct {
     BlockNode* head;
     BlockNode* tail;
+
+    // Stats
     unsigned int size;
+    unsigned int power_sources;
 } BlockList;
 
 #define POWER_SOURCE(material) (material == TORCH || material == REPEATER)

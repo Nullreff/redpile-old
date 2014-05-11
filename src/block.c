@@ -103,6 +103,7 @@ BlockList* block_list_allocate(void)
     blocks->head = NULL;
     blocks->tail = NULL;
     blocks->size = 0;
+    blocks->power_sources = 0;
 
     return blocks;
 }
@@ -128,6 +129,8 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     {
         blocks->head = node;
         blocks->tail = node;
+        if POWER_SOURCE(block->material)
+            blocks->power_sources++;
     }
     else
     {
@@ -136,6 +139,7 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
             node->next = blocks->head;
             blocks->head->prev = node;
             blocks->head = node;
+            blocks->power_sources++;
         }
         else
         {
