@@ -80,6 +80,46 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'adds a block' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 AIR'
+      p.puts 'SET 0 0 1 WIRE'
+      p.puts 'STATUS'
+      p.close_write
+      p.read.should =~ /blocks: 2/
+    end
+  end
+
+  it 'adds a block overlapping' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 AIR'
+      p.puts 'SET 0 0 0 WIRE'
+      p.puts 'STATUS'
+      p.close_write
+      p.read.should =~ /blocks: 1/
+    end
+  end
+
+  it 'removes a block' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 AIR'
+      p.puts 'SET 0 0 1 WIRE'
+      p.puts 'SET 0 0 0 EMPTY'
+      p.puts 'STATUS'
+      p.close_write
+      p.read.should =~ /blocks: 1/
+    end
+  end
+
+  it 'doesn\'t add an empty block' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 EMPTY'
+      p.puts 'STATUS'
+      p.close_write
+      p.read.should =~ /blocks: 0/
+    end
+  end
+
   normal_blocks = %w(AIR WIRE CONDUCTOR INSULATOR)
   normal_blocks.each do |block|
     it "inserts an #{block} block" do

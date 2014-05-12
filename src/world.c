@@ -63,6 +63,14 @@ static void world_update_adjacent_nodes(World* world, BlockNode* node)
 
 void world_set_block(World* world, Block* block)
 {
+    if (block->material == EMPTY)
+    {
+        BlockNode* node = bucket_list_remove(world->buckets, block->location);
+        if (node != NULL)
+            block_list_remove(world->blocks, node);
+        return;
+    }
+
     Bucket* bucket = bucket_list_get(world->buckets, block->location, true);
 
     // Attach the next availabe block to this bucket

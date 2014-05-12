@@ -45,6 +45,7 @@ typedef struct {
 void bucket_list_print(BucketList* buckets, Bucket* selected);
 BucketList* bucket_list_allocate(unsigned int size);
 void bucket_list_free(BucketList* map);
-Bucket* bucket_list_get(BucketList* map, Location key, bool create);
+Bucket* bucket_list_get(BucketList* buckets, Location key, bool create);
+BlockNode* bucket_list_remove(BucketList* buckets, Location key);
 
 #endif

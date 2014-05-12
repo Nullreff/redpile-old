@@ -81,5 +81,6 @@ void block_print_power(Block* block);
 BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
 BlockNode* block_list_append(BlockList* blocks, Block* block);
+void block_list_remove(BlockList* blocks, BlockNode* node);
 
 #endif

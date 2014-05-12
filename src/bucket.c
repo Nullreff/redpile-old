@@ -159,3 +159,45 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
     return bucket;
 }
 
+BlockNode* bucket_list_remove(BucketList* buckets, Location key)
+{
+    if (buckets->overflow > buckets->size / 2)
+        bucket_list_resize(buckets, buckets->size / 2);
+
+    int hash = location_hash(key, buckets->size);
+    Bucket* bucket = buckets->data + hash;
+    Bucket* last_bucket = NULL;
+
+    if (bucket->value == NULL)
+        return NULL;
+
+    while (!location_equals(bucket->key, key))
+    {
+        if (bucket->next == NULL)
+            return NULL;
+
+        last_bucket = bucket;
+        bucket = bucket->next;
+    }
+
+    buckets->overflow--;
+    BlockNode* value = bucket->value;
+
+    if (last_bucket != NULL)
+    {
+        last_bucket->next = bucket->next;
+        free(bucket);
+    }
+    else if (bucket->next != NULL)
+    {
+        last_bucket = bucket->next;
+        memcpy(bucket, bucket->next, sizeof(Bucket));
+        free(last_bucket);
+    }
+    else
+    {
+        *bucket = bucket_empty();
+    }
+
+    return value;
+}

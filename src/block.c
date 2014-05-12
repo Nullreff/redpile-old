@@ -153,3 +153,19 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     return node;
 }
 
+void block_list_remove(BlockList* blocks, BlockNode* node)
+{
+    if (node->prev == NULL)
+        blocks->head = node->next;
+    else
+        node->prev->next = node->next;
+
+    if (node->next == NULL)
+        blocks->tail = node->prev;
+    else
+        node->next->prev = node->prev;
+
+    free(node);
+    blocks->size--;
+}
+
