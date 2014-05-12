@@ -63,10 +63,7 @@ Currently implemented are:
 
 **STATUS**
 
-Prints information about the current state of the world.
-
-* ticks - The total number of times the `TICK` command has been called.
-* blocks - The total number of blocks with unique locations that have been added via `SET`.
+Prints information about the current state of the world and redpile's internal state.
 
 **PING**
 
