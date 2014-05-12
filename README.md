@@ -56,8 +56,10 @@ Any blocks affected by the tick will be returned in the format `(x,y,z) power`.
 
 Currently implemented are:
 
-* WIRE - Propagates power
-* CONDUCTOR - Moves power from wires to power sources
+* AIR - Empty area that cannot be powered but allows power around it
+* WIRE - Propagates power to adjacent blocks and those up/down one block
+* CONDUCTOR - Block that can be powered
+* INSULATOR - Block that cannot be powered
 * TORCH - Powers wires and switches off when powered
 * REPEATER - Powers a block in front if it receives power from the block behind
 
