@@ -71,6 +71,14 @@ void run_benchmarks(World* world, unsigned int count)
     RANGE_END
     BENCHMARK_END
 
+    BENCHMARK_START(world_remove_block)
+    CUBE_RANGE(-(int)count, (int)count)
+        Location loc = (Location){x,y,z};
+        Block block = block_create(loc, EMPTY, DIRECTION_DEFAULT);
+        world_set_block(world, &block);
+    CUBE_RANGE_END
+    BENCHMARK_END
+
     long long end = get_time();
     print_time("total", end - start);
     printf("--- Benchmark End ---\n");
