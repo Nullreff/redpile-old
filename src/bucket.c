@@ -47,6 +47,7 @@ BucketList* bucket_list_allocate(unsigned int size)
 
     // General
     buckets->size = size;
+    buckets->min_size = size;
     buckets->overflow = 0;
     buckets->resizes = 0;
     buckets->max_depth = 0;
@@ -85,6 +86,7 @@ void bucket_list_resize(BucketList* buckets, unsigned int new_size)
 {
     BucketList* new_buckets = bucket_list_allocate(new_size);
     new_buckets->resizes = buckets->resizes + 1;
+    new_buckets->min_size = buckets->min_size;
 
     for (int i = 0; i < buckets->size; i++)
     {
@@ -161,8 +163,13 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
 
 BlockNode* bucket_list_remove(BucketList* buckets, Location key)
 {
-    if (buckets->overflow > buckets->size / 2)
-        bucket_list_resize(buckets, buckets->size / 2);
+    // Resize down the bucket array
+    if (buckets->overflow == 0 && buckets->size > buckets->min_size)
+    {
+        int half_size = buckets->size / 2;
+        int new_size = buckets->min_size > half_size ? buckets->min_size : half_size;
+        bucket_list_resize(buckets, new_size);
+    }
 
     int hash = location_hash(key, buckets->size);
     Bucket* bucket = buckets->data + hash;
@@ -180,19 +187,20 @@ BlockNode* bucket_list_remove(BucketList* buckets, Location key)
         bucket = bucket->next;
     }
 
-    buckets->overflow--;
     BlockNode* value = bucket->value;
 
     if (last_bucket != NULL)
     {
         last_bucket->next = bucket->next;
         free(bucket);
+        buckets->overflow--;
     }
     else if (bucket->next != NULL)
     {
         last_bucket = bucket->next;
         memcpy(bucket, bucket->next, sizeof(Bucket));
         free(last_bucket);
+        buckets->overflow--;
     }
     else
     {

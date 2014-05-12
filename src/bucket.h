@@ -35,6 +35,7 @@ typedef struct {
 
     // Stats
     unsigned int size;
+    unsigned int min_size;
     unsigned int overflow;
     unsigned int resizes;
     unsigned int max_depth;
