@@ -61,13 +61,28 @@ static void world_update_adjacent_nodes(World* world, BlockNode* node)
     }
 }
 
+static void world_reset_adjacent_nodes(World* world, BlockNode* node)
+{
+    for (int i = 0; i < 6; i++)
+    {
+        if (node->adjacent[i] != NULL)
+        {
+            Direction dir = (Direction)i;
+            node->adjacent[i]->adjacent[direction_invert(dir)] = NULL;
+        }
+    }
+}
+
 void world_set_block(World* world, Block* block)
 {
     if (block->material == EMPTY)
     {
         BlockNode* node = bucket_list_remove(world->buckets, block->location);
         if (node != NULL)
+        {
+            world_reset_adjacent_nodes(world, node);
             block_list_remove(world->blocks, node);
+        }
         return;
     }
 
