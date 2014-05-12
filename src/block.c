@@ -165,7 +165,9 @@ void block_list_remove(BlockList* blocks, BlockNode* node)
     else
         node->next->prev = node->prev;
 
-    free(node);
     blocks->size--;
+    if POWER_SOURCE(node->block.material)
+        blocks->power_sources--;
+    free(node);
 }
 
