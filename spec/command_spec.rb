@@ -165,8 +165,9 @@ describe 'Redpile Commands' do
       p.puts 'SET 0 0 0 TORCH UP'
       (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
       p.puts 'TICK'
+      p.puts "GET 0 0 #{end_block}"
       p.close_write
-      p.read.should =~ /\(0,0,#{end_block}\) 0\n/
+      p.read.should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
     end
   end
 

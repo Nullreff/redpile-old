@@ -180,7 +180,8 @@ end:
     {
         if (node->block.updated)
         {
-            block_modified_callback(&node->block);
+            if (node->block.power != node->block.last_power)
+                block_modified_callback(&node->block);
             node->block.updated = false;
         }
         else if (node->block.power > 0)
