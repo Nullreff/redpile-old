@@ -32,7 +32,7 @@ int direction_parse(char* direction, Direction* result)
 {
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
-        if (strcmp(direction, Directions[i]) == 0)
+        if (strcasecmp(direction, Directions[i]) == 0)
         {
             *result = (Direction)i;
             return 0;

@@ -33,7 +33,7 @@ int material_parse(char* material, Material* result)
 {
     for (int i = 0; i < MATERIALS_COUNT; i++)
     {
-        if (strcmp(material, Materials[i]) == 0)
+        if (strcasecmp(material, Materials[i]) == 0)
         {
             *result = (Material)i;
             return 0;

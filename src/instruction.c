@@ -43,7 +43,7 @@ int command_parse(char* command, Command* result)
 {
     for (int i = 0; i < COMMANDS_COUNT; i++)
     {
-        if (strcmp(command, Commands[i]) == 0)
+        if (strcasecmp(command, Commands[i]) == 0)
         {
             *result = (Command)i;
             return 0;
@@ -58,10 +58,6 @@ int instruction_parse(char* instruction, Instruction* result)
     char* parts = strdup(instruction);
     char* parts_ptr = parts;
     CHECK_OOM(parts);
-
-    // Convert to upper case
-    for (int i = 0; parts[i] != '\0'; i++)
-        parts[i] = toupper(parts[i]);
 
     Command command;
     Coord x = 0;
