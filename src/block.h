@@ -35,7 +35,7 @@ typedef enum {
     REPEATER
 } Material;
 
-typedef struct Block {
+typedef struct {
     // General information
     Location location;
     Material material;
