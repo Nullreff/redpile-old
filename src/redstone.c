@@ -24,9 +24,11 @@
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
 #define SHOULD_UPDATE(node,new_power) (!(node)->block.updated || (node)->block.power < (new_power))
 #define UPDATE_POWER(node,new_power)\
+    do {\
     node->block.last_power = node->block.power;\
     node->block.power = new_power;\
-    node->block.updated = true
+    node->block.updated = true;\
+    } while (0)
 #define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
 
 void redstone_wire_update(World* world, BlockNode* node)
