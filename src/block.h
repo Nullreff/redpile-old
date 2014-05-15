@@ -40,10 +40,12 @@ typedef struct {
     Location location;
     Material material;
     Direction direction;
+    unsigned int state;
 
     // Redstone state
-    unsigned int power:4; // 0 - 15
-    unsigned int last_power:4;
+    unsigned int power;
+    unsigned int power_state;
+    unsigned int last_power;
     bool updated;
 } Block;
 

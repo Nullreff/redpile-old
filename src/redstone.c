@@ -77,7 +77,7 @@ void redstone_wire_update(World* world, BlockNode* node)
         if (found_node == NULL || found_node->block.material != WIRE)
             continue;
 
-        int new_power = node->block.power - 1;
+        int new_power = node->block.power != 0 ? node->block.power - 1 : 0;
         if SHOULD_UPDATE(found_node, new_power)
         {
             UPDATE_POWER(found_node, new_power);

@@ -55,7 +55,19 @@ Block block_from_values(int values[])
 
 Block block_create(Location location, Material material, Direction direction)
 {
-    return (Block){location, material, direction, 0, 0, false};
+    return (Block){
+        // General information
+        location,
+        material,
+        direction,
+        0, // state
+
+        // Redstone state
+        0,    // power
+        0,    // power_state
+        0,    // last_power
+        false // updated
+    };
 }
 
 static BlockNode block_node_create(Block block)
