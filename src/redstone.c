@@ -107,6 +107,16 @@ void redstone_wire_update(World* world, BlockNode* node)
 
 void redstone_repeater_update(World* world, BlockNode* node)
 {
+    // Test if any adjacent repeaters are locking this one
+    BlockNode* right = NODE_ADJACENT(node, direction_right(node->block.direction));
+    if (right != NULL && right->block.material == REPEATER &&
+        right->block.power > 0 && right->block.power_state > right->block.state)
+        return;
+    BlockNode* left = NODE_ADJACENT(node, direction_left(node->block.direction));
+    if (left != NULL && left->block.material == REPEATER &&
+        left->block.power > 0 && left->block.power_state > left->block.state)
+        return;
+
     update_power_from_behind(node, 15, 0);
 
     // Update the number of ticks this repeater has been powered

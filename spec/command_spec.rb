@@ -369,4 +369,36 @@ describe 'Redpile Commands' do
       end
     end
   end
+
+  it 'is blocked from being powered by a repeater on the left' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'SET -1 0 2 TORCH UP'
+      p.puts 'TICK'
+      p.puts 'SET 0 0 1 REPEATER SOUTH 0'
+      p.puts 'SET 0 0 2 REPEATER EAST 0'
+      p.puts 'SET 1 0 2 WIRE'
+      p.puts 'TICK'
+      p.puts 'TICK'
+      p.puts 'GET 1 0 2'
+      p.close_write
+      p.read.should =~ /\(1,0,2\) 0 WIRE/m
+    end
+  end
+
+  it 'is blocked from being powered by a repeater on the right' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'SET 1 0 2 TORCH UP'
+      p.puts 'TICK'
+      p.puts 'SET 0 0 1 REPEATER SOUTH 0'
+      p.puts 'SET 0 0 2 REPEATER WEST 0'
+      p.puts 'SET -1 0 2 WIRE'
+      p.puts 'TICK'
+      p.puts 'TICK'
+      p.puts 'GET -1 0 2'
+      p.close_write
+      p.read.should =~ /\(-1,0,2\) 0 WIRE/m
+    end
+  end
 end
