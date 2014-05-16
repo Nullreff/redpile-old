@@ -154,12 +154,12 @@ void redstone_torch_update(World* world, BlockNode* node)
 
     UPDATE_POWER(up_node, node->block.power);
 
-    BlockNode* up_2_node = NODE_ADJACENT(up_node, UP);
-    if (up_2_node == NULL || up_2_node->block.material != WIRE)
+    MOVE_TO_NODE(up_node, UP);
+    if (up_node == NULL || up_node->block.material != WIRE)
         return;
 
-    UPDATE_POWER(up_2_node, node->block.power);
-    redstone_wire_update(world, up_2_node);
+    UPDATE_POWER(up_node, node->block.power);
+    redstone_wire_update(world, up_node);
 }
 
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))
