@@ -40,7 +40,7 @@ static Direction update_power_from_behind(BlockNode* node, int on, int off)
     return behind;
 }
 
-void redstone_wire_update(World* world, BlockNode* node)
+static void redstone_wire_update(World* world, BlockNode* node)
 {
     BlockNode* above = NODE_ADJACENT(node, UP);
     bool covered = above != NULL &&
@@ -105,7 +105,7 @@ void redstone_wire_update(World* world, BlockNode* node)
     }
 }
 
-void redstone_repeater_update(World* world, BlockNode* node)
+static void redstone_repeater_update(World* world, BlockNode* node)
 {
     // Test if any adjacent repeaters are locking this one
     BlockNode* right = NODE_ADJACENT(node, direction_right(node->block.direction));
@@ -145,7 +145,7 @@ void redstone_repeater_update(World* world, BlockNode* node)
     }
 }
 
-void redstone_torch_update(World* world, BlockNode* node)
+static void redstone_torch_update(World* world, BlockNode* node)
 {
     Direction behind = update_power_from_behind(node, 0, 15);
 
