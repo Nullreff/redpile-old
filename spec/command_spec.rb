@@ -154,6 +154,20 @@ describe 'Redpile Commands' do
     end
   end
 
+  state_blocks = %w(REPEATER COMPARATOR)
+  state_blocks.each do |block|
+    %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
+      it "inserts an #{block} block pointing #{dir}" do
+        redpile do |p|
+          p.puts "SET 0 0 0 #{block} #{dir} 0"
+          p.puts "GET 0 0 0"
+          p.close_write
+          p.read.should =~ /\(0,0,0\) 0 #{block} #{dir} 0\n/
+        end
+      end
+    end
+  end
+
   MAX_RANGE = 15
   (1..MAX_RANGE).each do |range|
     it "propigates power #{range} blocks" do
