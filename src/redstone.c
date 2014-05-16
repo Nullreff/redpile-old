@@ -31,6 +31,15 @@
     } while (0)
 #define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
 
+static Direction update_power_from_behind(BlockNode* node, int on, int off)
+{
+    Direction behind = direction_invert(node->block.direction);
+    BlockNode* power_source = NODE_ADJACENT(node, behind);
+    int new_power = power_source == NULL || LAST_POWER(power_source) == 0 ? off : on;
+    UPDATE_POWER(node, new_power);
+    return behind;
+}
+
 void redstone_wire_update(World* world, BlockNode* node)
 {
     BlockNode* above = NODE_ADJACENT(node, UP);
@@ -98,11 +107,7 @@ void redstone_wire_update(World* world, BlockNode* node)
 
 void redstone_repeater_update(World* world, BlockNode* node)
 {
-    // Set the repeater power from the block behind it
-    Direction behind = direction_invert(node->block.direction);
-    BlockNode* power_source = NODE_ADJACENT(node, behind);
-    int new_power = power_source == NULL || LAST_POWER(power_source) == 0 ? 0 : 15;
-    UPDATE_POWER(node, new_power);
+    update_power_from_behind(node, 15, 0);
 
     // Pass charge to the wire or conductor in front
     BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
@@ -122,11 +127,7 @@ void redstone_repeater_update(World* world, BlockNode* node)
 
 void redstone_torch_update(World* world, BlockNode* node)
 {
-    // Set the torch power from the block behind it
-    Direction behind = direction_invert(node->block.direction);
-    BlockNode* power_source = NODE_ADJACENT(node, behind);
-    int new_power = power_source == NULL || LAST_POWER(power_source) == 0 ? 15 : 0;
-    UPDATE_POWER(node, new_power);
+    Direction behind = update_power_from_behind(node, 0, 15);
 
     // Pass charge to any adjacent wires
     Direction directions[5] = {NORTH, SOUTH, EAST, WEST, DOWN};
