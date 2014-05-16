@@ -80,6 +80,14 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'errors with a negative state' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 REPEATER NORTH -1'
+      p.close_write
+      p.gets.should =~ /Invalid Command\n/
+    end
+  end
+
   it 'adds a block' do
     redpile do |p|
       p.puts 'SET 0 0 0 AIR'
@@ -335,7 +343,7 @@ describe 'Redpile Commands' do
     it "passes power through a repeater to a #{material}" do
       redpile do |p|
         p.puts 'SET 0 0 0 TORCH UP'
-        p.puts 'SET 0 0 1 REPEATER SOUTH'
+        p.puts 'SET 0 0 1 REPEATER SOUTH 0'
         p.puts "SET 0 0 2 #{material}"
         p.puts 'TICK'
         p.puts 'TICK'

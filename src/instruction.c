@@ -29,7 +29,7 @@
         goto error;\
     NAME = strtol(str_ ## NAME , &parse_error, 10);\
     if (*parse_error)\
-        goto error;
+        goto error
 
 char* Commands[COMMANDS_COUNT] = {
     "SET",
@@ -65,6 +65,7 @@ int instruction_parse(char* instruction, Instruction* result)
     Coord z = 0;
     Material material = EMPTY;
     Direction direction = NORTH;
+    int state = 0;
 
     char* str_command = strtok(parts, " ");
     if (str_command == NULL || command_parse(str_command, &command) == -1)
@@ -74,9 +75,9 @@ int instruction_parse(char* instruction, Instruction* result)
         goto success;
 
     char* parse_error;
-    PARSE_NUMBER(x)
-    PARSE_NUMBER(y)
-    PARSE_NUMBER(z)
+    PARSE_NUMBER(x);
+    PARSE_NUMBER(y);
+    PARSE_NUMBER(z);
 
     if (command == GET)
         goto success;
@@ -92,8 +93,15 @@ int instruction_parse(char* instruction, Instruction* result)
     if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
         goto error;
 
+    if (!HAS_STATE(material))
+        goto success;
+
+    PARSE_NUMBER(state);
+    if (state < 0)
+        goto error;
+
 success:
-    *result = (Instruction){command, {x, y, z, material, direction}};
+    *result = (Instruction){command, {x, y, z, material, direction, state}};
     free(parts_ptr);
     return 0;
 
@@ -118,7 +126,8 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             block = world_get_block(world, location_from_values(inst->values));
             if (block == NULL)
             {
-                new_block = block_create(location_from_values(inst->values), EMPTY, NORTH);
+                new_block = block_empty();
+                new_block.location = location_from_values(inst->values);
                 block_print(&new_block);
             }
             else

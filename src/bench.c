@@ -54,7 +54,7 @@ void run_benchmarks(World* world, unsigned int count)
     CUBE_RANGE(-(int)count, (int)count)
         Location loc = (Location){x,y,z};
         int torch = !location_hash(loc, 20000);
-        Block block = block_create(loc, torch ? TORCH : WIRE, UP);
+        Block block = block_create(loc, torch ? TORCH : WIRE, UP, 0);
         world_set_block(world, &block);
     CUBE_RANGE_END
     BENCHMARK_END
@@ -74,7 +74,7 @@ void run_benchmarks(World* world, unsigned int count)
     BENCHMARK_START(world_remove_block)
     CUBE_RANGE(-(int)count, (int)count)
         Location loc = (Location){x,y,z};
-        Block block = block_create(loc, EMPTY, DIRECTION_DEFAULT);
+        Block block = block_create(loc, EMPTY, DIRECTION_DEFAULT, 0);
         world_set_block(world, &block);
     CUBE_RANGE_END
     BENCHMARK_END

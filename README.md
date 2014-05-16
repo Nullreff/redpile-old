@@ -22,7 +22,7 @@ For command line options, try `redpile --help`.
 Commands
 --------
 
-**SET x y z material [direction]**
+**SET x y z material [direction] [state]**
 
 Sets the block at `(x, y, z)` to have a material of `material` and a direction of `direction`.
 
@@ -47,7 +47,7 @@ Values for `direction` are:
 
 **GET x y z**
 
-Returns information about the block at `(x, y, z)` in the format `(x,y,z) power material [direction]`.  The value of `direction` is only returned if it's relevant to the current block.
+Returns information about the block at `(x, y, z)` in the format `(x,y,z) power material [direction] [state]`.  The value of `direction` is only returned if it's relevant to the current block.
 
 **TICK**
 

@@ -34,7 +34,7 @@ typedef enum {
 
 typedef struct {
     Command cmd;
-    int values[5];
+    int values[6];
 } Instruction;
 
 int command_parse(char* command, Command* result);

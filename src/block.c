@@ -45,22 +45,22 @@ int material_parse(char* material, Material* result)
 
 Block block_empty(void)
 {
-    return block_create(location_empty(), MATERIAL_DEFAULT, DIRECTION_DEFAULT);
+    return block_create(location_empty(), MATERIAL_DEFAULT, DIRECTION_DEFAULT, 0);
 }
 
 Block block_from_values(int values[])
 {
-    return block_create(location_from_values(values), values[3], values[4]);
+    return block_create(location_from_values(values), values[3], values[4], values[5]);
 }
 
-Block block_create(Location location, Material material, Direction direction)
+Block block_create(Location location, Material material, Direction direction, unsigned int state)
 {
     return (Block){
         // General information
         location,
         material,
         direction,
-        0, // state
+        state,
 
         // Redstone state
         0,    // power
@@ -79,13 +79,27 @@ void block_print(Block* block)
 {
     if (HAS_DIRECTION(block->material))
     {
-        printf("(%d,%d,%d) %u %s %s\n",
-               block->location.x,
-               block->location.y,
-               block->location.z,
-               block->power,
-               Materials[block->material],
-               Directions[block->direction]);
+        if (HAS_STATE(block->material))
+        {
+            printf("(%d,%d,%d) %u %s %s %u\n",
+                   block->location.x,
+                   block->location.y,
+                   block->location.z,
+                   block->power,
+                   Materials[block->material],
+                   Directions[block->direction],
+                   block->state);
+        }
+        else
+        {
+            printf("(%d,%d,%d) %u %s %s\n",
+                   block->location.x,
+                   block->location.y,
+                   block->location.z,
+                   block->power,
+                   Materials[block->material],
+                   Directions[block->direction]);
+        }
     }
     else
     {
