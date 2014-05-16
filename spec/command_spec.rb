@@ -352,4 +352,21 @@ describe 'Redpile Commands' do
       end
     end
   end
+
+  (0..3).each do |delay|
+    it "delays the propigation of power by #{delay} tick(s)" do
+      redpile do |p|
+        p.puts 'SET 0 0 0 TORCH UP'
+        p.puts 'TICK'
+        p.puts "SET 0 0 1 REPEATER SOUTH #{delay}"
+        p.puts 'SET 0 0 2 WIRE'
+        delay.times { p.puts 'TICK' }
+        p.puts 'GET 0 0 2'
+        p.puts 'TICK'
+        p.puts 'GET 0 0 2'
+        p.close_write
+        p.read.should =~ /\(0,0,2\) 0 WIRE.*\(0,0,2\) 15 WIRE/m
+      end
+    end
+  end
 end

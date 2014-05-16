@@ -109,6 +109,16 @@ void redstone_repeater_update(World* world, BlockNode* node)
 {
     update_power_from_behind(node, 15, 0);
 
+    // Update the number of ticks this repeater has been powered
+    if (node->block.power != node->block.last_power)
+        node->block.power_state = 0;
+    if (node->block.power > 0 && node->block.power_state <= node->block.state)
+        node->block.power_state++;
+
+    // If it's be on shorter than the delay, don't propigate power
+    if (node->block.power_state <= node->block.state)
+        return;
+
     // Pass charge to the wire or conductor in front
     BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
     if (found_node == NULL)
