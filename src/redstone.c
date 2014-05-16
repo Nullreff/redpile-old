@@ -130,7 +130,7 @@ static void redstone_comparator_update(World* world, BlockNode* node)
     if (node->block.state > 0)
         change -= side_power;
 
-    new_power = new_power >= side_power ? change : 0;
+    new_power = new_power > side_power ? change : 0;
     UPDATE_POWER(node, new_power);
 
     // Pass charge to the wire or conductor in front
