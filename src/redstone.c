@@ -30,6 +30,7 @@
     node->block.updated = true;\
     } while (0)
 #define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
+#define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 
 static Direction update_power_from_behind(BlockNode* node, int on, int off)
 {
@@ -107,7 +108,45 @@ static void redstone_wire_update(World* world, BlockNode* node)
 
 static void redstone_comparator_update(World* world, BlockNode* node)
 {
+    unsigned int side_power = 0;
+    BlockNode* right = NODE_ADJACENT(node, direction_right(node->block.direction));
+    if (right != NULL && (right->block.material != REPEATER || REPEATER_POWERED(right)))
+        side_power = LAST_POWER(right);
 
+    BlockNode* left = NODE_ADJACENT(node, direction_left(node->block.direction));
+    if (left != NULL && (left->block.material != REPEATER || REPEATER_POWERED(left)))
+    {
+        unsigned int left_power = LAST_POWER(left);
+        if (left_power > side_power)
+        side_power = left_power;
+    }
+
+    Direction behind = direction_invert(node->block.direction);
+    BlockNode* power_source = NODE_ADJACENT(node, behind);
+    int new_power = power_source != NULL ? LAST_POWER(power_source) : 0;
+    int change = new_power;
+
+    // Subtraction mode
+    if (node->block.state > 0)
+        change -= side_power;
+
+    new_power = new_power >= side_power ? change : 0;
+    UPDATE_POWER(node, new_power);
+
+    // Pass charge to the wire or conductor in front
+    BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
+    if (found_node == NULL)
+        return;
+
+    if (found_node->block.material == WIRE)
+    {
+        UPDATE_POWER(found_node, node->block.power);
+        redstone_wire_update(world, found_node);
+    }
+    else if (found_node->block.material == CONDUCTOR)
+    {
+        UPDATE_POWER(found_node, node->block.power);
+    }
 }
 
 static void redstone_repeater_update(World* world, BlockNode* node)
@@ -115,11 +154,11 @@ static void redstone_repeater_update(World* world, BlockNode* node)
     // Test if any adjacent repeaters are locking this one
     BlockNode* right = NODE_ADJACENT(node, direction_right(node->block.direction));
     if (right != NULL && right->block.material == REPEATER &&
-        LAST_POWER(right) > 0 && right->block.power_state > right->block.state)
+        LAST_POWER(right) > 0 && REPEATER_POWERED(right))
         return;
     BlockNode* left = NODE_ADJACENT(node, direction_left(node->block.direction));
     if (left != NULL && left->block.material == REPEATER &&
-        LAST_POWER(left) > 0 && left->block.power_state > left->block.state)
+        LAST_POWER(left) > 0 && REPEATER_POWERED(left))
         return;
 
     update_power_from_behind(node, 15, 0);
@@ -127,11 +166,11 @@ static void redstone_repeater_update(World* world, BlockNode* node)
     // Update the number of ticks this repeater has been powered
     if (node->block.power != node->block.last_power)
         node->block.power_state = 0;
-    if (node->block.power > 0 && node->block.power_state <= node->block.state)
+    if (node->block.power > 0 && !REPEATER_POWERED(node))
         node->block.power_state++;
 
     // If it's be on shorter than the delay, don't propigate power
-    if (node->block.power_state <= node->block.state)
+    if (!REPEATER_POWERED(node))
         return;
 
     // Pass charge to the wire or conductor in front
