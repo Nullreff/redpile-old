@@ -20,17 +20,17 @@
 #define REDPILE_WORLD_H
 
 #include "block.h"
-#include "bucket.h"
+#include "hashmap.h"
 #include "redpile.h"
 
 typedef struct {
-    // All blocks are stored in an expandable array that can be resized when
-    // more are added/removed.  See block.c for more information.
+    // All blocks are stored in a linked list.
+    // See block.c for more information.
     BlockList* blocks;
 
-    // Fast block lookup is done using a rather interesting hashmap
-    // implementation.  See bucket.c for more information.
-    HashMap* buckets;
+    // Fast block lookup is done using a hashmap.
+    // See hashmap.c for more information.
+    Hashmap* hashmap;
 
     // Additional stats
     unsigned int ticks; // Redstone ticks
@@ -40,10 +40,10 @@ typedef struct {
     unsigned int ticks;
     unsigned int blocks;
     unsigned int power_sources;
-    unsigned int buckets_allocated;
-    unsigned int buckets_overflow;
-    unsigned int buckets_resizes;
-    unsigned int buckets_max_depth;
+    unsigned int hashmap_allocated;
+    unsigned int hashmap_overflow;
+    unsigned int hashmap_resizes;
+    unsigned int hashmap_max_depth;
 } WorldStats;
 
 #define NODE_ADJACENT(node,dir) node->adjacent[dir]

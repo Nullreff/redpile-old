@@ -18,7 +18,7 @@
 
 #include "world.h"
 #include "block.h"
-#include "bucket.h"
+#include "hashmap.h"
 
 World* world_allocate(unsigned int size)
 {
@@ -27,7 +27,7 @@ World* world_allocate(unsigned int size)
 
     world->ticks = 0;
 
-    world->buckets = bucket_list_allocate(size);
+    world->hashmap = hashmap_allocate(size);
     world->blocks = block_list_allocate();
 
     return world;
@@ -35,7 +35,7 @@ World* world_allocate(unsigned int size)
 
 void world_free(World* world)
 {
-    bucket_list_free(world->buckets);
+    hashmap_free(world->hashmap);
     block_list_free(world->blocks);
     free(world);
 }
@@ -77,7 +77,7 @@ void world_set_block(World* world, Block* block)
 {
     if (block->material == EMPTY)
     {
-        BlockNode* node = bucket_list_remove(world->buckets, block->location);
+        BlockNode* node = hashmap_remove(world->hashmap, block->location);
         if (node != NULL)
         {
             world_reset_adjacent_nodes(world, node);
@@ -86,7 +86,7 @@ void world_set_block(World* world, Block* block)
         return;
     }
 
-    Bucket* bucket = bucket_list_get(world->buckets, block->location, true);
+    Bucket* bucket = hashmap_get(world->hashmap, block->location, true);
 
     // Attach the next availabe block to this bucket
     if (bucket->value == NULL)
@@ -103,7 +103,7 @@ void world_set_block(World* world, Block* block)
 
 BlockNode* world_get_node(World* world, Location location)
 {
-    Bucket* bucket = bucket_list_get(world->buckets, location, false);
+    Bucket* bucket = hashmap_get(world->hashmap, location, false);
     return BUCKET_FILLED(bucket) ? bucket->value : NULL;
 }
 
@@ -119,10 +119,10 @@ WorldStats world_get_stats(World* world)
         world->ticks,
         world->blocks->size,
         world->blocks->power_sources,
-        world->buckets->size,
-        world->buckets->overflow,
-        world->buckets->resizes,
-        world->buckets->max_depth
+        world->hashmap->size,
+        world->hashmap->overflow,
+        world->hashmap->resizes,
+        world->hashmap->max_depth
     };
 }
 
@@ -131,9 +131,9 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
     STAT_PRINT(stats, power_sources);
-    STAT_PRINT(stats, buckets_allocated);
-    STAT_PRINT(stats, buckets_overflow);
-    STAT_PRINT(stats, buckets_resizes);
-    STAT_PRINT(stats, buckets_max_depth);
+    STAT_PRINT(stats, hashmap_allocated);
+    STAT_PRINT(stats, hashmap_overflow);
+    STAT_PRINT(stats, hashmap_resizes);
+    STAT_PRINT(stats, hashmap_max_depth);
 }
 

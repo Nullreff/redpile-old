@@ -1,4 +1,4 @@
-/* bucket.h - Location based hashmap with fast access to nearby buckets
+/* hashmap.h - Location based hashmap
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -38,14 +38,14 @@ typedef struct {
     unsigned int overflow;
     unsigned int resizes;
     unsigned int max_depth;
-} HashMap;
+} Hashmap;
 
 #define BUCKET_FILLED(bucket) (bucket != NULL && bucket->value != NULL)
 
-void bucket_list_print(HashMap* buckets, Bucket* selected);
-HashMap* bucket_list_allocate(unsigned int size);
-void bucket_list_free(HashMap* map);
-Bucket* bucket_list_get(HashMap* buckets, Location key, bool create);
-void* bucket_list_remove(HashMap* buckets, Location key);
+void hashmap_print(Hashmap* hashmap, Bucket* selected);
+Hashmap* hashmap_allocate(unsigned int size);
+void hashmap_free(Hashmap* map);
+Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create);
+void* hashmap_remove(Hashmap* hashmap, Location key);
 
 #endif
