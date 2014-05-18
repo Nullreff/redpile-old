@@ -19,6 +19,8 @@
 #ifndef REDPILE_LOCATION_H
 #define REDPILE_LOCATION_H
 
+#include <stdbool.h>
+
 // I chose 101 because it kind of looks like two redstone torches
 // If you have a better prime number, feel free to use it :)
 #define MAGIC_HASH_NUMBER 101
@@ -52,7 +54,7 @@ Location location_empty(void);
 Location location_from_values(int values[]);
 Location location_create(Coord x, Coord y, Coord z);
 Location location_move(Location loc, Direction dir, int length);
-int location_equals(Location l1, Location l2);
+bool location_equals(Location l1, Location l2);
 unsigned int location_hash(Location loc, unsigned int max);
 
 #endif

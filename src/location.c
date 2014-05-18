@@ -115,7 +115,7 @@ Location location_move(Location loc, Direction dir, int length)
     }
 }
 
-int location_equals(Location l1, Location l2)
+bool location_equals(Location l1, Location l2)
 {
     return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
 }
