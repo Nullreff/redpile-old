@@ -1,7 +1,7 @@
 require 'spec_helper'
 include Helpers
 
-describe 'Redstone comparator' do
+describe 'Comparator' do
   it 'allows power through if side power is less than the input' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
