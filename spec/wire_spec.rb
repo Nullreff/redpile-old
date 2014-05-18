@@ -2,7 +2,7 @@ require 'spec_helper'
 include Helpers
 
 describe 'Wire' do
-  it 'follows wires over and down' do
+  it 'propigates power to the side and down' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
@@ -14,7 +14,7 @@ describe 'Wire' do
     end
   end
 
-  it 'follows wires over and up' do
+  it 'propigates power to the side and up' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
@@ -26,7 +26,7 @@ describe 'Wire' do
     end
   end
 
-  it 'does not propigate over and up when a block is on top' do
+  it 'does not propigate to the side and up when a block is on top' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
@@ -39,7 +39,7 @@ describe 'Wire' do
     end
   end
 
-  it 'powers an adjacent conductor from wire' do
+  it 'powers an adjacent conductor' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
@@ -50,7 +50,7 @@ describe 'Wire' do
     end
   end
 
-  it 'diverts power from a condutor to a wire on the left' do
+  it 'diverts power from a condutor when a wire is on the left' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
@@ -64,7 +64,7 @@ describe 'Wire' do
     end
   end
 
-  it 'diverts power from a condutor to a wire on the right' do
+  it 'diverts power from a condutor when a wire is on the right' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
@@ -78,7 +78,7 @@ describe 'Wire' do
     end
   end
 
-  it 'diverts power from a condutor to a wire on both sides' do
+  it 'diverts power from a condutor when a wire is on both sides' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
