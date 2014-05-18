@@ -35,6 +35,8 @@ Values for `material` are:
 * INSULATOR
 * TORCH
 * REPEATER
+* COMPARATOR
+* PISTON
 
 Values for `direction` are:
 

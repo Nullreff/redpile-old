@@ -136,7 +136,7 @@ describe 'Redpile Commands' do
     end
   end
 
-  state_blocks = %w(REPEATER COMPARATOR)
+  state_blocks = %w(REPEATER COMPARATOR PISTON)
   state_blocks.each do |block|
     %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
