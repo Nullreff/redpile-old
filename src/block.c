@@ -156,12 +156,12 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     {
         blocks->head = node;
         blocks->tail = node;
-        if POWER_SOURCE(block->material)
+        if TICK_BOUNDARY(block->material)
             blocks->power_sources++;
     }
     else
     {
-        if POWER_SOURCE(block->material)
+        if TICK_BOUNDARY(block->material)
         {
             node->next = blocks->head;
             blocks->head->prev = node;
@@ -193,7 +193,7 @@ void block_list_remove(BlockList* blocks, BlockNode* node)
         node->next->prev = node->prev;
 
     blocks->size--;
-    if POWER_SOURCE(node->block.material)
+    if TICK_BOUNDARY(node->block.material)
         blocks->power_sources--;
     free(node);
 }

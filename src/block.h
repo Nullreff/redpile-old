@@ -70,7 +70,7 @@ typedef struct {
     unsigned int power_sources;
 } BlockList;
 
-#define POWER_SOURCE(material) (material == TORCH || material == REPEATER || material == COMPARATOR)
+#define TICK_BOUNDARY(material) (material == TORCH || material == REPEATER || material == COMPARATOR)
 #define HAS_DIRECTION(material) (material == TORCH || material == REPEATER || material == COMPARATOR)
 #define HAS_STATE(material) (material == REPEATER || material == COMPARATOR)
 
