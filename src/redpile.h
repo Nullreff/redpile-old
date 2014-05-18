@@ -29,7 +29,8 @@
 
 #define REDPILE_VERSION "0.3.0"
 
-#define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); }
+#define ERROR(MESSAGE) do { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); } while(0)
+#define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { ERROR(MESSAGE); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
 
 #define EMPTY_INDEX UINT_MAX

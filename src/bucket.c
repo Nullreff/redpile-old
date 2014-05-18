@@ -29,17 +29,6 @@ static Bucket bucket_empty(void)
     return bucket_create(location_empty(), NULL);
 }
 
-static void bucket_print(Bucket* bucket)
-{
-    printf("%p (%d,%d,%d) %p %p\n",
-            (void*)bucket,
-            bucket->key.x,
-            bucket->key.y,
-            bucket->key.z,
-            (void*)bucket->value,
-            (void*)bucket->next);
-}
-
 BucketList* bucket_list_allocate(unsigned int size)
 {
     BucketList* buckets = malloc(sizeof(BucketList));
