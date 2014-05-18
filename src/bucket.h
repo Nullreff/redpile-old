@@ -21,12 +21,11 @@
 
 #include "redpile.h"
 #include "location.h"
-#include "block.h"
 #include <stdbool.h>
 
 typedef struct Bucket {
     Location key;
-    BlockNode* value;
+    void* value;
     struct Bucket* next;
 } Bucket;
 
@@ -47,6 +46,6 @@ void bucket_list_print(BucketList* buckets, Bucket* selected);
 BucketList* bucket_list_allocate(unsigned int size);
 void bucket_list_free(BucketList* map);
 Bucket* bucket_list_get(BucketList* buckets, Location key, bool create);
-BlockNode* bucket_list_remove(BucketList* buckets, Location key);
+void* bucket_list_remove(BucketList* buckets, Location key);
 
 #endif

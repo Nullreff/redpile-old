@@ -19,14 +19,9 @@
 #include "bucket.h"
 #include "redpile.h"
 
-static Bucket bucket_create(Location key, BlockNode* node)
-{
-    return (Bucket){key, node, NULL};
-}
-
 static Bucket bucket_empty(void)
 {
-    return bucket_create(location_empty(), NULL);
+    return (Bucket){location_empty(), NULL, NULL};
 }
 
 BucketList* bucket_list_allocate(unsigned int size)
@@ -150,7 +145,7 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
     return bucket;
 }
 
-BlockNode* bucket_list_remove(BucketList* buckets, Location key)
+void* bucket_list_remove(BucketList* buckets, Location key)
 {
     // Resize down the bucket array
     if (buckets->overflow == 0 && buckets->size > buckets->min_size)
@@ -176,7 +171,7 @@ BlockNode* bucket_list_remove(BucketList* buckets, Location key)
         bucket = bucket->next;
     }
 
-    BlockNode* value = bucket->value;
+    void* value = bucket->value;
 
     if (last_bucket != NULL)
     {

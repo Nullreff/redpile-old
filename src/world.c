@@ -96,7 +96,8 @@ void world_set_block(World* world, Block* block)
     }
     else
     {
-        memcpy(&bucket->value->block, block, sizeof(Block));
+        BlockNode* node = bucket->value;
+        memcpy(&node->block, block, sizeof(Block));
     }
 }
 
