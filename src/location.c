@@ -120,8 +120,14 @@ int location_equals(Location l1, Location l2)
     return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
 }
 
-int location_hash(Location loc, int max)
+unsigned int location_hash(Location loc, unsigned int max)
 {
-    return abs((loc.x * MAGIC_HASH_NUMBER + loc.y) * MAGIC_HASH_NUMBER + loc.z) % max;
+    unsigned int total = 0;
+    total += (unsigned int)loc.x;
+    total *= MAGIC_HASH_NUMBER;
+    total += (unsigned int)loc.y;
+    total *= MAGIC_HASH_NUMBER;
+    total += (unsigned int)loc.z;
+    return total % max;
 }
 

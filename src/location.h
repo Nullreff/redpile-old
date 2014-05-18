@@ -53,6 +53,6 @@ Location location_from_values(int values[]);
 Location location_create(Coord x, Coord y, Coord z);
 Location location_move(Location loc, Direction dir, int length);
 int location_equals(Location l1, Location l2);
-int location_hash(Location loc, int max);
+unsigned int location_hash(Location loc, unsigned int max);
 
 #endif
