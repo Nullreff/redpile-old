@@ -30,7 +30,7 @@ typedef struct {
 
     // Fast block lookup is done using a rather interesting hashmap
     // implementation.  See bucket.c for more information.
-    BucketList* buckets;
+    HashMap* buckets;
 
     // Additional stats
     unsigned int ticks; // Redstone ticks

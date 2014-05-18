@@ -38,14 +38,14 @@ typedef struct {
     unsigned int overflow;
     unsigned int resizes;
     unsigned int max_depth;
-} BucketList;
+} HashMap;
 
 #define BUCKET_FILLED(bucket) (bucket != NULL && bucket->value != NULL)
 
-void bucket_list_print(BucketList* buckets, Bucket* selected);
-BucketList* bucket_list_allocate(unsigned int size);
-void bucket_list_free(BucketList* map);
-Bucket* bucket_list_get(BucketList* buckets, Location key, bool create);
-void* bucket_list_remove(BucketList* buckets, Location key);
+void bucket_list_print(HashMap* buckets, Bucket* selected);
+HashMap* bucket_list_allocate(unsigned int size);
+void bucket_list_free(HashMap* map);
+Bucket* bucket_list_get(HashMap* buckets, Location key, bool create);
+void* bucket_list_remove(HashMap* buckets, Location key);
 
 #endif

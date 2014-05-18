@@ -24,9 +24,9 @@ static Bucket bucket_empty(void)
     return (Bucket){location_empty(), NULL, NULL};
 }
 
-BucketList* bucket_list_allocate(unsigned int size)
+HashMap* bucket_list_allocate(unsigned int size)
 {
-    BucketList* buckets = malloc(sizeof(BucketList));
+    HashMap* buckets = malloc(sizeof(HashMap));
     CHECK_OOM(buckets);
 
     // General
@@ -44,7 +44,7 @@ BucketList* bucket_list_allocate(unsigned int size)
     return buckets;
 }
 
-static void bucket_list_free_data(BucketList* buckets)
+static void bucket_list_free_data(HashMap* buckets)
 {
     for (int i = 0; i < buckets->size; i++)
     {
@@ -60,15 +60,15 @@ static void bucket_list_free_data(BucketList* buckets)
     free(buckets->data);
 }
 
-void bucket_list_free(BucketList* buckets)
+void bucket_list_free(HashMap* buckets)
 {
     bucket_list_free_data(buckets);
     free(buckets);
 }
 
-void bucket_list_resize(BucketList* buckets, unsigned int new_size)
+void bucket_list_resize(HashMap* buckets, unsigned int new_size)
 {
-    BucketList* new_buckets = bucket_list_allocate(new_size);
+    HashMap* new_buckets = bucket_list_allocate(new_size);
     new_buckets->resizes = buckets->resizes + 1;
     new_buckets->min_size = buckets->min_size;
 
@@ -88,11 +88,11 @@ void bucket_list_resize(BucketList* buckets, unsigned int new_size)
     }
 
     bucket_list_free_data(buckets);
-    memcpy(buckets, new_buckets, sizeof(BucketList));
+    memcpy(buckets, new_buckets, sizeof(HashMap));
     free(new_buckets);
 }
 
-Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
+Bucket* bucket_add_next(HashMap* buckets, Bucket* bucket)
 {
     buckets->overflow++;
     Bucket* new_bucket = malloc(sizeof(Bucket));
@@ -104,7 +104,7 @@ Bucket* bucket_add_next(BucketList* buckets, Bucket* bucket)
 // Finds the bucket used to store the block at the specified location
 // If the bucket can't be found and create is true, a new bucket
 // will be created.  If create is false, it will return NULL.
-Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
+Bucket* bucket_list_get(HashMap* buckets, Location key, bool create)
 {
     if (buckets->overflow > buckets->size)
         bucket_list_resize(buckets, buckets->size * 2);
@@ -145,7 +145,7 @@ Bucket* bucket_list_get(BucketList* buckets, Location key, bool create)
     return bucket;
 }
 
-void* bucket_list_remove(BucketList* buckets, Location key)
+void* bucket_list_remove(HashMap* buckets, Location key)
 {
     // Resize down the bucket array
     if (buckets->overflow == 0 && buckets->size > buckets->min_size)
