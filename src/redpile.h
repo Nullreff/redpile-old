@@ -33,8 +33,6 @@
 #define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { ERROR(MESSAGE); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
 
-#define EMPTY_INDEX UINT_MAX
-
 typedef struct {
     int world_size;
     unsigned int interactive:1;
