@@ -65,6 +65,7 @@ Currently implemented are:
 * TORCH - Powers wires and switches off when powered
 * REPEATER - Powers a block in front if it receives power from the block behind.  Delays signal by `state + 1` ticks and locks up if powered by another repeater from the side.
 * COMPARATOR - Combines the powers of the block behind it and the block to the side of it.  If `state > 1` it subtracts the side from behind.  Otherwise, it only propagates if the rear block's power is greater than the block to the side.
+* PISTON - When powered, moves the block in front of it forwards one and inserts an INSULATOR block where the block used to be.  When unpowered, it move the block two in front of it back one and inserts an AIR block where the block used to be.
 
 **STATUS**
 

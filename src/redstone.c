@@ -106,6 +106,45 @@ static void redstone_wire_update(World* world, BlockNode* node)
     }
 }
 
+static void redstone_piston_update(World* world, BlockNode* node)
+{
+    unsigned int max_power = 0;
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
+    {
+        Direction dir = (Direction)i;
+        if (dir == node->block.direction)
+            continue;
+
+        BlockNode* adjacent = NODE_ADJACENT(node, dir);
+        if (adjacent == NULL)
+            continue;
+
+        unsigned int last_power = LAST_POWER(adjacent);
+        if (last_power > max_power)
+            max_power = last_power;
+    }
+
+    UPDATE_POWER(node, max_power);
+
+    // Already extended or retracted
+    if ((!!max_power) == (!!node->block.state))
+        return;
+
+    BlockNode* first = NODE_ADJACENT(node, node->block.direction);
+    BlockNode* second = NODE_ADJACENT(first, node->block.direction);
+
+    if (max_power > 0)
+    {
+        block_move(&second->block, &first->block);
+        first->block = block_create(first->block.location, INSULATOR, DIRECTION_DEFAULT, 0);
+    }
+    else
+    {
+        block_move(&first->block, &second->block);
+        second->block = block_create(second->block.location, AIR, DIRECTION_DEFAULT, 0);
+    }
+}
+
 static void redstone_comparator_update(World* world, BlockNode* node)
 {
     unsigned int side_power = 0;
@@ -236,6 +275,7 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
             case TORCH:      redstone_torch_update(world, node);      break;
             case REPEATER:   redstone_repeater_update(world, node);   break;
             case COMPARATOR: redstone_comparator_update(world, node); break;
+            case PISTON:     redstone_piston_update(world, node);     break;
             default:         goto end;
         }
 

@@ -72,6 +72,13 @@ Block block_create(Location location, Material material, Direction direction, un
     };
 }
 
+void block_move(Block* dest, Block* src)
+{
+    Location loc = dest->location;
+    memcpy(dest, src, sizeof(Block));
+    dest->location = loc;
+}
+
 static BlockNode block_node_create(Block block)
 {
     return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
