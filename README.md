@@ -22,6 +22,14 @@ For command line options, try `redpile --help`.
 Commands
 --------
 
+**PING**
+
+Echoes back `PONG`.
+
+**STATUS**
+
+Prints information about the current state of the world and redpile's internal state.
+
 **SET x y z material [direction] [state]**
 
 Sets the block at `(x, y, z)` to have a material of `material` and a direction of `direction`.
@@ -67,13 +75,6 @@ Currently implemented are:
 * COMPARATOR - Combines the powers of the block behind it and the block to the side of it.  If `state > 1` it subtracts the side from behind.  Otherwise, it only propagates if the rear block's power is greater than the block to the side.
 * PISTON - When powered, moves the block in front of it forwards one and inserts an INSULATOR block where the block used to be.  When unpowered, it move the block two in front of it back one and inserts an AIR block where the block used to be.
 
-**STATUS**
-
-Prints information about the current state of the world and redpile's internal state.
-
-**PING**
-
-Echoes back `PONG`.
 
 License
 -------
