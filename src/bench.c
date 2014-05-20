@@ -23,6 +23,20 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+#define RANGE(var,start,end) Coord var; for (var = start; var <= end; var++) {
+#define RANGE_END }
+#define CUBE_RANGE(start,end)\
+    RANGE(x,start,end)\
+    RANGE(y,start,end)\
+    RANGE(z,start,end)
+#define CUBE_RANGE_END RANGE_END RANGE_END RANGE_END
+#define BENCHMARK_START(name) do {\
+    char* message = #name;\
+    long long start_time = get_time();
+#define BENCHMARK_END\
+    print_time(message, get_time() - start_time);\
+} while(0);
+
 static long long get_time(void)
 {
     struct timeval value;
