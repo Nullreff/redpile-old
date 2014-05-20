@@ -73,6 +73,8 @@ void run_benchmarks(World* world, unsigned int count)
     RANGE_END
     BENCHMARK_END
 
+    WorldStats stats = world_get_stats(world);
+
     BENCHMARK_START(world_remove_block)
     CUBE_RANGE(-(int)count, (int)count)
         Location loc = (Location){x,y,z};
@@ -85,7 +87,6 @@ void run_benchmarks(World* world, unsigned int count)
     print_time("total", end - start);
     printf("--- Benchmark End ---\n");
 
-    WorldStats stats = world_get_stats(world);
     world_stats_print(stats);
 }
 
