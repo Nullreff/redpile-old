@@ -43,4 +43,22 @@ describe 'Piston' do
       p.read.should =~ /\(0,0,2\) 0 CONDUCTOR.*\(0,0,3\) 0 AIR/m
     end
   end
+
+  it 'extends and retracts a conductor' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 TORCH UP'
+      p.puts 'TICK'
+      p.puts 'SET 0 0 1 PISTON SOUTH 0'
+      p.puts 'SET 0 0 2 CONDUCTOR'
+      p.puts 'SET 0 0 3 AIR'
+      p.puts 'TICK'
+      p.puts 'SET 0 0 0 EMPTY'
+      p.puts 'TICK'
+      p.puts 'GET 0 0 2'
+      p.puts 'GET 0 0 3'
+      p.close_write
+      p.read.should =~ /\(0,0,2\) 0 CONDUCTOR.*\(0,0,3\) 0 AIR/m
+    end
+  end
+
 end

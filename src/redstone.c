@@ -126,10 +126,6 @@ static void redstone_piston_update(World* world, BlockNode* node)
 
     UPDATE_POWER(node, max_power);
 
-    // Already extended or retracted
-    if ((!!max_power) == (!!node->block.state))
-        return;
-
     BlockNode* first = NODE_ADJACENT(node, node->block.direction);
     if (first == NULL)
         return;
