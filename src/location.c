@@ -52,7 +52,7 @@ Direction direction_invert(Direction dir)
         case WEST:  return EAST;
         case UP:    return DOWN;
         case DOWN:  return UP;
-        default:    ERROR("Invalid direction provided to direction_invert");
+        default:    ERROR("Invalid direction provided to direction_invert\n");
     }
 }
 
@@ -67,7 +67,7 @@ Direction direction_right(Direction dir)
         case SOUTH: return WEST;
         case EAST:  return SOUTH;
         case WEST:  return NORTH;
-        default:    ERROR("Invalid direction provided to direction_right");
+        default:    ERROR("Invalid direction provided to direction_right\n");
     }
 }
 
@@ -82,7 +82,7 @@ Direction direction_left(Direction dir)
         case SOUTH: return EAST;
         case EAST:  return NORTH;
         case WEST:  return SOUTH;
-        default:    ERROR("Invalid direction provided to direction_left");
+        default:    ERROR("Invalid direction provided to direction_left\n");
     }
 }
 
@@ -111,7 +111,7 @@ Location location_move(Location loc, Direction dir, int length)
         case WEST:  return (Location){loc.x - length, loc.y, loc.z};
         case UP:    return (Location){loc.x, loc.y + length, loc.z};
         case DOWN:  return (Location){loc.x, loc.y - length, loc.z};
-        default:    ERROR("Invalid direction provided to location_move");
+        default:    ERROR("Invalid direction provided to location_move\n");
     }
 }
 
