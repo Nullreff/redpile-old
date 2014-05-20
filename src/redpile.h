@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <limits.h>
 
-#define REDPILE_VERSION "0.3.0"
+#define REDPILE_VERSION "0.4.0"
 
 #define ERROR(MESSAGE) do { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); } while(0)
 #define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { ERROR(MESSAGE); }
