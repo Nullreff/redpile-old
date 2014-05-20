@@ -131,15 +131,31 @@ static void redstone_piston_update(World* world, BlockNode* node)
         return;
 
     BlockNode* first = NODE_ADJACENT(node, node->block.direction);
-    BlockNode* second = NODE_ADJACENT(first, node->block.direction);
+    if (first == NULL)
+        return;
+
+    BlockNode* second = first != NULL ? NODE_ADJACENT(first, node->block.direction) : NULL;
 
     if (max_power > 0)
     {
-        block_move(&second->block, &first->block);
+        if (second == NULL)
+        {
+            // Insert a new instance of the block
+            Block new = first->block;
+            new.location = location_move(new.location, node->block.direction, 1);
+            world_set_block(world, &new);
+        }
+        else
+        {
+            // Or copy it over
+            block_move(&second->block, &first->block);
+        }
         first->block = block_create(first->block.location, INSULATOR, DIRECTION_DEFAULT, 0);
     }
     else
     {
+        if (second == NULL)
+            return;
         block_move(&first->block, &second->block);
         second->block = block_create(second->block.location, AIR, DIRECTION_DEFAULT, 0);
     }
