@@ -203,25 +203,11 @@ int main(int argc, char* argv[])
     while ((line = linenoise(prompt)) != NULL)
     {
         linenoiseHistoryAdd(line);
-        int result = instruction_parse(line, &instruction);
+        if (instruction_parse(line, &instruction))
+            instruction_run(world, &instruction, instruction_callback);
+        else
+            printf("Invalid Command\n");
         free(line);
-
-        switch (result)
-        {
-            case 0: // Valid command
-                instruction_run(world, &instruction, instruction_callback);
-                break;
-
-            case -1: // Parse error
-                printf("Invalid Command\n");
-                break;
-
-            case -2: // No command
-                break;
-
-            case -3: // Exit
-                redpile_exit();
-        }
     }
 
     redpile_exit();

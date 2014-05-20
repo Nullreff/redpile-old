@@ -4,8 +4,7 @@
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * the Free Software Foundation, either version 3 of the License, or * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -53,7 +52,7 @@ int command_parse(char* command, Command* result)
     return -1;
 }
 
-int instruction_parse(char* instruction, Instruction* result)
+bool instruction_parse(char* instruction, Instruction* result)
 {
     char* parts = strdup(instruction);
     char* parts_ptr = parts;
@@ -103,11 +102,11 @@ int instruction_parse(char* instruction, Instruction* result)
 success:
     *result = (Instruction){command, {x, y, z, material, direction, state}};
     free(parts_ptr);
-    return 0;
+    return true;
 
 error:
     free(parts_ptr);
-    return -1;
+    return false;
 }
 
 void instruction_run(World* world, Instruction* inst, void (*block_modified_callback)(Block*))

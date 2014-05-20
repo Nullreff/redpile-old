@@ -38,7 +38,7 @@ typedef struct {
 } Instruction;
 
 int command_parse(char* command, Command* result);
-int instruction_parse(char* instruction, Instruction* result);
+bool instruction_parse(char* instruction, Instruction* result);
 void instruction_run(World* world, Instruction* inst, void (*block_modified_callback)(Block*));
 
 #endif
