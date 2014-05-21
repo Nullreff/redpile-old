@@ -46,7 +46,6 @@ typedef struct {
     unsigned int hashmap_max_depth;
 } WorldStats;
 
-#define NODE_ADJACENT(node,dir) node->adjacent[dir]
 #define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)
 #define BLOCK_INDEX(world,block) (block - world->blocks->data)
 #define INDEX_BLOCK(world,index) (world->blocks->data + index)
@@ -55,6 +54,7 @@ World* world_allocate(unsigned int size);
 void world_free(World* world);
 void world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
+BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
 

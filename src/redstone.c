@@ -33,8 +33,9 @@
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) (node->block.material == name)
 #define MATERIAL_ISNT(node,name) (node->block.material != name)
+#define NODE_ADJACENT(node,dir) world_get_adjacent_block(world, node, dir)
 
-static Direction update_power_from_behind(BlockNode* node, int on, int off)
+static Direction update_power_from_behind(World* world, BlockNode* node, int on, int off)
 {
     Direction behind = direction_invert(node->block.direction);
     BlockNode* power_source = NODE_ADJACENT(node, behind);
@@ -212,7 +213,7 @@ static void redstone_repeater_update(World* world, BlockNode* node)
         LAST_POWER(left) > 0 && REPEATER_POWERED(left))
         return;
 
-    update_power_from_behind(node, 15, 0);
+    update_power_from_behind(world, node, 15, 0);
 
     // Update the number of ticks this repeater has been powered
     if (node->block.power != node->block.last_power)
@@ -242,7 +243,7 @@ static void redstone_repeater_update(World* world, BlockNode* node)
 
 static void redstone_torch_update(World* world, BlockNode* node)
 {
-    Direction behind = update_power_from_behind(node, 0, 15);
+    Direction behind = update_power_from_behind(world, node, 0, 15);
 
     // Pass charge to any adjacent wires
     Direction directions[5] = {NORTH, SOUTH, EAST, WEST, DOWN};

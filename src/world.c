@@ -113,6 +113,11 @@ Block* world_get_block(World* world, Location location)
     return node != NULL ? &node->block : NULL;
 }
 
+BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir)
+{
+    return node->adjacent[dir];
+}
+
 WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
