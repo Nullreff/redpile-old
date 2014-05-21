@@ -55,9 +55,6 @@ World* world_allocate(unsigned int size);
 void world_free(World* world);
 void world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
-int world_get_last_power(World* world, Block* block);
-void world_set_last_power(World* world, Block* block);
-void world_reset_last_power(World* world, int index);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
 
