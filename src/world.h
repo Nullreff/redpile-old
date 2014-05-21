@@ -54,7 +54,6 @@ typedef struct {
 World* world_allocate(unsigned int size);
 void world_free(World* world);
 void world_set_block(World* world, Block* block);
-BlockNode* world_get_node(World* world, Location location);
 Block* world_get_block(World* world, Location location);
 int world_get_last_power(World* world, Block* block);
 void world_set_last_power(World* world, Block* block);

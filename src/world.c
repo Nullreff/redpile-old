@@ -20,24 +20,10 @@
 #include "block.h"
 #include "hashmap.h"
 
-World* world_allocate(unsigned int size)
+static BlockNode* world_get_node(World* world, Location location)
 {
-    World* world = malloc(sizeof(World));
-    CHECK_OOM(world);
-
-    world->ticks = 0;
-
-    world->hashmap = hashmap_allocate(size);
-    world->blocks = block_list_allocate();
-
-    return world;
-}
-
-void world_free(World* world)
-{
-    hashmap_free(world->hashmap);
-    block_list_free(world->blocks);
-    free(world);
+    Bucket* bucket = hashmap_get(world->hashmap, location, false);
+    return BUCKET_FILLED(bucket) ? bucket->value : NULL;
 }
 
 static void world_update_adjacent_nodes(World* world, BlockNode* node)
@@ -73,6 +59,26 @@ static void world_reset_adjacent_nodes(World* world, BlockNode* node)
     }
 }
 
+World* world_allocate(unsigned int size)
+{
+    World* world = malloc(sizeof(World));
+    CHECK_OOM(world);
+
+    world->ticks = 0;
+
+    world->hashmap = hashmap_allocate(size);
+    world->blocks = block_list_allocate();
+
+    return world;
+}
+
+void world_free(World* world)
+{
+    hashmap_free(world->hashmap);
+    block_list_free(world->blocks);
+    free(world);
+}
+
 void world_set_block(World* world, Block* block)
 {
     if (block->material == EMPTY)
@@ -99,12 +105,6 @@ void world_set_block(World* world, Block* block)
         BlockNode* node = bucket->value;
         memcpy(&node->block, block, sizeof(Block));
     }
-}
-
-BlockNode* world_get_node(World* world, Location location)
-{
-    Bucket* bucket = hashmap_get(world->hashmap, location, false);
-    return BUCKET_FILLED(bucket) ? bucket->value : NULL;
 }
 
 Block* world_get_block(World* world, Location location)
