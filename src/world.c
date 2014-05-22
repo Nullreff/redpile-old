@@ -99,17 +99,11 @@ void world_set_block(World* world, Block* block)
 
     Bucket* bucket = hashmap_get(world->hashmap, block->location, true);
 
-    // Attach the next availabe block to this bucket
-    if (bucket->value == NULL)
-    {
-        bucket->value = block_list_append(world->blocks, block);
-        world_update_adjacent_nodes(world, bucket->value);
-    }
-    else
-    {
-        BlockNode* node = bucket->value;
-        memcpy(&node->block, block, sizeof(Block));
-    }
+    if (bucket->value != NULL)
+        block_list_remove(world->blocks, bucket->value);
+
+    bucket->value = block_list_append(world->blocks, block);
+    world_update_adjacent_nodes(world, bucket->value);
 }
 
 Block* world_get_block(World* world, Location location)
