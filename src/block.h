@@ -45,14 +45,14 @@ typedef struct {
     unsigned int state;
 
     // Redstone state
-    unsigned int power;
     unsigned int power_state;
-    unsigned int last_power;
-    bool updated;
+    unsigned int power:4;
+    unsigned int last_power:4;
+    bool updated:1;
 
     // True if this block was added by the system
     // False if it was added via command
-    bool system;
+    bool system:1;
 } Block;
 
 typedef struct BlockNode {
