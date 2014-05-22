@@ -43,13 +43,14 @@ describe 'Torch' do
 
   it 'turns a torch off with power' do
     redpile do |p|
+      p.puts 'SET 0 0 1 WIRE'
       p.puts 'SET 0 0 0 TORCH SOUTH'
       p.puts 'SET 0 0 -1 WIRE'
       p.puts 'SET 0 0 -2 TORCH UP'
       p.puts 'TICK'
       p.puts 'TICK'
       p.close_write
-      p.read.should =~ /\(0,0,0\) 0\n/
+      p.read.should =~ /\(0,0,1\) 0\n/
     end
   end
 

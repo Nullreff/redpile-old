@@ -8,9 +8,9 @@ describe 'Comparator' do
       p.puts 'SET 0 0 1 WIRE'
       p.puts 'SET 0 0 2 WIRE'
       p.puts 'SET 1 0 3 TORCH UP'
-      p.puts 'TICK'
       p.puts 'SET 0 0 3 COMPARATOR WEST 0'
       p.puts 'SET -1 0 3 WIRE'
+      p.puts 'TICK'
       p.puts 'TICK'
       p.puts 'GET -1 0 3'
       p.close_write
@@ -23,9 +23,9 @@ describe 'Comparator' do
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 2 0 1 TORCH UP'
       p.puts 'SET 1 0 1 WIRE'
-      p.puts 'TICK'
       p.puts 'SET 0 0 1 COMPARATOR WEST 0'
       p.puts 'SET -1 0 1 WIRE'
+      p.puts 'TICK'
       p.puts 'TICK'
       p.puts 'GET -1 0 1'
       p.close_write
