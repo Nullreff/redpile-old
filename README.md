@@ -75,6 +75,24 @@ Currently implemented are:
 * COMPARATOR - Combines the powers of the block behind it and the block to the side of it.  If `state > 1` it subtracts the side from behind.  Otherwise, it only propagates if the rear block's power is greater than the block to the side.
 * PISTON - When powered, moves the block in front of it forwards one and inserts an INSULATOR block where the block used to be.  When unpowered, it move the block two in front of it back one and inserts an AIR block where the block used to be.
 
+Roadmap
+-------
+
+If you're interested in helping, pull requests are always welcome.  The biggest thing we need right now are more tests of various redstone edge cases.
+
+* ~~Block storage~~
+* ~~Command line interface~~
+* ~~Basic Redstone~~
+* More tests!
+* Sockets interface
+* Map loading/saving
+* Tick caching
+* Multithreaded ticks
+* Restone JIT
+* Bukkit patch
+* Language bindings
+* Statistics & reporting
+* Convert parts to [Rust](http://www.rust-lang.org/) (once rust is stable)
 
 License
 -------
