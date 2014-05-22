@@ -87,6 +87,7 @@ Block block_create(Location location, Material material, Direction direction, un
 void block_move(Block* dest, Block* src);
 void block_print(Block* block);
 void block_print_power(Block* block);
+void block_list_print(BlockList* blocks);
 
 BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);

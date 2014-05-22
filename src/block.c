@@ -133,6 +133,17 @@ void block_print_power(Block* block)
            block->power);
 }
 
+void block_list_print(BlockList* blocks)
+{
+    unsigned int i = 0;
+    for (BlockNode* node = blocks->head; node != NULL; node = node->next)
+    {
+        block_print(&node->block);
+        i++;
+    }
+    printf("Total: %u\n", i);
+}
+
 BlockList* block_list_allocate(void)
 {
     BlockList* blocks = malloc(sizeof(BlockList));
