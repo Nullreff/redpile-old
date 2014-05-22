@@ -59,15 +59,20 @@ static void world_reset_adjacent_nodes(World* world, BlockNode* node)
     }
 }
 
+static bool block_missing_noop(Block* block)
+{
+    return false;
+}
+
 World* world_allocate(unsigned int size)
 {
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
 
     world->ticks = 0;
-
     world->hashmap = hashmap_allocate(size);
     world->blocks = block_list_allocate();
+    world->block_missing = block_missing_noop;
 
     return world;
 }
@@ -115,7 +120,20 @@ Block* world_get_block(World* world, Location location)
 
 BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir)
 {
-    return node->adjacent[dir];
+    BlockNode* adjacent = node->adjacent[dir];
+    if (adjacent == NULL)
+    {
+        Location loc = location_move(node->block.location, dir, 1);
+        Block block = block_empty();
+        block.location = loc;
+        block.system = true;
+        if (world->block_missing(&block))
+        {
+            world_set_block(world, &block);
+            adjacent = node->adjacent[dir];
+        }
+    }
+    return adjacent;
 }
 
 WorldStats world_get_stats(World* world)
@@ -142,3 +160,13 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, hashmap_max_depth);
 }
 
+
+void world_set_block_missing_callback(World* world, bool (*callback)(Block* node))
+{
+    world->block_missing = callback;
+}
+
+void world_clear_block_missing_callback(World* world)
+{
+    world->block_missing = block_missing_noop;
+}

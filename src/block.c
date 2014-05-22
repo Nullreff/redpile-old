@@ -65,10 +65,13 @@ Block block_create(Location location, Material material, Direction direction, un
         state,
 
         // Redstone state
-        0,    // power
-        0,    // power_state
-        0,    // last_power
-        false // updated
+        0,     // power
+        0,     // power_state
+        0,     // last_power
+        false, // updated
+
+        // Other
+        false
     };
 }
 

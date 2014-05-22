@@ -49,6 +49,10 @@ typedef struct {
     unsigned int power_state;
     unsigned int last_power;
     bool updated;
+
+    // True if this block was added by the system
+    // False if it was added via command
+    bool system;
 } Block;
 
 typedef struct BlockNode {

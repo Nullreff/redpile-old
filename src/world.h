@@ -32,6 +32,10 @@ typedef struct {
     // See hashmap.c for more information.
     Hashmap* hashmap;
 
+    // Used for calculating and storing missing
+    // blocks during a redstone tick.
+    bool (*block_missing)(Block* node);
+
     // Additional stats
     unsigned int ticks; // Redstone ticks
 } World;
@@ -57,6 +61,8 @@ Block* world_get_block(World* world, Location location);
 BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
+void world_set_block_missing_callback(World* world, bool (*callback)(Block* node));
+void world_clear_block_missing_callback(World* world);
 
 #endif
 
