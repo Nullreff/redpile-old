@@ -154,7 +154,6 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, hashmap_max_depth);
 }
 
-
 void world_set_block_missing_callback(World* world, bool (*callback)(Block* node))
 {
     world->block_missing = callback;
