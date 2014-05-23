@@ -20,6 +20,7 @@
 #include <assert.h>
 #include "world.h"
 #include "block.h"
+#include "rup.h"
 #include "redstone.h"
 
 #define MAX_POWER 15
@@ -56,7 +57,7 @@ static bool can_power_from_behind(BlockNode* node, Direction dir)
     }
 }
 
-static void redstone_conductor_update(World* world, BlockNode* node)
+static void redstone_conductor_update(Rup* rup, World* world, BlockNode* node)
 {
     assert(MATERIAL_IS(node, CONDUCTOR));
 
@@ -72,7 +73,7 @@ static void redstone_conductor_update(World* world, BlockNode* node)
     }
 }
 
-static void redstone_wire_update(World* world, BlockNode* node)
+static void redstone_wire_update(Rup* rup, World* world, BlockNode* node)
 {
     assert(MATERIAL_IS(node, WIRE));
 
@@ -106,7 +107,7 @@ static void redstone_wire_update(World* world, BlockNode* node)
                 SHOULD_UPDATE(found_node, node->block.power))
             {
                 UPDATE_POWER(found_node, node->block.power);
-                redstone_conductor_update(world, found_node);
+                redstone_conductor_update(rup, world, found_node);
             }
 
             if (covered)
@@ -128,9 +129,9 @@ static void redstone_wire_update(World* world, BlockNode* node)
         {
             UPDATE_POWER(found_node, new_power);
             if (MATERIAL_IS(found_node, WIRE))
-                redstone_wire_update(world, found_node);
+                redstone_wire_update(rup, world, found_node);
             else if (MATERIAL_IS(found_node, CONDUCTOR))
-                redstone_conductor_update(world, found_node);
+                redstone_conductor_update(rup, world, found_node);
         }
     }
 
@@ -139,11 +140,11 @@ static void redstone_wire_update(World* world, BlockNode* node)
     if (MATERIAL_IS(down_node, CONDUCTOR) && SHOULD_UPDATE(down_node, node->block.power))
     {
         UPDATE_POWER(down_node, node->block.power);
-        redstone_conductor_update(world, down_node);
+        redstone_conductor_update(rup, world, down_node);
     }
 }
 
-static void redstone_piston_update(World* world, BlockNode* node)
+static void redstone_piston_update(Rup* rup, World* world, BlockNode* node)
 {
     assert(MATERIAL_IS(node, PISTON));
 
@@ -168,7 +169,7 @@ static void redstone_piston_update(World* world, BlockNode* node)
     }
 }
 
-static void redstone_comparator_update(World* world, BlockNode* node)
+static void redstone_comparator_update(Rup* rup, World* world, BlockNode* node)
 {
     assert(MATERIAL_IS(node, COMPARATOR));
 
@@ -208,16 +209,16 @@ static void redstone_comparator_update(World* world, BlockNode* node)
     if (MATERIAL_IS(found_node, WIRE))
     {
         UPDATE_POWER(found_node, MAX_POWER);
-        redstone_wire_update(world, found_node);
+        redstone_wire_update(rup, world, found_node);
     }
     else if (MATERIAL_IS(found_node, CONDUCTOR))
     {
         UPDATE_POWER(found_node, MAX_POWER);
-        redstone_conductor_update(world, found_node);
+        redstone_conductor_update(rup, world, found_node);
     }
 }
 
-static void redstone_repeater_update(World* world, BlockNode* node)
+static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
 {
     assert(MATERIAL_IS(node, REPEATER));
 
@@ -248,16 +249,16 @@ static void redstone_repeater_update(World* world, BlockNode* node)
     if (MATERIAL_IS(found_node, WIRE))
     {
         UPDATE_POWER(found_node, MAX_POWER);
-        redstone_wire_update(world, found_node);
+        redstone_wire_update(rup, world, found_node);
     }
     else if (MATERIAL_IS(found_node, CONDUCTOR))
     {
         UPDATE_POWER(found_node, MAX_POWER);
-        redstone_conductor_update(world, found_node);
+        redstone_conductor_update(rup, world, found_node);
     }
 }
 
-static void redstone_torch_update(World* world, BlockNode* node)
+static void redstone_torch_update(Rup* rup, World* world, BlockNode* node)
 {
     assert(MATERIAL_IS(node, TORCH));
 
@@ -279,7 +280,7 @@ static void redstone_torch_update(World* world, BlockNode* node)
         {
             UPDATE_POWER(found_node, MAX_POWER);
             if (MATERIAL_IS(found_node, WIRE))
-                redstone_wire_update(world, found_node);
+                redstone_wire_update(rup, world, found_node);
         }
     }
 
@@ -295,7 +296,7 @@ static void redstone_torch_update(World* world, BlockNode* node)
         return;
 
     UPDATE_POWER(up_node, MAX_POWER);
-    redstone_wire_update(world, up_node);
+    redstone_wire_update(rup, world, up_node);
 }
 
 static bool redstone_block_missing(Block* block)
@@ -306,6 +307,7 @@ static bool redstone_block_missing(Block* block)
 
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))
 {
+    Rup* rup = rup_allocate();
     world_set_block_missing_callback(world, redstone_block_missing);
 
     // Process all power sources
@@ -313,10 +315,10 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     {
         switch (node->block.material)
         {
-            case TORCH:      redstone_torch_update(world, node);      break;
-            case REPEATER:   redstone_repeater_update(world, node);   break;
-            case COMPARATOR: redstone_comparator_update(world, node); break;
-            case PISTON:     redstone_piston_update(world, node);     break;
+            case TORCH:      redstone_torch_update(rup, world, node);      break;
+            case REPEATER:   redstone_repeater_update(rup, world, node);   break;
+            case COMPARATOR: redstone_comparator_update(rup, world, node); break;
+            case PISTON:     redstone_piston_update(rup, world, node);     break;
             default:         goto end;
         }
     }
@@ -341,5 +343,6 @@ end:
 
     world->ticks++;
     world_clear_block_missing_callback(world);
+    rup_free(rup);
 }
 
