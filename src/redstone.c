@@ -239,11 +239,15 @@ static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
 
     // Update the number of ticks this repeater has been powered
     unsigned int new_power = rup_get_power(rup, &node->block);
+    unsigned int new_power_state = node->block.power_state;
     if (new_power > 0 && !REPEATER_POWERED(node))
-        node->block.power_state++;
+    {
+        new_power_state++;
+        rup_add(rup, RUP_STATE, &node->block, new_power_state);
+    }
 
     // If it's be on shorter than the delay, don't propigate power
-    if (!REPEATER_POWERED(node))
+    if (new_power_state <= node->block.state)
         return;
 
     // Pass charge to the wire or conductor in front
@@ -337,6 +341,11 @@ end:
                     inst->block->updated = true;
                 }
                 break;
+
+            case RUP_STATE:
+                inst->block->power_state = inst->value;
+                break;
+
             default:
                 ERROR("Rup command not implemented yet");
                 break;

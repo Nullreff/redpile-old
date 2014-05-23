@@ -40,21 +40,32 @@ void rup_free(Rup* rup)
     free(rup);
 }
 
+static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block, unsigned int value)
+{
+    RupInst* inst = malloc(sizeof(RupInst));
+    *inst = (RupInst){cmd, block->location, block, value, rup->instructions};
+    rup->instructions = inst;
+    return inst;
+}
+
 void rup_add(Rup* rup, RupCmd cmd, Block* block, unsigned int value)
 {
-    Bucket* bucket = hashmap_get(rup->touched, block->location, true);
-    if (bucket->value == NULL)
+    if (cmd != RUP_POWER)
     {
-        RupInst* inst = malloc(sizeof(RupInst));
-        *inst = (RupInst){cmd, block->location, block, value, rup->instructions};
-        rup->instructions = inst;
-        bucket->value = inst;
+        rup_push(rup, cmd, block, value);
+        return;
     }
-    else
+
+    Bucket* bucket = hashmap_get(rup->touched, block->location, true);
+    if (bucket->value != NULL)
     {
         RupInst* inst = (RupInst*)bucket->value;
         if (value > inst->value)
             inst->value = value;
+    }
+    else
+    {
+        bucket->value = rup_push(rup, cmd, block, value);
     }
 }
 
