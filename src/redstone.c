@@ -26,7 +26,7 @@
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
 #define SHOULD_UPDATE(node,new_power) (rup_get_power(rup, &(node)->block) < (new_power))
-#define UPDATE_POWER(node,new_power) rup_add(rup, RUP_POWER, &(node)->block, new_power)
+#define UPDATE_POWER(node,new_power) rup_cmd_power(rup, &(node)->block, new_power)
 #define LAST_POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) (node->block.material == name)
@@ -155,16 +155,16 @@ static void redstone_piston_update(Rup* rup, World* world, BlockNode* node)
     {
         if (MATERIAL_ISNT(first, INSULATOR))
         {
-            block_move(&second->block, &first->block);
-            first->block = block_create(first->block.location, INSULATOR, DIRECTION_DEFAULT, 0);
+            rup_cmd_set(rup, &first->block, INSULATOR);
+            rup_cmd_move(rup, &second->block, &first->block);
         }
     }
     else
     {
         if (MATERIAL_IS(first, INSULATOR))
         {
-            block_move(&first->block, &second->block);
-            second->block = block_create(second->block.location, AIR, DIRECTION_DEFAULT, 0);
+            rup_cmd_set(rup, &second->block, AIR);
+            rup_cmd_move(rup, &first->block, &second->block);
         }
     }
 }
@@ -243,7 +243,7 @@ static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
     if (new_power > 0 && !REPEATER_POWERED(node))
     {
         new_power_state++;
-        rup_add(rup, RUP_STATE, &node->block, new_power_state);
+        rup_cmd_state(rup, &node->block, new_power_state);
     }
 
     // If it's be on shorter than the delay, don't propigate power
@@ -335,19 +335,24 @@ end:
         switch (inst->command)
         {
             case RUP_POWER:
-                if (inst->value > inst->block->power)
+                if (inst->value.power > inst->block->power)
                 {
-                    inst->block->power = inst->value;
+                    inst->block->power = inst->value.power;
                     inst->block->updated = true;
                 }
                 break;
 
             case RUP_STATE:
-                inst->block->power_state = inst->value;
+                inst->block->power_state = inst->value.state;
                 break;
 
-            default:
-                ERROR("Rup command not implemented yet");
+            // TODO: Conflict resolution for block moves and sets
+            case RUP_MOVE:
+                block_move(inst->block, inst->value.source);
+                break;
+
+            case RUP_SET:
+                inst->block->material = inst->value.material;
                 break;
         }
     }

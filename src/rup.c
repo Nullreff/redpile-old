@@ -40,33 +40,57 @@ void rup_free(Rup* rup)
     free(rup);
 }
 
-static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block, unsigned int value)
+static RupInst* rup_inst_allocate(RupCmd cmd, Block* block)
 {
     RupInst* inst = malloc(sizeof(RupInst));
-    *inst = (RupInst){cmd, block->location, block, value, rup->instructions};
+    inst->command = cmd;
+    inst->location = block->location;
+    inst->block = block;
+    return inst;
+}
+
+static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
+{
+    RupInst* inst = rup_inst_allocate(cmd, block);
+    inst->next = rup->instructions;
     rup->instructions = inst;
     return inst;
 }
 
-void rup_add(Rup* rup, RupCmd cmd, Block* block, unsigned int value)
+void rup_cmd_power(Rup* rup, Block* block, unsigned int power)
 {
-    if (cmd != RUP_POWER)
-    {
-        rup_push(rup, cmd, block, value);
-        return;
-    }
-
     Bucket* bucket = hashmap_get(rup->touched, block->location, true);
     if (bucket->value != NULL)
     {
         RupInst* inst = (RupInst*)bucket->value;
-        if (value > inst->value)
-            inst->value = value;
+        assert(inst->command == RUP_POWER);
+        if (power > inst->value.power)
+            inst->value.power = power;
     }
     else
     {
-        bucket->value = rup_push(rup, cmd, block, value);
+        RupInst* inst = rup_push(rup, RUP_POWER, block);
+        inst->value.power = power;
+        bucket->value = inst;
     }
+}
+
+void rup_cmd_state(Rup* rup, Block* block, unsigned int state)
+{
+    RupInst* inst = rup_push(rup, RUP_STATE, block);
+    inst->value.state = state;
+}
+
+void rup_cmd_move(Rup* rup, Block* block, Block* source)
+{
+    RupInst* inst = rup_push(rup, RUP_MOVE, block);
+    inst->value.source = source;
+}
+
+void rup_cmd_set(Rup* rup, Block* block, Material material)
+{
+    RupInst* inst = rup_push(rup, RUP_SET, block);
+    inst->value.material = material;
 }
 
 RupInst* rup_get(Rup* rup, Block* block)
@@ -78,6 +102,7 @@ RupInst* rup_get(Rup* rup, Block* block)
 unsigned int rup_get_power(Rup* rup, Block* block)
 {
     RupInst* inst = rup_get(rup, block);
-    return inst != NULL ? inst->value : block->power;
+    assert(inst == NULL || inst->command == RUP_POWER);
+    return inst != NULL && inst->command == RUP_POWER ? inst->value.power : block->power;
 }
 
