@@ -20,6 +20,7 @@
 #define REDPILE_RUP_H
 
 #include "block.h"
+#include "hashmap.h"
 
 typedef enum {
     RUP_POWER,
@@ -37,10 +38,13 @@ typedef struct RupInst {
 
 typedef struct {
     RupInst* instructions;
+    Hashmap* touched;
 } Rup;
 
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
 void rup_add(Rup* rup, RupCmd cmd, Block* block, unsigned int value);
+RupInst* rup_get(Rup* rup, Block* block);
+unsigned int rup_get_power(Rup* rup, Block* block);
 
 #endif

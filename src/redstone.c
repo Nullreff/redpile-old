@@ -25,14 +25,9 @@
 
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
-#define SHOULD_UPDATE(node,new_power) (!(node)->block.updated || (node)->block.power < (new_power))
-#define UPDATE_POWER(node,new_power)\
-    do {\
-    node->block.last_power = node->block.power;\
-    node->block.power = new_power;\
-    node->block.updated = true;\
-    } while (0)
-#define LAST_POWER(node) (node->block.updated ? node->block.last_power : node->block.power)
+#define SHOULD_UPDATE(node,new_power) (rup_get_power(rup, &(node)->block) < (new_power))
+#define UPDATE_POWER(node,new_power) rup_add(rup, RUP_POWER, &(node)->block, new_power)
+#define LAST_POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) (node->block.material == name)
 #define MATERIAL_ISNT(node,name) (node->block.material != name)
@@ -65,10 +60,11 @@ static void redstone_conductor_update(Rup* rup, World* world, BlockNode* node)
     {
         Direction dir = (Direction)i;
         BlockNode* found_node = NODE_ADJACENT(node, dir);
+        unsigned int new_power = rup_get_power(rup, &node->block);
         if (can_power_from_behind(found_node, dir) &&
-            SHOULD_UPDATE(found_node, node->block.power))
+            SHOULD_UPDATE(found_node, new_power))
         {
-            UPDATE_POWER(found_node, node->block.power);
+            UPDATE_POWER(found_node, new_power);
         }
     }
 }
@@ -79,6 +75,11 @@ static void redstone_wire_update(Rup* rup, World* world, BlockNode* node)
 
     BlockNode* above = NODE_ADJACENT(node, UP);
     bool covered = above != NULL && MATERIAL_ISNT(above, AIR) && MATERIAL_ISNT(above, EMPTY);
+
+    int new_power = rup_get_power(rup, &node->block);
+    int wire_power = new_power;
+    if (wire_power > 0)
+        wire_power--;
 
     // Adjacent blocks
     Direction directions[4] = {NORTH, SOUTH, EAST, WEST};
@@ -104,9 +105,9 @@ static void redstone_wire_update(Rup* rup, World* world, BlockNode* node)
             BlockNode* left = NODE_ADJACENT(node, direction_right(dir));
 
             if (MATERIAL_ISNT(right, WIRE) && MATERIAL_ISNT(left, WIRE) &&
-                SHOULD_UPDATE(found_node, node->block.power))
+                SHOULD_UPDATE(found_node, new_power))
             {
-                UPDATE_POWER(found_node, node->block.power);
+                UPDATE_POWER(found_node, new_power);
                 redstone_conductor_update(rup, world, found_node);
             }
 
@@ -124,10 +125,9 @@ static void redstone_wire_update(Rup* rup, World* world, BlockNode* node)
             continue;
         }
 
-        int new_power = node->block.power != 0 ? node->block.power - 1 : 0;
-        if SHOULD_UPDATE(found_node, new_power)
+        if SHOULD_UPDATE(found_node, wire_power)
         {
-            UPDATE_POWER(found_node, new_power);
+            UPDATE_POWER(found_node, wire_power);
             if (MATERIAL_IS(found_node, WIRE))
                 redstone_wire_update(rup, world, found_node);
             else if (MATERIAL_IS(found_node, CONDUCTOR))
@@ -137,9 +137,9 @@ static void redstone_wire_update(Rup* rup, World* world, BlockNode* node)
 
     // Block below
     BlockNode* down_node = NODE_ADJACENT(node, DOWN);
-    if (MATERIAL_IS(down_node, CONDUCTOR) && SHOULD_UPDATE(down_node, node->block.power))
+    if (MATERIAL_IS(down_node, CONDUCTOR) && SHOULD_UPDATE(down_node, new_power))
     {
-        UPDATE_POWER(down_node, node->block.power);
+        UPDATE_POWER(down_node, new_power);
         redstone_conductor_update(rup, world, down_node);
     }
 }
@@ -223,7 +223,10 @@ static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
     assert(MATERIAL_IS(node, REPEATER));
 
     if (LAST_POWER(node) == 0)
+    {
+        node->block.power_state = 0;
         return;
+    }
 
     // Test if any adjacent repeaters are locking this one
     BlockNode* right = NODE_ADJACENT(node, direction_right(node->block.direction));
@@ -235,9 +238,8 @@ static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
         return;
 
     // Update the number of ticks this repeater has been powered
-    if (node->block.power != node->block.last_power)
-        node->block.power_state = 0;
-    if (node->block.power > 0 && !REPEATER_POWERED(node))
+    unsigned int new_power = rup_get_power(rup, &node->block);
+    if (new_power > 0 && !REPEATER_POWERED(node))
         node->block.power_state++;
 
     // If it's be on shorter than the delay, don't propigate power
@@ -324,14 +326,33 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
     }
 end:
 
+    for (RupInst* inst = rup->instructions; inst != NULL; inst = inst->next)
+    {
+        switch (inst->command)
+        {
+            case RUP_POWER:
+                if (inst->value > inst->block->power)
+                {
+                    inst->block->power = inst->value;
+                    inst->block->updated = true;
+                }
+                break;
+            default:
+                ERROR("Rup command not implemented yet");
+                break;
+        }
+    }
+
     // Check for block modifications and reset flags
     for (BlockNode* node = world->blocks->tail; node != NULL; node = node->prev)
     {
-        if (node->block.updated)
+        if (rup_get(rup, &node->block) != NULL)
         {
-            if (node->block.power != node->block.last_power)
+            if (node->block.updated)
+            {
                 block_modified_callback(&node->block);
-            node->block.updated = false;
+                node->block.updated = false;
+            }
         }
         else if (node->block.power > 0)
         {
