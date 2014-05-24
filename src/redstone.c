@@ -318,11 +318,8 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
 
     // Process all power sources
     int index = 0;
-    for (BlockNode* node = world->blocks->head; node != NULL; node = node->next)
+    for (BlockNode* node = world->blocks->head; index < rup_list->size && node != NULL; node = node->next, index++)
     {
-        if (index >= rup_list->size)
-            break;
-
         Rup* rup = rup_list->rups[index];
         switch (node->block.material)
         {
@@ -332,8 +329,6 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
             case PISTON:     redstone_piston_update(rup, world, node);     break;
             default: ERROR("Encountered non power source in the start of the block list");
         }
-
-        index++;
     }
 
     Runmap* runmap = runmap_allocate(world->blocks->size);
