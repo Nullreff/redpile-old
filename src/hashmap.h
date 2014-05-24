@@ -40,7 +40,7 @@ typedef struct {
     unsigned int max_depth;
 } Hashmap;
 
-#define BUCKET_FILLED(bucket) (bucket != NULL && bucket->value != NULL)
+#define BUCKET_FILLED(bucket) ((bucket) != NULL && (bucket)->value != NULL)
 
 void hashmap_print(Hashmap* hashmap, Bucket* selected);
 Hashmap* hashmap_allocate(unsigned int size);

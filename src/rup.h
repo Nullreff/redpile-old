@@ -23,10 +23,10 @@
 #include "hashmap.h"
 
 typedef enum {
-    RUP_POWER,
-    RUP_STATE,
-    RUP_MOVE,
-    RUP_SET
+    RUP_POWER = 0,
+    RUP_STATE = 1,
+    RUP_MOVE  = 2,
+    RUP_SET   = 3
 } RupCmd;
 
 typedef struct RupInst {
@@ -37,7 +37,7 @@ typedef struct RupInst {
         unsigned int power;
         unsigned int state;
         Material material;
-        Block* source;
+        Block* target;
     } value;
     struct RupInst* next;
 } RupInst;
@@ -47,13 +47,29 @@ typedef struct {
     Hashmap* touched;
 } Rup;
 
+typedef struct {
+    Rup** rups;
+    unsigned int size;
+} RupList;
+
+typedef Hashmap Runmap;
+
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
 void rup_cmd_power(Rup* rup, Block* block, unsigned int power);
 void rup_cmd_state(Rup* rup, Block* block, unsigned int state);
-void rup_cmd_move(Rup* rup, Block* block, Block* source);
+void rup_cmd_move(Rup* rup, Block* block, Block* target);
 void rup_cmd_set(Rup* rup, Block* block, Material material);
 RupInst* rup_get(Rup* rup, Block* block);
 unsigned int rup_get_power(Rup* rup, Block* block);
+void rup_run(RupInst* inst);
+
+RupList* rup_list_allocate(unsigned int size);
+void rup_list_free(RupList* list);
+
+Runmap* runmap_allocate(unsigned int size);
+void runmap_free(Runmap* map);
+void runmap_import(Runmap* map, Rup* rup);
+bool runmap_block_power_changed(Runmap* map, Block* block);
 
 #endif

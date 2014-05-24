@@ -83,7 +83,7 @@ int material_parse(char* material, Material* result);
 Block block_empty(void);
 Block block_from_values(int values[]);
 Block block_create(Location location, Material material, Direction direction, unsigned int state);
-void block_move(Block* dest, Block* src);
+void block_move(Block* source, Block* target);
 void block_print(Block* block);
 void block_print_power(Block* block);
 void block_list_print(BlockList* blocks);

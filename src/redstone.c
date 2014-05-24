@@ -155,16 +155,16 @@ static void redstone_piston_update(Rup* rup, World* world, BlockNode* node)
     {
         if (MATERIAL_ISNT(first, INSULATOR))
         {
+            rup_cmd_move(rup, &first->block, &second->block);
             rup_cmd_set(rup, &first->block, INSULATOR);
-            rup_cmd_move(rup, &second->block, &first->block);
         }
     }
     else
     {
         if (MATERIAL_IS(first, INSULATOR))
         {
+            rup_cmd_move(rup, &second->block, &first->block);
             rup_cmd_set(rup, &second->block, AIR);
-            rup_cmd_move(rup, &first->block, &second->block);
         }
     }
 }
@@ -313,54 +313,47 @@ static bool redstone_block_missing(Block* block)
 
 void redstone_tick(World* world, void (*block_modified_callback)(Block*))
 {
-    Rup* rup = rup_allocate();
+    RupList* rup_list = rup_list_allocate(world->blocks->power_sources);
     world_set_block_missing_callback(world, redstone_block_missing);
 
     // Process all power sources
+    int index = 0;
     for (BlockNode* node = world->blocks->head; node != NULL; node = node->next)
     {
+        if (index >= rup_list->size)
+            break;
+
+        Rup* rup = rup_list->rups[index];
         switch (node->block.material)
         {
             case TORCH:      redstone_torch_update(rup, world, node);      break;
             case REPEATER:   redstone_repeater_update(rup, world, node);   break;
             case COMPARATOR: redstone_comparator_update(rup, world, node); break;
             case PISTON:     redstone_piston_update(rup, world, node);     break;
-            default:         goto end;
+            default: ERROR("Encountered non power source in the start of the block list");
         }
+
+        index++;
     }
-end:
 
-    for (RupInst* inst = rup->instructions; inst != NULL; inst = inst->next)
+    Runmap* runmap = runmap_allocate(world->blocks->size);
+    for (int i = 0; i < rup_list->size; i++)
     {
-        switch (inst->command)
-        {
-            case RUP_POWER:
-                if (inst->value.power > inst->block->power)
-                {
-                    inst->block->power = inst->value.power;
-                    inst->block->updated = true;
-                }
-                break;
+        runmap_import(runmap, rup_list->rups[i]);
+    }
 
-            case RUP_STATE:
-                inst->block->power_state = inst->value.state;
-                break;
 
-            // TODO: Conflict resolution for block moves and sets
-            case RUP_MOVE:
-                block_move(inst->block, inst->value.source);
-                break;
-
-            case RUP_SET:
-                inst->block->material = inst->value.material;
-                break;
-        }
+    for (int i = 0; i < runmap->size; i++)
+    for (Bucket* bucket = runmap->data + i; BUCKET_FILLED(bucket); bucket = bucket->next)
+    for (RupInst* inst = bucket->value; inst != NULL; inst = inst->next)
+    {
+        rup_run(inst);
     }
 
     // Check for block modifications and reset flags
     for (BlockNode* node = world->blocks->tail; node != NULL; node = node->prev)
     {
-        if (rup_get(rup, &node->block) != NULL)
+        if (runmap_block_power_changed(runmap, &node->block))
         {
             if (node->block.updated)
             {
@@ -378,6 +371,7 @@ end:
 
     world->ticks++;
     world_clear_block_missing_callback(world);
-    rup_free(rup);
+    runmap_free(runmap);
+    rup_list_free(rup_list);
 }
 
