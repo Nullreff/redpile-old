@@ -128,8 +128,19 @@ void rup_list_free(RupList* list)
     free(list);
 }
 
+// http://stackoverflow.com/a/365068
+#define ROUND_TO_POW_2(x)\
+    x--;\
+    x |= x >> 1;\
+    x |= x >> 2;\
+    x |= x >> 4;\
+    x |= x >> 8;\
+    x |= x >> 16;\
+    x++
+
 Runmap* runmap_allocate(unsigned int size)
 {
+    ROUND_TO_POW_2(size);
     return hashmap_allocate(size);
 }
 

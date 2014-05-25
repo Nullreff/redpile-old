@@ -120,7 +120,7 @@ bool location_equals(Location l1, Location l2)
     return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
 }
 
-unsigned int location_hash(Location loc, unsigned int max)
+unsigned int location_hash_unbounded(Location loc)
 {
     unsigned int total = 0;
     total += (unsigned int)loc.x;
@@ -128,6 +128,22 @@ unsigned int location_hash(Location loc, unsigned int max)
     total += (unsigned int)loc.y;
     total *= MAGIC_HASH_NUMBER;
     total += (unsigned int)loc.z;
-    return total % max;
+    return total;
+}
+
+unsigned int location_hash(Location loc, unsigned int max)
+{
+    // Our hashing function requires a power of two size
+    assert(IS_POWER_OF_2(max));
+
+    unsigned int total = 0;
+    total += (unsigned int)loc.x;
+    total *= MAGIC_HASH_NUMBER;
+    total += (unsigned int)loc.y;
+    total *= MAGIC_HASH_NUMBER;
+    total += (unsigned int)loc.z;
+
+    // Same as (total % max) when max is a power of two
+    return total & (max - 1);
 }
 
