@@ -150,10 +150,10 @@ void signal_callback(int signal)
         redpile_exit();
 }
 
-void instruction_callback(Block* block)
+void rup_inst_run_callback(RupInst* inst)
 {
     if (!config.silent)
-        block_print_power(block);
+        rup_inst_print(inst);
 }
 
 void completion_callback(const char* buffer, linenoiseCompletions* completions)
@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
     {
         linenoiseHistoryAdd(line);
         if (instruction_parse(line, &instruction))
-            instruction_run(world, &instruction, instruction_callback);
+            instruction_run(world, &instruction, rup_inst_run_callback);
         else
             printf("Invalid Command\n");
         free(line);

@@ -109,7 +109,7 @@ error:
     return false;
 }
 
-void instruction_run(World* world, Instruction* inst, void (*block_modified_callback)(Block*))
+void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupInst*))
 {
     Block new_block;
     Block* block;
@@ -136,7 +136,7 @@ void instruction_run(World* world, Instruction* inst, void (*block_modified_call
             break;
 
         case TICK:
-            redstone_tick(world, block_modified_callback);
+            redstone_tick(world, rup_inst_run_callback);
             break;
 
         case STATUS:

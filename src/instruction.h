@@ -20,7 +20,7 @@
 #define REDPILE_INSTRUCTION_H
 
 #include "world.h"
-#include "block.h"
+#include "rup.h"
 
 #define COMMANDS_COUNT 5
 extern char* Commands[COMMANDS_COUNT];
@@ -39,7 +39,7 @@ typedef struct {
 
 int command_parse(char* command, Command* result);
 bool instruction_parse(char* instruction, Instruction* result);
-void instruction_run(World* world, Instruction* inst, void (*block_modified_callback)(Block*));
+void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupInst*));
 
 #endif
 

@@ -19,6 +19,8 @@
 #ifndef REDPILE_REDSTONE_H
 #define REDPILE_REDSTONE_H
 
-void redstone_tick(World* world, void (*block_modified_callback)(Block*));
+#include "rup.h"
+
+void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*));
 
 #endif

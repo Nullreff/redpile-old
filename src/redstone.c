@@ -20,7 +20,6 @@
 #include <assert.h>
 #include "world.h"
 #include "block.h"
-#include "rup.h"
 #include "redstone.h"
 
 #define MAX_POWER 15
@@ -313,7 +312,7 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
-void redstone_tick(World* world, void (*block_modified_callback)(Block*))
+void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
 {
     RupList* rup_list = rup_list_allocate(world->blocks->power_sources);
     world_set_block_missing_callback(world, redstone_block_missing);
@@ -333,36 +332,36 @@ void redstone_tick(World* world, void (*block_modified_callback)(Block*))
         }
     }
 
-    Runmap* runmap = runmap_allocate(world->blocks->size);
+    // Aggregate and sort update commands
+    Runmap* runmap = runmap_allocate();
     for (int i = 0; i < rup_list->size; i++)
     {
         runmap_import(runmap, rup_list->rups[i]);
     }
 
 
-    for (int i = 0; i < runmap->size; i++)
-    for (Bucket* bucket = runmap->data + i; BUCKET_FILLED(bucket); bucket = bucket->next)
-    for (RupInst* inst = bucket->value; inst != NULL; inst = inst->next)
+    // Run update commands
+    for (int i = 0; i < RUP_CMD_COUNT; i++)
+    for (RupInst* inst = runmap->instructions[i]; inst != NULL; inst = inst->next)
     {
-        rup_run(inst);
+        rup_inst_run_callback(inst);
+        rup_inst_run(inst);
     }
 
-    // Check for block modifications and reset flags
+    // Check for unpowered blocks and reset flags
     for (BlockNode* node = world->blocks->tail; node != NULL; node = node->prev)
     {
-        if (runmap_block_power_changed(runmap, &node->block))
+        if (node->block.updated)
         {
-            if (node->block.updated)
-            {
-                block_modified_callback(&node->block);
-                node->block.updated = false;
-            }
+            node->block.updated = false;
         }
         else if (node->block.power > 0)
         {
             // Blocks not connected to a power source become unpowered
-            node->block.power = 0;
-            block_modified_callback(&node->block);
+            RupInst inst = rup_inst_create(RUP_POWER, &node->block);
+            inst.value.power = 0;
+            rup_inst_run_callback(&inst);
+            rup_inst_run(&inst);
         }
     }
 

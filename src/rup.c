@@ -38,18 +38,10 @@ void rup_free(Rup* rup)
     free(rup);
 }
 
-static RupInst* rup_inst_allocate(RupCmd cmd, Block* block)
-{
-    RupInst* inst = malloc(sizeof(RupInst));
-    inst->command = cmd;
-    inst->location = block->location;
-    inst->block = block;
-    return inst;
-}
-
 static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
 {
-    RupInst* inst = rup_inst_allocate(cmd, block);
+    RupInst* inst = malloc(sizeof(RupInst));
+    *inst = rup_inst_create(cmd, block);
     inst->next = rup->instructions;
     rup->instructions = inst;
     return inst;
@@ -79,16 +71,18 @@ void rup_cmd_set(Rup* rup, Block* block, Material material)
     inst->value.material = material;
 }
 
-void rup_run(RupInst* inst)
+RupInst rup_inst_create(RupCmd cmd, Block* block)
+{
+    return (RupInst){cmd, block->location, block, {0}, NULL};
+}
+
+void rup_inst_run(RupInst* inst)
 {
     switch (inst->command)
     {
         case RUP_POWER:
-            if (inst->value.power > inst->block->power)
-            {
-                inst->block->power = inst->value.power;
-                inst->block->updated = true;
-            }
+            inst->block->power = inst->value.power;
+            inst->block->updated = true;
             break;
 
         case RUP_STATE:
@@ -101,6 +95,46 @@ void rup_run(RupInst* inst)
 
         case RUP_SET:
             inst->block->material = inst->value.material;
+            break;
+    }
+}
+
+void rup_inst_print(RupInst* inst)
+{
+    switch (inst->command)
+    {
+        case RUP_POWER:
+            printf("POWER (%d,%d,%d) %u\n",
+                inst->block->location.x,
+                inst->block->location.y,
+                inst->block->location.z,
+                inst->value.power);
+            break;
+
+        case RUP_STATE:
+            printf("STATE (%d,%d,%d) %u\n",
+                inst->block->location.x,
+                inst->block->location.y,
+                inst->block->location.z,
+                inst->value.state);
+            break;
+
+        case RUP_MOVE:
+            printf("MOVE (%d,%d,%d) (%d,%d,%d)\n",
+                inst->block->location.x,
+                inst->block->location.y,
+                inst->block->location.z,
+                inst->value.target->location.x,
+                inst->value.target->location.y,
+                inst->value.target->location.z);
+            break;
+
+        case RUP_SET:
+            printf("SET (%d,%d,%d) %s\n",
+                inst->block->location.x,
+                inst->block->location.y,
+                inst->block->location.z,
+                Materials[inst->value.material]);
             break;
     }
 }
@@ -128,87 +162,38 @@ void rup_list_free(RupList* list)
     free(list);
 }
 
-// http://stackoverflow.com/a/365068
-#define ROUND_TO_POW_2(x)\
-    x--;\
-    x |= x >> 1;\
-    x |= x >> 2;\
-    x |= x >> 4;\
-    x |= x >> 8;\
-    x |= x >> 16;\
-    x++
-
-Runmap* runmap_allocate(unsigned int size)
+Runmap* runmap_allocate(void)
 {
-    ROUND_TO_POW_2(size);
-    return hashmap_allocate(size);
+    return calloc(1, sizeof(Runmap));
 }
 
-void runmap_free(Runmap* map)
+void runmap_free(Runmap* runmap)
 {
-    for (int i = 0; i < map->size; i++)
-    for (Bucket* bucket = map->data + i; BUCKET_FILLED(bucket); bucket = bucket->next)
-    for (RupInst* inst = bucket->value; inst != NULL;)
+    for (int i = 0; i < RUP_CMD_COUNT; i++)
+    for (RupInst* inst = runmap->instructions[i]; inst != NULL;)
     {
         RupInst* temp = inst->next;
         free(inst);
         inst = temp;
     }
-    hashmap_free(map);
+    free(runmap);
 }
 
-void runmap_import(Runmap* map, Rup* rup)
+#define RUNMAP_INST(RUNMAP,INST) (RUNMAP)->instructions[(INST)->command]
+void runmap_import(Runmap* runmap, Rup* rup)
 {
     RupInst* next;
     for (RupInst* inst = rup->instructions; inst != NULL; inst = next)
     {
         next = inst->next;
 
-        Bucket* bucket = hashmap_get(map, inst->location, true);
-        if (bucket->value == NULL)
-        {
-            bucket->value = inst;
+        if (RUNMAP_INST(runmap, inst) != NULL)
+            inst->next = RUNMAP_INST(runmap, inst);
+        else
             inst->next = NULL;
-            continue;
-        }
-
-        RupInst* found_inst = bucket->value;
-
-        // First entry
-        if (found_inst->command > inst->command)
-        {
-            inst->next = found_inst;
-            bucket->value = inst;
-            continue;
-        }
-
-        // Somewhere in the list
-        for (;found_inst->next != NULL; found_inst = found_inst->next)
-        {
-            if (found_inst->next->command > inst->command)
-            {
-                inst->next = found_inst->next;
-                found_inst->next = inst;
-                continue;
-            }
-        }
-
-        // Last entry
-        found_inst->next = inst;
-        inst->next = NULL;
+        RUNMAP_INST(runmap, inst) = inst;
     }
 
     rup->instructions = NULL;
-}
-
-bool runmap_block_power_changed(Runmap* map, Block* block)
-{
-    Bucket* bucket = hashmap_get(map, block->location, false);
-    if (bucket == NULL)
-        return false;
-
-    RupInst* inst = bucket->value;
-    return inst->command == RUP_POWER;
-
 }
 

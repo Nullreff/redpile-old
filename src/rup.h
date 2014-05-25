@@ -22,6 +22,7 @@
 #include "block.h"
 #include "hashmap.h"
 
+#define RUP_CMD_COUNT 4
 typedef enum {
     RUP_POWER = 0,
     RUP_STATE = 1,
@@ -51,7 +52,9 @@ typedef struct {
     unsigned int size;
 } RupList;
 
-typedef Hashmap Runmap;
+typedef struct {;
+    RupInst* instructions[RUP_CMD_COUNT];
+} Runmap;
 
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
@@ -59,14 +62,15 @@ void rup_cmd_power(Rup* rup, Block* block, unsigned int power);
 void rup_cmd_state(Rup* rup, Block* block, unsigned int state);
 void rup_cmd_move(Rup* rup, Block* block, Block* target);
 void rup_cmd_set(Rup* rup, Block* block, Material material);
-void rup_run(RupInst* inst);
+RupInst rup_inst_create(RupCmd cmd, Block* block);
+void rup_inst_run(RupInst* inst);
+void rup_inst_print(RupInst* inst);
 
 RupList* rup_list_allocate(unsigned int size);
 void rup_list_free(RupList* list);
 
-Runmap* runmap_allocate(unsigned int size);
-void runmap_free(Runmap* map);
-void runmap_import(Runmap* map, Rup* rup);
-bool runmap_block_power_changed(Runmap* map, Block* block);
+Runmap* runmap_allocate(void);
+void runmap_free(Runmap* runmap);
+void runmap_import(Runmap* runmap, Rup* rup);
 
 #endif

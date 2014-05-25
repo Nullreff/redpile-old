@@ -57,7 +57,7 @@ static void print_time(char* message, long long time)
         printf("%s - %lld us\n", message, time);
 }
 
-static void block_modified(Block* b) {}
+static void rup_inst_run_callback(RupInst* i) {}
 
 void run_benchmarks(World* world, unsigned int count)
 {
@@ -83,7 +83,7 @@ void run_benchmarks(World* world, unsigned int count)
 
     BENCHMARK_START(redstone_tick)
     RANGE(i, 1, count)
-        redstone_tick(world, block_modified);
+        redstone_tick(world, rup_inst_run_callback);
     RANGE_END
     BENCHMARK_END
 
