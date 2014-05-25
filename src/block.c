@@ -83,7 +83,7 @@ void block_move(Block* source, Block* target)
 
 static BlockNode block_node_create(Block block)
 {
-    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
+    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, location_empty(), UINT_MAX};
 }
 
 void block_print(Block* block)

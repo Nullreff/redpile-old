@@ -46,7 +46,7 @@ typedef struct {
 
     // Redstone state
     unsigned int power_state;
-    unsigned int power:4;
+    unsigned int power;
     bool updated:1;
 
     // True if this block was added by the system
@@ -63,6 +63,10 @@ typedef struct BlockNode {
     struct BlockNode* adjacent[6];
     struct BlockNode* next;
     struct BlockNode* prev;
+
+    // Used while searching
+    Location power_source;
+    unsigned int new_power;
 } BlockNode;
 
 typedef struct {

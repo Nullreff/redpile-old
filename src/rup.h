@@ -44,7 +44,6 @@ typedef struct RupInst {
 
 typedef struct {
     RupInst* instructions;
-    Hashmap* touched;
 } Rup;
 
 typedef struct {
@@ -60,8 +59,6 @@ void rup_cmd_power(Rup* rup, Block* block, unsigned int power);
 void rup_cmd_state(Rup* rup, Block* block, unsigned int state);
 void rup_cmd_move(Rup* rup, Block* block, Block* target);
 void rup_cmd_set(Rup* rup, Block* block, Material material);
-RupInst* rup_get(Rup* rup, Block* block);
-unsigned int rup_get_power(Rup* rup, Block* block);
 void rup_run(RupInst* inst);
 
 RupList* rup_list_allocate(unsigned int size);

@@ -23,7 +23,6 @@ Rup* rup_allocate(void)
 {
     Rup* rup = malloc(sizeof(Rup));
     rup->instructions = NULL;
-    rup->touched = hashmap_allocate(15);
     return rup;
 }
 
@@ -36,7 +35,6 @@ void rup_free(Rup* rup)
         free(inst);
         inst = temp;
     }
-    hashmap_free(rup->touched);
     free(rup);
 }
 
@@ -59,20 +57,8 @@ static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
 
 void rup_cmd_power(Rup* rup, Block* block, unsigned int power)
 {
-    Bucket* bucket = hashmap_get(rup->touched, block->location, true);
-    if (bucket->value != NULL)
-    {
-        RupInst* inst = (RupInst*)bucket->value;
-        assert(inst->command == RUP_POWER);
-        if (power > inst->value.power)
-            inst->value.power = power;
-    }
-    else
-    {
-        RupInst* inst = rup_push(rup, RUP_POWER, block);
-        inst->value.power = power;
-        bucket->value = inst;
-    }
+    RupInst* inst = rup_push(rup, RUP_POWER, block);
+    inst->value.power = power;
 }
 
 void rup_cmd_state(Rup* rup, Block* block, unsigned int state)
@@ -91,19 +77,6 @@ void rup_cmd_set(Rup* rup, Block* block, Material material)
 {
     RupInst* inst = rup_push(rup, RUP_SET, block);
     inst->value.material = material;
-}
-
-RupInst* rup_get(Rup* rup, Block* block)
-{
-    Bucket* bucket = hashmap_get(rup->touched, block->location, false);
-    return bucket != NULL ? (RupInst*)bucket->value : NULL;
-}
-
-unsigned int rup_get_power(Rup* rup, Block* block)
-{
-    RupInst* inst = rup_get(rup, block);
-    assert(inst == NULL || inst->command == RUP_POWER);
-    return inst != NULL && inst->command == RUP_POWER ? inst->value.power : block->power;
 }
 
 void rup_run(RupInst* inst)
