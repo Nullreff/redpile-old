@@ -306,6 +306,24 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
+static void redstone_find_unpowered(World* world, BlockType type, void (*rup_inst_run_callback)(RupInst*))
+{
+    FOR_LIST(BlockNode, node, world->blocks->nodes[type])
+    {
+        if (node->block.updated)
+        {
+            node->block.updated = false;
+        }
+        else if (node->block.power > 0)
+        {
+            RupInst inst = rup_inst_create(RUP_POWER, &node->block);
+            inst.value.power = 0;
+            rup_inst_run_callback(&inst);
+            rup_inst_run(world, &inst);
+        }
+    }
+}
+
 void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
 {
     world_set_block_missing_callback(world, redstone_block_missing);
@@ -338,24 +356,8 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     }
 
     // Check for unpowered blocks and reset flags
-#define UNPOWER_CODE(TYPE)\
-    FOR_LIST(BlockNode, node, world->blocks->nodes[TYPE])\
-    {\
-        if (node->block.updated)\
-        {\
-            node->block.updated = false;\
-        }\
-        else if (node->block.power > 0)\
-        {\
-            RupInst inst = rup_inst_create(RUP_POWER, &node->block);\
-            inst.value.power = 0;\
-            rup_inst_run_callback(&inst);\
-            rup_inst_run(world, &inst);\
-        }\
-    }
-
-    UNPOWER_CODE(BOUNDARY)
-    UNPOWER_CODE(POWERABLE)
+    redstone_find_unpowered(world, BOUNDARY, rup_inst_run_callback);
+    redstone_find_unpowered(world, POWERABLE, rup_inst_run_callback);
 
     world->ticks++;
     world_clear_block_missing_callback(world);
