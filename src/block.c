@@ -74,13 +74,6 @@ Block block_create(Location location, Material material, Direction direction, un
     };
 }
 
-void block_move(Block* source, Block* target)
-{
-    Location loc = target->location;
-    memcpy(target, source, sizeof(Block));
-    target->location = loc;
-}
-
 static BlockNode block_node_create(Block block)
 {
     return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, location_empty(), UINT_MAX};

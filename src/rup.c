@@ -59,16 +59,10 @@ void rup_cmd_state(Rup* rup, Block* block, unsigned int state)
     inst->value.state = state;
 }
 
-void rup_cmd_move(Rup* rup, Block* block, Block* target)
+void rup_cmd_swap(Rup* rup, Block* block, Block* target)
 {
-    RupInst* inst = rup_push(rup, RUP_MOVE, block);
+    RupInst* inst = rup_push(rup, RUP_SWAP, block);
     inst->value.target = target;
-}
-
-void rup_cmd_set(Rup* rup, Block* block, Material material)
-{
-    RupInst* inst = rup_push(rup, RUP_SET, block);
-    inst->value.material = material;
 }
 
 RupInst rup_inst_create(RupCmd cmd, Block* block)
@@ -76,7 +70,7 @@ RupInst rup_inst_create(RupCmd cmd, Block* block)
     return (RupInst){cmd, block->location, block, {0}, NULL};
 }
 
-void rup_inst_run(RupInst* inst)
+void rup_inst_run(World* world, RupInst* inst)
 {
     switch (inst->command)
     {
@@ -89,12 +83,8 @@ void rup_inst_run(RupInst* inst)
             inst->block->power_state = inst->value.state;
             break;
 
-        case RUP_MOVE:
-            block_move(inst->block, inst->value.target);
-            break;
-
-        case RUP_SET:
-            inst->block->material = inst->value.material;
+        case RUP_SWAP:
+            world_block_swap(world, inst->block, inst->value.target);
             break;
     }
 }
@@ -119,22 +109,14 @@ void rup_inst_print(RupInst* inst)
                 inst->value.state);
             break;
 
-        case RUP_MOVE:
-            printf("MOVE (%d,%d,%d) (%d,%d,%d)\n",
+        case RUP_SWAP:
+            printf("SWAP (%d,%d,%d) (%d,%d,%d)\n",
                 inst->block->location.x,
                 inst->block->location.y,
                 inst->block->location.z,
                 inst->value.target->location.x,
                 inst->value.target->location.y,
                 inst->value.target->location.z);
-            break;
-
-        case RUP_SET:
-            printf("SET (%d,%d,%d) %s\n",
-                inst->block->location.x,
-                inst->block->location.y,
-                inst->block->location.z,
-                Materials[inst->value.material]);
             break;
     }
 }

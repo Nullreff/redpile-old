@@ -20,14 +20,13 @@
 #define REDPILE_RUP_H
 
 #include "block.h"
-#include "hashmap.h"
+#include "world.h"
 
 #define RUP_CMD_COUNT 4
 typedef enum {
     RUP_POWER = 0,
     RUP_STATE = 1,
-    RUP_MOVE  = 2,
-    RUP_SET   = 3
+    RUP_SWAP  = 2,
 } RupCmd;
 
 typedef struct RupInst {
@@ -60,10 +59,9 @@ Rup* rup_allocate(void);
 void rup_free(Rup* rup);
 void rup_cmd_power(Rup* rup, Block* block, unsigned int power);
 void rup_cmd_state(Rup* rup, Block* block, unsigned int state);
-void rup_cmd_move(Rup* rup, Block* block, Block* target);
-void rup_cmd_set(Rup* rup, Block* block, Material material);
+void rup_cmd_swap(Rup* rup, Block* block, Block* target);
 RupInst rup_inst_create(RupCmd cmd, Block* block);
-void rup_inst_run(RupInst* inst);
+void rup_inst_run(World* world, RupInst* inst);
 void rup_inst_print(RupInst* inst);
 
 RupList* rup_list_allocate(unsigned int size);

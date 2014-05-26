@@ -156,19 +156,13 @@ static void redstone_piston_update(Rup* rup, World* world, BlockNode* node)
 
     if (LAST_POWER(node) > 0)
     {
-        if (MATERIAL_ISNT(first, INSULATOR))
-        {
-            rup_cmd_move(rup, &first->block, &second->block);
-            rup_cmd_set(rup, &first->block, INSULATOR);
-        }
+        if (MATERIAL_IS(second, AIR))
+            rup_cmd_swap(rup, &first->block, &second->block);
     }
     else
     {
-        if (MATERIAL_IS(first, INSULATOR))
-        {
-            rup_cmd_move(rup, &second->block, &first->block);
-            rup_cmd_set(rup, &second->block, AIR);
-        }
+        if (MATERIAL_IS(first, AIR))
+            rup_cmd_swap(rup, &first->block, &second->block);
     }
 }
 
@@ -345,7 +339,7 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     for (RupInst* inst = runmap->instructions[i]; inst != NULL; inst = inst->next)
     {
         rup_inst_run_callback(inst);
-        rup_inst_run(inst);
+        rup_inst_run(world, inst);
     }
 
     // Check for unpowered blocks and reset flags
@@ -361,7 +355,7 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
             RupInst inst = rup_inst_create(RUP_POWER, &node->block);
             inst.value.power = 0;
             rup_inst_run_callback(&inst);
-            rup_inst_run(&inst);
+            rup_inst_run(world, &inst);
         }
     }
 

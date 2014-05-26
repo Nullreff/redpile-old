@@ -130,6 +130,18 @@ BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir
     return adjacent;
 }
 
+void world_block_swap(World* world, Block* block1, Block* block2)
+{
+    Block copy1 = *block1;
+    Block copy2 = *block2;
+
+    copy1.location = block2->location;
+    copy2.location = block1->location;
+
+    world_set_block(world, &copy1);
+    world_set_block(world, &copy2);
+}
+
 WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
