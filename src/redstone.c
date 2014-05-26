@@ -40,21 +40,15 @@
 
 static bool can_power_from_behind(BlockNode* node, Direction dir)
 {
-    switch (node->block.material)
-    {
-        // Back must be attached to this block
-        case TORCH:
-        case REPEATER:
-        case COMPARATOR:
-            return node->block.direction == dir;
+    if (!M_BOUNDARY(node->block.material))
+        return false;
 
-        // Should not be facing towards this block
-        case PISTON:
-            return node->block.direction != direction_invert(dir);
+    // Pistons should not be facing towards this block
+    if (node->block.material == PISTON)
+        return node->block.direction != direction_invert(dir);
 
-        default:
-            return false;
-    }
+    // Otherwise, the back face must be attached to this block
+    return node->block.direction == dir;
 }
 
 static void redstone_conductor_update(Rup* rup, World* world, BlockNode* node, unsigned int new_power, Location power_source)
