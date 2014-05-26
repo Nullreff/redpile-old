@@ -52,11 +52,11 @@ typedef struct {
     // Redstone state
     unsigned int power_state;
     unsigned int power;
-    bool updated:1;
+    bool updated;
 
     // True if this block was added by the system
     // False if it was added via command
-    bool system:1;
+    bool system;
 } Block;
 
 typedef struct BlockNode {
