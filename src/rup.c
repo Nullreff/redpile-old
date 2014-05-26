@@ -28,21 +28,13 @@ Rup* rup_allocate(void)
 
 void rup_free(Rup* rup)
 {
-    RupInst* inst = rup->instructions;
-    while (inst != NULL)
-    {
-        RupInst* temp = inst->next;
-        free(inst);
-        inst = temp;
-    }
     free(rup);
 }
 
 static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
 {
     RupInst* inst = malloc(sizeof(RupInst));
-    *inst = rup_inst_create(cmd, block);
-    inst->next = rup->instructions;
+    *inst = rup_inst_create(cmd, block); inst->next = rup->instructions;
     rup->instructions = inst;
     return inst;
 }
@@ -119,29 +111,6 @@ void rup_inst_print(RupInst* inst)
                 inst->value.target->location.z);
             break;
     }
-}
-
-RupList* rup_list_allocate(unsigned int size)
-{
-    RupList* list = malloc(sizeof(RupList));
-    list->rups = malloc(size * sizeof(Rup*));
-    list->size = size;
-    for (int i = 0; i < size; i++)
-    {
-        list->rups[i] = rup_allocate();
-    }
-    return list;
-}
-
-void rup_list_free(RupList* list)
-{
-    for (int i = 0; i < list->size; i++)
-    {
-        if (list->rups + i != NULL)
-            rup_free(list->rups[i]);
-    }
-    free(list->rups);
-    free(list);
 }
 
 Runmap* runmap_allocate(void)

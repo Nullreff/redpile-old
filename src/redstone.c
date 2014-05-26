@@ -308,14 +308,14 @@ static bool redstone_block_missing(Block* block)
 
 void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
 {
-    RupList* rup_list = rup_list_allocate(world->blocks->sizes[BOUNDARY]);
     world_set_block_missing_callback(world, redstone_block_missing);
 
-    // Process all power sources
+    // Process all tick boundaries
+    Runmap* runmap = runmap_allocate();
+    Rup* rup = rup_allocate();
     int index = 0;
     FOR_LIST(BlockNode, node, world->blocks->nodes[BOUNDARY])
     {
-        Rup* rup = rup_list->rups[index];
         switch (node->block.material)
         {
             case TORCH:      redstone_torch_update(rup, world, node);      break;
@@ -324,15 +324,10 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
             case PISTON:     redstone_piston_update(rup, world, node);     break;
             default: ERROR("Encountered non power source in the start of the block list");
         }
+        runmap_import(runmap, rup);
         index++;
     }
-
-    // Aggregate and sort update commands
-    Runmap* runmap = runmap_allocate();
-    for (int i = 0; i < rup_list->size; i++)
-    {
-        runmap_import(runmap, rup_list->rups[i]);
-    }
+    rup_free(rup);
 
     // Run update commands
     for (int i = 0; i < RUP_CMD_COUNT; i++)
@@ -365,6 +360,5 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     world->ticks++;
     world_clear_block_missing_callback(world);
     runmap_free(runmap);
-    rup_list_free(rup_list);
 }
 

@@ -46,11 +46,6 @@ typedef struct {
     RupInst* instructions;
 } Rup;
 
-typedef struct {
-    Rup** rups;
-    unsigned int size;
-} RupList;
-
 typedef struct {;
     RupInst* instructions[RUP_CMD_COUNT];
 } Runmap;
@@ -63,9 +58,6 @@ void rup_cmd_swap(Rup* rup, Block* block, Block* target);
 RupInst rup_inst_create(RupCmd cmd, Block* block);
 void rup_inst_run(World* world, RupInst* inst);
 void rup_inst_print(RupInst* inst);
-
-RupList* rup_list_allocate(unsigned int size);
-void rup_list_free(RupList* list);
 
 Runmap* runmap_allocate(void);
 void runmap_free(Runmap* runmap);
