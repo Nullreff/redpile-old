@@ -79,6 +79,16 @@ static BlockNode block_node_create(Block block)
     return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, location_empty(), UINT_MAX};
 }
 
+static BlockType block_get_type(Block* block)
+{
+    if M_BOUNDARY(block->material)
+        return BOUNDARY;
+    else if M_UNPOWERABLE(block->material)
+        return UNPOWERABLE;
+    else
+        return POWERABLE;
+}
+
 void block_print(Block* block)
 {
     if (M_HAS_DIRECTION(block->material))
@@ -127,88 +137,70 @@ void block_print_power(Block* block)
 
 void block_list_print(BlockList* blocks)
 {
-    unsigned int i = 0;
-    for (BlockNode* node = blocks->head; node != NULL; node = node->next)
+    for (int i = 0; i < BLOCK_TYPE_COUNT; i++)
     {
-        block_print(&node->block);
-        i++;
+        FOR_LIST(BlockNode, node, blocks->nodes[i])
+            block_print(&node->block);
+        printf("Total: %u\n", blocks->sizes[i]);
     }
-    printf("Total: %u\n", i);
+
+    printf("Grand Total: %u\n", blocks->total);
 }
 
 BlockList* block_list_allocate(void)
 {
-    BlockList* blocks = malloc(sizeof(BlockList));
+    BlockList* blocks = calloc(1, sizeof(BlockList));
     CHECK_OOM(blocks);
-
-    blocks->head = NULL;
-    blocks->tail = NULL;
-    blocks->size = 0;
-    blocks->power_sources = 0;
-
     return blocks;
 }
 
 void block_list_free(BlockList* blocks)
 {
-    BlockNode* node = blocks->head;
-    while (node != NULL)
+    for (int i = 0; i < BLOCK_TYPE_COUNT; i++)
     {
-        BlockNode* temp = node->next;
-        free(node);
-        node = temp;
+        BlockNode* node = blocks->nodes[i];
+        while (node != NULL)
+        {
+            BlockNode* temp = node->next;
+            free(node);
+            node = temp;
+        }
     }
     free(blocks);
 }
 
 BlockNode* block_list_append(BlockList* blocks, Block* block)
 {
+    BlockType type = block_get_type(block);
     BlockNode* node = malloc(sizeof(BlockNode));
     *node = block_node_create(*block);
 
-    if (blocks->head == NULL)
+    if (blocks->nodes[type] != NULL)
     {
-        blocks->head = node;
-        blocks->tail = node;
-        if M_BOUNDARY(block->material)
-            blocks->power_sources++;
+        node->next = blocks->nodes[type];
+        blocks->nodes[type]->prev = node;
     }
-    else
-    {
-        if M_BOUNDARY(block->material)
-        {
-            node->next = blocks->head;
-            blocks->head->prev = node;
-            blocks->head = node;
-            blocks->power_sources++;
-        }
-        else
-        {
-            node->prev = blocks->tail;
-            blocks->tail->next = node;
-            blocks->tail = node;
-        }
-    }
+    blocks->nodes[type] = node;
 
-    blocks->size++;
+    blocks->sizes[type]++;
+    blocks->total++;
     return node;
 }
 
 void block_list_remove(BlockList* blocks, BlockNode* node)
 {
-    if (node->prev == NULL)
-        blocks->head = node->next;
-    else
+    BlockType type = block_get_type(&node->block);
+    if (node->prev != NULL)
         node->prev->next = node->next;
-
-    if (node->next == NULL)
-        blocks->tail = node->prev;
     else
+        blocks->nodes[type] = node->next;
+
+    if (node->next != NULL)
         node->next->prev = node->prev;
 
-    blocks->size--;
-    if M_BOUNDARY(node->block.material)
-        blocks->power_sources--;
+    blocks->total--;
+    blocks->sizes[type]++;
+
     free(node);
 }
 

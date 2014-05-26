@@ -146,8 +146,10 @@ WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
         world->ticks,
-        world->blocks->size,
-        world->blocks->power_sources,
+        world->blocks->total,
+        world->blocks->sizes[BOUNDARY],
+        world->blocks->sizes[POWERABLE],
+        world->blocks->sizes[UNPOWERABLE],
         world->hashmap->size,
         world->hashmap->overflow,
         world->hashmap->resizes,
@@ -159,7 +161,9 @@ void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
-    STAT_PRINT(stats, power_sources);
+    STAT_PRINT(stats, block_boundries);
+    STAT_PRINT(stats, block_powerables);
+    STAT_PRINT(stats, block_unpowerables);
     STAT_PRINT(stats, hashmap_allocated);
     STAT_PRINT(stats, hashmap_overflow);
     STAT_PRINT(stats, hashmap_resizes);

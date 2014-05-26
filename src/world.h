@@ -43,7 +43,9 @@ typedef struct {
 typedef struct {
     unsigned int ticks;
     unsigned int blocks;
-    unsigned int power_sources;
+    unsigned int block_boundries;
+    unsigned int block_powerables;
+    unsigned int block_unpowerables;
     unsigned int hashmap_allocated;
     unsigned int hashmap_overflow;
     unsigned int hashmap_resizes;

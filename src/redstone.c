@@ -308,12 +308,12 @@ static bool redstone_block_missing(Block* block)
 
 void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
 {
-    RupList* rup_list = rup_list_allocate(world->blocks->power_sources);
+    RupList* rup_list = rup_list_allocate(world->blocks->sizes[BOUNDARY]);
     world_set_block_missing_callback(world, redstone_block_missing);
 
     // Process all power sources
     int index = 0;
-    for (BlockNode* node = world->blocks->head; index < rup_list->size && node != NULL; node = node->next, index++)
+    FOR_LIST(BlockNode, node, world->blocks->nodes[BOUNDARY])
     {
         Rup* rup = rup_list->rups[index];
         switch (node->block.material)
@@ -324,6 +324,7 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
             case PISTON:     redstone_piston_update(rup, world, node);     break;
             default: ERROR("Encountered non power source in the start of the block list");
         }
+        index++;
     }
 
     // Aggregate and sort update commands
@@ -332,7 +333,6 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     {
         runmap_import(runmap, rup_list->rups[i]);
     }
-
 
     // Run update commands
     for (int i = 0; i < RUP_CMD_COUNT; i++)
@@ -343,21 +343,24 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     }
 
     // Check for unpowered blocks and reset flags
-    for (BlockNode* node = world->blocks->tail; node != NULL; node = node->prev)
-    {
-        if (node->block.updated)
-        {
-            node->block.updated = false;
-        }
-        else if (node->block.power > 0)
-        {
-            // Blocks not connected to a power source become unpowered
-            RupInst inst = rup_inst_create(RUP_POWER, &node->block);
-            inst.value.power = 0;
-            rup_inst_run_callback(&inst);
-            rup_inst_run(world, &inst);
-        }
+#define UNPOWER_CODE(TYPE)\
+    FOR_LIST(BlockNode, node, world->blocks->nodes[TYPE])\
+    {\
+        if (node->block.updated)\
+        {\
+            node->block.updated = false;\
+        }\
+        else if (node->block.power > 0)\
+        {\
+            RupInst inst = rup_inst_create(RUP_POWER, &node->block);\
+            inst.value.power = 0;\
+            rup_inst_run_callback(&inst);\
+            rup_inst_run(world, &inst);\
+        }\
     }
+
+    UNPOWER_CODE(BOUNDARY)
+    UNPOWER_CODE(POWERABLE)
 
     world->ticks++;
     world_clear_block_missing_callback(world);

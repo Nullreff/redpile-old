@@ -74,18 +74,24 @@ typedef struct BlockNode {
     unsigned int new_power;
 } BlockNode;
 
-typedef struct {
-    BlockNode* head;
-    BlockNode* tail;
+#define BLOCK_TYPE_COUNT 3
+typedef enum {
+    BOUNDARY,
+    POWERABLE,
+    UNPOWERABLE
+} BlockType;
 
-    // Stats
-    unsigned int size;
-    unsigned int power_sources;
+typedef struct {
+    BlockNode* nodes[BLOCK_TYPE_COUNT];
+    unsigned int sizes[BLOCK_TYPE_COUNT];
+    unsigned int total;
 } BlockList;
 
 #define M_BOUNDARY(material) (material >= TORCH)
+#define M_UNPOWERABLE(material) (material <= INSULATOR)
 #define M_HAS_DIRECTION(material) (material >= TORCH)
 #define M_HAS_STATE(material) (material >= REPEATER)
+#define FOR_LIST(type,item,items) for (type* item = items; item != NULL; item = item->next)
 
 int material_parse(char* material, Material* result);
 
