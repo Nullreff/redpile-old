@@ -5,7 +5,7 @@ describe 'Piston' do
   it 'extends a conductor when powered' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
-      p.puts 'SET 0 0 1 PISTON SOUTH 0'
+      p.puts 'SET 0 0 1 PISTON SOUTH'
       p.puts 'SET 0 0 2 CONDUCTOR'
       p.puts 'SET 0 0 3 AIR'
       p.puts 'TICK'
@@ -20,7 +20,7 @@ describe 'Piston' do
   it 'extends a conductor into a empty block' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
-      p.puts 'SET 0 0 1 PISTON SOUTH 0'
+      p.puts 'SET 0 0 1 PISTON SOUTH'
       p.puts 'SET 0 0 2 CONDUCTOR'
       p.puts 'TICK'
       p.puts 'TICK'
@@ -34,7 +34,7 @@ describe 'Piston' do
   it 'extends and retracts a conductor' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
-      p.puts 'SET 0 0 1 PISTON SOUTH 0'
+      p.puts 'SET 0 0 1 PISTON SOUTH'
       p.puts 'SET 0 0 2 CONDUCTOR'
       p.puts 'SET 0 0 3 AIR'
       p.puts 'TICK'

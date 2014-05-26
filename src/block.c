@@ -22,13 +22,13 @@
 char* Materials[MATERIALS_COUNT] = {
     "EMPTY",
     "AIR",
+    "INSULATOR",
     "WIRE",
     "CONDUCTOR",
-    "INSULATOR",
     "TORCH",
+    "PISTON",
     "REPEATER",
-    "COMPARATOR",
-    "PISTON"
+    "COMPARATOR"
 };
 
 int material_parse(char* material, Material* result)
@@ -81,9 +81,9 @@ static BlockNode block_node_create(Block block)
 
 void block_print(Block* block)
 {
-    if (HAS_DIRECTION(block->material))
+    if (M_HAS_DIRECTION(block->material))
     {
-        if (HAS_STATE(block->material))
+        if (M_HAS_STATE(block->material))
         {
             printf("(%d,%d,%d) %u %s %s %u\n",
                    block->location.x,
@@ -170,12 +170,12 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     {
         blocks->head = node;
         blocks->tail = node;
-        if TICK_BOUNDARY(block->material)
+        if M_BOUNDARY(block->material)
             blocks->power_sources++;
     }
     else
     {
-        if TICK_BOUNDARY(block->material)
+        if M_BOUNDARY(block->material)
         {
             node->next = blocks->head;
             blocks->head->prev = node;
@@ -207,7 +207,7 @@ void block_list_remove(BlockList* blocks, BlockNode* node)
         node->next->prev = node->prev;
 
     blocks->size--;
-    if TICK_BOUNDARY(node->block.material)
+    if M_BOUNDARY(node->block.material)
         blocks->power_sources--;
     free(node);
 }

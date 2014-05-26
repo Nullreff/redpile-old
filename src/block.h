@@ -25,16 +25,21 @@
 #define MATERIALS_COUNT 9
 #define MATERIAL_DEFAULT EMPTY
 extern char* Materials[MATERIALS_COUNT];
+
+// The ordering of these matter
 typedef enum {
-    EMPTY,
-    AIR,
-    WIRE,
-    CONDUCTOR,
-    INSULATOR,
-    TORCH,
-    REPEATER,
-    COMPARATOR,
-    PISTON
+    // Unpowerable
+    EMPTY      = 0,
+    AIR        = 1,
+    INSULATOR  = 2,
+    // Powerable
+    WIRE       = 3,
+    CONDUCTOR  = 4,
+    // Boundries
+    TORCH      = 5,
+    PISTON     = 6,
+    REPEATER   = 7,
+    COMPARATOR = 8
 } Material;
 
 typedef struct {
@@ -78,9 +83,9 @@ typedef struct {
     unsigned int power_sources;
 } BlockList;
 
-#define TICK_BOUNDARY(material) (material == TORCH || material == REPEATER || material == COMPARATOR || material == PISTON)
-#define HAS_DIRECTION(material) (material == TORCH || material == REPEATER || material == COMPARATOR || material == PISTON)
-#define HAS_STATE(material) (material == REPEATER || material == COMPARATOR || material == PISTON)
+#define M_BOUNDARY(material) (material >= TORCH)
+#define M_HAS_DIRECTION(material) (material >= TORCH)
+#define M_HAS_STATE(material) (material >= REPEATER)
 
 int material_parse(char* material, Material* result);
 

@@ -85,14 +85,14 @@ bool instruction_parse(char* instruction, Instruction* result)
     if (str_material == NULL || material_parse(str_material, &material) == -1)
         goto error;
 
-    if (!HAS_DIRECTION(material))
+    if (!M_HAS_DIRECTION(material))
         goto success;
 
     char* str_direction = strtok(NULL, " ");
     if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
         goto error;
 
-    if (!HAS_STATE(material))
+    if (!M_HAS_STATE(material))
         goto success;
 
     PARSE_NUMBER(state);

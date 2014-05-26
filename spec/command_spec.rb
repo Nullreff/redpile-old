@@ -122,7 +122,7 @@ describe 'Redpile Commands' do
     end
   end
 
-  direction_blocks = %w(TORCH)
+  direction_blocks = %w(TORCH PISTON)
   direction_blocks.each do |block|
     %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
@@ -136,7 +136,7 @@ describe 'Redpile Commands' do
     end
   end
 
-  state_blocks = %w(REPEATER COMPARATOR PISTON)
+  state_blocks = %w(REPEATER COMPARATOR)
   state_blocks.each do |block|
     %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
