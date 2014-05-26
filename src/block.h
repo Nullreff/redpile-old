@@ -91,7 +91,9 @@ typedef struct {
 #define M_UNPOWERABLE(material) (material <= INSULATOR)
 #define M_HAS_DIRECTION(material) (material >= TORCH)
 #define M_HAS_STATE(material) (material >= REPEATER)
-#define FOR_LIST(type,item,items) for (type* item = items; item != NULL; item = item->next)
+#define FOR_BLOCK_LIST(NODE,LIST,TYPE)\
+    NODE = LIST->nodes[TYPE];\
+    for (unsigned int index = 0, max = LIST->sizes[TYPE]; index < max; NODE = NODE->next, index++)
 
 int material_parse(char* material, Material* result);
 

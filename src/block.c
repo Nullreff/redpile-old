@@ -139,7 +139,8 @@ void block_list_print(BlockList* blocks)
 {
     for (int i = 0; i < BLOCK_TYPE_COUNT; i++)
     {
-        FOR_LIST(BlockNode, node, blocks->nodes[i])
+        BlockNode* node;
+        FOR_BLOCK_LIST(node, blocks, i)
             block_print(&node->block);
         printf("Total: %u\n", blocks->sizes[i]);
     }
@@ -199,7 +200,7 @@ void block_list_remove(BlockList* blocks, BlockNode* node)
         node->next->prev = node->prev;
 
     blocks->total--;
-    blocks->sizes[type]++;
+    blocks->sizes[type]--;
 
     free(node);
 }

@@ -302,7 +302,8 @@ static bool redstone_block_missing(Block* block)
 
 static void redstone_find_unpowered(World* world, BlockType type, void (*rup_inst_run_callback)(RupInst*))
 {
-    FOR_LIST(BlockNode, node, world->blocks->nodes[type])
+    BlockNode* node;
+    FOR_BLOCK_LIST(node, world->blocks, type)
     {
         if (node->block.updated)
         {
@@ -325,8 +326,8 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     // Process all tick boundaries
     Runmap* runmap = runmap_allocate();
     Rup* rup = rup_allocate();
-    int index = 0;
-    FOR_LIST(BlockNode, node, world->blocks->nodes[BOUNDARY])
+    BlockNode* node;
+    FOR_BLOCK_LIST(node, world->blocks, BOUNDARY)
     {
         switch (node->block.material)
         {
@@ -337,7 +338,6 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
             default: ERROR("Encountered non power source in the start of the block list");
         }
         runmap_import(runmap, rup);
-        index++;
     }
     rup_free(rup);
 
