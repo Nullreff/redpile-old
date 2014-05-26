@@ -34,7 +34,8 @@ void rup_free(Rup* rup)
 static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
 {
     RupInst* inst = malloc(sizeof(RupInst));
-    *inst = rup_inst_create(cmd, block); inst->next = rup->instructions;
+    *inst = rup_inst_create(cmd, block);
+    inst->next = rup->instructions;
     rup->instructions = inst;
     return inst;
 }
