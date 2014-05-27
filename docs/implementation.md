@@ -4,11 +4,13 @@ Implementation
 Block Storage
 -------------
 
-**Few block changes**
+Storage at its core is a series of [doubly linked lists](http://en.wikipedia.org/wiki/Linked_list#Doubly_linked_list) that store different block types.  In addition, each node stores pointers to all adjacent (in 3d space) nodes making a [adjaceny list](http://en.wikipedia.org/wiki/Adjacency_list).  Finally, a [hashmap](http://en.wikipedia.org/wiki/Hash_table) is used for fast lookups when running `GET` and `SET` commands.
 
-Blocks are stored in a hashmap with each containing an array of pointers to adjacent blocks.  Every time a new block is inserted or removed, the hashmap is searched for adjacent blocks which are also updated.  This results in slow inserts but relatively fast 'random access' and instance access to adjacent blocks.
+Performance is:
 
-**Many blocks change**
-
-Blocks are stored in a hashmap with no special access rules.
+* Traversal: O(n)
+* Insertion: O(1)
+* Removal: O(1)
+* Lookup: O(1)
+* Adjacent: O(1)
 
