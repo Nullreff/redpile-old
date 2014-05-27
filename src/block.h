@@ -46,17 +46,17 @@ typedef struct {
     // General information
     Location location;
     Material material;
-    Direction direction;
-    unsigned int state;
+    Direction direction:3;
+    unsigned int state:2;
 
     // Redstone state
-    unsigned int power_state;
-    unsigned int power;
-    bool updated;
+    unsigned int power:4;
+    unsigned int power_state:2;
+    bool updated:1;
 
     // True if this block was added by the system
     // False if it was added via command
-    bool system;
+    bool system:1;
 } Block;
 
 typedef struct BlockNode {
