@@ -70,6 +70,14 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'errors with a state greater than 3' do
+    redpile do |p|
+      p.puts 'SET 0 0 0 REPEATER NORTH 4'
+      p.close_write
+      p.gets.should =~ /Invalid Command\n/
+    end
+  end
+
   it 'adds a block' do
     redpile do |p|
       p.puts 'SET 0 0 0 AIR'

@@ -96,7 +96,7 @@ bool instruction_parse(char* instruction, Instruction* result)
         goto success;
 
     PARSE_NUMBER(state);
-    if (state < 0)
+    if (state < 0 || state > 3)
         goto error;
 
 success:
