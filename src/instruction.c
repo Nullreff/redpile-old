@@ -23,12 +23,12 @@
 #include <ctype.h>
 
 #define PARSE_STRING(NAME)\
-    char* str_ ## NAME = strtok(NULL, " ");\
+    char* str_ ## NAME = strsep(&parts, " ");\
     if (str_ ## NAME == NULL || NAME ## _parse(str_ ## NAME, &NAME) == -1)\
         goto error
 
 #define PARSE_NUMBER(NAME)\
-    char* str_ ## NAME = strtok(NULL, " ");\
+    char* str_ ## NAME = strsep(&parts, " ");\
     if (str_ ## NAME == NULL)\
         goto error;\
     NAME = strtol(str_ ## NAME , &parse_error, 10);\
@@ -60,9 +60,10 @@ int command_parse(char* command, Command* result)
 bool instruction_parse(char* instruction, Instruction* result)
 {
     char* parts = strdup(instruction);
-    char* parts_ptr = parts;
     CHECK_OOM(parts);
 
+    char* parts_ptr = parts;
+    char* parse_error;
     Command command;
     Coord x = 0;
     Coord y = 0;
@@ -71,18 +72,13 @@ bool instruction_parse(char* instruction, Instruction* result)
     Direction direction = DIRECTION_DEFAULT;
     int state = 0;
 
-    char* str_command = strtok(parts, " ");
-    if (str_command == NULL || command_parse(str_command, &command) == -1)
-        goto error;
-
+    PARSE_STRING(command);
     if (command == TICK || command == STATUS || command == PING)
         goto success;
 
-    char* parse_error;
     PARSE_NUMBER(x);
     PARSE_NUMBER(y);
     PARSE_NUMBER(z);
-
     if (command == GET)
         goto success;
 
