@@ -18,6 +18,8 @@ Finally, a [hashmap](http://en.wikipedia.org/wiki/Hash_table) is used for fast l
 
 ### Memory
 
+*The numbers listed here were calculated on a 32 bit system*
+
 * Total overhead: 84 bytes/block
   * List: 64 bytes/block
   * Hashmap: 20 bytes/block
