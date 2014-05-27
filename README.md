@@ -15,65 +15,8 @@ Building & Usage
 Requires [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.info/) for CLI tests.
 Run `make` to compile or `make test` to run tests.
 
-~~By default, Redpile will load redstone from a Minecraft map directory passed to it on the command line.~~ (WIP)
-It then reads commands for block updates from the standard input and writes the resulting changes to the standard output.
-For command line options, try `redpile --help`.
-
-Commands
---------
-
-**PING**
-
-Echoes back `PONG`.
-
-**STATUS**
-
-Prints information about the current state of the world and redpile's internal state.
-
-**SET x y z material [direction] [state]**
-
-Sets the block at `(x, y, z)` to have a material of `material` and a direction of `direction`.
-
-Values for `material` are:
-
-* EMPTY
-* AIR
-* WIRE
-* CONDUCTOR
-* INSULATOR
-* TORCH
-* REPEATER
-* COMPARATOR
-* PISTON
-
-Values for `direction` are:
-
-* NORTH
-* SOUTH
-* EAST
-* WEST
-* UP
-* DOWN
-
-**GET x y z**
-
-Returns information about the block at `(x, y, z)` in the format `(x,y,z) power material [direction] [state]`.  The value of `direction` is only returned if it's relevant to the current block.
-
-**TICK**
-
-Runs a single redstone tick.
-Any blocks affected by the tick will be returned in the format `(x,y,z) power`.
-
-Currently implemented are:
-
-* AIR - Empty area that cannot be powered but allows power around it
-* WIRE - Propagates power to adjacent blocks and those up/down one block
-* CONDUCTOR - Block that can be powered
-* INSULATOR - Block that cannot be powered
-* TORCH - Powers wires and switches off when powered
-* REPEATER - Powers a block in front if it receives power from the block behind.  Delays signal by `state + 1` ticks and locks up if powered by another repeater from the side.
-* COMPARATOR - Combines the powers of the block behind it and the block to the side of it.  If `state > 1` it subtracts the side from behind.  Otherwise, it only propagates if the rear block's power is greater than the block to the side.
-* PISTON - When powered, moves the block in front of it forwards one and inserts an INSULATOR block where the block used to be.  When unpowered, it move the block two in front of it back one and inserts an AIR block where the block used to be.
+Redpile reads commands for block updates from the standard input and writes the resulting changes to the standard output.
+For command line options, try `redpile --help`.  Checkout `docs/commands` for more information on it's usage.
 
 Roadmap
 -------
@@ -84,11 +27,12 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * ~~Command line interface~~
 * ~~Basic Redstone~~
 * More tests!
-* Sockets interface
-* Map loading/saving
+* Dijkstra's algorithm
 * Tick caching
-* Multithreaded ticks
-* Restone JIT
+* Map loading/saving
+* Multithreaded ticks???
+* Restone JIT compiler
+* Sockets interface
 * Bukkit patch
 * Language bindings
 * Statistics & reporting
