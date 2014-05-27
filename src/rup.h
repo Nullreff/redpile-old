@@ -1,4 +1,4 @@
-/* rup.h - Redstone update programming language
+/* rup.h - Redpile update programming language
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
