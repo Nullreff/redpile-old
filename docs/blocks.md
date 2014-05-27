@@ -42,7 +42,7 @@ Block that cannot be powered.
 
 Requires: `direction`
 
-Powers wires and switches off when powered.
+Powers adjacent wires and conductors above it.  It switches off when powered.
 
 ### PISTON
 
@@ -58,7 +58,8 @@ Swaps the two blocks in front of it on one of the following conditions:
 Requires: `direction` `state`
 
 Powers a block in front if it receives power from the block behind.
-Delays signal by `state + 1` ticks and locks up if powered by another repeater from the side.
+Any signal passed through is delayed by `state` ticks.
+If powered by another repeater from the side it will lock and not allow any signal through.
 
 ### COMPARATOR
 
