@@ -53,10 +53,12 @@ Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
 
 Location location_empty(void);
+Location location_max(void);
 Location location_from_values(int values[]);
 Location location_create(Coord x, Coord y, Coord z);
 Location location_move(Location loc, Direction dir, int length);
 bool location_equals(Location l1, Location l2);
+bool location_is_maxed(Location loc);
 unsigned int location_hash_unbounded(Location loc);
 unsigned int location_hash(Location loc, unsigned int max);
 

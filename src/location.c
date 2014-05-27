@@ -91,6 +91,11 @@ Location location_empty(void)
     return location_create(0, 0, 0);
 }
 
+Location location_max(void)
+{
+    return (Location){INT_MAX, INT_MAX, INT_MAX};
+}
+
 Location location_from_values(int values[])
 {
     return location_create(values[0], values[1], values[2]);
@@ -98,6 +103,11 @@ Location location_from_values(int values[])
 
 Location location_create(Coord x, Coord y, Coord z)
 {
+    // We use INT_MAX for other purposes
+    assert(x != INT_MAX);
+    assert(y != INT_MAX);
+    assert(z != INT_MAX);
+
     return (Location){x, y, z};
 }
 
@@ -118,6 +128,13 @@ Location location_move(Location loc, Direction dir, int length)
 bool location_equals(Location l1, Location l2)
 {
     return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
+}
+
+bool location_is_maxed(Location loc)
+{
+    return loc.x == INT_MAX ||
+           loc.y == INT_MAX ||
+           loc.z == INT_MAX;
 }
 
 unsigned int location_hash_unbounded(Location loc)

@@ -45,12 +45,14 @@ typedef enum {
 typedef struct {
     // General information
     Location location;
+    Location power_source;
     Material material;
     Direction direction:3;
     unsigned int state:2;
 
     // Redstone state
     unsigned int power:4;
+    unsigned int new_power:4;
     unsigned int power_state:2;
     bool updated:1;
 
@@ -68,10 +70,6 @@ typedef struct BlockNode {
     struct BlockNode* adjacent[6];
     struct BlockNode* next;
     struct BlockNode* prev;
-
-    // Used while searching
-    Location power_source;
-    unsigned int new_power;
 } BlockNode;
 
 #define BLOCK_TYPE_COUNT 3

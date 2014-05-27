@@ -25,11 +25,11 @@
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
 #define SHOULD_UPDATE(NODE,POWER,SOURCE)\
-    ((NODE)->new_power == UINT_MAX ||\
-     (location_equals((NODE)->power_source, SOURCE) && (NODE)->new_power < POWER))
+    (location_is_maxed((NODE)->block.power_source) ||\
+     (location_equals((NODE)->block.power_source, SOURCE) && (NODE)->block.new_power < POWER))
 #define UPDATE_POWER(NODE,POWER,SOURCE) do {\
-   (NODE)->new_power = POWER;\
-   (NODE)->power_source = SOURCE;\
+   (NODE)->block.new_power = POWER;\
+   (NODE)->block.power_source = SOURCE;\
    rup_cmd_power(rup, &(NODE)->block, POWER);\
 } while (0)
 #define LAST_POWER(node) (node)->block.power

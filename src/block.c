@@ -60,23 +60,23 @@ Block block_create(Location location, Material material, Direction direction, un
     return (Block){
         // General information
         location,
+        location_max(), // power_source
         material,
         direction,
         state,
 
         // Redstone state
         0,     // power
+        0,     // new_power
         0,     // power_state
         false, // updated
-
-        // Other
-        false
+        false  // system
     };
 }
 
 static BlockNode block_node_create(Block block)
 {
-    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, location_empty(), UINT_MAX};
+    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
 }
 
 static BlockType block_get_type(Block* block)
