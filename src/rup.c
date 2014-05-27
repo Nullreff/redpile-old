@@ -22,6 +22,7 @@
 Rup* rup_allocate(void)
 {
     Rup* rup = malloc(sizeof(Rup));
+    CHECK_OOM(rup);
     rup->instructions = NULL;
     return rup;
 }
@@ -34,6 +35,7 @@ void rup_free(Rup* rup)
 static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
 {
     RupInst* inst = malloc(sizeof(RupInst));
+    CHECK_OOM(inst);
     *inst = rup_inst_create(cmd, block);
     inst->next = rup->instructions;
     rup->instructions = inst;
@@ -116,7 +118,9 @@ void rup_inst_print(RupInst* inst)
 
 Runmap* runmap_allocate(void)
 {
-    return calloc(1, sizeof(Runmap));
+    Runmap* runmap = calloc(1, sizeof(Runmap));
+    CHECK_OOM(runmap);
+    return runmap;
 }
 
 void runmap_free(Runmap* runmap)

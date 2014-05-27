@@ -172,8 +172,10 @@ void block_list_free(BlockList* blocks)
 
 BlockNode* block_list_append(BlockList* blocks, Block* block)
 {
-    BlockType type = block_get_type(block);
     BlockNode* node = malloc(sizeof(BlockNode));
+    CHECK_OOM(node);
+
+    BlockType type = block_get_type(block);
     *node = block_node_create(*block);
 
     if (blocks->nodes[type] != NULL)

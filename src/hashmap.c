@@ -28,6 +28,7 @@ static Bucket* hashmap_add_next(Hashmap* hashmap, Bucket* bucket)
 {
     hashmap->overflow++;
     Bucket* new_bucket = malloc(sizeof(Bucket));
+    CHECK_OOM(new_bucket);
     *new_bucket = bucket_empty();
     bucket->next = new_bucket;
     return new_bucket;
