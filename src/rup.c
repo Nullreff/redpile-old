@@ -144,8 +144,47 @@ void runmap_import(Runmap* runmap, Rup* rup)
         else
             inst->next = NULL;
         RUNMAP_INST(runmap, inst) = inst;
+
+        runmap->sizes[inst->command]++;
     }
 
     rup->instructions = NULL;
+}
+
+void runmap_reduce(Runmap* runmap)
+{
+    unsigned int hashmap_size = runmap->sizes[RUP_POWER];
+    ROUND_TO_POW_2(hashmap_size);
+    Hashmap* hashmap = hashmap_allocate(hashmap_size);
+
+    // Currently we only combine duplicate block updates
+    RupInst* next = NULL;
+    RupInst* prev = NULL;
+    for (RupInst* inst = runmap->instructions[RUP_POWER]; inst != NULL; prev = inst, inst = next)
+    {
+        next = inst->next;
+
+        Bucket* bucket = hashmap_get(hashmap, inst->location, true);
+        if (bucket->value != NULL)
+        {
+            RupInst* found_inst = (RupInst*)bucket->value;
+
+            if (found_inst->value.power < inst->value.power)
+                found_inst->value.power = inst->value.power;
+
+            if (prev != NULL)
+                prev->next = next;
+            else
+                runmap->instructions[RUP_POWER] = next;
+
+            free(inst);
+        }
+        else
+        {
+            bucket->value = inst;
+        }
+    }
+
+    hashmap_free(hashmap);
 }
 

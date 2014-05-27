@@ -48,6 +48,7 @@ typedef struct {
 
 typedef struct {;
     RupInst* instructions[RUP_CMD_COUNT];
+    unsigned int sizes[RUP_CMD_COUNT];
 } Runmap;
 
 Rup* rup_allocate(void);
@@ -62,5 +63,6 @@ void rup_inst_print(RupInst* inst);
 Runmap* runmap_allocate(void);
 void runmap_free(Runmap* runmap);
 void runmap_import(Runmap* runmap, Rup* rup);
+void runmap_reduce(Runmap* runmap);
 
 #endif

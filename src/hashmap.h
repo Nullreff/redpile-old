@@ -40,6 +40,15 @@ typedef struct {
     unsigned int max_depth;
 } Hashmap;
 
+// From http://stackoverflow.com/a/365068
+#define ROUND_TO_POW_2(x)\
+    x--;\
+    x |= x >> 1;\
+    x |= x >> 2;\
+    x |= x >> 4;\
+    x |= x >> 8;\
+    x |= x >> 16;\
+    x++
 #define BUCKET_FILLED(bucket) ((bucket) != NULL && (bucket)->value != NULL)
 
 void hashmap_print(Hashmap* hashmap, Bucket* selected);

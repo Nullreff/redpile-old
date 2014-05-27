@@ -341,6 +341,9 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     }
     rup_free(rup);
 
+    // Merge duplicate power instructions
+    runmap_reduce(runmap);
+
     // Run update commands
     for (int i = 0; i < RUP_CMD_COUNT; i++)
     for (RupInst* inst = runmap->instructions[i]; inst != NULL; inst = inst->next)
