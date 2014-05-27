@@ -22,6 +22,11 @@
 #include "redstone.h"
 #include <ctype.h>
 
+#define PARSE_STRING(NAME)\
+    char* str_ ## NAME = strtok(NULL, " ");\
+    if (str_ ## NAME == NULL || NAME ## _parse(str_ ## NAME, &NAME) == -1)\
+        goto error
+
 #define PARSE_NUMBER(NAME)\
     char* str_ ## NAME = strtok(NULL, " ");\
     if (str_ ## NAME == NULL)\
@@ -62,8 +67,8 @@ bool instruction_parse(char* instruction, Instruction* result)
     Coord x = 0;
     Coord y = 0;
     Coord z = 0;
-    Material material = EMPTY;
-    Direction direction = NORTH;
+    Material material = MATERIAL_DEFAULT;
+    Direction direction = DIRECTION_DEFAULT;
     int state = 0;
 
     char* str_command = strtok(parts, " ");
@@ -81,17 +86,11 @@ bool instruction_parse(char* instruction, Instruction* result)
     if (command == GET)
         goto success;
 
-    char* str_material = strtok(NULL, " ");
-    if (str_material == NULL || material_parse(str_material, &material) == -1)
-        goto error;
-
+    PARSE_STRING(material);
     if (!M_HAS_DIRECTION(material))
         goto success;
 
-    char* str_direction = strtok(NULL, " ");
-    if (str_direction == NULL || direction_parse(str_direction, &direction) == -1)
-        goto error;
-
+    PARSE_STRING(direction);
     if (!M_HAS_STATE(material))
         goto success;
 
