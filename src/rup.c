@@ -164,7 +164,7 @@ void runmap_reduce(Runmap* runmap)
     // Currently we only combine duplicate block updates
     RupInst* next = NULL;
     RupInst* prev = NULL;
-    for (RupInst* inst = runmap->instructions[RUP_POWER]; inst != NULL; prev = inst, inst = next)
+    for (RupInst* inst = runmap->instructions[RUP_POWER]; inst != NULL; inst = next)
     {
         next = inst->next;
 
@@ -186,6 +186,7 @@ void runmap_reduce(Runmap* runmap)
         else
         {
             bucket->value = inst;
+            prev = inst;
         }
     }
 
