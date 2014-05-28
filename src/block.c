@@ -55,6 +55,14 @@ Block block_from_values(int values[])
     return block_create(location_from_values(values), values[3], values[4], values[5]);
 }
 
+Block block_from_location(Location loc)
+{
+    Material mat = (Material)(location_hash_unbounded(loc) % MATERIALS_COUNT);
+    Direction dir = (Direction)location_hash(loc, 4);
+    unsigned int state = location_hash(loc, 2);
+    return block_create(loc, mat, dir, state);
+}
+
 Block block_create(Location location, Material material, Direction direction, unsigned int state)
 {
     return (Block){
