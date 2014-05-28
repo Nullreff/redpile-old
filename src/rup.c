@@ -32,37 +32,37 @@ void rup_free(Rup* rup)
     free(rup);
 }
 
-static RupInst* rup_push(Rup* rup, RupCmd cmd, Block* block)
+static RupInst* rup_push(Rup* rup, RupCmd cmd, BlockNode* node)
 {
     RupInst* inst = malloc(sizeof(RupInst));
     CHECK_OOM(inst);
-    *inst = rup_inst_create(cmd, block);
+    *inst = rup_inst_create(cmd, node);
     inst->next = rup->instructions;
     rup->instructions = inst;
     return inst;
 }
 
-void rup_cmd_power(Rup* rup, Block* block, unsigned int power)
+void rup_cmd_power(Rup* rup, BlockNode* node, unsigned int power)
 {
-    RupInst* inst = rup_push(rup, RUP_POWER, block);
+    RupInst* inst = rup_push(rup, RUP_POWER, node);
     inst->value.power = power;
 }
 
-void rup_cmd_state(Rup* rup, Block* block, unsigned int state)
+void rup_cmd_state(Rup* rup, BlockNode* block, unsigned int state)
 {
     RupInst* inst = rup_push(rup, RUP_STATE, block);
     inst->value.state = state;
 }
 
-void rup_cmd_swap(Rup* rup, Block* block, Block* target)
+void rup_cmd_swap(Rup* rup, BlockNode* node, BlockNode* target)
 {
-    RupInst* inst = rup_push(rup, RUP_SWAP, block);
+    RupInst* inst = rup_push(rup, RUP_SWAP, node);
     inst->value.target = target;
 }
 
-RupInst rup_inst_create(RupCmd cmd, Block* block)
+RupInst rup_inst_create(RupCmd cmd, BlockNode* node)
 {
-    return (RupInst){cmd, block->location, block, {0}, NULL};
+    return (RupInst){cmd, node->block.location, node, {0}, NULL};
 }
 
 void rup_inst_run(World* world, RupInst* inst)
@@ -70,16 +70,16 @@ void rup_inst_run(World* world, RupInst* inst)
     switch (inst->command)
     {
         case RUP_POWER:
-            inst->block->power = inst->value.power;
-            inst->block->updated = true;
+            inst->node->block.power = inst->value.power;
+            inst->node->block.updated = true;
             break;
 
         case RUP_STATE:
-            inst->block->power_state = inst->value.state;
+            inst->node->block.power_state = inst->value.state;
             break;
 
         case RUP_SWAP:
-            world_block_swap(world, inst->block, inst->value.target);
+            world_block_swap(world, &inst->node->block, &inst->value.target->block);
             break;
     }
 }
@@ -90,28 +90,28 @@ void rup_inst_print(RupInst* inst)
     {
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
-                inst->block->location.x,
-                inst->block->location.y,
-                inst->block->location.z,
+                inst->node->block.location.x,
+                inst->node->block.location.y,
+                inst->node->block.location.z,
                 inst->value.power);
             break;
 
         case RUP_STATE:
             printf("STATE (%d,%d,%d) %u\n",
-                inst->block->location.x,
-                inst->block->location.y,
-                inst->block->location.z,
+                inst->node->block.location.x,
+                inst->node->block.location.y,
+                inst->node->block.location.z,
                 inst->value.state);
             break;
 
         case RUP_SWAP:
             printf("SWAP (%d,%d,%d) (%d,%d,%d)\n",
-                inst->block->location.x,
-                inst->block->location.y,
-                inst->block->location.z,
-                inst->value.target->location.x,
-                inst->value.target->location.y,
-                inst->value.target->location.z);
+                inst->node->block.location.x,
+                inst->node->block.location.y,
+                inst->node->block.location.z,
+                inst->value.target->block.location.x,
+                inst->value.target->block.location.y,
+                inst->value.target->block.location.z);
             break;
     }
 }

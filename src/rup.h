@@ -32,12 +32,12 @@ typedef enum {
 typedef struct RupInst {
     RupCmd command;
     Location location;
-    Block* block;
+    BlockNode* node;
     union {
         unsigned int power;
         unsigned int state;
         Material material;
-        Block* target;
+        BlockNode* target;
     } value;
     struct RupInst* next;
 } RupInst;
@@ -53,10 +53,10 @@ typedef struct {;
 
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
-void rup_cmd_power(Rup* rup, Block* block, unsigned int power);
-void rup_cmd_state(Rup* rup, Block* block, unsigned int state);
-void rup_cmd_swap(Rup* rup, Block* block, Block* target);
-RupInst rup_inst_create(RupCmd cmd, Block* block);
+void rup_cmd_power(Rup* rup, BlockNode* node, unsigned int power);
+void rup_cmd_state(Rup* rup, BlockNode* node, unsigned int state);
+void rup_cmd_swap(Rup* rup, BlockNode* node, BlockNode* target);
+RupInst rup_inst_create(RupCmd cmd, BlockNode* node);
 void rup_inst_run(World* world, RupInst* inst);
 void rup_inst_print(RupInst* inst);
 

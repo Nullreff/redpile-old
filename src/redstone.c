@@ -30,7 +30,7 @@
 #define UPDATE_POWER(NODE,POWER,SOURCE) do {\
    (NODE)->block.new_power = POWER;\
    (NODE)->block.power_source = SOURCE;\
-   rup_cmd_power(rup, &(NODE)->block, POWER);\
+   rup_cmd_power(rup, NODE, POWER);\
 } while (0)
 #define LAST_POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
@@ -151,12 +151,12 @@ static void redstone_piston_update(Rup* rup, World* world, BlockNode* node)
     if (LAST_POWER(node) > 0)
     {
         if (MATERIAL_IS(second, AIR))
-            rup_cmd_swap(rup, &first->block, &second->block);
+            rup_cmd_swap(rup, first, second);
     }
     else
     {
         if (MATERIAL_IS(first, AIR))
-            rup_cmd_swap(rup, &first->block, &second->block);
+            rup_cmd_swap(rup, first, second);
     }
 }
 
@@ -232,7 +232,7 @@ static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
     if (node->block.power > 0 && !REPEATER_POWERED(node))
     {
         new_power_state++;
-        rup_cmd_state(rup, &node->block, new_power_state);
+        rup_cmd_state(rup, node, new_power_state);
     }
 
     // If it's be on shorter than the delay, don't propigate power
@@ -311,7 +311,7 @@ static void redstone_find_unpowered(World* world, BlockType type, void (*rup_ins
         }
         else if (node->block.power > 0)
         {
-            RupInst inst = rup_inst_create(RUP_POWER, &node->block);
+            RupInst inst = rup_inst_create(RUP_POWER, node);
             inst.value.power = 0;
             rup_inst_run_callback(&inst);
             rup_inst_run(world, &inst);
