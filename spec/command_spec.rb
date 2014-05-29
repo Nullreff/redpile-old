@@ -46,6 +46,14 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'does not execute a commented out line' do
+    redpile do |p|
+      p.puts '# Comment goes here'
+      p.close_write
+      p.read.should == "\n"
+    end
+  end
+
   it 'error if given an incorrect material' do
     redpile do |p|
       p.puts 'SET 0 0 0 INVALID'

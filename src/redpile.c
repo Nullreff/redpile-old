@@ -203,7 +203,9 @@ int main(int argc, char* argv[])
     while ((line = linenoise(prompt)) != NULL)
     {
         linenoiseHistoryAdd(line);
-        if (instruction_parse(line, &instruction))
+        if (line[0] == '#')
+            ; // Empty command
+        else if (instruction_parse(line, &instruction))
             instruction_run(world, &instruction, rup_inst_run_callback);
         else
             printf("Invalid Command\n");
