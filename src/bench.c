@@ -86,6 +86,7 @@ void run_benchmarks(World* world, unsigned int count)
     unsigned int limit = MILISECONDS(count);
     assert(limit > 0);
 
+    printf("--- Benchmark Start ---\n");
     BENCHMARK(insert, 200, limit);
     BENCHMARK(get,    200, limit);
     BENCHMARK(delete, 200, limit);
