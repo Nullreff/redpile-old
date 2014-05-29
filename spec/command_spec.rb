@@ -6,7 +6,7 @@ describe 'Redpile Commands' do
     context "Using #{upper ? 'upper' : 'lower'} case" do
       it 'parses the SET command' do
         redpile do |p|
-          p.puts (upper ? 'SET 0 0 0 TORCH UP' : 'set 0 0 0 torch up')
+          p.puts(upper ? 'SET 0 0 0 TORCH UP' : 'set 0 0 0 torch up')
           p.close_write
           p.read.should == "\n"
         end
@@ -14,7 +14,7 @@ describe 'Redpile Commands' do
 
       it 'parses the GET command' do
         redpile do |p|
-          p.puts (upper ? 'GET 0 0 0' : 'get 0 0 0')
+          p.puts(upper ? 'GET 0 0 0' : 'get 0 0 0')
           p.close_write
           p.read.should =~ /\(0,0,0\) 0 EMPTY/
         end
@@ -22,7 +22,7 @@ describe 'Redpile Commands' do
 
       it 'parses the TICK command' do
         redpile do |p|
-          p.puts (upper ? 'TICK' : 'tick')
+          p.puts(upper ? 'TICK' : 'tick')
           p.close_write
           p.read.should == "\n"
         end
@@ -30,7 +30,7 @@ describe 'Redpile Commands' do
 
       it 'parses the STATUS command' do
         redpile do |p|
-          p.puts (upper ? 'STATUS' : 'status')
+          p.puts(upper ? 'STATUS' : 'status')
           p.close_write
           p.read.should =~ /ticks: 0/
         end
@@ -38,7 +38,7 @@ describe 'Redpile Commands' do
 
       it 'parses the PING command' do
         redpile do |p|
-          p.puts (upper ? 'PING' : 'ping')
+          p.puts(upper ? 'PING' : 'ping')
           p.close_write
           p.read.should =~ /PONG\n/
         end
