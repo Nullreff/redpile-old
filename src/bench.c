@@ -23,19 +23,33 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define RANGE(var,start,end) Coord var; for (var = start; var <= end; var++) {
-#define RANGE_END }
-#define CUBE_RANGE(start,end)\
-    RANGE(x,start,end)\
-    RANGE(y,start,end)\
-    RANGE(z,start,end)
-#define CUBE_RANGE_END RANGE_END RANGE_END RANGE_END
-#define BENCHMARK_START(name) do {\
-    char* message = #name;\
-    long long start_time = get_time();
-#define BENCHMARK_END\
-    print_time(message, get_time() - start_time);\
-} while(0);
+#define TO_SECONDS(x) ((x) / (1000 * 1000))
+#define MILISECONDS(x) ((x) * 1000)
+#define BENCHMARK(METHOD,PER_ITER,LIMIT)\
+    do {\
+        long long start, time, count;\
+        count = 0;\
+        start = get_time();\
+        do\
+        {\
+            for (int i = 0; i < PER_ITER; i++)\
+            {\
+                benchmark_ ## METHOD(world);\
+            }\
+            count += PER_ITER;\
+            time = get_time() - start;\
+        } while (time < LIMIT);\
+        float final = count / TO_SECONDS((float)time);\
+        if (final > 1000)\
+        {\
+            final /= 1000;\
+            printf(#METHOD ": %.2fk / sec\n", final);\
+        }\
+        else\
+        {\
+            printf(#METHOD ": %.2f / sec\n", final);\
+        }\
+    } while (0) 
 
 static long long get_time(void)
 {
@@ -47,57 +61,33 @@ static long long get_time(void)
     return time;
 }
 
-static void print_time(char* message, long long time)
+static void benchmark_insert(World* world)
 {
-    if (time > 1000 * 1000 * 1000)
-        printf("%s - %lld sec\n", message, time / (1000 * 1000));
-    else if (time > 1000 * 1000)
-        printf("%s - %lld ms\n", message, time / 1000);
-    else
-        printf("%s - %lld us\n", message, time);
+    Block block = block_from_location(location_random());
+    world_set_block(world, &block);
 }
 
-static void rup_inst_run_callback(RupInst* i) {}
+static void benchmark_get(World* world)
+{
+    world_get_block(world, location_random());
+}
+
+static void benchmark_delete(World* world)
+{
+    Block block = block_empty();
+    block.location = location_random();
+    world_set_block(world, &block);
+}
 
 void run_benchmarks(World* world, unsigned int count)
 {
-    printf("--- Benchmark Start ---\n");
-    long long start = get_time();
+    srand(get_time());
 
-    BENCHMARK_START(world_add_block)
-    CUBE_RANGE(-(int)count, (int)count)
-        Location loc = (Location){x,y,z};
-        Block block = block_from_location(loc);
-        world_set_block(world, &block);
-    CUBE_RANGE_END
-    BENCHMARK_END
+    unsigned int limit = MILISECONDS(count);
+    assert(limit > 0);
 
-    BENCHMARK_START(world_get_block)
-    CUBE_RANGE(-(int)count, (int)count)
-        world_get_block(world, (Location){x, y, z});
-    CUBE_RANGE_END
-    BENCHMARK_END
-
-    BENCHMARK_START(redstone_tick)
-    RANGE(i, 1, count)
-        redstone_tick(world, rup_inst_run_callback);
-    RANGE_END
-    BENCHMARK_END
-
-    WorldStats stats = world_get_stats(world);
-
-    BENCHMARK_START(world_remove_block)
-    CUBE_RANGE(-(int)count, (int)count)
-        Location loc = (Location){x,y,z};
-        Block block = block_create(loc, EMPTY, DIRECTION_DEFAULT, 0);
-        world_set_block(world, &block);
-    CUBE_RANGE_END
-    BENCHMARK_END
-
-    long long end = get_time();
-    print_time("total", end - start);
-    printf("--- Benchmark End ---\n");
-
-    world_stats_print(stats);
+    BENCHMARK(insert, 200, limit);
+    BENCHMARK(get,    200, limit);
+    BENCHMARK(delete, 200, limit);
 }
 

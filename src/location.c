@@ -101,6 +101,11 @@ Location location_from_values(int values[])
     return location_create(values[0], values[1], values[2]);
 }
 
+Location location_random(void)
+{
+    return location_create(rand(), rand(), rand());
+}
+
 Location location_create(Coord x, Coord y, Coord z)
 {
     // We use INT_MAX for other purposes
