@@ -49,8 +49,8 @@ static void print_help()
            "        Print the current version\n\n"
            "    -h, --help\n"
            "        Print this message\n\n"
-           "    --benchmark <count>\n"
-           "        Run benchmarks and stress tests\n");
+           "    --benchmark <milliseconds>\n"
+           "        Run each benchmark for the time specified\n");
 }
 
 static unsigned int parse_world_size(char* string)
