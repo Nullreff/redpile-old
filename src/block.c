@@ -68,16 +68,14 @@ Block block_create(Location location, Material material, Direction direction, un
     return (Block){
         // General information
         location,
-        location_max(), // power_source
         material,
         direction,
         state,
 
         // Redstone state
         0,     // power
-        0,     // new_power
         0,     // power_state
-        false, // updated
+        false, // powered
         false  // system
     };
 }

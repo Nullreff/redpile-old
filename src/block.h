@@ -45,16 +45,14 @@ typedef enum {
 typedef struct {
     // General information
     Location location;
-    Location power_source;
     Material material;
     Direction direction:3;
     unsigned int state:2;
 
     // Redstone state
     unsigned int power:4;
-    unsigned int new_power:4;
     unsigned int power_state:2;
-    bool updated:1;
+    bool powered:1;
 
     // True if this block was added by the system
     // False if it was added via command

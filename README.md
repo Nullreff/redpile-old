@@ -27,7 +27,6 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * ~~Command line interface~~
 * ~~Basic Redstone~~
 * More tests!
-* Dijkstra's algorithm
 * Tick caching
 * Map loading/saving
 * Multithreaded ticks???

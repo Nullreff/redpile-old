@@ -73,7 +73,7 @@ void rup_inst_run(World* world, RupInst* inst)
     {
         case RUP_POWER:
             inst->node->block.power = inst->value.power;
-            inst->node->block.updated = true;
+            inst->node->block.powered = true;
             break;
 
         case RUP_STATE:
