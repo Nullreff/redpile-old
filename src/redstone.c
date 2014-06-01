@@ -24,8 +24,12 @@
 
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
-#define SHOULD_UPDATE(NODE,POWER) (!(NODE)->block.powered && (NODE)->block.power <= (POWER))
-#define UPDATE_POWER(NODE,POWER) rup_cmd_power(rup, NODE, (NODE)->block.power = (POWER))
+#define SHOULD_UPDATE(NODE,POWER) (!(NODE)->block.powered)
+#define UPDATE_POWER(NODE,POWER) do {\
+    (NODE)->block.power = (POWER);\
+    (NODE)->block.powered = true;\
+    rup_cmd_power(rup, NODE, POWER);\
+} while (0)
 #define POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) (node->block.material == name)
