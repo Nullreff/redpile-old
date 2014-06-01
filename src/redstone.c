@@ -24,12 +24,12 @@
 
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
-#define SHOULD_UPDATE(NODE,POWER) (!(NODE)->block.powered)
-#define UPDATE_POWER(NODE,POWER) do {\
+#define UPDATE_POWER(NODE,POWER)\
+if (!(NODE)->block.powered) {\
     (NODE)->block.power = (POWER);\
     (NODE)->block.powered = true;\
     rup_cmd_power(rup, NODE, POWER);\
-} while (0)
+}
 #define POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) (node->block.material == name)
@@ -57,11 +57,8 @@ static void redstone_conductor_update(Rup* rup, World* world, BlockNode* node, u
     {
         Direction dir = (Direction)i;
         BlockNode* found_node = NODE_ADJACENT(node, dir);
-        if (can_power_from_behind(found_node, dir) &&
-            SHOULD_UPDATE(found_node, new_power))
-        {
+        if (can_power_from_behind(found_node, dir))
             UPDATE_POWER(found_node, new_power);
-        }
     }
 }
 
@@ -99,11 +96,8 @@ static void redstone_wire_update(Rup* rup, World* world, BlockNode* node, unsign
             BlockNode* right = NODE_ADJACENT(node, direction_left(dir));
             BlockNode* left = NODE_ADJACENT(node, direction_right(dir));
 
-            if (MATERIAL_ISNT(right, WIRE) && MATERIAL_ISNT(left, WIRE) &&
-                SHOULD_UPDATE(found_node, new_power))
-            {
+            if (MATERIAL_ISNT(right, WIRE) && MATERIAL_ISNT(left, WIRE))
                 UPDATE_POWER(found_node, new_power);
-            }
 
             if (covered)
                 continue;
@@ -119,18 +113,13 @@ static void redstone_wire_update(Rup* rup, World* world, BlockNode* node, unsign
             continue;
         }
 
-        if SHOULD_UPDATE(found_node, wire_power)
-        {
-            UPDATE_POWER(found_node, wire_power);
-        }
+        UPDATE_POWER(found_node, wire_power);
     }
 
     // Block below
     BlockNode* down_node = NODE_ADJACENT(node, DOWN);
-    if (MATERIAL_IS(down_node, CONDUCTOR) && SHOULD_UPDATE(down_node, new_power))
-    {
+    if (MATERIAL_IS(down_node, CONDUCTOR))
         UPDATE_POWER(down_node, new_power);
-    }
 }
 
 static void redstone_piston_update(Rup* rup, World* world, BlockNode* node)
@@ -188,14 +177,8 @@ static void redstone_comparator_update(Rup* rup, World* world, BlockNode* node)
 
     // Pass charge to the wire or conductor in front
     BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
-    if (MATERIAL_IS(found_node, WIRE))
-    {
+    if (MATERIAL_IS(found_node, WIRE) || MATERIAL_IS(found_node, CONDUCTOR))
         UPDATE_POWER(found_node, new_power);
-    }
-    else if (MATERIAL_IS(found_node, CONDUCTOR))
-    {
-        UPDATE_POWER(found_node, new_power);
-    }
 }
 
 static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
@@ -231,14 +214,8 @@ static void redstone_repeater_update(Rup* rup, World* world, BlockNode* node)
 
     // Pass charge to the wire or conductor in front
     BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
-    if (MATERIAL_IS(found_node, WIRE))
-    {
+    if (MATERIAL_IS(found_node, WIRE) || MATERIAL_IS(found_node, CONDUCTOR))
         UPDATE_POWER(found_node, MAX_POWER);
-    }
-    else if (MATERIAL_IS(found_node, CONDUCTOR))
-    {
-        UPDATE_POWER(found_node, MAX_POWER);
-    }
 }
 
 static void redstone_torch_update(Rup* rup, World* world, BlockNode* node)
@@ -258,25 +235,19 @@ static void redstone_torch_update(Rup* rup, World* world, BlockNode* node)
             continue;
 
         BlockNode* found_node = NODE_ADJACENT(node, dir);
-        if (can_power_from_behind(found_node, dir) ||
-            MATERIAL_IS(found_node, WIRE))
-        {
+        if (can_power_from_behind(found_node, dir) || MATERIAL_IS(found_node, WIRE))
             UPDATE_POWER(found_node, MAX_POWER);
-        }
     }
 
     // Pass charge up through a block
     BlockNode* up_node = NODE_ADJACENT(node, UP);
-    if (MATERIAL_ISNT(up_node, CONDUCTOR))
-        return;
-
-    UPDATE_POWER(up_node, MAX_POWER);
-
-    MOVE_TO_NODE(up_node, UP);
-    if (MATERIAL_ISNT(up_node, WIRE))
-        return;
-
-    UPDATE_POWER(up_node, MAX_POWER);
+    if (MATERIAL_IS(up_node, CONDUCTOR))
+    {
+        UPDATE_POWER(up_node, MAX_POWER);
+        MOVE_TO_NODE(up_node, UP);
+        if (MATERIAL_IS(up_node, WIRE))
+            UPDATE_POWER(up_node, MAX_POWER);
+    }
 }
 
 static bool redstone_block_missing(Block* block)
