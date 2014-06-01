@@ -34,9 +34,11 @@ See [Blocks](blocks.md) for more information.
 TICK
 ----
 
-Syntax: `TICK`
+Syntax: `TICK [count]`
 
-Runs a single redstone tick.  Will output the following updates:
+Runs a single redstone tick by default.
+If `count` is provided, it will run `count` ticks.
+The following are the possible outputs that can occur as the result of a tick:
 
 * `POWER (x,y,z) power` - Set the power of `(x,y,z)` to `power`
 * `STATE (x,y,z) state` - Set the state of `(x,y,z)` to `state`

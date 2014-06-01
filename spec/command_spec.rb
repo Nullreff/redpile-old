@@ -86,6 +86,33 @@ describe 'Redpile Commands' do
     end
   end
 
+  it 'runs multiple ticks' do
+    redpile do |p|
+      p.puts 'TICK 4'
+      p.puts 'STATUS'
+      p.close_write
+      p.gets.should =~ /ticks: 4\n/
+    end
+  end
+
+  it 'does not run negative ticks' do
+    redpile do |p|
+      p.puts 'TICK -2'
+      p.puts 'STATUS'
+      p.close_write
+      p.gets.should =~ /ticks: 0\n/
+    end
+  end
+
+  it 'errors for non numerical ticks' do
+    redpile do |p|
+      p.puts 'TICK abc'
+      p.puts 'STATUS'
+      p.close_write
+      p.gets.should =~ /Invalid Command\n/
+    end
+  end
+
   it 'adds a block' do
     redpile do |p|
       p.puts 'SET 0 0 0 AIR'

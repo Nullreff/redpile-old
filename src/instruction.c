@@ -22,18 +22,20 @@
 #include "redstone.h"
 #include <ctype.h>
 
-#define PARSE_STRING(NAME)\
+#define PARSE_STRING(NAME) do {\
     char* str_ ## NAME = strsep(&parts, " ");\
     if (str_ ## NAME == NULL || NAME ## _parse(str_ ## NAME, &NAME) == -1)\
-        goto error
+        goto error;\
+} while (0)
 
-#define PARSE_NUMBER(NAME)\
+#define PARSE_NUMBER(NAME) do {\
     char* str_ ## NAME = strsep(&parts, " ");\
     if (str_ ## NAME == NULL)\
         goto error;\
     NAME = strtol(str_ ## NAME , &parse_error, 10);\
     if (*parse_error)\
-        goto error
+        goto error;\
+} while (0)
 
 char* Commands[COMMANDS_COUNT] = {
     "SET",
@@ -73,8 +75,17 @@ bool instruction_parse(char* instruction, Instruction* result)
     int state = 0;
 
     PARSE_STRING(command);
-    if (command == TICK || command == STATUS || command == PING)
+    if (command == STATUS || command == PING)
         goto success;
+
+    if (command == TICK)
+    {
+        if (parts != NULL)
+            PARSE_NUMBER(x);
+        else
+            x = 1;
+        goto success;
+    }
 
     PARSE_NUMBER(x);
     PARSE_NUMBER(y);
@@ -131,7 +142,8 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
             break;
 
         case TICK:
-            redstone_tick(world, rup_inst_run_callback);
+            for (int i = 0; i < inst->values[0]; i++)
+                redstone_tick(world, rup_inst_run_callback);
             break;
 
         case STATUS:
