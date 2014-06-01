@@ -314,7 +314,6 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
         rup = new_rup;
         new_rup = temp;
     }
-    runmap_import(runmap, new_rup);
 
     // Run update commands
     for (int i = 0; i < RUP_CMD_COUNT; i++)
