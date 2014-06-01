@@ -26,3 +26,13 @@ generate('1000x1000grid.txt', (-500..500), (-500..500), 0) do |x, y, z|
   torch = x % 100 == 0 && y % 100 == 0
   "SET #{x} #{y} #{z} #{torch ? 'TORCH UP' : 'WIRE'}"
 end
+
+generate('1000line.txt', (0..1000), 0, 0) do |x, y, z|
+  if x == 0
+    "SET #{x} #{y} #{z} TORCH UP"
+  elsif x % 15 == 0
+    "SET #{x} #{y} #{z} REPEATER EAST 0\nTICK"
+  else
+    "SET #{x} #{y} #{z} WIRE"
+  end
+end
