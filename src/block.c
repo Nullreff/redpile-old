@@ -76,6 +76,7 @@ Block block_create(Location location, Material material, Direction direction, un
         0,     // power
         0,     // power_state
         false, // powered
+        false, // modified
         false  // system
     };
 }

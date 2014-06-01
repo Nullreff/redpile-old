@@ -26,7 +26,6 @@
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
 #define UPDATE_POWER(NODE,POWER)\
 if (!(NODE)->block.powered) {\
-    (NODE)->block.power = (POWER);\
     (NODE)->block.powered = true;\
     rup_cmd_power(rup, NODE, POWER);\
 }

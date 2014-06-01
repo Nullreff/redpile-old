@@ -53,6 +53,7 @@ typedef struct {
     unsigned int power:4;
     unsigned int power_state:2;
     bool powered:1;
+    bool modified:1;
 
     // True if this block was added by the system
     // False if it was added via command

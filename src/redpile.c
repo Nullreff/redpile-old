@@ -152,8 +152,13 @@ void signal_callback(int signal)
 
 void rup_inst_run_callback(RupInst* inst)
 {
-    if (!config.silent)
-        rup_inst_print(inst);
+    if (config.silent)
+        return;
+
+    if (inst->command == RUP_POWER && inst->value.power == inst->node->block.power)
+        return;
+
+    rup_inst_print(inst);
 }
 
 void completion_callback(const char* buffer, linenoiseCompletions* completions)
