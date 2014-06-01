@@ -24,6 +24,7 @@ Rup* rup_allocate(void)
     Rup* rup = malloc(sizeof(Rup));
     CHECK_OOM(rup);
     rup->instructions = NULL;
+    rup->size = 0;
     return rup;
 }
 
@@ -39,6 +40,7 @@ static RupInst* rup_push(Rup* rup, RupCmd cmd, BlockNode* node)
     *inst = rup_inst_create(cmd, node);
     inst->next = rup->instructions;
     rup->instructions = inst;
+    rup->size++;
     return inst;
 }
 
@@ -153,6 +155,7 @@ void runmap_import(Runmap* runmap, Rup* rup)
     }
 
     rup->instructions = NULL;
+    rup->size = 0;
 }
 
 void runmap_reduce(Runmap* runmap)
@@ -182,6 +185,7 @@ void runmap_reduce(Runmap* runmap)
                 runmap->instructions[RUP_POWER] = next;
 
             free(inst);
+            runmap->sizes[RUP_POWER]--;
         }
         else
         {

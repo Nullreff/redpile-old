@@ -44,6 +44,7 @@ typedef struct RupInst {
 
 typedef struct {
     RupInst* instructions;
+    unsigned int size;
 } Rup;
 
 typedef struct {;
