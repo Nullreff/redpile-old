@@ -9,9 +9,7 @@ describe 'Torch' do
         p.puts 'SET 0 0 0 TORCH UP'
         (1..range).each {|r| p.puts "SET 0 0 #{r} WIRE"}
         p.puts 'TICK'
-        p.close_write
-        p.read.should =~ /\(0,0,#{range}\) #{16 - range}\n/
-      end
+      end.should =~ /\(0,0,#{range}\) #{16 - range}\n/
     end
   end
 
@@ -22,9 +20,7 @@ describe 'Torch' do
       (1..end_block).each {|r| p.puts "SET 0 0 #{r} WIRE"}
       p.puts 'TICK'
       p.puts "GET 0 0 #{end_block}"
-      p.close_write
-      p.read.should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
-    end
+    end.should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
   end
 
   it 'takes power from the closer torch' do
@@ -36,9 +32,7 @@ describe 'Torch' do
       p.puts 'SET 0 0 1 WIRE'
       p.puts 'SET 0 0 2 TORCH NORTH'
       p.puts 'TICK'
-      p.close_write
-      p.read.should =~ /\(0,0,0\) 14\n/
-    end
+    end.should =~ /\(0,0,0\) 14\n/
   end
 
   it 'turns a torch off with power' do
@@ -49,21 +43,17 @@ describe 'Torch' do
       p.puts 'SET 0 0 -2 TORCH UP'
       p.puts 'TICK'
       p.puts 'TICK'
-      p.close_write
-      p.read.should =~ /\(0,0,1\) 0\n/
-    end
+    end.should =~ /\(0,0,1\) 0\n/
   end
 
   it 'passes power up through a conductor' do
-    redpile do |p|
+    result = redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 1 0 CONDUCTOR'
       p.puts 'SET 0 2 0 WIRE'
       p.puts 'TICK'
-      p.close_write
-      r = p.read
-      r.should =~ /\(0,1,0\) 15/
-      r.should =~ /\(0,2,0\) 15/
     end
+    result.should =~ /\(0,1,0\) 15/
+    result.should =~ /\(0,2,0\) 15/
   end
 end

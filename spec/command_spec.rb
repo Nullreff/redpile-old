@@ -7,41 +7,31 @@ describe 'Redpile Commands' do
       it 'parses the SET command' do
         redpile do |p|
           p.puts(upper ? 'SET 0 0 0 TORCH UP' : 'set 0 0 0 torch up')
-          p.close_write
-          p.read.should == "\n"
-        end
+        end.should == "\n"
       end
 
       it 'parses the GET command' do
         redpile do |p|
           p.puts(upper ? 'GET 0 0 0' : 'get 0 0 0')
-          p.close_write
-          p.read.should =~ /\(0,0,0\) 0 EMPTY/
-        end
+        end.should =~ /\(0,0,0\) 0 EMPTY/
       end
 
       it 'parses the TICK command' do
         redpile do |p|
           p.puts(upper ? 'TICK' : 'tick')
-          p.close_write
-          p.read.should == "\n"
-        end
+        end.should == "\n"
       end
 
       it 'parses the STATUS command' do
         redpile do |p|
           p.puts(upper ? 'STATUS' : 'status')
-          p.close_write
-          p.read.should =~ /ticks: 0/
-        end
+        end.should =~ /ticks: 0/
       end
 
       it 'parses the PING command' do
         redpile do |p|
           p.puts(upper ? 'PING' : 'ping')
-          p.close_write
-          p.read.should =~ /PONG\n/
-        end
+        end.should =~ /PONG\n/
       end
     end
   end
@@ -49,68 +39,52 @@ describe 'Redpile Commands' do
   it 'does not execute a commented out line' do
     redpile do |p|
       p.puts '# Comment goes here'
-      p.close_write
-      p.read.should == "\n"
-    end
+    end.should == "\n"
   end
 
   it 'error if given an incorrect material' do
     redpile do |p|
       p.puts 'SET 0 0 0 INVALID'
-      p.close_write
-      p.read.should =~ /Invalid Command\n/
-    end
+    end.should =~ /Invalid Command\n/
   end
 
   it 'errors if given an incorrect direction' do
     redpile do |p|
       p.puts 'SET 0 0 0 TORCH INVALID'
-      p.close_write
-      p.gets.should =~ /Invalid Command\n/
-    end
+    end.should =~ /Invalid Command\n/
   end
 
   it 'errors with a negative state' do
     redpile do |p|
       p.puts 'SET 0 0 0 REPEATER NORTH -1'
-      p.close_write
-      p.gets.should =~ /Invalid Command\n/
-    end
+    end.should =~ /Invalid Command\n/
   end
 
   it 'errors with a state greater than 3' do
     redpile do |p|
       p.puts 'SET 0 0 0 REPEATER NORTH 4'
-      p.close_write
-      p.gets.should =~ /Invalid Command\n/
-    end
+    end.should =~ /Invalid Command\n/
   end
 
   it 'runs multiple ticks' do
     redpile do |p|
       p.puts 'TICK 4'
       p.puts 'STATUS'
-      p.close_write
-      p.gets.should =~ /ticks: 4\n/
-    end
+    end.should =~ /ticks: 4\n/
   end
 
   it 'does not run negative ticks' do
     redpile do |p|
       p.puts 'TICK -2'
       p.puts 'STATUS'
-      p.close_write
-      p.gets.should =~ /ticks: 0\n/
-    end
+    end.should =~ /ticks: 0\n/
   end
 
   it 'errors for non numerical ticks' do
     redpile do |p|
       p.puts 'TICK abc'
       p.puts 'STATUS'
-      p.close_write
-      p.gets.should =~ /Invalid Command\n/
-    end
+    end.should =~ /Invalid Command\n/
   end
 
   it 'adds a block' do
@@ -118,9 +92,7 @@ describe 'Redpile Commands' do
       p.puts 'SET 0 0 0 AIR'
       p.puts 'SET 0 0 1 WIRE'
       p.puts 'STATUS'
-      p.close_write
-      p.read.should =~ /blocks: 2/
-    end
+    end.should =~ /blocks: 2/
   end
 
   it 'adds a block overlapping' do
@@ -128,9 +100,7 @@ describe 'Redpile Commands' do
       p.puts 'SET 0 0 0 AIR'
       p.puts 'SET 0 0 0 WIRE'
       p.puts 'STATUS'
-      p.close_write
-      p.read.should =~ /blocks: 1/
-    end
+    end.should =~ /blocks: 1/
   end
 
   it 'removes a block' do
@@ -139,18 +109,14 @@ describe 'Redpile Commands' do
       p.puts 'SET 0 0 1 WIRE'
       p.puts 'SET 0 0 0 EMPTY'
       p.puts 'STATUS'
-      p.close_write
-      p.read.should =~ /blocks: 1/
-    end
+    end.should =~ /blocks: 1/
   end
 
-  it 'doesn\'t add an empty block' do
+  it "doesn't add an empty block" do
     redpile do |p|
       p.puts 'SET 0 0 0 EMPTY'
       p.puts 'STATUS'
-      p.close_write
-      p.read.should =~ /blocks: 0/
-    end
+    end.should =~ /blocks: 0/
   end
 
   normal_blocks = %w(AIR WIRE CONDUCTOR INSULATOR)
@@ -159,9 +125,7 @@ describe 'Redpile Commands' do
       redpile do |p|
         p.puts "SET 0 0 0 #{block}"
         p.puts "GET 0 0 0"
-        p.close_write
-        p.read.should =~ /\(0,0,0\) 0 #{block}\n/
-      end
+      end.should =~ /\(0,0,0\) 0 #{block}\n/
     end
   end
 
@@ -172,9 +136,7 @@ describe 'Redpile Commands' do
         redpile do |p|
           p.puts "SET 0 0 0 #{block} #{dir}"
           p.puts "GET 0 0 0"
-          p.close_write
-          p.read.should =~ /\(0,0,0\) 0 #{block} #{dir}\n/
-        end
+        end.should =~ /\(0,0,0\) 0 #{block} #{dir}\n/
       end
     end
   end
@@ -186,9 +148,7 @@ describe 'Redpile Commands' do
         redpile do |p|
           p.puts "SET 0 0 0 #{block} #{dir} 0"
           p.puts "GET 0 0 0"
-          p.close_write
-          p.read.should =~ /\(0,0,0\) 0 #{block} #{dir} 0\n/
-        end
+        end.should =~ /\(0,0,0\) 0 #{block} #{dir} 0\n/
       end
     end
   end

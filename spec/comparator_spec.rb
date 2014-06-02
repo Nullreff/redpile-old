@@ -3,7 +3,7 @@ include Helpers
 
 describe 'Comparator' do
   it 'allows power through if side power is less than the input' do
-    redpile do |p|
+    result = redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 0 0 1 WIRE'
       p.puts 'SET 0 0 2 WIRE'
@@ -13,13 +13,12 @@ describe 'Comparator' do
       p.puts 'TICK'
       p.puts 'TICK'
       p.puts 'GET -1 0 3'
-      p.close_write
-      p.read.should =~ /\(-1,0,3\) 15 WIRE/m
     end
+    result.should =~ /\(-1,0,3\) 15 WIRE/m
   end
 
   it 'does not allow power through if side power is greater than the input' do
-    redpile do |p|
+    result = redpile do |p|
       p.puts 'SET 0 0 0 TORCH UP'
       p.puts 'SET 2 0 1 TORCH UP'
       p.puts 'SET 1 0 1 WIRE'
@@ -28,8 +27,7 @@ describe 'Comparator' do
       p.puts 'TICK'
       p.puts 'TICK'
       p.puts 'GET -1 0 1'
-      p.close_write
-      p.read.should =~ /\(-1,0,1\) 0 WIRE/m
     end
+    result.should =~ /\(-1,0,1\) 0 WIRE/m
   end
 end

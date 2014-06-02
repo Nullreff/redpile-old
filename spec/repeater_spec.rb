@@ -10,9 +10,7 @@ describe 'Repeater' do
         p.puts "SET 0 0 2 #{material}"
         p.puts 'TICK'
         p.puts 'TICK'
-        p.close_write
-        p.read.should =~ /\(0,0,2\) 15/
-      end
+      end.should =~ /\(0,0,2\) 15/
     end
   end
 
@@ -26,9 +24,7 @@ describe 'Repeater' do
         p.puts 'GET 0 0 2'
         p.puts 'TICK'
         p.puts 'GET 0 0 2'
-        p.close_write
-        p.read.should =~ /\(0,0,2\) 0 WIRE.*\(0,0,2\) 15 WIRE/m
-      end
+      end.should =~ /\(0,0,2\) 0 WIRE.*\(0,0,2\) 15 WIRE/m
     end
   end
 
@@ -43,9 +39,7 @@ describe 'Repeater' do
       p.puts 'TICK'
       p.puts 'TICK'
       p.puts 'GET 1 0 2'
-      p.close_write
-      p.read.should =~ /\(1,0,2\) 0 WIRE/m
-    end
+    end.should =~ /\(1,0,2\) 0 WIRE/m
   end
 
   it 'is blocked from being powered by a repeater on the right' do
@@ -59,8 +53,6 @@ describe 'Repeater' do
       p.puts 'TICK'
       p.puts 'TICK'
       p.puts 'GET -1 0 2'
-      p.close_write
-      p.read.should =~ /\(-1,0,2\) 0 WIRE/m
-    end
+    end.should =~ /\(-1,0,2\) 0 WIRE/m
   end
 end
