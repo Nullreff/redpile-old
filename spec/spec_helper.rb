@@ -1,13 +1,25 @@
 module Helpers
-  def redpile(opts = '')
-    result = ''
-    IO.popen("./build/redpile #{opts} 2>&1", 'r+') do |r|
-      yield r if block_given?
-      r.close_write
-      result = r.read
-      r.close_read
+  class Redpile
+    def initialize(process)
+      @process = process
     end
-    result
+
+    def run(*commands)
+      commands.each {|cmd| @process.puts cmd}
+      @process.close_write
+      result = @process.read
+      @process.close
+      result
+    end
+  end
+
+  def redpile(opts = '')
+    process = IO.popen("./build/redpile #{opts} 2>&1", 'r+')
+    Redpile.new(process)
+  end
+  
+  def run(*commands)
+    redpile.run(commands)
   end
 end
 
