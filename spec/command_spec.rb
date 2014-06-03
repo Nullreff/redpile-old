@@ -7,7 +7,7 @@ def run_case(cmd, upper)
   run(cmd.send(upper ? :upcase : :downcase))
 end
 
-describe 'Redpile Commands' do
+describe 'Commands' do
   [true, false].each do |upper|
     context "Using #{upper ? 'upper' : 'lower'} case" do
       it 'parses the SET command' do

@@ -6,7 +6,7 @@ REDPILE_VERSION = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/
 BAD_NEGATIVES = [0, -1, -20]
 BAD_NUMBERS = ['abc', 'a12', '12c']
 
-describe 'Redpile Options' do
+describe 'Options' do
   [true, false].each do |short|
     context "using #{short ? 'short' : 'long'} arguments" do
 
