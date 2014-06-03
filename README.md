@@ -29,8 +29,8 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * More tests!
 * Tick caching
 * Map loading/saving
-* Multithreaded ticks???
-* Restone JIT compiler
+* Restone [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
+* Scripting with [Lua](http://www.lua.org/)
 * Sockets interface
 * Bukkit patch
 * Language bindings
