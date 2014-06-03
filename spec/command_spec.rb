@@ -69,7 +69,7 @@ describe 'Commands' do
       'SET 0 0 0 AIR',
       'SET 0 0 1 WIRE',
       'STATUS'
-    ).should =~ /blocks: 2/
+    ).should =~ /blocks: 2\n/
   end
 
   it 'adds a block overlapping' do
@@ -77,7 +77,7 @@ describe 'Commands' do
       'SET 0 0 0 AIR',
       'SET 0 0 0 WIRE',
       'STATUS'
-    ).should =~ /blocks: 1/
+    ).should =~ /blocks: 1\n/
   end
 
   it 'removes a block' do
@@ -86,14 +86,14 @@ describe 'Commands' do
       'SET 0 0 1 WIRE',
       'SET 0 0 0 EMPTY',
       'STATUS'
-    ).should =~ /blocks: 1/
+    ).should =~ /blocks: 1\n/
   end
 
   it "doesn't add an empty block" do
     run(
       'SET 0 0 0 EMPTY',
       'STATUS'
-    ).should =~ /blocks: 0/
+    ).should =~ /blocks: 0\n/
   end
 
   %w(AIR WIRE CONDUCTOR INSULATOR).each do |block|
