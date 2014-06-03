@@ -295,6 +295,7 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
         }
     }
 
+    // Process all powerable blocks
     while (rup->size > 0)
     {
         for (RupInst* inst = rup->instructions; inst != NULL; inst = inst->next)
@@ -302,10 +303,12 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
             if (inst->command != RUP_POWER)
                 continue;
 
-            if (inst->node->block.material == WIRE)
-                redstone_wire_update(new_rup, world, inst->node, inst->value.power);
-            else if (inst->node->block.material == CONDUCTOR)
-                redstone_conductor_update(new_rup, world, inst->node, inst->value.power);
+            switch (inst->node->block.material)
+            {
+                case WIRE:      redstone_wire_update(new_rup, world, inst->node, inst->value.power); break;
+                case CONDUCTOR: redstone_conductor_update(new_rup, world, inst->node, inst->value.power); break;
+                default:        continue;
+            }
         }
 
         runmap_import(runmap, rup);
