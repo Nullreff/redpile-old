@@ -1,6 +1,8 @@
 require 'spec_helper'
 include Helpers
 
+DIRECTIONS = %w(NORTH SOUTH EAST WEST UP DOWN)
+
 def run_case(cmd, upper)
   run(cmd.send(upper ? :upcase : :downcase))
 end
@@ -94,8 +96,7 @@ describe 'Redpile Commands' do
     ).should =~ /blocks: 0/
   end
 
-  normal_blocks = %w(AIR WIRE CONDUCTOR INSULATOR)
-  normal_blocks.each do |block|
+  %w(AIR WIRE CONDUCTOR INSULATOR).each do |block|
     it "inserts an #{block} block" do
       run(
         "SET 0 0 0 #{block}",
@@ -104,9 +105,8 @@ describe 'Redpile Commands' do
     end
   end
 
-  direction_blocks = %w(TORCH PISTON)
-  direction_blocks.each do |block|
-    %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
+  %w(TORCH PISTON).each do |block|
+    DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
         run(
           "SET 0 0 0 #{block} #{dir}",
@@ -116,9 +116,8 @@ describe 'Redpile Commands' do
     end
   end
 
-  state_blocks = %w(REPEATER COMPARATOR)
-  state_blocks.each do |block|
-    %w(NORTH SOUTH EAST WEST UP DOWN).each do |dir|
+  %w(REPEATER COMPARATOR).each do |block|
+    DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
         run(
           "SET 0 0 0 #{block} #{dir} 0",
