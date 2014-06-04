@@ -282,46 +282,49 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupInst*))
+void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned int count)
 {
     world_set_block_missing_callback(world, redstone_block_missing);
 
-    FOR_BLOCK_LIST(world->blocks)
+    for (unsigned int i = 0; i < count; i++)
     {
-        Rup in = rup_empty();
-        Rup out = rup_empty();
-
-        Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
-        if (bucket != NULL)
+        FOR_BLOCK_LIST(world->blocks)
         {
-            // Process the 'in' rup
-            // 1. De-increment the delay on all instructions
-            // 2. Any less than zero should be discarded
-            // 3. Any at zero should be inserted into the 'in' rup
-        }
+            Rup in = rup_empty();
+            Rup out = rup_empty();
 
-        switch (node->block.material)
-        {
-            case EMPTY:      break;
-            case AIR:        break;
-            case INSULATOR:  break;
-            case WIRE:       redstone_wire_update      (world, node, &in, &out); break;
-            case CONDUCTOR:  redstone_conductor_update (world, node, &in, &out); break;
-            case TORCH:      redstone_torch_update     (world, node, &in, &out); break;
-            case PISTON:     redstone_piston_update    (world, node, &in, &out); break;
-            case REPEATER:   redstone_repeater_update  (world, node, &in, &out); break;
-            case COMPARATOR: redstone_comparator_update(world, node, &in, &out); break;
-            case SWITCH:     redstone_switch_update    (world, node, &in, &out); break;
-            default: ERROR("Encountered unknown block material");
-        }
+            Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+            if (bucket != NULL)
+            {
+                // Process the 'in' rup
+                // 1. De-increment the delay on all instructions
+                // 2. Any less than zero should be discarded
+                // 3. Any at zero should be inserted into the 'in' rup
+            }
 
-        // Process the 'out' rup
-        // 1. Any instructions that target the current node with a delay of zero should be printed
-        // 2. Any instructions that have a delay of zero but target another node should flag their target for re-execution
-        // 3. All other instructions are added to the queue for upcoming ticks
+            switch (node->block.material)
+            {
+                case EMPTY:      break;
+                case AIR:        break;
+                case INSULATOR:  break;
+                case WIRE:       redstone_wire_update      (world, node, &in, &out); break;
+                case CONDUCTOR:  redstone_conductor_update (world, node, &in, &out); break;
+                case TORCH:      redstone_torch_update     (world, node, &in, &out); break;
+                case PISTON:     redstone_piston_update    (world, node, &in, &out); break;
+                case REPEATER:   redstone_repeater_update  (world, node, &in, &out); break;
+                case COMPARATOR: redstone_comparator_update(world, node, &in, &out); break;
+                case SWITCH:     redstone_switch_update    (world, node, &in, &out); break;
+                default: ERROR("Encountered unknown block material");
+            }
+
+            // Process the 'out' rup
+            // 1. Any instructions that target the current node with a delay of zero should be printed
+            // 2. Any instructions that have a delay of zero but target another node should flag their target for re-execution
+            // 3. All other instructions are added to the queue for upcoming ticks
+        }
     }
 
-    world->ticks++;
+    world->ticks += count;
     world_clear_block_missing_callback(world);
 }
 
