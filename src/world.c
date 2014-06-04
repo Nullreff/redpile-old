@@ -73,6 +73,7 @@ World* world_allocate(unsigned int size)
     world->hashmap = hashmap_allocate(size);
     world->blocks = block_list_allocate();
     world->block_missing = block_missing_noop;
+    world->instructions = hashmap_allocate(size);
 
     return world;
 }
@@ -81,6 +82,7 @@ void world_free(World* world)
 {
     hashmap_free(world->hashmap);
     block_list_free(world->blocks);
+    hashmap_free(world->instructions);
     free(world);
 }
 
@@ -146,10 +148,7 @@ WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
         world->ticks,
-        world->blocks->total,
-        world->blocks->sizes[BOUNDARY],
-        world->blocks->sizes[POWERABLE],
-        world->blocks->sizes[UNPOWERABLE],
+        world->blocks->size,
         world->hashmap->size,
         world->hashmap->overflow,
         world->hashmap->resizes,
@@ -161,9 +160,6 @@ void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks);
     STAT_PRINT(stats, blocks);
-    STAT_PRINT(stats, block_boundries);
-    STAT_PRINT(stats, block_powerables);
-    STAT_PRINT(stats, block_unpowerables);
     STAT_PRINT(stats, hashmap_allocated);
     STAT_PRINT(stats, hashmap_overflow);
     STAT_PRINT(stats, hashmap_resizes);

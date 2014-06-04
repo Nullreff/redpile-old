@@ -139,12 +139,12 @@ static void redstone_piston_update(World* world, BlockNode* node, Rup* in, Rup* 
     if (new_power > 0)
     {
         if (MATERIAL_IS(second, AIR))
-            rup_cmd_swap(out, node->block.location, 1, first, second);
+            rup_cmd_swap(out, 1, node, first, second);
     }
     else
     {
         if (MATERIAL_IS(first, AIR))
-            rup_cmd_swap(out, node->block.location, 1, first, second);
+            rup_cmd_swap(out, 1, node, first, second);
     }
 }
 
@@ -290,85 +290,46 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
-static void redstone_find_unpowered(World* world, BlockType type, void (*inst_run_callback)(RupInst*))
-{
-    BlockNode* node;
-    FOR_BLOCK_LIST(node, world->blocks, type)
-    {
-        if (node->block.powered)
-        {
-            node->block.powered = false;
-        }
-        else if (node->block.power > 0)
-        {
-            RupInst inst = inst_create(RUP_POWER, node->block.location, node);
-            inst.value.power = 0;
-            inst_run_callback(&inst);
-            inst_run(world, &inst);
-        }
-    }
-}
-
 void redstone_tick(World* world, void (*inst_run_callback)(RupInst*))
 {
     world_set_block_missing_callback(world, redstone_block_missing);
 
     // Process all tick boundaries
-    Runmap* runmap = runmap_allocate();
-    Rup* rup = rup_allocate();
-    Rup* new_rup = rup_allocate();
-    BlockNode* node;
-    FOR_BLOCK_LIST(node, world->blocks, BOUNDARY)
+    FOR_BLOCK_LIST(world->blocks)
     {
+        Rup in = rup_empty();
+        Rup out = rup_empty();
+
+        Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+        if (bucket != NULL)
+        {
+            // 1. De-increment the delay on all instructions
+            // 2. Any less than zero should be discarded
+            // 3. Any at zero should be inserted into the 'in' rup
+        }
+
         switch (node->block.material)
         {
-            case SWITCH:     redstone_switch_update(rup, world, node);     break;
-            case TORCH:      redstone_torch_update(rup, world, node);      break;
-            case REPEATER:   redstone_repeater_update(rup, world, node);   break;
-            case COMPARATOR: redstone_comparator_update(rup, world, node); break;
-            case PISTON:     redstone_piston_update(rup, world, node);     break;
-            default: ERROR("Encountered non power source in the start of the block list");
-        }
-    }
-
-    // Process all powerable blocks
-    while (rup->size > 0)
-    {
-        FOR_RUP(rup)
-        {
-            if (inst->command != RUP_POWER)
-                continue;
-
-            switch (inst->node->block.material)
-            {
-                case WIRE:      redstone_wire_update(new_rup, world, inst->node, inst->value.power); break;
-                case CONDUCTOR: redstone_conductor_update(new_rup, world, inst->node, inst->value.power); break;
-                default:        continue;
-            }
+            case EMPTY:      break;
+            case AIR:        break;
+            case INSULATOR:  break;
+            case WIRE:       redstone_wire_update      (world, node, &in, &out); break;
+            case CONDUCTOR:  redstone_conductor_update (world, node, &in, &out); break;
+            case TORCH:      redstone_torch_update     (world, node, &in, &out); break;
+            case PISTON:     redstone_piston_update    (world, node, &in, &out); break;
+            case REPEATER:   redstone_repeater_update  (world, node, &in, &out); break;
+            case COMPARATOR: redstone_comparator_update(world, node, &in, &out); break;
+            case SWITCH:     redstone_switch_update    (world, node, &in, &out); break;
+            default: ERROR("Encountered unknown block material");
         }
 
-        runmap_import(runmap, rup);
-        Rup* temp = rup;
-        rup = new_rup;
-        new_rup = temp;
+        // Process the 'out' rup
+        // 1. Any instructions that target the current node with a delay of zero should be printed
+        // 2. Any instructions that have a delay of zero but target another node should flag their target for re-execution
+        // 3. All other instructions are added to the queue for upcoming ticks
     }
-
-    // Run update commands
-    for (int i = 0; i < RUP_CMD_COUNT; i++)
-    for (RupInst* inst = runmap->instructions[i]; inst != NULL; inst = inst->next)
-    {
-        inst_run_callback(inst);
-        inst_run(world, inst);
-    }
-
-    // Check for unpowered blocks and reset flags
-    redstone_find_unpowered(world, BOUNDARY, inst_run_callback);
-    redstone_find_unpowered(world, POWERABLE, inst_run_callback);
 
     world->ticks++;
     world_clear_block_missing_callback(world);
-    rup_free(new_rup);
-    rup_free(rup);
-    runmap_free(runmap);
 }
 

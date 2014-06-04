@@ -19,6 +19,11 @@
 #include <stdlib.h>
 #include "rup.h"
 
+Rup rup_empty(void)
+{
+    return (Rup){NULL, 0};
+}
+
 Rup* rup_allocate(void)
 {
     Rup* rup = malloc(sizeof(Rup));

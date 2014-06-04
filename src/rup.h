@@ -52,6 +52,7 @@ typedef struct {
 
 #define FOR_RUP(RUP) for (RupInst* inst = (RUP)->instructions; inst != NULL; inst = inst->next)
 
+Rup rup_empty(void);
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
 unsigned int rup_max_power(Rup* rup);

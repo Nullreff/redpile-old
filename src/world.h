@@ -36,6 +36,8 @@ typedef struct {
     // blocks during a redstone tick.
     bool (*block_missing)(Block* node);
 
+    Hashmap* instructions;
+
     // Additional stats
     unsigned int ticks; // Redstone ticks
 } World;
@@ -43,9 +45,6 @@ typedef struct {
 typedef struct {
     unsigned int ticks;
     unsigned int blocks;
-    unsigned int block_boundries;
-    unsigned int block_powerables;
-    unsigned int block_unpowerables;
     unsigned int hashmap_allocated;
     unsigned int hashmap_overflow;
     unsigned int hashmap_resizes;
