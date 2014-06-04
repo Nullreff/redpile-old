@@ -94,14 +94,13 @@ bool instruction_parse(char* instruction, Instruction* result)
         goto success;
 
     PARSE_STRING(material);
-    if (!M_HAS_DIRECTION(material))
-        goto success;
 
-    PARSE_STRING(direction);
-    if (!M_HAS_STATE(material))
-        goto success;
+    if (M_HAS_DIRECTION(material))
+        PARSE_STRING(direction);
 
-    PARSE_NUMBER(state);
+    if (M_HAS_STATE(material))
+        PARSE_NUMBER(state);
+
     if (state < 0 || state > 3)
         goto error;
 

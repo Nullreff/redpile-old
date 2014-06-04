@@ -249,6 +249,20 @@ static void redstone_torch_update(Rup* rup, World* world, BlockNode* node)
     }
 }
 
+static void redstone_switch_update(Rup* rup, World* world, BlockNode* node)
+{
+    assert(MATERIAL_IS(node, SWITCH));
+
+    Direction behind = direction_invert(node->block.direction);
+    for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
+    {
+        BlockNode* found_node = NODE_ADJACENT(node, dir);
+        if (MATERIAL_ISNT(found_node, CONDUCTOR) || dir == behind)
+            UPDATE_POWER(found_node, MAX_POWER);
+    }
+
+}
+
 static bool redstone_block_missing(Block* block)
 {
     block->material = AIR;
@@ -287,6 +301,7 @@ void redstone_tick(World* world, void (*rup_inst_run_callback)(RupInst*))
     {
         switch (node->block.material)
         {
+            case SWITCH:     redstone_switch_update(rup, world, node);     break;
             case TORCH:      redstone_torch_update(rup, world, node);      break;
             case REPEATER:   redstone_repeater_update(rup, world, node);   break;
             case COMPARATOR: redstone_comparator_update(rup, world, node); break;

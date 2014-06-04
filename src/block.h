@@ -22,7 +22,7 @@
 #include "location.h"
 #include "redpile.h"
 
-#define MATERIALS_COUNT 9
+#define MATERIALS_COUNT 10
 #define MATERIAL_DEFAULT EMPTY
 extern char* Materials[MATERIALS_COUNT];
 
@@ -39,7 +39,8 @@ typedef enum {
     TORCH      = 5,
     PISTON     = 6,
     REPEATER   = 7,
-    COMPARATOR = 8
+    COMPARATOR = 8,
+    SWITCH     = 9
 } Material;
 
 typedef struct {

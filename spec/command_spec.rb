@@ -116,7 +116,7 @@ describe 'Commands' do
     end
   end
 
-  %w(REPEATER COMPARATOR).each do |block|
+  %w(REPEATER COMPARATOR SWITCH).each do |block|
     DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
         run(
