@@ -27,8 +27,8 @@
 #define UPDATE_POWER(NODE,POWER,DELAY) rup_cmd_power(out, DELAY, node, NODE, POWER)
 #define POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
-#define MATERIAL_IS(node,name) (node->block.material == name)
-#define MATERIAL_ISNT(node,name) (node->block.material != name)
+#define MATERIAL_IS(node,name) ((node)->block.material == name)
+#define MATERIAL_ISNT(node,name) ((node)->block.material != name)
 #define NODE_ADJACENT(node,dir) world_get_adjacent_block(world, node, dir)
 
 static bool can_power_from_behind(BlockNode* node, Direction dir)
@@ -136,16 +136,8 @@ static void redstone_piston_update(World* world, BlockNode* node, Rup* in, Rup* 
     BlockNode* first = NODE_ADJACENT(node, node->block.direction);
     BlockNode* second = NODE_ADJACENT(first, node->block.direction);
 
-    if (new_power > 0)
-    {
-        if (MATERIAL_IS(second, AIR))
-            rup_cmd_swap(out, 1, node, first, second);
-    }
-    else
-    {
-        if (MATERIAL_IS(first, AIR))
-            rup_cmd_swap(out, 1, node, first, second);
-    }
+    if (MATERIAL_IS(new_power == 0 ? first : second, AIR))
+        rup_cmd_swap(out, 1, node, first, second);
 }
 
 static void redstone_comparator_update(World* world, BlockNode* node, Rup* in, Rup* out)
