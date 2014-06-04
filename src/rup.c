@@ -33,38 +33,38 @@ void rup_free(Rup* rup)
     free(rup);
 }
 
-static RupInst* rup_push(Rup* rup, RupCmd cmd, BlockNode* node)
+static RupInst* rup_push(Rup* rup, Location source, RupCmd cmd, BlockNode* node)
 {
     RupInst* inst = malloc(sizeof(RupInst));
     CHECK_OOM(inst);
-    *inst = rup_inst_create(cmd, node);
+    *inst = rup_inst_create(cmd, source, node);
     inst->next = rup->instructions;
     rup->instructions = inst;
     rup->size++;
     return inst;
 }
 
-void rup_cmd_power(Rup* rup, BlockNode* node, unsigned int power)
+void rup_cmd_power(Rup* rup, Location source, BlockNode* node, unsigned int power)
 {
-    RupInst* inst = rup_push(rup, RUP_POWER, node);
+    RupInst* inst = rup_push(rup, source, RUP_POWER, node);
     inst->value.power = power;
 }
 
-void rup_cmd_state(Rup* rup, BlockNode* block, unsigned int state)
+void rup_cmd_state(Rup* rup, Location source, BlockNode* block, unsigned int state)
 {
-    RupInst* inst = rup_push(rup, RUP_STATE, block);
+    RupInst* inst = rup_push(rup, source, RUP_STATE, block);
     inst->value.state = state;
 }
 
-void rup_cmd_swap(Rup* rup, BlockNode* node, BlockNode* target)
+void rup_cmd_swap(Rup* rup, Location source, BlockNode* node, BlockNode* target)
 {
-    RupInst* inst = rup_push(rup, RUP_SWAP, node);
+    RupInst* inst = rup_push(rup, source, RUP_SWAP, node);
     inst->value.target = target;
 }
 
-RupInst rup_inst_create(RupCmd cmd, BlockNode* node)
+RupInst rup_inst_create(RupCmd cmd, Location source, BlockNode* node)
 {
-    return (RupInst){cmd, node->block.location, node, {0}, NULL};
+    return (RupInst){cmd, source, node, {0}, NULL};
 }
 
 void rup_inst_run(World* world, RupInst* inst)
@@ -156,44 +156,5 @@ void runmap_import(Runmap* runmap, Rup* rup)
 
     rup->instructions = NULL;
     rup->size = 0;
-}
-
-void runmap_reduce(Runmap* runmap)
-{
-    unsigned int hashmap_size = runmap->sizes[RUP_POWER];
-    ROUND_TO_POW_2(hashmap_size);
-    Hashmap* hashmap = hashmap_allocate(hashmap_size);
-
-    // Currently we only combine duplicate block updates
-    RupInst* next = NULL;
-    RupInst* prev = NULL;
-    for (RupInst* inst = runmap->instructions[RUP_POWER]; inst != NULL; inst = next)
-    {
-        next = inst->next;
-
-        Bucket* bucket = hashmap_get(hashmap, inst->location, true);
-        if (bucket->value != NULL)
-        {
-            RupInst* found_inst = (RupInst*)bucket->value;
-
-            if (found_inst->value.power < inst->value.power)
-                found_inst->value.power = inst->value.power;
-
-            if (prev != NULL)
-                prev->next = next;
-            else
-                runmap->instructions[RUP_POWER] = next;
-
-            free(inst);
-            runmap->sizes[RUP_POWER]--;
-        }
-        else
-        {
-            bucket->value = inst;
-            prev = inst;
-        }
-    }
-
-    hashmap_free(hashmap);
 }
 

@@ -31,7 +31,7 @@ typedef enum {
 
 typedef struct RupInst {
     RupCmd command;
-    Location location;
+    Location source;
     BlockNode* node;
     union {
         unsigned int power;
@@ -54,16 +54,15 @@ typedef struct {;
 
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
-void rup_cmd_power(Rup* rup, BlockNode* node, unsigned int power);
-void rup_cmd_state(Rup* rup, BlockNode* node, unsigned int state);
-void rup_cmd_swap(Rup* rup, BlockNode* node, BlockNode* target);
-RupInst rup_inst_create(RupCmd cmd, BlockNode* node);
+void rup_cmd_power(Rup* rup, Location source, BlockNode* node, unsigned int power);
+void rup_cmd_state(Rup* rup, Location source, BlockNode* node, unsigned int state);
+void rup_cmd_swap(Rup* rup, Location source, BlockNode* node, BlockNode* target);
+RupInst rup_inst_create(RupCmd cmd, Location source, BlockNode* node);
 void rup_inst_run(World* world, RupInst* inst);
 void rup_inst_print(RupInst* inst);
 
 Runmap* runmap_allocate(void);
 void runmap_free(Runmap* runmap);
 void runmap_import(Runmap* runmap, Rup* rup);
-void runmap_reduce(Runmap* runmap);
 
 #endif
