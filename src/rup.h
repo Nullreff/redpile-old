@@ -25,18 +25,16 @@
 #define RUP_CMD_COUNT 4
 typedef enum {
     RUP_POWER = 0,
-    RUP_STATE = 1,
-    RUP_SWAP  = 2,
+    RUP_SWAP  = 1,
 } RupCmd;
 
 typedef struct RupInst {
     RupCmd command;
-    Location source;
+    unsigned int delay;
+    BlockNode* source;
     BlockNode* node;
     union {
         unsigned int power;
-        unsigned int state;
-        Material material;
         BlockNode* target;
     } value;
     struct RupInst* next;
@@ -47,17 +45,20 @@ typedef struct {
     unsigned int size;
 } Rup;
 
-typedef struct {;
+typedef struct {
     RupInst* instructions[RUP_CMD_COUNT];
     unsigned int sizes[RUP_CMD_COUNT];
 } Runmap;
 
+#define FOR_RUP(RUP) for (RupInst* inst = (RUP)->instructions; inst != NULL; inst = inst->next)
+
 Rup* rup_allocate(void);
 void rup_free(Rup* rup);
-void rup_cmd_power(Rup* rup, Location source, BlockNode* node, unsigned int power);
-void rup_cmd_state(Rup* rup, Location source, BlockNode* node, unsigned int state);
-void rup_cmd_swap(Rup* rup, Location source, BlockNode* node, BlockNode* target);
-RupInst rup_inst_create(RupCmd cmd, Location source, BlockNode* node);
+unsigned int rup_max_power(Rup* rup);
+
+void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* node, unsigned int power);
+void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* node, BlockNode* target);
+RupInst rup_inst_create(RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* node);
 void rup_inst_run(World* world, RupInst* inst);
 void rup_inst_print(RupInst* inst);
 

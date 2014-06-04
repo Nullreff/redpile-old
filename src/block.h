@@ -52,8 +52,6 @@ typedef struct {
 
     // Redstone state
     unsigned int power:4;
-    unsigned int power_state:2;
-    bool powered:1;
     bool modified:1;
 
     // True if this block was added by the system
