@@ -286,7 +286,6 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*))
 {
     world_set_block_missing_callback(world, redstone_block_missing);
 
-    // Process all tick boundaries
     FOR_BLOCK_LIST(world->blocks)
     {
         Rup in = rup_empty();
@@ -295,6 +294,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*))
         Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
         if (bucket != NULL)
         {
+            // Process the 'in' rup
             // 1. De-increment the delay on all instructions
             // 2. Any less than zero should be discarded
             // 3. Any at zero should be inserted into the 'in' rup
