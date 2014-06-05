@@ -137,7 +137,7 @@ static void redstone_piston_update(World* world, BlockNode* node, Rup* in, Rup* 
     BlockNode* second = NODE_ADJACENT(first, node->block.direction);
 
     if (MATERIAL_IS(new_power == 0 ? first : second, AIR))
-        rup_cmd_swap(out, 1, node, first, second);
+        rup_cmd_swap(out, 1, node, first, node->block.direction);
 }
 
 static void redstone_comparator_update(World* world, BlockNode* node, Rup* in, Rup* out)
@@ -153,16 +153,16 @@ static void redstone_comparator_update(World* world, BlockNode* node, Rup* in, R
     FOR_RUP(in)
     {
         // Power coming from the side
-        if ((location_equals(inst->source->block.location, right) ||
-             location_equals(inst->source->block.location, left)) &&
-            side_power < inst->value.power)
+        if ((location_equals(rup_node->inst.source->block.location, right) ||
+             location_equals(rup_node->inst.source->block.location, left)) &&
+            side_power < rup_node->inst.value.power)
         {
-            side_power = inst->value.power;
+            side_power = rup_node->inst.value.power;
         }
 
         // Power coming from behind
-        if (location_equals(inst->source->block.location, behind))
-            new_power = inst->value.power;
+        if (location_equals(rup_node->inst.source->block.location, behind))
+            new_power = rup_node->inst.value.power;
     }
 
     UPDATE_POWER(node, new_power, 0);
@@ -199,16 +199,16 @@ static void redstone_repeater_update(World* world, BlockNode* node, Rup* in, Rup
     FOR_RUP(in)
     {
         // Power coming from the side
-        if (inst->source->block.material == REPEATER &&
-            (location_equals(inst->source->block.location, right) ||
-            location_equals(inst->source->block.location, left)))
+        if (rup_node->inst.source->block.material == REPEATER &&
+            (location_equals(rup_node->inst.source->block.location, right) ||
+            location_equals(rup_node->inst.source->block.location, left)))
         {
-            side_powered = (inst->value.power > 0) || side_powered;
+            side_powered = (rup_node->inst.value.power > 0) || side_powered;
         }
 
         // Power coming from behind
-        if (location_equals(inst->source->block.location, behind))
-            new_power = inst->value.power;
+        if (location_equals(rup_node->inst.source->block.location, behind))
+            new_power = rup_node->inst.value.power;
     }
 
     UPDATE_POWER(node, new_power, 0);
@@ -230,8 +230,8 @@ static void redstone_torch_update(World* world, BlockNode* node, Rup* in, Rup* o
     FOR_RUP(in)
     {
         // Power coming from behind
-        if (location_equals(inst->source->block.location, loc_behind))
-            new_power = inst->value.power;
+        if (location_equals(rup_node->inst.source->block.location, loc_behind))
+            new_power = rup_node->inst.value.power;
     }
 
     UPDATE_POWER(node, new_power, 0);

@@ -20,51 +20,43 @@
 #define REDPILE_RUP_H
 
 #include "block.h"
-#include "world.h"
 
-#define RUP_CMD_COUNT 4
 typedef enum {
     RUP_POWER = 0,
     RUP_SWAP  = 1,
 } RupCmd;
 
-typedef struct RupInst {
+typedef struct {
     RupCmd command;
-    unsigned int delay;
     BlockNode* source;
-    BlockNode* node;
     union {
         unsigned int power;
-        BlockNode* target;
+        Direction direction;
     } value;
-    struct RupInst* next;
 } RupInst;
 
+typedef struct RupNode {
+    RupInst inst;
+    BlockNode* target;
+    unsigned int delay;
+    struct RupNode* next;
+    struct RupNode* prev;
+} RupNode;
+
 typedef struct {
-    RupInst* instructions;
+    RupNode* nodes;
     unsigned int size;
 } Rup;
 
-typedef struct {
-    RupInst* instructions[RUP_CMD_COUNT];
-    unsigned int sizes[RUP_CMD_COUNT];
-} Runmap;
-
-#define FOR_RUP(RUP) for (RupInst* inst = (RUP)->instructions; inst != NULL; inst = inst->next)
+#define FOR_RUP(RUP) for (RupNode* rup_node = (RUP)->nodes; rup_node != NULL; rup_node = rup_node->next)
 
 Rup rup_empty(void);
-Rup* rup_allocate(void);
 void rup_free(Rup* rup);
 unsigned int rup_max_power(Rup* rup);
 
-void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* node, unsigned int power);
-void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* node, BlockNode* target);
+void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, unsigned int power);
+void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, Direction direction);
 RupInst rup_inst_create(RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* node);
-void rup_inst_run(World* world, RupInst* inst);
 void rup_inst_print(RupInst* inst);
-
-Runmap* runmap_allocate(void);
-void runmap_free(Runmap* runmap);
-void runmap_import(Runmap* runmap, Rup* rup);
 
 #endif

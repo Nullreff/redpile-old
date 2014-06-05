@@ -24,18 +24,15 @@ Rup rup_empty(void)
     return (Rup){NULL, 0};
 }
 
-Rup* rup_allocate(void)
-{
-    Rup* rup = malloc(sizeof(Rup));
-    CHECK_OOM(rup);
-    rup->instructions = NULL;
-    rup->size = 0;
-    return rup;
-}
-
 void rup_free(Rup* rup)
 {
-    free(rup);
+    RupNode* node = rup->nodes;
+    while (node != NULL)
+    {
+        RupNode* temp = node->next;
+        free(node);
+        node = temp;
+    }
 }
 
 unsigned int rup_max_power(Rup* rup)
@@ -43,52 +40,39 @@ unsigned int rup_max_power(Rup* rup)
     unsigned int max = 0;
     FOR_RUP(rup)
     {
-        if (inst->command == RUP_POWER && inst->value.power > max)
-            max = inst->value.power;
+        if (rup_node->inst.command == RUP_POWER && rup_node->inst.value.power > max)
+            max = rup_node->inst.value.power;
     }
     return max;
 }
 
-static RupInst* rup_push(Rup* rup, RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* node)
+static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* target)
 {
-    RupInst* inst = malloc(sizeof(RupInst));
-    CHECK_OOM(inst);
-    *inst = rup_inst_create(cmd, delay, source, node);
-    inst->next = rup->instructions;
-    rup->instructions = inst;
+    RupNode* node = malloc(sizeof(RupNode));
+    CHECK_OOM(node);
+    node->inst = rup_inst_create(cmd, delay, source, target);
+    node->next = rup->nodes;
+    rup->nodes->prev = node;
+    rup->nodes = node;
     rup->size++;
-    return inst;
+    return node;
 }
 
-void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* node, unsigned int power)
+void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, unsigned int power)
 {
-    RupInst* inst = rup_push(rup, RUP_POWER, delay, source, node);
-    inst->value.power = power;
+    RupNode* node = rup_push(rup, RUP_POWER, delay, source, target);
+    node->inst.value.power = power;
 }
 
-void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* node, BlockNode* target)
+void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, Direction direction)
 {
-    RupInst* inst = rup_push(rup, RUP_SWAP, delay, source, node);
-    inst->value.target = target;
+    RupNode* node = rup_push(rup, RUP_SWAP, delay, source, target);
+    node->inst.value.direction = direction;
 }
 
-RupInst rup_inst_create(RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* node)
+RupInst rup_inst_create(RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* target)
 {
-    return (RupInst){cmd, delay, source, node, {0}, NULL};
-}
-
-void rup_inst_run(World* world, RupInst* inst)
-{
-    switch (inst->command)
-    {
-        case RUP_POWER:
-            inst->node->block.power = inst->value.power;
-            break;
-
-        case RUP_SWAP:
-            world_block_swap(world, &inst->node->block, &inst->value.target->block);
-            break;
-    }
+    return (RupInst){cmd, source, {0}};
 }
 
 void rup_inst_print(RupInst* inst)
@@ -97,61 +81,19 @@ void rup_inst_print(RupInst* inst)
     {
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
-                inst->node->block.location.x,
-                inst->node->block.location.y,
-                inst->node->block.location.z,
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z,
                 inst->value.power);
             break;
 
         case RUP_SWAP:
-            printf("SWAP (%d,%d,%d) (%d,%d,%d)\n",
-                inst->node->block.location.x,
-                inst->node->block.location.y,
-                inst->node->block.location.z,
-                inst->value.target->block.location.x,
-                inst->value.target->block.location.y,
-                inst->value.target->block.location.z);
+            printf("SWAP (%d,%d,%d) %s\n",
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z,
+                Directions[inst->value.direction]);
             break;
     }
-}
-
-Runmap* runmap_allocate(void)
-{
-    Runmap* runmap = calloc(1, sizeof(Runmap));
-    CHECK_OOM(runmap);
-    return runmap;
-}
-
-void runmap_free(Runmap* runmap)
-{
-    for (int i = 0; i < RUP_CMD_COUNT; i++)
-    for (RupInst* inst = runmap->instructions[i]; inst != NULL;)
-    {
-        RupInst* temp = inst->next;
-        free(inst);
-        inst = temp;
-    }
-    free(runmap);
-}
-
-#define RUNMAP_INST(RUNMAP,INST) (RUNMAP)->instructions[(INST)->command]
-void runmap_import(Runmap* runmap, Rup* rup)
-{
-    RupInst* next;
-    for (RupInst* inst = rup->instructions; inst != NULL; inst = next)
-    {
-        next = inst->next;
-
-        if (RUNMAP_INST(runmap, inst) != NULL)
-            inst->next = RUNMAP_INST(runmap, inst);
-        else
-            inst->next = NULL;
-        RUNMAP_INST(runmap, inst) = inst;
-
-        runmap->sizes[inst->command]++;
-    }
-
-    rup->instructions = NULL;
-    rup->size = 0;
 }
 

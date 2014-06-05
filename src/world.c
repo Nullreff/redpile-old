@@ -175,3 +175,18 @@ void world_clear_block_missing_callback(World* world)
 {
     world->block_missing = block_missing_noop;
 }
+
+void world_run_rup_inst(World* world, BlockNode* target, RupInst* inst)
+{
+    switch (inst->command)
+    {
+        case RUP_POWER:
+            target->block.power = inst->value.power;
+            break;
+
+        case RUP_SWAP:
+            world_block_swap(world, &target->block, &target->adjacent[inst->value.direction]->block);
+            break;
+    }
+}
+
