@@ -325,8 +325,6 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                 default: ERROR("Encountered unknown block material");
             }
 
-            printf("\n");
-            block_print(&node->block);
             FOR_RUP(&out)
             {
                 if (rup_node->tick == world->ticks)
@@ -335,24 +333,23 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                     {
                         // TODO: Any instructions that target the current node with a
                         // delay of zero should be printed
-                        printf("Self Targeting\n");
                         inst_run_callback(&rup_node->inst);
                     }
                     else
                     {
                         // TODO: Any instructions that has a delay of zero but targets
                         // another node should flag that target for re-execution
-                        printf("Re-execution required\n");
                         inst_run_callback(&rup_node->inst);
                     }
                 }
                 else
                 {
                     // TODO: All other instructions are added to the queue for upcoming ticks
-                    printf("Instruction generated\n");
                     inst_run_callback(&rup_node->inst);
                 }
             }
+
+            rup_free(&out);
         }
     }
 
