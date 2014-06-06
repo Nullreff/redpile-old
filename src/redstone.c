@@ -292,9 +292,11 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
     for (unsigned int i = 0; i < count; i++)
     {
         bool rerun;
+        unsigned int loops = 0;
         do
         {
             rerun = false;
+            loops++;
 
             FOR_BLOCK_LIST(world->blocks)
             {
@@ -372,6 +374,12 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                 }
 
                 rup_free(&out);
+            }
+
+            if (loops > 30)
+            {
+                printf("Loop detected, exiting...\n");
+                break;
             }
         }
         while (rerun);
