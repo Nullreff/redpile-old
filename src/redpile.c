@@ -150,7 +150,7 @@ void signal_callback(int signal)
         redpile_exit();
 }
 
-void rup_inst_run_callback(RupInst* inst)
+void rup_inst_run_callback(RupNode* inst)
 {
     if (config.silent)
         return;

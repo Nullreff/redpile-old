@@ -285,7 +285,7 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned int count)
+void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count)
 {
     world_set_block_missing_callback(world, redstone_block_missing);
 
@@ -340,7 +340,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                     {
                         if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
                         {
-                            inst_run_callback(&rup_node->inst);
+                            inst_run_callback(rup_node);
                             continue;
                         }
                         else
