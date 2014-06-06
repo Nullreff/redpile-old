@@ -155,9 +155,6 @@ void rup_inst_run_callback(RupInst* inst)
     if (config.silent)
         return;
 
-    if (inst->command == RUP_POWER && inst->value.power == inst->source->block.power)
-        return;
-
     rup_inst_print(inst);
 }
 

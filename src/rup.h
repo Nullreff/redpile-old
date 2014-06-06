@@ -39,7 +39,7 @@ typedef struct {
 typedef struct RupNode {
     RupInst inst;
     BlockNode* target;
-    unsigned int delay;
+    unsigned long long tick;
     struct RupNode* next;
     struct RupNode* prev;
 } RupNode;
@@ -52,7 +52,8 @@ typedef struct {
 typedef struct RupQueue {
     RupInst* insts;
     unsigned int size;
-    unsigned int delay;
+    unsigned long long tick;
+    bool executed;
     struct RupQueue* next;
 } RupQueue;
 
@@ -61,17 +62,17 @@ typedef struct RupQueue {
 
 Rup rup_empty(void);
 void rup_free(Rup* rup);
-void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, unsigned int power);
-void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, Direction direction);
+void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
+void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
 unsigned int rup_inst_max_power(RupInst* inst);
-void rup_inst_print(RupInst* inst);
+void rup_inst_print(RupNode* node);
 
-RupQueue* rup_queue_allocate(unsigned int delay);
+RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);
 RupInst* rup_queue_add(RupQueue* queue);
-RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned int delay);
-void rup_queue_deincrement_delay(RupQueue** queue_ptr);
+RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
+void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick);
 
 #endif

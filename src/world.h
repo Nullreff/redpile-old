@@ -40,11 +40,11 @@ typedef struct {
     Hashmap* instructions;
 
     // Additional stats
-    unsigned int ticks; // Redstone ticks
+    unsigned long long ticks; // Redstone ticks
 } World;
 
 typedef struct {
-    unsigned int ticks;
+    unsigned long long ticks;
     unsigned int blocks;
     unsigned int hashmap_allocated;
     unsigned int hashmap_overflow;
@@ -52,7 +52,7 @@ typedef struct {
     unsigned int hashmap_max_depth;
 } WorldStats;
 
-#define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)
+#define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)
 #define BLOCK_INDEX(world,block) (block - world->blocks->data)
 #define INDEX_BLOCK(world,index) (world->blocks->data + index)
 

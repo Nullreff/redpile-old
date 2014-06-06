@@ -35,13 +35,13 @@ void rup_free(Rup* rup)
     }
 }
 
-static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* target)
+static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNode* source, BlockNode* target)
 {
     RupNode* node = malloc(sizeof(RupNode));
     CHECK_OOM(node);
 
     node->inst = rup_inst_create(cmd, source);
-    node->delay = delay;
+    node->tick = tick;
     node->target = target;
 
     node->next = rup->nodes;
@@ -53,15 +53,15 @@ static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned int delay, BlockNode* so
     return node;
 }
 
-void rup_cmd_power(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, unsigned int power)
+void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power)
 {
-    RupNode* node = rup_push(rup, RUP_POWER, delay, source, target);
+    RupNode* node = rup_push(rup, RUP_POWER, tick, source, target);
     node->inst.value.power = power;
 }
 
-void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* target, Direction direction)
+void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction)
 {
-    RupNode* node = rup_push(rup, RUP_SWAP, delay, source, target);
+    RupNode* node = rup_push(rup, RUP_SWAP, tick, source, target);
     node->inst.value.direction = direction;
 }
 
@@ -81,40 +81,47 @@ unsigned int rup_inst_max_power(RupInst* found_inst)
     return max;
 }
 
-void rup_inst_print(RupInst* inst)
+void rup_inst_print(RupNode* node)
 {
-    switch (inst->command)
+    switch (node->inst.command)
     {
         case RUP_HALT:
             printf("HALT");
             break;
 
         case RUP_POWER:
-            printf("POWER (%d,%d,%d) %u\n",
-                inst->source->block.location.x,
-                inst->source->block.location.y,
-                inst->source->block.location.z,
-                inst->value.power);
+            printf("(%d,%d,%d) -> (%d,%d,%d) POWER %u\n",
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                node->inst.value.power);
             break;
 
         case RUP_SWAP:
-            printf("SWAP (%d,%d,%d) %s\n",
-                inst->source->block.location.x,
-                inst->source->block.location.y,
-                inst->source->block.location.z,
-                Directions[inst->value.direction]);
+            printf("(%d,%d,%d) -> (%d,%d,%d) SWAP  %s\n",
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                Directions[node->inst.value.direction]);
             break;
     }
 }
 
-RupQueue* rup_queue_allocate(unsigned int delay)
+RupQueue* rup_queue_allocate(unsigned long long tick)
 {
     RupQueue* queue = malloc(sizeof(RupQueue));
     CHECK_OOM(queue);
     queue->insts = malloc(sizeof(RupInst));
     *queue->insts = rup_inst_create(RUP_HALT, NULL);
     queue->size = 0;
-    queue->delay = delay;
+    queue->tick = tick;
+    queue->executed = false;
     queue->next = NULL;
     return queue;
 }
@@ -137,19 +144,19 @@ RupInst* rup_queue_add(RupQueue* queue)
     return queue->insts + queue->size - 1;
 }
 
-RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned int delay)
+RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
 {
     for (;queue != NULL; queue = queue->next)
     {
-        if (queue->delay == delay)
+        if (queue->tick == tick)
             return queue->insts;
     }
 
     return NULL;
 }
 
-// Deincrement the 'delay' value and remove those that fall below zero
-void rup_queue_deincrement_delay(RupQueue** queue_ptr)
+// Discard any queues that are older than the current tick
+void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick)
 {
     RupQueue* queue = *queue_ptr;
 
@@ -159,11 +166,8 @@ void rup_queue_deincrement_delay(RupQueue** queue_ptr)
         if (queue == NULL)
             return;
 
-        if (queue->delay > 0)
-        {
-            queue->delay--;
+        if (queue->tick >= current_tick)
             break;
-        }
 
         *queue_ptr = queue->next;
         free(queue);
@@ -173,16 +177,15 @@ void rup_queue_deincrement_delay(RupQueue** queue_ptr)
     // Remove items further in
     while (queue->next != NULL)
     {
-        if (queue->next->delay == 0)
+        if (queue->next->tick >= current_tick)
+        {
+            queue = queue->next;
+        }
+        else
         {
             RupQueue* temp = queue->next->next;
             free(queue->next);
             queue->next = temp;
-        }
-        else
-        {
-            queue->next->delay--;
-            queue = queue->next;
         }
     }
 }

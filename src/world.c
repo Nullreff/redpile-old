@@ -158,12 +158,12 @@ WorldStats world_get_stats(World* world)
 
 void world_stats_print(WorldStats stats)
 {
-    STAT_PRINT(stats, ticks);
-    STAT_PRINT(stats, blocks);
-    STAT_PRINT(stats, hashmap_allocated);
-    STAT_PRINT(stats, hashmap_overflow);
-    STAT_PRINT(stats, hashmap_resizes);
-    STAT_PRINT(stats, hashmap_max_depth);
+    STAT_PRINT(stats, ticks, ull);
+    STAT_PRINT(stats, blocks, u);
+    STAT_PRINT(stats, hashmap_allocated, u);
+    STAT_PRINT(stats, hashmap_overflow, u);
+    STAT_PRINT(stats, hashmap_resizes, u);
+    STAT_PRINT(stats, hashmap_max_depth, u);
 }
 
 void world_set_block_missing_callback(World* world, bool (*callback)(Block* node))

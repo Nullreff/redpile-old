@@ -296,12 +296,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
             RupInst* in;
             Rup out = rup_empty();
 
-            Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
-            if (bucket != NULL)
+            Bucket* bucket = hashmap_get(world->instructions, node->block.location, true);
+            RupQueue* queue = (RupQueue*)bucket->value;
+            if (queue != NULL)
             {
-                RupQueue* queue = (RupQueue*)bucket->value;
-                rup_queue_deincrement_delay(&queue);
-                in = rup_queue_find_instructions(queue, 0);
+                rup_queue_discard_old(&queue, world->ticks);
+                in = rup_queue_find_instructions(queue, world->ticks);
+                queue->executed = true;
             }
             else
             {
@@ -324,10 +325,34 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                 default: ERROR("Encountered unknown block material");
             }
 
-            // Process the 'out' rup
-            // 1. Any instructions that target the current node with a delay of zero should be printed
-            // 2. Any instructions that have a delay of zero but target another node should flag their target for re-execution
-            // 3. All other instructions are added to the queue for upcoming ticks
+            printf("\n");
+            block_print(&node->block);
+            FOR_RUP(&out)
+            {
+                if (rup_node->tick == world->ticks)
+                {
+                    if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
+                    {
+                        // TODO: Any instructions that target the current node with a
+                        // delay of zero should be printed
+                        printf("Self Targeting\n");
+                        inst_run_callback(&rup_node->inst);
+                    }
+                    else
+                    {
+                        // TODO: Any instructions that have a delay of zero but target
+                        // another node should flag their target for re-execution
+                        printf("Re-execution required\n");
+                        inst_run_callback(&rup_node->inst);
+                    }
+                }
+                else
+                {
+                    // TODO: All other instructions are added to the queue for upcoming ticks
+                    printf("Instruction generated\n");
+                    inst_run_callback(&rup_node->inst);
+                }
+            }
         }
     }
 
