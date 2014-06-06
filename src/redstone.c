@@ -73,6 +73,9 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
     int new_power = rup_inst_max_power(in);
     UPDATE_POWER(node, new_power, 0);
 
+    if (new_power == 0)
+        return;
+
     int wire_power = new_power;
     if (wire_power > 0)
         wire_power--;
@@ -213,7 +216,7 @@ static void redstone_repeater_update(World* world, BlockNode* node, RupInst* in,
 
     UPDATE_POWER(node, new_power, 0);
 
-    if (side_powered)
+    if (new_power == 0 || side_powered)
         return;
 
     // Pass charge to the wire or conductor in front after a delay
