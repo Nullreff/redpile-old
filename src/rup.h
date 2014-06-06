@@ -57,8 +57,8 @@ typedef struct RupQueue {
     struct RupQueue* next;
 } RupQueue;
 
-#define FOR_RUP(RUP) for (RupNode* rup_node = (RUP)->nodes; rup_node != NULL; rup_node = rup_node->next)
-#define FOR_RUP_INST(RUP_INST) for (RupInst* inst = RUP_INST; inst->command != RUP_HALT; inst++)
+#define FOR_RUP(NODE,RUP) for (RupNode* rup_node = (RUP)->nodes; rup_node != NULL; rup_node = rup_node->next)
+#define FOR_RUP_INST(INST,LIST) for (RupInst* INST = LIST; INST->command != RUP_HALT; INST++)
 
 Rup rup_empty(void);
 void rup_free(Rup* rup);

@@ -153,7 +153,7 @@ static void redstone_comparator_update(World* world, BlockNode* node, RupInst* i
     Location left   = location_move(node->block.location, direction_left(node->block.direction), 1);
     Location behind = location_move(node->block.location, direction_invert(node->block.direction), 1);
     
-    FOR_RUP_INST(in)
+    FOR_RUP_INST(inst, in)
     {
         // Power coming from the side
         if ((location_equals(inst->source->block.location, right) ||
@@ -199,7 +199,7 @@ static void redstone_repeater_update(World* world, BlockNode* node, RupInst* in,
     Location left   = location_move(node->block.location, direction_left(node->block.direction), 1);
     Location behind = location_move(node->block.location, direction_invert(node->block.direction), 1);
     
-    FOR_RUP_INST(in)
+    FOR_RUP_INST(inst, in)
     {
         // Power coming from the side
         if (inst->source->block.material == REPEATER &&
@@ -230,7 +230,7 @@ static void redstone_torch_update(World* world, BlockNode* node, RupInst* in, Ru
 
     unsigned int new_power = 0;
     Location loc_behind = location_move(node->block.location, direction_invert(node->block.direction), 1);
-    FOR_RUP_INST(in)
+    FOR_RUP_INST(inst, in)
     {
         // Power coming from behind
         if (location_equals(inst->source->block.location, loc_behind))
@@ -334,7 +334,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                     default: ERROR("Encountered unknown block material");
                 }
 
-                FOR_RUP(&out)
+                FOR_RUP(node, &out)
                 {
                     if (rup_node->tick == world->ticks)
                     {

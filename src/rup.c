@@ -73,7 +73,7 @@ RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
 unsigned int rup_inst_max_power(RupInst* found_inst)
 {
     unsigned int max = 0;
-    FOR_RUP_INST(found_inst)
+    FOR_RUP_INST(inst, found_inst)
     {
         if (inst->command == RUP_POWER && inst->value.power > max)
             max = inst->value.power;
