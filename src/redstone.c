@@ -24,7 +24,7 @@
 
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
-#define UPDATE_POWER(NODE,POWER,DELAY) rup_cmd_power(out, DELAY, node, NODE, POWER)
+#define UPDATE_POWER(NODE,POWER,DELAY) rup_cmd_power(out, world->ticks + (DELAY), node, NODE, POWER)
 #define POWER(node) (node)->block.power
 #define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) ((node)->block.material == name)
@@ -296,10 +296,10 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
             RupInst* in;
             Rup out = rup_empty();
 
-            Bucket* bucket = hashmap_get(world->instructions, node->block.location, true);
-            RupQueue* queue = (RupQueue*)bucket->value;
-            if (queue != NULL)
+            Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+            if (bucket != NULL)
             {
+                RupQueue* queue = (RupQueue*)bucket->value;
                 rup_queue_discard_old(&queue, world->ticks);
                 in = rup_queue_find_instructions(queue, world->ticks);
                 queue->executed = true;
@@ -344,8 +344,26 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                 }
                 else
                 {
-                    // TODO: All other instructions are added to the queue for upcoming ticks
-                    inst_run_callback(&rup_node->inst);
+                    Bucket* bucket = hashmap_get(world->instructions, node->block.location, true);
+                    RupQueue* queue = (RupQueue*)bucket->value;
+                    if (queue == NULL)
+                    {
+                        queue = rup_queue_allocate(rup_node->tick);
+                        bucket->value = queue;
+                    }
+                    else
+                    {
+                        queue = rup_queue_find(queue, rup_node->tick);
+                        if (queue == NULL)
+                        {
+                            queue = rup_queue_allocate(rup_node->tick);
+                            queue->next = bucket->value;
+                            bucket->value = queue;
+                        }
+
+                    }
+
+                    rup_queue_add(queue, &rup_node->inst);
                 }
             }
 

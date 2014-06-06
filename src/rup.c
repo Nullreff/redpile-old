@@ -132,7 +132,7 @@ void rup_queue_free(RupQueue* queue)
     free(queue);
 }
 
-RupInst* rup_queue_add(RupQueue* queue)
+void rup_queue_add(RupQueue* queue, RupInst* inst)
 {
     queue->size++;
 
@@ -141,18 +141,25 @@ RupInst* rup_queue_add(RupQueue* queue)
     CHECK_OOM(queue->insts);
     queue->insts[queue->size] = rup_inst_create(RUP_HALT, NULL);
 
-    return queue->insts + queue->size - 1;
+    RupInst* new_inst = queue->insts + queue->size - 1;
+    memcpy(new_inst, inst, sizeof(RupInst));
 }
 
-RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
+RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
 {
     for (;queue != NULL; queue = queue->next)
     {
         if (queue->tick == tick)
-            return queue->insts;
+            return queue;
     }
 
     return NULL;
+}
+
+RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
+{
+    RupQueue* found_queue = rup_queue_find(queue, tick);
+    return found_queue != NULL ? found_queue->insts : NULL;
 }
 
 // Discard any queues that are older than the current tick
