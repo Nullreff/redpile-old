@@ -90,7 +90,7 @@ void rup_inst_print(RupNode* node)
             break;
 
         case RUP_POWER:
-            printf("(%d,%d,%d) -> (%d,%d,%d) POWER %u\n",
+            printf("POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
                 node->inst.source->block.location.x,
                 node->inst.source->block.location.y,
                 node->inst.source->block.location.z,
@@ -101,7 +101,7 @@ void rup_inst_print(RupNode* node)
             break;
 
         case RUP_SWAP:
-            printf("(%d,%d,%d) -> (%d,%d,%d) SWAP  %s\n",
+            printf("SWAP (%d,%d,%d) -> (%d,%d,%d) %s\n",
                 node->inst.source->block.location.x,
                 node->inst.source->block.location.y,
                 node->inst.source->block.location.z,

@@ -291,59 +291,64 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
 
     for (unsigned int i = 0; i < count; i++)
     {
-        FOR_BLOCK_LIST(world->blocks)
+        bool rerun;
+        do
         {
-            RupInst* in;
-            Rup out = rup_empty();
+            rerun = false;
 
-            Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
-            if (bucket != NULL)
+            FOR_BLOCK_LIST(world->blocks)
             {
-                RupQueue* queue = (RupQueue*)bucket->value;
-                rup_queue_discard_old(&queue, world->ticks);
-                in = rup_queue_find_instructions(queue, world->ticks);
-                queue->executed = true;
-            }
-            else
-            {
-                RupInst inst = rup_inst_create(RUP_HALT, NULL);
-                in = &inst;
-            }
+                RupInst* in = NULL;
+                Rup out = rup_empty();
 
-            switch (node->block.material)
-            {
-                case EMPTY:      break;
-                case AIR:        break;
-                case INSULATOR:  break;
-                case WIRE:       redstone_wire_update      (world, node, in, &out); break;
-                case CONDUCTOR:  redstone_conductor_update (world, node, in, &out); break;
-                case TORCH:      redstone_torch_update     (world, node, in, &out); break;
-                case PISTON:     redstone_piston_update    (world, node, in, &out); break;
-                case REPEATER:   redstone_repeater_update  (world, node, in, &out); break;
-                case COMPARATOR: redstone_comparator_update(world, node, in, &out); break;
-                case SWITCH:     redstone_switch_update    (world, node, in, &out); break;
-                default: ERROR("Encountered unknown block material");
-            }
-
-            FOR_RUP(&out)
-            {
-                if (rup_node->tick == world->ticks)
+                Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+                if (bucket != NULL)
                 {
-                    if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
+                    RupQueue* queue = (RupQueue*)bucket->value;
+                    rup_queue_discard_old(&queue, world->ticks);
+                    if (queue != NULL)
                     {
-                        // TODO: Any instructions that target the current node with a
-                        // delay of zero should be printed
-                        inst_run_callback(&rup_node->inst);
-                    }
-                    else
-                    {
-                        // TODO: Any instructions that has a delay of zero but targets
-                        // another node should flag that target for re-execution
-                        inst_run_callback(&rup_node->inst);
+                        in = rup_queue_find_instructions(queue, world->ticks);
+                        queue->executed = true;
                     }
                 }
-                else
+
+                if (in == NULL)
                 {
+                    RupInst inst = rup_inst_create(RUP_HALT, NULL);
+                    in = &inst;
+                }
+
+                switch (node->block.material)
+                {
+                    case EMPTY:      break;
+                    case AIR:        break;
+                    case INSULATOR:  break;
+                    case WIRE:       redstone_wire_update      (world, node, in, &out); break;
+                    case CONDUCTOR:  redstone_conductor_update (world, node, in, &out); break;
+                    case TORCH:      redstone_torch_update     (world, node, in, &out); break;
+                    case PISTON:     redstone_piston_update    (world, node, in, &out); break;
+                    case REPEATER:   redstone_repeater_update  (world, node, in, &out); break;
+                    case COMPARATOR: redstone_comparator_update(world, node, in, &out); break;
+                    case SWITCH:     redstone_switch_update    (world, node, in, &out); break;
+                    default: ERROR("Encountered unknown block material");
+                }
+
+                FOR_RUP(&out)
+                {
+                    if (rup_node->tick == world->ticks)
+                    {
+                        if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
+                        {
+                            inst_run_callback(&rup_node->inst);
+                            continue;
+                        }
+                        else
+                        {
+                            rerun = true;
+                        }
+                    }
+
                     Bucket* bucket = hashmap_get(world->instructions, node->block.location, true);
                     RupQueue* queue = (RupQueue*)bucket->value;
                     if (queue == NULL)
@@ -360,18 +365,19 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                             queue->next = bucket->value;
                             bucket->value = queue;
                         }
-
                     }
 
                     rup_queue_add(queue, &rup_node->inst);
                 }
-            }
 
-            rup_free(&out);
+                rup_free(&out);
+            }
         }
+        while (rerun);
+
+        world->ticks++;
     }
 
-    world->ticks += count;
     world_clear_block_missing_callback(world);
 }
 
