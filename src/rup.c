@@ -81,7 +81,33 @@ unsigned int rup_inst_max_power(RupInst* found_inst)
     return max;
 }
 
-void rup_inst_print(RupNode* node)
+void rup_inst_print(RupInst* inst)
+{
+    switch (inst->command)
+    {
+        case RUP_HALT:
+            printf("HALT");
+            break;
+
+        case RUP_POWER:
+            printf("POWER %u from (%d,%d,%d)\n",
+                inst->value.power,
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z);
+            break;
+
+        case RUP_SWAP:
+            printf("SWAP %s from (%d,%d,%d)\n",
+                Directions[inst->value.direction],
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z);
+            break;
+    }
+}
+
+void rup_node_print(RupNode* node)
 {
     switch (node->inst.command)
     {

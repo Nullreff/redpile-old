@@ -334,12 +334,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                     default: ERROR("Encountered unknown block material");
                 }
 
-                FOR_RUP(node, &out)
+                FOR_RUP(rup_node, &out)
                 {
                     if (rup_node->tick == world->ticks)
                     {
                         if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
                         {
+                            world_run_rup_inst(world, node, &rup_node->inst);
                             inst_run_callback(rup_node);
                             continue;
                         }
@@ -349,7 +350,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                         }
                     }
 
-                    Bucket* bucket = hashmap_get(world->instructions, node->block.location, true);
+                    Bucket* bucket = hashmap_get(world->instructions, rup_node->target->block.location, true);
                     RupQueue* queue = (RupQueue*)bucket->value;
                     if (queue == NULL)
                     {
