@@ -158,7 +158,7 @@ WorldStats world_get_stats(World* world)
 
 void world_stats_print(WorldStats stats)
 {
-    STAT_PRINT(stats, ticks, ull);
+    STAT_PRINT(stats, ticks, llu);
     STAT_PRINT(stats, blocks, u);
     STAT_PRINT(stats, hashmap_allocated, u);
     STAT_PRINT(stats, hashmap_overflow, u);
