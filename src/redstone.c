@@ -340,8 +340,8 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                     }
                     else
                     {
-                        // TODO: Any instructions that have a delay of zero but target
-                        // another node should flag their target for re-execution
+                        // TODO: Any instructions that has a delay of zero but targets
+                        // another node should flag that target for re-execution
                         printf("Re-execution required\n");
                         inst_run_callback(&rup_node->inst);
                     }
