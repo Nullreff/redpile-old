@@ -180,6 +180,10 @@ void world_run_rup_inst(World* world, BlockNode* target, RupInst* inst)
 {
     switch (inst->command)
     {
+        case RUP_HALT:
+            // NOOP
+            break;
+
         case RUP_POWER:
             target->block.power = inst->value.power;
             break;
