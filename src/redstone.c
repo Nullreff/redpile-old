@@ -302,7 +302,8 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
             }
             else
             {
-                *in = rup_inst_create(RUP_HALT, NULL);
+                RupInst inst = rup_inst_create(RUP_HALT, NULL);
+                in = &inst;
             }
 
             switch (node->block.material)

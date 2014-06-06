@@ -45,7 +45,8 @@ static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned int delay, BlockNode* so
     node->target = target;
 
     node->next = rup->nodes;
-    rup->nodes->prev = node;
+    if (rup->nodes != NULL)
+        rup->nodes->prev = node;
     rup->nodes = node;
 
     rup->size++;
@@ -69,10 +70,10 @@ RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
     return (RupInst){cmd, source, {0}};
 }
 
-unsigned int rup_inst_max_power(RupInst* inst)
+unsigned int rup_inst_max_power(RupInst* found_inst)
 {
     unsigned int max = 0;
-    FOR_RUP_INST(inst)
+    FOR_RUP_INST(found_inst)
     {
         if (inst->command == RUP_POWER && inst->value.power > max)
             max = inst->value.power;
