@@ -35,25 +35,19 @@ void rup_free(Rup* rup)
     }
 }
 
-unsigned int rup_max_power(Rup* rup)
-{
-    unsigned int max = 0;
-    FOR_RUP(rup)
-    {
-        if (rup_node->inst.command == RUP_POWER && rup_node->inst.value.power > max)
-            max = rup_node->inst.value.power;
-    }
-    return max;
-}
-
 static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* target)
 {
     RupNode* node = malloc(sizeof(RupNode));
     CHECK_OOM(node);
-    node->inst = rup_inst_create(cmd, delay, source, target);
+
+    node->inst = rup_inst_create(cmd, source);
+    node->delay = delay;
+    node->target = target;
+
     node->next = rup->nodes;
     rup->nodes->prev = node;
     rup->nodes = node;
+
     rup->size++;
     return node;
 }
@@ -70,15 +64,30 @@ void rup_cmd_swap(Rup* rup, unsigned int delay, BlockNode* source, BlockNode* ta
     node->inst.value.direction = direction;
 }
 
-RupInst rup_inst_create(RupCmd cmd, unsigned int delay, BlockNode* source, BlockNode* target)
+RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
 {
     return (RupInst){cmd, source, {0}};
+}
+
+unsigned int rup_inst_max_power(RupInst* inst)
+{
+    unsigned int max = 0;
+    FOR_RUP_INST(inst)
+    {
+        if (inst->command == RUP_POWER && inst->value.power > max)
+            max = inst->value.power;
+    }
+    return max;
 }
 
 void rup_inst_print(RupInst* inst)
 {
     switch (inst->command)
     {
+        case RUP_HALT:
+            printf("HALT");
+            break;
+
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
                 inst->source->block.location.x,
@@ -94,6 +103,86 @@ void rup_inst_print(RupInst* inst)
                 inst->source->block.location.z,
                 Directions[inst->value.direction]);
             break;
+    }
+}
+
+RupQueue* rup_queue_allocate(unsigned int delay)
+{
+    RupQueue* queue = malloc(sizeof(RupQueue));
+    CHECK_OOM(queue);
+    queue->insts = malloc(sizeof(RupInst));
+    *queue->insts = rup_inst_create(RUP_HALT, NULL);
+    queue->size = 0;
+    queue->delay = delay;
+    queue->next = NULL;
+    return queue;
+}
+
+void rup_queue_free(RupQueue* queue)
+{
+    free(queue->insts);
+    free(queue);
+}
+
+RupInst* rup_queue_add(RupQueue* queue)
+{
+    queue->size++;
+
+    // TODO: Pre-allocate space instead of reallocing on each add
+    queue->insts = realloc(queue->insts, sizeof(RupInst) * (queue->size + 1));
+    CHECK_OOM(queue->insts);
+    queue->insts[queue->size] = rup_inst_create(RUP_HALT, NULL);
+
+    return queue->insts + queue->size - 1;
+}
+
+RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned int delay)
+{
+    for (;queue != NULL; queue = queue->next)
+    {
+        if (queue->delay == delay)
+            return queue->insts;
+    }
+
+    return NULL;
+}
+
+// Deincrement the 'delay' value and remove those that fall below zero
+void rup_queue_deincrement_delay(RupQueue** queue_ptr)
+{
+    RupQueue* queue = *queue_ptr;
+
+    // Remove items at the head of the list
+    while (true)
+    {
+        if (queue == NULL)
+            return;
+
+        if (queue->delay > 0)
+        {
+            queue->delay--;
+            break;
+        }
+
+        *queue_ptr = queue->next;
+        free(queue);
+        queue = *queue_ptr;
+    }
+
+    // Remove items further in
+    while (queue->next != NULL)
+    {
+        if (queue->next->delay == 0)
+        {
+            RupQueue* temp = queue->next->next;
+            free(queue->next);
+            queue->next = temp;
+        }
+        else
+        {
+            queue->next->delay--;
+            queue = queue->next;
+        }
     }
 }
 

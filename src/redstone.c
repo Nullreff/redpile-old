@@ -44,11 +44,11 @@ static bool can_power_from_behind(BlockNode* node, Direction dir)
     return node->block.direction == dir;
 }
 
-static void redstone_conductor_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, CONDUCTOR));
 
-    unsigned int power = rup_max_power(in);
+    unsigned int power = rup_inst_max_power(in);
     UPDATE_POWER(node, power, 0);
 
     if (power < MAX_POWER)
@@ -63,14 +63,14 @@ static void redstone_conductor_update(World* world, BlockNode* node, Rup* in, Ru
     }
 }
 
-static void redstone_wire_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, WIRE));
 
     BlockNode* above = NODE_ADJACENT(node, UP);
     bool covered = above != NULL && MATERIAL_ISNT(above, AIR) && MATERIAL_ISNT(above, EMPTY);
 
-    int new_power = rup_max_power(in);
+    int new_power = rup_inst_max_power(in);
     UPDATE_POWER(node, new_power, 0);
 
     int wire_power = new_power;
@@ -126,11 +126,11 @@ static void redstone_wire_update(World* world, BlockNode* node, Rup* in, Rup* ou
         UPDATE_POWER(down_node, new_power, 0);
 }
 
-static void redstone_piston_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_piston_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, PISTON));
 
-    unsigned int new_power = rup_max_power(in);
+    unsigned int new_power = rup_inst_max_power(in);
     UPDATE_POWER(node, new_power, 0);
 
     BlockNode* first = NODE_ADJACENT(node, node->block.direction);
@@ -140,7 +140,7 @@ static void redstone_piston_update(World* world, BlockNode* node, Rup* in, Rup* 
         rup_cmd_swap(out, 1, node, first, node->block.direction);
 }
 
-static void redstone_comparator_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_comparator_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, COMPARATOR));
 
@@ -150,19 +150,19 @@ static void redstone_comparator_update(World* world, BlockNode* node, Rup* in, R
     Location left   = location_move(node->block.location, direction_left(node->block.direction), 1);
     Location behind = location_move(node->block.location, direction_invert(node->block.direction), 1);
     
-    FOR_RUP(in)
+    FOR_RUP_INST(in)
     {
         // Power coming from the side
-        if ((location_equals(rup_node->inst.source->block.location, right) ||
-             location_equals(rup_node->inst.source->block.location, left)) &&
-            side_power < rup_node->inst.value.power)
+        if ((location_equals(inst->source->block.location, right) ||
+             location_equals(inst->source->block.location, left)) &&
+            side_power < inst->value.power)
         {
-            side_power = rup_node->inst.value.power;
+            side_power = inst->value.power;
         }
 
         // Power coming from behind
-        if (location_equals(rup_node->inst.source->block.location, behind))
-            new_power = rup_node->inst.value.power;
+        if (location_equals(inst->source->block.location, behind))
+            new_power = inst->value.power;
     }
 
     UPDATE_POWER(node, new_power, 0);
@@ -186,7 +186,7 @@ static void redstone_comparator_update(World* world, BlockNode* node, Rup* in, R
     UPDATE_POWER(found_node, new_power, 1);
 }
 
-static void redstone_repeater_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_repeater_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, REPEATER));
 
@@ -196,19 +196,19 @@ static void redstone_repeater_update(World* world, BlockNode* node, Rup* in, Rup
     Location left   = location_move(node->block.location, direction_left(node->block.direction), 1);
     Location behind = location_move(node->block.location, direction_invert(node->block.direction), 1);
     
-    FOR_RUP(in)
+    FOR_RUP_INST(in)
     {
         // Power coming from the side
-        if (rup_node->inst.source->block.material == REPEATER &&
-            (location_equals(rup_node->inst.source->block.location, right) ||
-            location_equals(rup_node->inst.source->block.location, left)))
+        if (inst->source->block.material == REPEATER &&
+            (location_equals(inst->source->block.location, right) ||
+            location_equals(inst->source->block.location, left)))
         {
-            side_powered = (rup_node->inst.value.power > 0) || side_powered;
+            side_powered = (inst->value.power > 0) || side_powered;
         }
 
         // Power coming from behind
-        if (location_equals(rup_node->inst.source->block.location, behind))
-            new_power = rup_node->inst.value.power;
+        if (location_equals(inst->source->block.location, behind))
+            new_power = inst->value.power;
     }
 
     UPDATE_POWER(node, new_power, 0);
@@ -221,17 +221,17 @@ static void redstone_repeater_update(World* world, BlockNode* node, Rup* in, Rup
     UPDATE_POWER(found_node, MAX_POWER, node->block.state + 1);
 }
 
-static void redstone_torch_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_torch_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, TORCH));
 
     unsigned int new_power = 0;
     Location loc_behind = location_move(node->block.location, direction_invert(node->block.direction), 1);
-    FOR_RUP(in)
+    FOR_RUP_INST(in)
     {
         // Power coming from behind
-        if (location_equals(rup_node->inst.source->block.location, loc_behind))
-            new_power = rup_node->inst.value.power;
+        if (location_equals(inst->source->block.location, loc_behind))
+            new_power = inst->value.power;
     }
 
     UPDATE_POWER(node, new_power, 0);
@@ -259,7 +259,7 @@ static void redstone_torch_update(World* world, BlockNode* node, Rup* in, Rup* o
         UPDATE_POWER(up_node, MAX_POWER, 1);
 }
 
-static void redstone_switch_update(World* world, BlockNode* node, Rup* in, Rup* out)
+static void redstone_switch_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, SWITCH));
 
@@ -290,16 +290,19 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
     {
         FOR_BLOCK_LIST(world->blocks)
         {
-            Rup in = rup_empty();
+            RupInst* in;
             Rup out = rup_empty();
 
             Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
             if (bucket != NULL)
             {
-                // Process the 'in' rup
-                // 1. De-increment the delay on all instructions
-                // 2. Any less than zero should be discarded
-                // 3. Any at zero should be inserted into the 'in' rup
+                RupQueue* queue = (RupQueue*)bucket->value;
+                rup_queue_deincrement_delay(&queue);
+                in = rup_queue_find_instructions(queue, 0);
+            }
+            else
+            {
+                *in = rup_inst_create(RUP_HALT, NULL);
             }
 
             switch (node->block.material)
@@ -307,13 +310,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                 case EMPTY:      break;
                 case AIR:        break;
                 case INSULATOR:  break;
-                case WIRE:       redstone_wire_update      (world, node, &in, &out); break;
-                case CONDUCTOR:  redstone_conductor_update (world, node, &in, &out); break;
-                case TORCH:      redstone_torch_update     (world, node, &in, &out); break;
-                case PISTON:     redstone_piston_update    (world, node, &in, &out); break;
-                case REPEATER:   redstone_repeater_update  (world, node, &in, &out); break;
-                case COMPARATOR: redstone_comparator_update(world, node, &in, &out); break;
-                case SWITCH:     redstone_switch_update    (world, node, &in, &out); break;
+                case WIRE:       redstone_wire_update      (world, node, in, &out); break;
+                case CONDUCTOR:  redstone_conductor_update (world, node, in, &out); break;
+                case TORCH:      redstone_torch_update     (world, node, in, &out); break;
+                case PISTON:     redstone_piston_update    (world, node, in, &out); break;
+                case REPEATER:   redstone_repeater_update  (world, node, in, &out); break;
+                case COMPARATOR: redstone_comparator_update(world, node, in, &out); break;
+                case SWITCH:     redstone_switch_update    (world, node, in, &out); break;
                 default: ERROR("Encountered unknown block material");
             }
 
