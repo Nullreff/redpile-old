@@ -27,10 +27,11 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * ~~Command line interface~~
 * ~~Basic Redstone~~
 * More tests!
+* Block message passing
 * Tick caching
 * Map loading/saving
 * Restone [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
-* Scripting with [Lua](http://www.lua.org/)
+* Scripting
 * Sockets interface
 * Bukkit patch
 * Language bindings
