@@ -328,9 +328,9 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
 
                 switch (node->block.material)
                 {
-                    case EMPTY:      break;
-                    case AIR:        break;
-                    case INSULATOR:  break;
+                    case EMPTY:      continue;
+                    case AIR:        continue;
+                    case INSULATOR:  continue;
                     case WIRE:       redstone_wire_update      (world, node, in, &out); break;
                     case CONDUCTOR:  redstone_conductor_update (world, node, in, &out); break;
                     case TORCH:      redstone_torch_update     (world, node, in, &out); break;
