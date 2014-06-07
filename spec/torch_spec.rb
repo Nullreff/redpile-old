@@ -8,7 +8,7 @@ describe 'Torch' do
       run(
         'SET 0 0 0 TORCH UP',
         *(1..range).map {|r| "SET 0 0 #{r} WIRE"},
-        'TICK'
+        'TICK 2'
       ).should =~ /\(0,0,#{range}\) #{16 - range}\n/
     end
   end
@@ -18,7 +18,7 @@ describe 'Torch' do
     run(
       'SET 0 0 0 TORCH UP',
       *(1..end_block).map {|r| "SET 0 0 #{r} WIRE"},
-      'TICK',
+      'TICK 2',
       "GET 0 0 #{end_block}"
     ).should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
   end
@@ -31,7 +31,7 @@ describe 'Torch' do
       'SET 0 0 0 WIRE',
       'SET 0 0 1 WIRE',
       'SET 0 0 2 TORCH NORTH',
-      'TICK'
+      'TICK 2'
     ).should =~ /\(0,0,0\) 14\n/
   end
 
@@ -41,7 +41,7 @@ describe 'Torch' do
       'SET 0 0 0 TORCH SOUTH',
       'SET 0 0 -1 WIRE',
       'SET 0 0 -2 TORCH UP',
-      'TICK 2'
+      'TICK 3'
     ).should =~ /\(0,0,1\) 0\n/
   end
 
@@ -50,7 +50,7 @@ describe 'Torch' do
       'SET 0 0 0 TORCH UP',
       'SET 0 1 0 CONDUCTOR',
       'SET 0 2 0 WIRE',
-      'TICK'
+      'TICK 2'
     )
     result.should =~ /\(0,1,0\) 15/
     result.should =~ /\(0,2,0\) 15/
