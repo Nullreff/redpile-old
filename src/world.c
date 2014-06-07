@@ -59,6 +59,25 @@ static void world_reset_adjacent_nodes(World* world, BlockNode* node)
     }
 }
 
+static void world_instructions_free(World* world)
+{
+    for (int i = 0; i < world->instructions->size; i++)
+    {
+        for (Bucket* bucket = world->instructions->data + i; bucket != NULL; bucket = bucket->next)
+        {
+            RupQueue* queue = bucket->value;
+            while (queue != NULL)
+            {
+                RupQueue* temp = queue->next;
+                rup_queue_free(queue);
+                queue = temp;
+            }
+        }
+    }
+
+    hashmap_free(world->instructions);
+}
+
 static bool block_missing_noop(Block* block)
 {
     return false;
@@ -82,7 +101,7 @@ void world_free(World* world)
 {
     hashmap_free(world->hashmap);
     block_list_free(world->blocks);
-    hashmap_free(world->instructions);
+    world_instructions_free(world);
     free(world);
 }
 
