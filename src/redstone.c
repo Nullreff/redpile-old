@@ -57,10 +57,10 @@ static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         Direction dir = (Direction)i;
-        if (rup_inst_contains_location(in, location_move(node->block.location, dir, 1)))
+        BlockNode* found_node = NODE_ADJACENT(node, dir);
+        if (rup_inst_contains_location(in, found_node->block.location))
             continue;
 
-        BlockNode* found_node = NODE_ADJACENT(node, dir);
         if (can_power_from_behind(found_node, dir))
             UPDATE_POWER(found_node, power, 0);
     }
@@ -88,11 +88,12 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
     for (int i = 0; i < 4; i++)
     {
         Direction dir = directions[i];
-        if (rup_inst_contains_location(in, location_move(node->block.location, dir, 1)))
-            continue;
-
         // Directly adjacent
         BlockNode* found_node = NODE_ADJACENT(node, dir);
+
+        // Don't pass signal to any block that passed messages to this one
+        if (rup_inst_contains_location(in, found_node->block.location))
+            continue;
 
         // Down one block
         if (MATERIAL_IS(found_node, AIR))
@@ -343,6 +344,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
 
                 FOR_RUP(rup_node, &out)
                 {
+                    bool node_rerun = false;
                     if (rup_node->tick == world->ticks)
                     {
                         if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
@@ -353,7 +355,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                         }
                         else
                         {
-                            rerun = true;
+                            node_rerun = true;
                         }
                     }
 
@@ -375,7 +377,8 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                         }
                     }
 
-                    rup_queue_add(queue, &rup_node->inst);
+                    if (rup_queue_add(queue, &rup_node->inst))
+                        rerun |= node_rerun;
                 }
 
                 rup_free(&out);

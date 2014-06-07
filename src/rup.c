@@ -91,6 +91,25 @@ bool rup_inst_contains_location(RupInst* inst_list, Location loc)
     return false;
 }
 
+bool rup_inst_equals(RupInst* i1, RupInst* i2)
+{
+    bool equal = i1->command == i2->command && i1->source == i2->source;
+    if (!equal)
+        return false;
+
+    switch (i1->command)
+    {
+        case RUP_HALT:
+            return true;
+
+        case RUP_POWER:
+            return i1->value.power == i2->value.power;
+
+        case RUP_SWAP:
+            return i1->value.direction == i2->value.direction;
+    }
+}
+
 void rup_inst_print(RupInst* inst)
 {
     switch (inst->command)
@@ -168,8 +187,15 @@ void rup_queue_free(RupQueue* queue)
     free(queue);
 }
 
-void rup_queue_add(RupQueue* queue, RupInst* inst)
+bool rup_queue_add(RupQueue* queue, RupInst* inst)
 {
+    // TODO: Faster search
+    FOR_RUP_INST(found_inst, queue->insts)
+    {
+        if (rup_inst_equals(found_inst, inst))
+            return false;
+    }
+
     queue->size++;
 
     // TODO: Pre-allocate space instead of reallocing on each add
@@ -179,6 +205,7 @@ void rup_queue_add(RupQueue* queue, RupInst* inst)
 
     RupInst* new_inst = queue->insts + queue->size - 1;
     memcpy(new_inst, inst, sizeof(RupInst));
+    return true;
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
