@@ -150,12 +150,12 @@ void signal_callback(int signal)
         redpile_exit();
 }
 
-void rup_inst_run_callback(RupNode* node)
+void rup_inst_run_callback(RupInst* inst)
 {
     if (config.silent)
         return;
 
-    rup_node_print(node);
+    rup_inst_print(inst);
 }
 
 void completion_callback(const char* buffer, linenoiseCompletions* completions)

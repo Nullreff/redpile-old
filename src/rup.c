@@ -93,21 +93,7 @@ bool rup_inst_contains_location(RupInst* inst_list, Location loc)
 
 bool rup_inst_equals(RupInst* i1, RupInst* i2)
 {
-    bool equal = i1->command == i2->command && i1->source == i2->source;
-    if (!equal)
-        return false;
-
-    switch (i1->command)
-    {
-        case RUP_HALT:
-            return true;
-
-        case RUP_POWER:
-            return i1->value.power == i2->value.power;
-
-        case RUP_SWAP:
-            return i1->value.direction == i2->value.direction;
-    }
+    return i1->command == i2->command && i1->source == i2->source;
 }
 
 void rup_inst_print(RupInst* inst)
@@ -119,19 +105,19 @@ void rup_inst_print(RupInst* inst)
             break;
 
         case RUP_POWER:
-            printf("POWER %u from (%d,%d,%d)\n",
-                inst->value.power,
+            printf("POWER (%d,%d,%d) %u\n",
                 inst->source->block.location.x,
                 inst->source->block.location.y,
-                inst->source->block.location.z);
+                inst->source->block.location.z,
+                inst->value.power);
             break;
 
         case RUP_SWAP:
-            printf("SWAP %s from (%d,%d,%d)\n",
-                Directions[inst->value.direction],
+            printf("SWAP (%d,%d,%d) %s\n",
                 inst->source->block.location.x,
                 inst->source->block.location.y,
-                inst->source->block.location.z);
+                inst->source->block.location.z,
+                Directions[inst->value.direction]);
             break;
     }
 }
@@ -145,10 +131,7 @@ void rup_node_print(RupNode* node)
             break;
 
         case RUP_POWER:
-            printf("POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
-                node->inst.source->block.location.x,
-                node->inst.source->block.location.y,
-                node->inst.source->block.location.z,
+            printf("POWER (%d,%d,%d) %u\n",
                 node->target->block.location.x,
                 node->target->block.location.y,
                 node->target->block.location.z,
@@ -156,10 +139,7 @@ void rup_node_print(RupNode* node)
             break;
 
         case RUP_SWAP:
-            printf("SWAP (%d,%d,%d) -> (%d,%d,%d) %s\n",
-                node->inst.source->block.location.x,
-                node->inst.source->block.location.y,
-                node->inst.source->block.location.z,
+            printf("SWAP (%d,%d,%d) %s\n",
                 node->target->block.location.x,
                 node->target->block.location.y,
                 node->target->block.location.z,
@@ -187,13 +167,18 @@ void rup_queue_free(RupQueue* queue)
     free(queue);
 }
 
-bool rup_queue_add(RupQueue* queue, RupInst* inst)
+RupInst* rup_queue_add(RupQueue* queue, RupInst* inst)
 {
+    RupInst* new_inst;
+
     // TODO: Faster search
     FOR_RUP_INST(found_inst, queue->insts)
     {
         if (rup_inst_equals(found_inst, inst))
-            return false;
+        {
+            new_inst = found_inst;
+            goto end;
+        }
     }
 
     queue->size++;
@@ -202,10 +187,11 @@ bool rup_queue_add(RupQueue* queue, RupInst* inst)
     queue->insts = realloc(queue->insts, sizeof(RupInst) * (queue->size + 1));
     CHECK_OOM(queue->insts);
     queue->insts[queue->size] = rup_inst_create(RUP_HALT, NULL);
+    new_inst = queue->insts + queue->size - 1;
 
-    RupInst* new_inst = queue->insts + queue->size - 1;
+end:
     memcpy(new_inst, inst, sizeof(RupInst));
-    return true;
+    return new_inst;
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)

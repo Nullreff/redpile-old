@@ -66,7 +66,7 @@ void world_block_swap(World* world, Block* block1, Block* block2);
 void world_stats_print(WorldStats world);
 void world_set_block_missing_callback(World* world, bool (*callback)(Block* node));
 void world_clear_block_missing_callback(World* world);
-void world_run_rup_inst(World* world, BlockNode* target, RupInst* inst);
+bool world_run_rup_inst(World* world, RupInst* inst);
 
 #endif
 

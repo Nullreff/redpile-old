@@ -31,19 +31,6 @@
 #define MATERIAL_ISNT(node,name) ((node)->block.material != name)
 #define NODE_ADJACENT(node,dir) world_get_adjacent_block(world, node, dir)
 
-static bool can_power_from_behind(BlockNode* node, Direction dir)
-{
-    if (!M_BOUNDARY(node->block.material))
-        return false;
-
-    // Pistons should not be facing towards this block
-    if (node->block.material == PISTON)
-        return node->block.direction != direction_invert(dir);
-
-    // Otherwise, the back face must be attached to this block
-    return node->block.direction == dir;
-}
-
 static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, CONDUCTOR));
@@ -61,8 +48,7 @@ static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in
         if (rup_inst_contains_location(in, found_node->block.location))
             continue;
 
-        if (can_power_from_behind(found_node, dir))
-            UPDATE_POWER(found_node, power, 0);
+        UPDATE_POWER(found_node, power, 0);
     }
 }
 
@@ -118,12 +104,6 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
             MOVE_TO_NODE(found_node, UP);
             if (MATERIAL_ISNT(found_node, WIRE))
                 continue;
-        }
-        // Block in front
-        else if (MATERIAL_ISNT(found_node, WIRE) &&
-                !can_power_from_behind(found_node, dir))
-        {
-            continue;
         }
 
         UPDATE_POWER(found_node, wire_power, 0);
@@ -258,8 +238,7 @@ static void redstone_torch_update(World* world, BlockNode* node, RupInst* in, Ru
             continue;
 
         BlockNode* found_node = NODE_ADJACENT(node, dir);
-        if (can_power_from_behind(found_node, dir) || MATERIAL_IS(found_node, WIRE))
-            UPDATE_POWER(found_node, MAX_POWER, 1);
+        UPDATE_POWER(found_node, MAX_POWER, 1);
     }
 
     // Pass charge up to a conductor
@@ -291,7 +270,7 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count)
+void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned int count)
 {
     world_set_block_missing_callback(world, redstone_block_missing);
 
@@ -299,6 +278,8 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
     {
         bool rerun;
         unsigned int loops = 0;
+        RupQueue* output = rup_queue_allocate(0);
+
         do
         {
             rerun = false;
@@ -349,8 +330,9 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                     {
                         if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
                         {
-                            world_run_rup_inst(world, node, &rup_node->inst);
-                            inst_run_callback(rup_node);
+                            RupInst* new_inst = rup_queue_add(output, &rup_node->inst);
+                            // TODO: Rename 'source' to something more generic
+                            new_inst->source = rup_node->target;
                             continue;
                         }
                         else
@@ -392,6 +374,12 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
         }
         while (rerun);
 
+        FOR_RUP_INST(inst, output->insts)
+        {
+            world_run_rup_inst(world, inst);
+            inst_run_callback(inst);
+        }
+        rup_queue_free(output);
         world->ticks++;
     }
 
