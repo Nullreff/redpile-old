@@ -76,6 +76,6 @@ void rup_queue_free(RupQueue* queue);
 bool rup_queue_add(RupQueue* queue, RupInst* inst);
 RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick);
-void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick);
+RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick);
 
 #endif

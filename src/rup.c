@@ -226,22 +226,22 @@ RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
 }
 
 // Discard any queues that are older than the current tick
-void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick)
+RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick)
 {
-    RupQueue* queue = *queue_ptr;
+    RupQueue* return_queue;
 
     // Remove items at the head of the list
     while (true)
     {
         if (queue == NULL)
-            return;
+            return NULL;
 
         if (queue->tick >= current_tick)
             break;
 
-        *queue_ptr = queue->next;
+        return_queue = queue->next;
         rup_queue_free(queue);
-        queue = *queue_ptr;
+        queue = return_queue;
     }
 
     // Remove items further in
@@ -258,5 +258,7 @@ void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick
             queue->next = temp;
         }
     }
+
+    return return_queue;
 }
 

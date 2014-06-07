@@ -313,7 +313,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                 if (bucket != NULL)
                 {
                     RupQueue* queue = (RupQueue*)bucket->value;
-                    rup_queue_discard_old(&queue, world->ticks);
+                    bucket->value = rup_queue_discard_old(queue, world->ticks);
                     if (queue != NULL)
                     {
                         in = rup_queue_find_instructions(queue, world->ticks);
