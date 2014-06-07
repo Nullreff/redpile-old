@@ -70,15 +70,25 @@ RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
     return (RupInst){cmd, source, {0}};
 }
 
-unsigned int rup_inst_max_power(RupInst* found_inst)
+unsigned int rup_inst_max_power(RupInst* inst_list)
 {
     unsigned int max = 0;
-    FOR_RUP_INST(inst, found_inst)
+    FOR_RUP_INST(inst, inst_list)
     {
         if (inst->command == RUP_POWER && inst->value.power > max)
             max = inst->value.power;
     }
     return max;
+}
+
+bool rup_inst_contains_location(RupInst* inst_list, Location loc)
+{
+    FOR_RUP_INST(inst, inst_list)
+    {
+        if (location_equals(inst->source->block.location, loc))
+            return true;
+    }
+    return false;
 }
 
 void rup_inst_print(RupInst* inst)

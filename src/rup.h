@@ -67,6 +67,7 @@ void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNod
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
 unsigned int rup_inst_max_power(RupInst* inst);
+bool rup_inst_contains_location(RupInst* inst_list, Location loc);
 void rup_inst_print(RupInst* node);
 void rup_node_print(RupNode* node);
 

@@ -57,6 +57,9 @@ static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         Direction dir = (Direction)i;
+        if (rup_inst_contains_location(in, location_move(node->block.location, dir, 1)))
+            continue;
+
         BlockNode* found_node = NODE_ADJACENT(node, dir);
         if (can_power_from_behind(found_node, dir))
             UPDATE_POWER(found_node, power, 0);
@@ -85,6 +88,8 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
     for (int i = 0; i < 4; i++)
     {
         Direction dir = directions[i];
+        if (rup_inst_contains_location(in, location_move(node->block.location, dir, 1)))
+            continue;
 
         // Directly adjacent
         BlockNode* found_node = NODE_ADJACENT(node, dir);
