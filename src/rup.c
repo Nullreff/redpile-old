@@ -213,7 +213,7 @@ void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick
             break;
 
         *queue_ptr = queue->next;
-        free(queue);
+        rup_queue_free(queue);
         queue = *queue_ptr;
     }
 
@@ -227,7 +227,7 @@ void rup_queue_discard_old(RupQueue** queue_ptr, unsigned long long current_tick
         else
         {
             RupQueue* temp = queue->next->next;
-            free(queue->next);
+            rup_queue_free(queue->next);
             queue->next = temp;
         }
     }
