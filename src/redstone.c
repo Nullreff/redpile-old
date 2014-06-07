@@ -381,7 +381,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                 rup_free(&out);
             }
 
-            if (loops > 30)
+            if (loops > 15)
             {
                 printf("Loop detected, exiting...\n");
                 break;
