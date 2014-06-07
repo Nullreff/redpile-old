@@ -270,6 +270,68 @@ static bool redstone_block_missing(Block* block)
     return true;
 }
 
+static RupInst* find_input(World* world, BlockNode* node)
+{
+    Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+    if (bucket == NULL)
+        return NULL;
+
+    RupQueue* queue = (RupQueue*)bucket->value;
+    bucket->value = rup_queue_discard_old(queue, world->ticks);
+    if (queue == NULL)
+        return NULL;
+
+    queue->executed = true;
+    return rup_queue_find_instructions(queue, world->ticks);
+}
+
+static bool process_output(World* world, BlockNode* node, Rup* out, RupQueue* output)
+{
+    bool rerun = false;
+
+    FOR_RUP(rup_node, out)
+    {
+        bool node_rerun = false;
+        if (rup_node->tick == world->ticks)
+        {
+            if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
+            {
+                RupInst* new_inst = rup_queue_add(output, &rup_node->inst);
+                // TODO: Rename 'source' to something more generic
+                new_inst->source = rup_node->target;
+                continue;
+            }
+            else
+            {
+                node_rerun = true;
+            }
+        }
+
+        Bucket* bucket = hashmap_get(world->instructions, rup_node->target->block.location, true);
+        RupQueue* queue = (RupQueue*)bucket->value;
+        if (queue == NULL)
+        {
+            queue = rup_queue_allocate(rup_node->tick);
+            bucket->value = queue;
+        }
+        else
+        {
+            queue = rup_queue_find(queue, rup_node->tick);
+            if (queue == NULL)
+            {
+                queue = rup_queue_allocate(rup_node->tick);
+                queue->next = bucket->value;
+                bucket->value = queue;
+            }
+        }
+
+        if (rup_queue_add(queue, &rup_node->inst))
+            rerun |= node_rerun;
+    }
+
+    return rerun;
+}
+
 void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned int count)
 {
     world_set_block_missing_callback(world, redstone_block_missing);
@@ -287,26 +349,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
 
             FOR_BLOCK_LIST(world->blocks)
             {
-                RupInst* in = NULL;
-                Rup out = rup_empty();
-
-                Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
-                if (bucket != NULL)
-                {
-                    RupQueue* queue = (RupQueue*)bucket->value;
-                    bucket->value = rup_queue_discard_old(queue, world->ticks);
-                    if (queue != NULL)
-                    {
-                        in = rup_queue_find_instructions(queue, world->ticks);
-                        queue->executed = true;
-                    }
-                }
-
+                RupInst* in = find_input(world, node);
                 if (in == NULL)
                 {
                     RupInst inst = rup_inst_create(RUP_HALT, NULL);
                     in = &inst;
                 }
+                Rup out = rup_empty();
 
                 switch (node->block.material)
                 {
@@ -323,46 +372,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned i
                     default: ERROR("Encountered unknown block material");
                 }
 
-                FOR_RUP(rup_node, &out)
-                {
-                    bool node_rerun = false;
-                    if (rup_node->tick == world->ticks)
-                    {
-                        if (location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
-                        {
-                            RupInst* new_inst = rup_queue_add(output, &rup_node->inst);
-                            // TODO: Rename 'source' to something more generic
-                            new_inst->source = rup_node->target;
-                            continue;
-                        }
-                        else
-                        {
-                            node_rerun = true;
-                        }
-                    }
-
-                    Bucket* bucket = hashmap_get(world->instructions, rup_node->target->block.location, true);
-                    RupQueue* queue = (RupQueue*)bucket->value;
-                    if (queue == NULL)
-                    {
-                        queue = rup_queue_allocate(rup_node->tick);
-                        bucket->value = queue;
-                    }
-                    else
-                    {
-                        queue = rup_queue_find(queue, rup_node->tick);
-                        if (queue == NULL)
-                        {
-                            queue = rup_queue_allocate(rup_node->tick);
-                            queue->next = bucket->value;
-                            bucket->value = queue;
-                        }
-                    }
-
-                    if (rup_queue_add(queue, &rup_node->inst))
-                        rerun |= node_rerun;
-                }
-
+                rerun |= process_output(world, node, &out, output);
                 rup_free(&out);
             }
 
