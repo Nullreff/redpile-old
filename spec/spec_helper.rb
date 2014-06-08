@@ -12,13 +12,13 @@ module Helpers
       @process.close_write
       result = @process.read
       @process.close
-      raise "Memory Leak detected " unless $?.to_i.zero?
+      raise "Exited with status code #{$?.to_i}" unless $?.to_i.zero?
       result
     end
   end
 
   def redpile(opts = '')
-    process = IO.popen("#{VALGRIND_CMD} #{REDPILE_CMD} #{opts} 2>&1", 'r+')
+    process = IO.popen("#{ENV['VALGRIND'] ? VALGRIND_CMD : ''} #{REDPILE_CMD} #{opts} 2>&1", 'r+')
     Redpile.new(process)
   end
   

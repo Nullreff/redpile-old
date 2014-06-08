@@ -22,6 +22,9 @@ cmake_debug: ${BUILD_DIR}
 test: cmake_debug
 	${RSPEC}
 
+memtest: cmake_debug
+	VALGRIND=true ${RSPEC}
+
 bench: cmake_release
 	${BENCHMARK} 1000
 
