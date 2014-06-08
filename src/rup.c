@@ -87,8 +87,10 @@ void rup_remove_by_source(Rup* rup, BlockNode* source)
         if (node->next != NULL)
             node->next->prev = node->prev;
 
+        RupNode* deleted = node;
+        node = node->prev;
+        free(deleted);
         rup->size--;
-        free(node);
     }
 }
 
@@ -140,7 +142,7 @@ RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst)
     RupInst* new_inst = insts + size;
 
     memcpy(new_inst, inst, sizeof(RupInst));
-    return new_inst;
+    return insts;
 }
 
 unsigned int rup_inst_max_power(RupInst* inst_list)
@@ -250,10 +252,9 @@ RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst)
     return NULL;
 }
 
-RupInst* rup_queue_add(RupQueue* queue, RupInst* inst)
+void rup_queue_add(RupQueue* queue, RupInst* inst)
 {
     queue->insts = rup_inst_append(queue->insts, queue->size++, inst);
-    return queue->insts;
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)

@@ -282,8 +282,8 @@ static RupInst* find_input(World* world, BlockNode* node, Rup* output)
         goto end;
     }
 
+    bucket->value = rup_queue_discard_old(bucket->value, world->ticks);
     RupQueue* queue = (RupQueue*)bucket->value;
-    bucket->value = rup_queue_discard_old(queue, world->ticks);
     if (queue == NULL)
     {
         insts = rup_inst_empty_allocate();
@@ -305,7 +305,7 @@ end:
     FOR_RUP(rup_node, output)
     {
         if (rup_node->target == node)
-            rup_inst_append(insts, size, &rup_node->inst);
+            insts = rup_inst_append(insts, size, &rup_node->inst);
     }
 
     return insts;
@@ -382,9 +382,9 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
 
             switch (node->block.material)
             {
-                case EMPTY:      continue;
-                case AIR:        continue;
-                case INSULATOR:  continue;
+                case EMPTY:      free(in); continue;
+                case AIR:        free(in); continue;
+                case INSULATOR:  free(in); continue;
                 case WIRE:       redstone_wire_update      (world, node, in, &out); break;
                 case CONDUCTOR:  redstone_conductor_update (world, node, in, &out); break;
                 case TORCH:      redstone_torch_update     (world, node, in, &out); break;

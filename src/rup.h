@@ -80,7 +80,7 @@ void rup_node_print(RupNode* node);
 RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);
 RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst);
-RupInst* rup_queue_add(RupQueue* queue, RupInst* inst);
+void rup_queue_add(RupQueue* queue, RupInst* inst);
 RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick);
