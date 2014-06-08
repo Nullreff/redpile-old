@@ -195,22 +195,23 @@ void world_clear_block_missing_callback(World* world)
     world->block_missing = block_missing_noop;
 }
 
-bool world_run_rup_inst(World* world, RupInst* inst)
+bool world_run_rup(World* world, RupNode* rup_node)
 {
-    switch (inst->command)
+    switch (rup_node->inst.command)
     {
         case RUP_HALT:
             // NOOP
             break;
 
         case RUP_POWER:
-            if (inst->source->block.power == inst->value.power)
+            if (rup_node->inst.source->block.power == rup_node->inst.value.power)
                 return false;
-            inst->source->block.power = inst->value.power;
+            rup_node->inst.source->block.power = rup_node->inst.value.power;
             break;
 
         case RUP_SWAP:
-            world_block_swap(world, &inst->source->block, &inst->source->adjacent[inst->value.direction]->block);
+            world_block_swap(world, &rup_node->inst.source->block,
+                &rup_node->inst.source->adjacent[rup_node->inst.value.direction]->block);
             break;
     }
 

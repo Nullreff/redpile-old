@@ -21,6 +21,6 @@
 
 #include "rup.h"
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupInst*), unsigned int count);
+void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count);
 
 #endif

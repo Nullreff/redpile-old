@@ -114,7 +114,7 @@ error:
     return false;
 }
 
-void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupInst*))
+void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupNode*))
 {
     Block new_block;
     Block* block;

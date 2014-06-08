@@ -192,3 +192,29 @@ void block_list_remove(BlockList* blocks, BlockNode* node)
     free(node);
 }
 
+void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target)
+{
+    // Already in the right place
+    if (node->next == target)
+        return;
+
+    // Remove 'target' from the list
+    if (target->prev != NULL)
+        target->prev->next = target->next;
+    else
+        blocks->nodes = target->next;
+
+    if (target->next != NULL)
+        target->next->prev = target->prev;
+
+    // Add 'target' after 'node'
+    if (node->next != NULL)
+    {
+        target->next = node->next;
+        node->next->prev = target;
+    }
+
+    node->next = target;
+    target->prev = node;
+}
+

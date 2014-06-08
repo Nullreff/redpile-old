@@ -35,7 +35,7 @@ void rup_free(Rup* rup)
     }
 }
 
-static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNode* source, BlockNode* target)
+static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNode* source, BlockNode* target)
 {
     RupNode* node = malloc(sizeof(RupNode));
     CHECK_OOM(node);
@@ -43,31 +43,68 @@ static RupNode* rup_push(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNod
     node->inst = rup_inst_create(cmd, source);
     node->tick = tick;
     node->target = target;
+    rup_push(rup, node);
+    return node;
+}
 
+void rup_push(Rup* rup, RupNode* node)
+{
     node->next = rup->nodes;
     if (rup->nodes != NULL)
         rup->nodes->prev = node;
     rup->nodes = node;
-
     rup->size++;
-    return node;
 }
 
 void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power)
 {
-    RupNode* node = rup_push(rup, RUP_POWER, tick, source, target);
+    RupNode* node = rup_push_inst(rup, RUP_POWER, tick, source, target);
     node->inst.value.power = power;
 }
 
 void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction)
 {
-    RupNode* node = rup_push(rup, RUP_SWAP, tick, source, target);
+    RupNode* node = rup_push_inst(rup, RUP_SWAP, tick, source, target);
     node->inst.value.direction = direction;
 }
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
 {
     return (RupInst){cmd, source, {0}};
+}
+
+unsigned int rup_inst_size(RupInst* insts)
+{
+    unsigned int size = 0;
+    for (RupInst* i = insts; i->command != RUP_HALT; i++)
+        size++;
+    return size;
+}
+
+RupInst* rup_inst_clone(RupInst* insts, unsigned int size)
+{
+    RupInst* new_insts = malloc(sizeof(RupInst) * size + 1);
+    memcpy(new_insts, insts, sizeof(RupInst) * size + 1);
+    return new_insts;
+}
+
+RupInst* rup_inst_empty_allocate(void)
+{
+    RupInst* inst = malloc(sizeof(RupInst));
+    *inst = rup_inst_create(RUP_HALT, NULL);
+    return inst;
+}
+
+RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst)
+{
+    // TODO: Pre-allocate space instead of reallocing on each add
+    insts = realloc(insts, sizeof(RupInst) * (size + 2));
+    CHECK_OOM(insts);
+    insts[size + 1] = rup_inst_create(RUP_HALT, NULL);
+    RupInst* new_inst = insts + size;
+
+    memcpy(new_inst, inst, sizeof(RupInst));
+    return new_inst;
 }
 
 unsigned int rup_inst_max_power(RupInst* inst_list)
@@ -156,7 +193,6 @@ RupQueue* rup_queue_allocate(unsigned long long tick)
     *queue->insts = rup_inst_create(RUP_HALT, NULL);
     queue->size = 0;
     queue->tick = tick;
-    queue->executed = false;
     queue->next = NULL;
     return queue;
 }
@@ -167,31 +203,20 @@ void rup_queue_free(RupQueue* queue)
     free(queue);
 }
 
-RupInst* rup_queue_add(RupQueue* queue, RupInst* inst)
+RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst)
 {
-    RupInst* new_inst;
-
     // TODO: Faster search
     FOR_RUP_INST(found_inst, queue->insts)
     {
         if (rup_inst_equals(found_inst, inst))
-        {
-            new_inst = found_inst;
-            goto end;
-        }
+            return found_inst;
     }
+    return NULL;
+}
 
-    queue->size++;
-
-    // TODO: Pre-allocate space instead of reallocing on each add
-    queue->insts = realloc(queue->insts, sizeof(RupInst) * (queue->size + 1));
-    CHECK_OOM(queue->insts);
-    queue->insts[queue->size] = rup_inst_create(RUP_HALT, NULL);
-    new_inst = queue->insts + queue->size - 1;
-
-end:
-    memcpy(new_inst, inst, sizeof(RupInst));
-    return new_inst;
+RupInst* rup_queue_add(RupQueue* queue, RupInst* inst)
+{
+    return rup_inst_append(queue->insts, queue->size++, inst);
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
@@ -214,7 +239,7 @@ RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
 // Discard any queues that are older than the current tick
 RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick)
 {
-    RupQueue* return_queue;
+    RupQueue* return_queue = NULL;
 
     // Remove items at the head of the list
     while (true)

@@ -53,7 +53,6 @@ typedef struct RupQueue {
     RupInst* insts;
     unsigned int size;
     unsigned long long tick;
-    bool executed;
     struct RupQueue* next;
 } RupQueue;
 
@@ -62,10 +61,15 @@ typedef struct RupQueue {
 
 Rup rup_empty(void);
 void rup_free(Rup* rup);
+void rup_push(Rup* rup, RupNode* node);
 void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
 void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
+unsigned int rup_inst_size(RupInst* insts);
+RupInst* rup_inst_clone(RupInst* source, unsigned int size);
+RupInst* rup_inst_empty_allocate(void);
+RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst);
 unsigned int rup_inst_max_power(RupInst* inst);
 bool rup_inst_contains_location(RupInst* inst_list, Location loc);
 void rup_inst_print(RupInst* node);
@@ -73,6 +77,7 @@ void rup_node_print(RupNode* node);
 
 RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);
+RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst);
 RupInst* rup_queue_add(RupQueue* queue, RupInst* inst);
 RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick);
