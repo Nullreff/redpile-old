@@ -312,10 +312,8 @@ static void process_output(World* world, BlockNode* node, Rup* input, Rup* outpu
         if (rup_node->tick == world->ticks &&
             !location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
         {
-            // This command needs to be processed in the same tick.
-            // 1. Find the block that it targets
-            // 2. Remove any commands the block generated this round
-            // 3. Move the block in front of this one
+            rup_remove_by_source(output, rup_node->target);
+            block_list_move_after(world->blocks, node, rup_node->target);
         }
 
         rup_push(output, rup_node);

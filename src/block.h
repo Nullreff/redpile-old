@@ -95,5 +95,6 @@ BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
 BlockNode* block_list_append(BlockList* blocks, Block* block);
 void block_list_remove(BlockList* blocks, BlockNode* node);
+void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target);
 
 #endif

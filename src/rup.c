@@ -56,6 +56,26 @@ void rup_push(Rup* rup, RupNode* node)
     rup->size++;
 }
 
+void rup_remove_by_source(Rup* rup, BlockNode* source)
+{
+    FOR_RUP(node, rup)
+    {
+        if (node->inst.source != source)
+            continue;
+
+        if (node->prev != NULL)
+            node->prev->next = node->next;
+        else
+            rup->nodes = node->next;
+
+        if (node->next != NULL)
+            node->next->prev = node->prev;
+
+        rup->size--;
+        free(node);
+    }
+}
+
 void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power)
 {
     RupNode* node = rup_push_inst(rup, RUP_POWER, tick, source, target);
