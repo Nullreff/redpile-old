@@ -3,8 +3,9 @@ module Helpers
   VALGRIND_CMD = 'valgrind -q --error-exitcode=1 --leak-check=full --show-reachable=yes'
 
   class Redpile
-    def initialize(process)
+    def initialize(process, test_exit)
       @process = process
+      @test_exit = test_exit
     end
 
     def run(*commands)
@@ -12,14 +13,14 @@ module Helpers
       @process.close_write
       result = @process.read
       @process.close
-      raise "Exited with status code #{$?.to_i}" unless $?.to_i.zero?
+      raise "Exited with status code #{$?.to_i}" if @test_exit && $?.to_i > 0
       result
     end
   end
 
-  def redpile(opts = '')
+  def redpile(opts = '', test_exit = true)
     process = IO.popen("#{ENV['VALGRIND'] ? VALGRIND_CMD : ''} #{REDPILE_CMD} #{opts} 2>&1", 'r+')
-    Redpile.new(process)
+    Redpile.new(process, test_exit)
   end
   
   def run(*commands)
