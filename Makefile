@@ -1,6 +1,5 @@
 BUILD_DIR := build
 BENCHMARK := ./build/redpile --benchmark
-VALGRIND := valgrind --error-exitcode=1 --leak-check=full ${BENCHMARK} 100
 RSPEC := rspec
 COMPILE := make --no-print-directory
 
@@ -25,7 +24,4 @@ test: cmake_debug
 
 bench: cmake_release
 	${BENCHMARK} 1000
-
-memcheck: cmake_debug
-	${VALGRIND}
 

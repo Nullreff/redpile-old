@@ -1,4 +1,7 @@
 module Helpers
+  REDPILE_CMD = './build/redpile'
+  VALGRIND_CMD = 'valgrind -q --error-exitcode=1 --leak-check=full --show-reachable=yes'
+
   class Redpile
     def initialize(process)
       @process = process
@@ -9,12 +12,13 @@ module Helpers
       @process.close_write
       result = @process.read
       @process.close
+      raise "Memory Leak detected " unless $?.to_i.zero?
       result
     end
   end
 
   def redpile(opts = '')
-    process = IO.popen("./build/redpile #{opts} 2>&1", 'r+')
+    process = IO.popen("#{VALGRIND_CMD} #{REDPILE_CMD} #{opts} 2>&1", 'r+')
     Redpile.new(process)
   end
   

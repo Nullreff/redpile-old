@@ -6,5 +6,5 @@ compiler:
   - clang
   - gcc
 
-script: make test memcheck bench
+script: make test bench
 
