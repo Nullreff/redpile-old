@@ -56,6 +56,22 @@ void rup_push(Rup* rup, RupNode* node)
     rup->size++;
 }
 
+void rup_merge(Rup* rup, Rup* append)
+{
+    if (rup->nodes == NULL)
+    {
+        rup->nodes = append->nodes;
+        return;
+    }
+
+    RupNode* end = rup->nodes;
+    while (end->next != NULL)
+        end = end->next;
+
+    append->nodes->prev = end;
+    end->next = append->nodes;
+}
+
 void rup_remove_by_source(Rup* rup, BlockNode* source)
 {
     FOR_RUP(node, rup)
@@ -103,8 +119,8 @@ unsigned int rup_inst_size(RupInst* insts)
 
 RupInst* rup_inst_clone(RupInst* insts, unsigned int size)
 {
-    RupInst* new_insts = malloc(sizeof(RupInst) * size + 1);
-    memcpy(new_insts, insts, sizeof(RupInst) * size + 1);
+    RupInst* new_insts = malloc(sizeof(RupInst) * (size + 1));
+    memcpy(new_insts, insts, sizeof(RupInst) * (size + 1));
     return new_insts;
 }
 
@@ -236,7 +252,8 @@ RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst)
 
 RupInst* rup_queue_add(RupQueue* queue, RupInst* inst)
 {
-    return rup_inst_append(queue->insts, queue->size++, inst);
+    queue->insts = rup_inst_append(queue->insts, queue->size++, inst);
+    return queue->insts;
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)

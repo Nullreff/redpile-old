@@ -291,6 +291,12 @@ static RupInst* find_input(World* world, BlockNode* node, Rup* output)
     }
 
     RupInst* found_insts = rup_queue_find_instructions(queue, world->ticks);
+    if (found_insts == NULL)
+    {
+        insts = rup_inst_empty_allocate();
+        goto end;
+    }
+
     size = rup_inst_size(found_insts);
     insts = rup_inst_clone(found_insts, size);
 
@@ -315,9 +321,9 @@ static void process_output(World* world, BlockNode* node, Rup* input, Rup* outpu
             rup_remove_by_source(output, rup_node->target);
             block_list_move_after(world->blocks, node, rup_node->target);
         }
-
-        rup_push(output, rup_node);
     }
+
+    rup_merge(output, input);
 }
 
 static void run_output(World* world, Rup* output, void (*inst_run_callback)(RupNode*))
@@ -388,9 +394,9 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                 case SWITCH:     redstone_switch_update    (world, node, in, &out); break;
                 default: ERROR("Encountered unknown block material");
             }
+            free(in);
 
             process_output(world, node, &out, &output);
-            rup_free(&out);
 
             loops++;
             if (loops > world->blocks->size * 2)

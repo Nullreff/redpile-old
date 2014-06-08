@@ -62,6 +62,7 @@ typedef struct RupQueue {
 Rup rup_empty(void);
 void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
+void rup_merge(Rup* rup, Rup* append);
 void rup_remove_by_source(Rup* rup, BlockNode* source);
 void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
 void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
