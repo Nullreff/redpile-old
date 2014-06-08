@@ -18,7 +18,7 @@ module Helpers
     end
   end
 
-  def redpile(opts = '', test_exit = true)
+  def redpile(opts = '', test_exit = ENV['VALGRIND'])
     process = IO.popen("#{ENV['VALGRIND'] ? VALGRIND_CMD : ''} #{REDPILE_CMD} #{opts} 2>&1", 'r+')
     Redpile.new(process, test_exit)
   end
