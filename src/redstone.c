@@ -373,11 +373,6 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
         FOR_BLOCK_LIST(world->blocks)
         {
             RupInst* in = find_input(world, node, &output);
-            if (in == NULL)
-            {
-                in = malloc(sizeof(Rup));
-                *in = rup_inst_create(RUP_HALT, NULL);
-            }
             Rup out = rup_empty();
 
             switch (node->block.material)
