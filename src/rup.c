@@ -138,10 +138,8 @@ RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst)
     // TODO: Pre-allocate space instead of reallocing on each add
     insts = realloc(insts, sizeof(RupInst) * (size + 2));
     CHECK_OOM(insts);
+    insts[size] = *inst;
     insts[size + 1] = rup_inst_create(RUP_HALT, NULL);
-    RupInst* new_inst = insts + size;
-
-    memcpy(new_inst, inst, sizeof(RupInst));
     return insts;
 }
 
