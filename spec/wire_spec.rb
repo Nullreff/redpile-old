@@ -48,10 +48,10 @@ describe 'Wire' do
       'SET 0 0 1 WIRE',
       'SET 1 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
-      'TICK 2'
+      'TICK 2',
+      'GET 0 0 2'
     )
-    result.should_not =~ /\(0,0,2\)/
-    result.should =~ /\(1,0,1\) 14/
+    result.should =~ /\(0,0,2\) 0 CONDUCTOR/
   end
 
   it 'diverts power from a condutor when a wire is on the right' do
@@ -60,10 +60,10 @@ describe 'Wire' do
       'SET 0 0 1 WIRE',
       'SET -1 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
-      'TICK 2'
+      'TICK 2',
+      'GET 0 0 2'
     )
-    result.should_not =~ /\(0,0,2\)/
-    result.should =~ /\(-1,0,1\) 14/
+    result.should =~ /\(0,0,2\) 0 CONDUCTOR/
   end
 
   it 'diverts power from a condutor when a wire is on both sides' do
@@ -73,11 +73,10 @@ describe 'Wire' do
        'SET 1 0 1 WIRE',
        'SET -1 0 1 WIRE',
        'SET 0 0 2 CONDUCTOR',
-       'TICK 2'
+       'TICK 2',
+      'GET 0 0 2'
     )
-    result.should_not =~ /\(0,0,2\)/
-    result.should =~ /\(1,0,1\) 14/
-    result.should =~ /\(-1,0,1\) 14/
+    result.should =~ /\(0,0,2\) 0 CONDUCTOR/
   end
 
   it 'does not divert power from a conductor if there is a wire on top' do
