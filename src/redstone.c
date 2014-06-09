@@ -357,7 +357,7 @@ static void run_output(World* world, Rup* output, void (*inst_run_callback)(RupN
         }
 
         if (rup_queue_find_inst(queue, &rup_node->inst) == NULL)
-           rup_queue_add(queue, &rup_node->inst);
+            rup_queue_add(queue, &rup_node->inst);
     }
 }
 

@@ -76,6 +76,7 @@ unsigned int rup_inst_max_power(RupInst* inst);
 bool rup_inst_contains_location(RupInst* inst_list, Location loc);
 void rup_inst_print(RupInst* node);
 void rup_node_print(RupNode* node);
+void rup_node_print_verbose(RupNode* node);
 
 RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);

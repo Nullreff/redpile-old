@@ -50,6 +50,7 @@ static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Blo
 void rup_push(Rup* rup, RupNode* node)
 {
     node->next = rup->nodes;
+    node->prev = NULL;
     if (rup->nodes != NULL)
         rup->nodes->prev = node;
     rup->nodes = node;
@@ -74,10 +75,14 @@ void rup_merge(Rup* rup, Rup* append)
 
 void rup_remove_by_source(Rup* rup, BlockNode* source)
 {
-    FOR_RUP(node, rup)
+    RupNode* node = rup->nodes;
+    while (node != NULL)
     {
         if (node->inst.source != source)
+        {
+            node = node->next;
             continue;
+        }
 
         if (node->prev != NULL)
             node->prev->next = node->next;
@@ -88,7 +93,7 @@ void rup_remove_by_source(Rup* rup, BlockNode* source)
             node->next->prev = node->prev;
 
         RupNode* deleted = node;
-        node = node->prev;
+        node = node->next;
         free(deleted);
         rup->size--;
     }
@@ -221,6 +226,40 @@ void rup_node_print(RupNode* node)
     }
 }
 
+void rup_node_print_verbose(RupNode* node)
+{
+    switch (node->inst.command)
+    {
+        case RUP_HALT:
+            printf("HALT");
+            break;
+
+        case RUP_POWER:
+            printf("%llu POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
+                node->tick,
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                node->inst.value.power);
+            break;
+
+        case RUP_SWAP:
+            printf("%llu SWAP (%d,%d,%d) -> (%d,%d,%d) %s\n",
+                node->tick,
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                Directions[node->inst.value.direction]);
+            break;
+    }
+}
+
 RupQueue* rup_queue_allocate(unsigned long long tick)
 {
     RupQueue* queue = malloc(sizeof(RupQueue));
@@ -275,7 +314,7 @@ RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
 // Discard any queues that are older than the current tick
 RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick)
 {
-    RupQueue* return_queue = NULL;
+    RupQueue* return_queue = queue;
 
     // Remove items at the head of the list
     while (true)
