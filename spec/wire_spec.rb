@@ -87,12 +87,10 @@ describe 'Wire' do
        'SET -1 0 1 WIRE',
        'SET 0 0 2 CONDUCTOR',
        'SET 0 1 2 WIRE',
-       'TICK 2'
+       'TICK 2',
+       'GET 0 0 2'
     )
-    result.should =~ /\(0,0,2\) 14/
-    result.should =~ /\(0,1,2\) 14/
-    result.should =~ /\(1,0,1\) 14/
-    result.should =~ /\(-1,0,1\) 14/
+    result.should =~ /\(0,0,2\) 14 CONDUCTOR/
   end
 
   it 'propigates power to a conductor underneath wire' do
