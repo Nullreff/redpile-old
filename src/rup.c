@@ -47,6 +47,29 @@ static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Blo
     return node;
 }
 
+static bool rup_node_equals(RupNode* n1, RupNode* n2)
+{
+    bool equals = n1->inst.command == n2->inst.command &&
+                  n1->inst.source == n2->inst.source &&
+                  n1->target == n2->target &&
+                  n1->tick == n2->tick;
+
+    if (!equals)
+        return false;
+
+    switch (n1->inst.command)
+    {
+        case RUP_HALT:
+            return true;
+
+        case RUP_POWER:
+            return n1->inst.value.power == n2->inst.value.power;
+
+        case RUP_SWAP:
+            return n1->inst.value.direction == n2->inst.value.direction;
+    }
+}
+
 void rup_push(Rup* rup, RupNode* node)
 {
     node->next = rup->nodes;
@@ -59,18 +82,73 @@ void rup_push(Rup* rup, RupNode* node)
 
 void rup_merge(Rup* rup, Rup* append)
 {
+    // Exit early if theres nothing in the existing list
     if (rup->nodes == NULL)
     {
         rup->nodes = append->nodes;
+        rup->size = append->size;
         return;
     }
 
-    RupNode* end = rup->nodes;
-    while (end->next != NULL)
-        end = end->next;
+    // Otherwise find ther first non-duplicate node
+    RupNode* start = append->nodes;
+    RupNode* node = append->nodes;
+    while (true)
+    {
+        if (node == NULL)
+            return;
 
-    append->nodes->prev = end;
-    end->next = append->nodes;
+        if (!rup_contains(rup, node))
+        {
+            node->prev = NULL;
+            node = node->next;
+            break;
+        }
+
+        start = node->next;
+        free(node);
+        node = start;
+    }
+    assert(start != NULL);
+
+    // Then remove any duplicate nodes afterwards
+    unsigned int count = 1;
+    RupNode* end = start;
+    while (node != NULL)
+    {
+        if (!rup_contains(rup, node))
+        {
+            end = node;
+            node = node->next;
+            count++;
+        }
+        else
+        {
+            node->next->prev = node->prev;
+            node->prev->next = node->next;
+            RupNode* temp = node->next;
+            free(node);
+            node = temp;
+        }
+    }
+    assert(end != NULL);
+
+    // Insert the new instructions at the begining
+    end->next = rup->nodes;
+    rup->nodes->prev = end;
+    rup->nodes = start;
+    rup->size += count;
+    append->nodes = NULL;
+}
+
+bool rup_contains(Rup* rup, RupNode* node)
+{
+    FOR_RUP(found_node, rup)
+    {
+        if (rup_node_equals(found_node, node))
+            return true;
+    }
+    return false;
 }
 
 void rup_remove_by_source(Rup* rup, BlockNode* source)

@@ -316,7 +316,8 @@ static void process_output(World* world, BlockNode* node, Rup* input, Rup* outpu
     FOR_RUP(rup_node, input)
     {
         if (rup_node->tick == world->ticks &&
-            !location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
+            !location_equals(rup_node->target->block.location, rup_node->inst.source->block.location) &&
+            !rup_contains(output, rup_node))
         {
             rup_remove_by_source(output, rup_node->target);
             block_list_move_after(world->blocks, node, rup_node->target);
