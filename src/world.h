@@ -60,6 +60,7 @@ World* world_allocate(unsigned int size);
 void world_free(World* world);
 void world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
+void world_remove_block(World* world, Location location);
 BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_block_swap(World* world, Block* block1, Block* block2);

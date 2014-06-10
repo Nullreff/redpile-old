@@ -65,8 +65,14 @@ static bool rup_node_equals(RupNode* n1, RupNode* n2)
         case RUP_POWER:
             return n1->inst.value.power == n2->inst.value.power;
 
-        case RUP_SWAP:
+        case RUP_MOVE:
             return n1->inst.value.direction == n2->inst.value.direction;
+
+        case RUP_REMOVE:
+            return true;
+
+        default:
+            ERROR("Unknown RUP command\n");
     }
 }
 
@@ -183,10 +189,15 @@ void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNo
     node->inst.value.power = power;
 }
 
-void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction)
+void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction)
 {
-    RupNode* node = rup_push_inst(rup, RUP_SWAP, tick, source, target);
+    RupNode* node = rup_push_inst(rup, RUP_MOVE, tick, source, target);
     node->inst.value.direction = direction;
+}
+
+void rup_cmd_remove(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target)
+{
+    rup_push_inst(rup, RUP_REMOVE, tick, source, target);
 }
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
@@ -279,12 +290,19 @@ void rup_inst_print(RupInst* inst)
                 inst->value.power);
             break;
 
-        case RUP_SWAP:
-            printf("SWAP (%d,%d,%d) %s\n",
+        case RUP_MOVE:
+            printf("MOVE (%d,%d,%d) %s\n",
                 inst->source->block.location.x,
                 inst->source->block.location.y,
                 inst->source->block.location.z,
                 Directions[inst->value.direction]);
+            break;
+
+        case RUP_REMOVE:
+            printf("REMOVE (%d,%d,%d)\n",
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z);
             break;
     }
 }
@@ -305,12 +323,19 @@ void rup_node_print(RupNode* node)
                 node->inst.value.power);
             break;
 
-        case RUP_SWAP:
+        case RUP_MOVE:
             printf("SWAP (%d,%d,%d) %s\n",
                 node->target->block.location.x,
                 node->target->block.location.y,
                 node->target->block.location.z,
                 Directions[node->inst.value.direction]);
+            break;
+
+        case RUP_REMOVE:
+            printf("REMOVE (%d,%d,%d)\n",
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z);
             break;
     }
 }
@@ -335,8 +360,8 @@ void rup_node_print_verbose(RupNode* node)
                 node->inst.value.power);
             break;
 
-        case RUP_SWAP:
-            printf("%llu SWAP (%d,%d,%d) -> (%d,%d,%d) %s\n",
+        case RUP_MOVE:
+            printf("%llu MOVE (%d,%d,%d) -> (%d,%d,%d) %s\n",
                 node->tick,
                 node->inst.source->block.location.x,
                 node->inst.source->block.location.y,
@@ -345,6 +370,17 @@ void rup_node_print_verbose(RupNode* node)
                 node->target->block.location.y,
                 node->target->block.location.z,
                 Directions[node->inst.value.direction]);
+            break;
+
+        case RUP_REMOVE:
+            printf("%llu REMOVE (%d,%d,%d) -> (%d,%d,%d)\n",
+                node->tick,
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z);
             break;
     }
 }

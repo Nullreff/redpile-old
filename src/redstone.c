@@ -23,18 +23,23 @@
 #include "redstone.h"
 
 #define MAX_POWER 15
+#define NODE_ADJACENT(node,dir) world_get_adjacent_block(world, node, dir)
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
-#define UPDATE_POWER(NODE,POWER,DELAY) rup_cmd_power(out, world->ticks + (DELAY), node, NODE, POWER)
 #define MATERIAL_IS(node,name) ((node)->block.material == name)
 #define MATERIAL_ISNT(node,name) ((node)->block.material != name)
-#define NODE_ADJACENT(node,dir) world_get_adjacent_block(world, node, dir)
+
+#define SEND_POWER(NODE,POWER,DELAY) rup_cmd_power(out, world->ticks + (DELAY), node, NODE, POWER)
+#define SEND_MOVE(NODE,DIR,DELAY) rup_cmd_move(out, world->ticks + (DELAY), node, NODE, DIR)
+#define POWER(POWER) SEND_POWER(node, POWER, 0)
+#define MOVE(DIR) SEND_MOVE(node, DIR, 0)
+#define REMOVE() rup_cmd_remove(out, world->ticks, node, node)
 
 static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in, Rup* out)
 {
     assert(MATERIAL_IS(node, CONDUCTOR));
 
     unsigned int power = rup_inst_max_power(in);
-    UPDATE_POWER(node, power, 0);
+    SEND_POWER(node, power, 0);
 
     if (power < MAX_POWER)
         return;
@@ -46,7 +51,7 @@ static void redstone_conductor_update(World* world, BlockNode* node, RupInst* in
         if (rup_inst_contains_location(in, found_node->block.location))
             continue;
 
-        UPDATE_POWER(found_node, power, 0);
+        SEND_POWER(found_node, power, 0);
     }
 }
 
@@ -58,7 +63,7 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
     bool covered = above != NULL && MATERIAL_ISNT(above, AIR) && MATERIAL_ISNT(above, EMPTY);
 
     int new_power = rup_inst_max_power(in);
-    UPDATE_POWER(node, new_power, 0);
+    SEND_POWER(node, new_power, 0);
 
     if (new_power == 0)
         return;
@@ -93,7 +98,7 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
             if (MATERIAL_ISNT(right, WIRE) && MATERIAL_ISNT(left, WIRE) &&
                 rup_inst_contains_power(in, behind))
             {
-                UPDATE_POWER(found_node, wire_power, 0);
+                SEND_POWER(found_node, wire_power, 0);
             }
 
             if (covered)
@@ -105,7 +110,7 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
         }
 
         if (!rup_inst_contains_location(in, found_node->block.location))
-            UPDATE_POWER(found_node, wire_power, 0);
+            SEND_POWER(found_node, wire_power, 0);
     }
 
     // Block below
@@ -114,7 +119,7 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
     if (!rup_inst_contains_location(in, down_node->block.location) &&
         MATERIAL_IS(down_node, CONDUCTOR))
     {
-        UPDATE_POWER(down_node, new_power, 0);
+        SEND_POWER(down_node, new_power, 0);
     }
 }
 
@@ -123,13 +128,21 @@ static void redstone_piston_update(World* world, BlockNode* node, RupInst* in, R
     assert(MATERIAL_IS(node, PISTON));
 
     unsigned int new_power = rup_inst_max_power(in);
-    UPDATE_POWER(node, new_power, 0);
+    SEND_POWER(node, new_power, 0);
 
     BlockNode* first = NODE_ADJACENT(node, node->block.direction);
     BlockNode* second = NODE_ADJACENT(first, node->block.direction);
 
-    if (MATERIAL_IS(new_power == 0 ? first : second, AIR))
-        rup_cmd_swap(out, 1, node, first, node->block.direction);
+    if (new_power == 0)
+    {
+        if (MATERIAL_IS(first, AIR))
+            SEND_MOVE(first, node->block.direction, 1);
+    }
+    else
+    {
+        if (MATERIAL_IS(second, AIR))
+            SEND_MOVE(second, direction_invert(node->block.direction), 1);
+    }
 }
 
 static void redstone_comparator_update(World* world, BlockNode* node, RupInst* in, Rup* out)
@@ -157,7 +170,7 @@ static void redstone_comparator_update(World* world, BlockNode* node, RupInst* i
             new_power = inst->value.power;
     }
 
-    UPDATE_POWER(node, new_power, 0);
+    SEND_POWER(node, new_power, 0);
 
     if (new_power == 0)
         return;
@@ -175,7 +188,7 @@ static void redstone_comparator_update(World* world, BlockNode* node, RupInst* i
 
     // Pass charge to the wire or conductor in front
     BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
-    UPDATE_POWER(found_node, new_power, 1);
+    SEND_POWER(found_node, new_power, 1);
 }
 
 static void redstone_repeater_update(World* world, BlockNode* node, RupInst* in, Rup* out)
@@ -203,14 +216,14 @@ static void redstone_repeater_update(World* world, BlockNode* node, RupInst* in,
             new_power = inst->value.power;
     }
 
-    UPDATE_POWER(node, new_power, 0);
+    SEND_POWER(node, new_power, 0);
 
     if (new_power == 0 || side_powered)
         return;
 
     // Pass charge to the wire or conductor in front after a delay
     BlockNode* found_node = NODE_ADJACENT(node, node->block.direction);
-    UPDATE_POWER(found_node, MAX_POWER, node->block.state + 1);
+    SEND_POWER(found_node, MAX_POWER, node->block.state + 1);
 }
 
 static void redstone_torch_update(World* world, BlockNode* node, RupInst* in, Rup* out)
@@ -226,7 +239,7 @@ static void redstone_torch_update(World* world, BlockNode* node, RupInst* in, Ru
             new_power = inst->value.power;
     }
 
-    UPDATE_POWER(node, new_power, 0);
+    SEND_POWER(node, new_power, 0);
 
     if (new_power > 0)
         return;
@@ -241,13 +254,13 @@ static void redstone_torch_update(World* world, BlockNode* node, RupInst* in, Ru
             continue;
 
         BlockNode* found_node = NODE_ADJACENT(node, dir);
-        UPDATE_POWER(found_node, MAX_POWER, 1);
+        SEND_POWER(found_node, MAX_POWER, 1);
     }
 
     // Pass charge up to a conductor
     BlockNode* up_node = NODE_ADJACENT(node, UP);
     if (MATERIAL_IS(up_node, CONDUCTOR))
-        UPDATE_POWER(up_node, MAX_POWER, 1);
+        SEND_POWER(up_node, MAX_POWER, 1);
 }
 
 static void redstone_switch_update(World* world, BlockNode* node, RupInst* in, Rup* out)
@@ -262,7 +275,7 @@ static void redstone_switch_update(World* world, BlockNode* node, RupInst* in, R
     {
         BlockNode* found_node = NODE_ADJACENT(node, dir);
         if (MATERIAL_ISNT(found_node, CONDUCTOR) || dir == behind)
-            UPDATE_POWER(found_node, MAX_POWER, 1);
+            SEND_POWER(found_node, MAX_POWER, 1);
     }
 
 }

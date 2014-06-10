@@ -22,9 +22,10 @@
 #include "block.h"
 
 typedef enum {
-    RUP_HALT = 0,
-    RUP_POWER = 1,
-    RUP_SWAP  = 2,
+    RUP_HALT   = 0,
+    RUP_POWER  = 1,
+    RUP_MOVE   = 2,
+    RUP_REMOVE = 3
 } RupCmd;
 
 typedef struct {
@@ -66,7 +67,7 @@ void rup_merge(Rup* rup, Rup* append);
 bool rup_contains(Rup* rup, RupNode* node);
 void rup_remove_by_source(Rup* rup, BlockNode* source);
 void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
-void rup_cmd_swap(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
+void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
 unsigned int rup_inst_size(RupInst* insts);

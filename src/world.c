@@ -109,12 +109,7 @@ void world_set_block(World* world, Block* block)
 {
     if (block->material == EMPTY)
     {
-        BlockNode* node = hashmap_remove(world->hashmap, block->location);
-        if (node != NULL)
-        {
-            world_reset_adjacent_nodes(world, node);
-            block_list_remove(world->blocks, node);
-        }
+        world_remove_block(world, block->location);
         return;
     }
 
@@ -149,6 +144,16 @@ BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir
         }
     }
     return adjacent;
+}
+
+void world_remove_block(World* world, Location location)
+{
+    BlockNode* node = hashmap_remove(world->hashmap, location);
+    if (node != NULL)
+    {
+        world_reset_adjacent_nodes(world, node);
+        block_list_remove(world->blocks, node);
+    }
 }
 
 void world_block_swap(World* world, Block* block1, Block* block2)
@@ -209,9 +214,13 @@ bool world_run_rup(World* world, RupNode* rup_node)
             rup_node->inst.source->block.power = rup_node->inst.value.power;
             break;
 
-        case RUP_SWAP:
+        case RUP_MOVE:
             world_block_swap(world, &rup_node->inst.source->block,
                 &rup_node->inst.source->adjacent[rup_node->inst.value.direction]->block);
+            break;
+
+        case RUP_REMOVE:
+            world_remove_block(world, rup_node->target->block.location);
             break;
     }
 
