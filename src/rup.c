@@ -269,6 +269,16 @@ bool rup_inst_contains_power(RupInst* inst_list, Location loc)
     return false;
 }
 
+RupInst* rup_inst_find_move(RupInst* inst_list)
+{
+    FOR_RUP_INST(inst, inst_list)
+    {
+        if (inst->command == RUP_MOVE)
+            return inst;
+    }
+    return NULL;
+}
+
 bool rup_inst_equals(RupInst* i1, RupInst* i2)
 {
     return i1->command == i2->command && i1->source == i2->source;
@@ -324,7 +334,7 @@ void rup_node_print(RupNode* node)
             break;
 
         case RUP_MOVE:
-            printf("SWAP (%d,%d,%d) %s\n",
+            printf("MOVE (%d,%d,%d) %s\n",
                 node->target->block.location.x,
                 node->target->block.location.y,
                 node->target->block.location.z,

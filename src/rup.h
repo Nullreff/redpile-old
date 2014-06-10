@@ -68,6 +68,7 @@ bool rup_contains(Rup* rup, RupNode* node);
 void rup_remove_by_source(Rup* rup, BlockNode* source);
 void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
 void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
+void rup_cmd_remove(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target);
 
 RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
 unsigned int rup_inst_size(RupInst* insts);
@@ -77,6 +78,7 @@ RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst);
 unsigned int rup_inst_max_power(RupInst* inst);
 bool rup_inst_contains_location(RupInst* inst_list, Location loc);
 bool rup_inst_contains_power(RupInst* inst_list, Location loc);
+RupInst* rup_inst_find_move(RupInst* inst_list);
 void rup_inst_print(RupInst* node);
 void rup_node_print(RupNode* node);
 void rup_node_print_verbose(RupNode* node);

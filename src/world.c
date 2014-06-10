@@ -83,6 +83,19 @@ static bool block_missing_noop(Block* block)
     return false;
 }
 
+static bool world_fill_missing(World* world, Location loc)
+{
+    Block block = block_empty();
+    block.location = loc;
+    block.system = true;
+    if (world->block_missing(&block))
+    {
+        world_set_block(world, &block);
+        return true;
+    }
+    return false;
+}
+
 World* world_allocate(unsigned int size)
 {
     World* world = malloc(sizeof(World));
@@ -134,14 +147,8 @@ BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir
     if (adjacent == NULL)
     {
         Location loc = location_move(node->block.location, dir, 1);
-        Block block = block_empty();
-        block.location = loc;
-        block.system = true;
-        if (world->block_missing(&block))
-        {
-            world_set_block(world, &block);
+        if (world_fill_missing(world, loc))
             adjacent = node->adjacent[dir];
-        }
     }
     return adjacent;
 }
@@ -156,16 +163,13 @@ void world_remove_block(World* world, Location location)
     }
 }
 
-void world_block_swap(World* world, Block* block1, Block* block2)
+void world_block_move(World* world, Block* block, Direction direction)
 {
-    Block copy1 = *block1;
-    Block copy2 = *block2;
+    Block copy = *block;
+    copy.location = location_move(block->location, direction, 1);
 
-    copy1.location = block2->location;
-    copy2.location = block1->location;
-
-    world_set_block(world, &copy1);
-    world_set_block(world, &copy2);
+    world_remove_block(world, block->location);
+    world_set_block(world, &copy);
 }
 
 WorldStats world_get_stats(World* world)
@@ -215,8 +219,8 @@ bool world_run_rup(World* world, RupNode* rup_node)
             break;
 
         case RUP_MOVE:
-            world_block_swap(world, &rup_node->inst.source->block,
-                &rup_node->inst.source->adjacent[rup_node->inst.value.direction]->block);
+            world_block_move(world, &rup_node->target->block, rup_node->inst.value.direction);
+            world_fill_missing(world, rup_node->target->block.location);
             break;
 
         case RUP_REMOVE:
