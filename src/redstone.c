@@ -77,10 +77,6 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
         // Directly adjacent
         BlockNode* found_node = NODE_ADJACENT(node, dir);
 
-        // Don't pass signal to any block that passed messages to this one
-        if (rup_inst_contains_location(in, found_node->block.location))
-            continue;
-
         // Down one block
         if (MATERIAL_IS(found_node, AIR))
         {
@@ -105,6 +101,10 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
             if (MATERIAL_ISNT(found_node, WIRE))
                 continue;
         }
+
+        // Don't pass signal to any block that passed messages to this one
+        if (rup_inst_contains_location(in, found_node->block.location))
+            continue;
 
         UPDATE_POWER(found_node, wire_power, 0);
     }

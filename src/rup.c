@@ -43,7 +43,6 @@ static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Blo
     node->inst = rup_inst_create(cmd, source);
     node->tick = tick;
     node->target = target;
-    node->executed = false;
     rup_push(rup, node);
     return node;
 }
