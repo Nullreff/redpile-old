@@ -25,8 +25,6 @@
 #define MAX_POWER 15
 #define MOVE_TO_NODE(node,dir) node = NODE_ADJACENT(node, dir)
 #define UPDATE_POWER(NODE,POWER,DELAY) rup_cmd_power(out, world->ticks + (DELAY), node, NODE, POWER)
-#define POWER(node) (node)->block.power
-#define REPEATER_POWERED(node) (node->block.power_state > node->block.state)
 #define MATERIAL_IS(node,name) ((node)->block.material == name)
 #define MATERIAL_ISNT(node,name) ((node)->block.material != name)
 #define NODE_ADJACENT(node,dir) world_get_adjacent_block(world, node, dir)
