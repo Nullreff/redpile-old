@@ -399,8 +399,8 @@ static void run_output(World* world, Rup* output, void (*inst_run_callback)(RupN
         if (rup_node->tick == world->ticks &&
             location_equals(rup_node->target->block.location, rup_node->inst.source->block.location))
         {
-            world_run_rup(world, rup_node);
             inst_run_callback(rup_node);
+            world_run_rup(world, rup_node);
             continue;
         }
 

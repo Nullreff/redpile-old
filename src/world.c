@@ -206,6 +206,7 @@ void world_clear_block_missing_callback(World* world)
 
 bool world_run_rup(World* world, RupNode* rup_node)
 {
+    Location target_loc = rup_node->target->block.location;
     switch (rup_node->inst.command)
     {
         case RUP_HALT:
@@ -220,7 +221,7 @@ bool world_run_rup(World* world, RupNode* rup_node)
 
         case RUP_MOVE:
             world_block_move(world, &rup_node->target->block, rup_node->inst.value.direction);
-            world_fill_missing(world, rup_node->target->block.location);
+            world_fill_missing(world, target_loc);
             break;
 
         case RUP_REMOVE:
