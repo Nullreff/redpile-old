@@ -218,3 +218,20 @@ bool world_run_rup(World* world, RupNode* rup_node)
     return true;
 }
 
+RupInst* world_find_instructions(World* world, BlockNode* node)
+{
+    Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+    if (bucket == NULL)
+        return NULL;
+
+    bucket->value = rup_queue_discard_old(bucket->value, world->ticks);
+    RupQueue* queue = (RupQueue*)bucket->value;
+    if (queue == NULL)
+        return NULL;
+
+    RupInst* insts = rup_queue_find_instructions(queue, world->ticks);
+    if (insts == NULL)
+        return NULL;
+
+    return insts;
+}

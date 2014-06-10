@@ -40,6 +40,7 @@ typedef struct RupNode {
     RupInst inst;
     BlockNode* target;
     unsigned long long tick;
+    bool executed;
     struct RupNode* next;
     struct RupNode* prev;
 } RupNode;

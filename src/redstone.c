@@ -272,35 +272,19 @@ static bool redstone_block_missing(Block* block)
 
 static RupInst* find_input(World* world, BlockNode* node, Rup* output)
 {
-    RupInst* insts;
+    RupInst* insts = world_find_instructions(world, node);
     unsigned int size = 0;
 
-    Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
-    if (bucket == NULL)
+    if (insts != NULL)
+    {
+        size = rup_inst_size(insts);
+        insts = rup_inst_clone(insts, size);
+    }
+    else
     {
         insts = rup_inst_empty_allocate();
-        goto end;
     }
 
-    bucket->value = rup_queue_discard_old(bucket->value, world->ticks);
-    RupQueue* queue = (RupQueue*)bucket->value;
-    if (queue == NULL)
-    {
-        insts = rup_inst_empty_allocate();
-        goto end;
-    }
-
-    RupInst* found_insts = rup_queue_find_instructions(queue, world->ticks);
-    if (found_insts == NULL)
-    {
-        insts = rup_inst_empty_allocate();
-        goto end;
-    }
-
-    size = rup_inst_size(found_insts);
-    insts = rup_inst_clone(found_insts, size);
-
-end:
     // Include any instructions generated this tick
     FOR_RUP(rup_node, output)
     {
