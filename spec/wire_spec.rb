@@ -29,8 +29,9 @@ describe 'Wire' do
       'SET 0 0 2 CONDUCTOR',
       'SET 0 1 2 WIRE',
       'SET 0 1 1 CONDUCTOR',
-      'TICK 2'
-    ).should_not =~ /\(0,1,2\)/
+      'TICK 2',
+      'GET 0 1 2'
+    ).should =~ /^\(0,1,2\) 0 WIRE/
   end
 
   it 'powers an adjacent conductor' do
@@ -39,7 +40,7 @@ describe 'Wire' do
       'SET 0 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'TICK 2'
-    ).should =~ /\(0,0,2\) 15/
+    ).should =~ /\(0,0,2\) 14/
   end
 
   it 'diverts power from a condutor when a wire is on the left' do

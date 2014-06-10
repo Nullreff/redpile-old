@@ -75,6 +75,7 @@ RupInst* rup_inst_empty_allocate(void);
 RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst);
 unsigned int rup_inst_max_power(RupInst* inst);
 bool rup_inst_contains_location(RupInst* inst_list, Location loc);
+bool rup_inst_contains_power(RupInst* inst_list, Location loc);
 void rup_inst_print(RupInst* node);
 void rup_node_print(RupNode* node);
 void rup_node_print_verbose(RupNode* node);

@@ -90,9 +90,13 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
             // Add charge to the block
             BlockNode* right = NODE_ADJACENT(node, direction_left(dir));
             BlockNode* left = NODE_ADJACENT(node, direction_right(dir));
+            Location behind = location_move(node->block.location, direction_invert(dir), 1);
 
-            if (MATERIAL_ISNT(right, WIRE) && MATERIAL_ISNT(left, WIRE))
-                UPDATE_POWER(found_node, new_power, 0);
+            if (MATERIAL_ISNT(right, WIRE) && MATERIAL_ISNT(left, WIRE) &&
+                rup_inst_contains_power(in, behind))
+            {
+                UPDATE_POWER(found_node, wire_power, 0);
+            }
 
             if (covered)
                 continue;
@@ -102,17 +106,18 @@ static void redstone_wire_update(World* world, BlockNode* node, RupInst* in, Rup
                 continue;
         }
 
-        // Don't pass signal to any block that passed messages to this one
-        if (rup_inst_contains_location(in, found_node->block.location))
-            continue;
-
-        UPDATE_POWER(found_node, wire_power, 0);
+        if (!rup_inst_contains_location(in, found_node->block.location))
+            UPDATE_POWER(found_node, wire_power, 0);
     }
 
     // Block below
     BlockNode* down_node = NODE_ADJACENT(node, DOWN);
-    if (MATERIAL_IS(down_node, CONDUCTOR))
+
+    if (!rup_inst_contains_location(in, down_node->block.location) &&
+        MATERIAL_IS(down_node, CONDUCTOR))
+    {
         UPDATE_POWER(down_node, new_power, 0);
+    }
 }
 
 static void redstone_piston_update(World* world, BlockNode* node, RupInst* in, Rup* out)
@@ -299,6 +304,7 @@ static void process_output(World* world, BlockNode* node, Rup* input, Rup* outpu
 {
     FOR_RUP(rup_node, input)
     {
+
         if (rup_node->tick == world->ticks &&
             !location_equals(rup_node->target->block.location, rup_node->inst.source->block.location) &&
             !rup_contains(output, rup_node))

@@ -247,6 +247,17 @@ bool rup_inst_contains_location(RupInst* inst_list, Location loc)
     return false;
 }
 
+bool rup_inst_contains_power(RupInst* inst_list, Location loc)
+{
+    FOR_RUP_INST(inst, inst_list)
+    {
+        if (location_equals(inst->source->block.location, loc) &&
+            inst->command == RUP_POWER && inst->value.power > 0)
+            return true;
+    }
+    return false;
+}
+
 bool rup_inst_equals(RupInst* i1, RupInst* i2)
 {
     return i1->command == i2->command && i1->source == i2->source;
