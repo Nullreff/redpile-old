@@ -204,7 +204,9 @@ int main(int argc, char* argv[])
     Instruction instruction;
     while ((line = linenoise(prompt)) != NULL)
     {
-        linenoiseHistoryAdd(line);
+        // Leaks memory for some reason (disabled)
+        // linenoiseHistoryAdd(line);
+
         if (line[0] == '#')
             ; // Empty command
         else if (instruction_parse(line, &instruction))
