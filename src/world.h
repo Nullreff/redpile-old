@@ -22,6 +22,7 @@
 #include "block.h"
 #include "hashmap.h"
 #include "redpile.h"
+#include "rup.h"
 
 typedef struct {
     // All blocks are stored in a linked list.
@@ -36,23 +37,22 @@ typedef struct {
     // blocks during a redstone tick.
     bool (*block_missing)(Block* node);
 
+    Hashmap* instructions;
+
     // Additional stats
-    unsigned int ticks; // Redstone ticks
+    unsigned long long ticks; // Redstone ticks
 } World;
 
 typedef struct {
-    unsigned int ticks;
+    unsigned long long ticks;
     unsigned int blocks;
-    unsigned int block_boundries;
-    unsigned int block_powerables;
-    unsigned int block_unpowerables;
     unsigned int hashmap_allocated;
     unsigned int hashmap_overflow;
     unsigned int hashmap_resizes;
     unsigned int hashmap_max_depth;
 } WorldStats;
 
-#define STAT_PRINT(stats,stat) printf(#stat ": %u\n", stats.stat)
+#define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)
 #define BLOCK_INDEX(world,block) (block - world->blocks->data)
 #define INDEX_BLOCK(world,index) (world->blocks->data + index)
 
@@ -60,12 +60,15 @@ World* world_allocate(unsigned int size);
 void world_free(World* world);
 void world_set_block(World* world, Block* block);
 Block* world_get_block(World* world, Location location);
+void world_remove_block(World* world, Location location);
 BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir);
 WorldStats world_get_stats(World* world);
-void world_block_swap(World* world, Block* block1, Block* block2);
+void world_block_move(World* world, Block* block, Direction direction);
 void world_stats_print(WorldStats world);
 void world_set_block_missing_callback(World* world, bool (*callback)(Block* node));
 void world_clear_block_missing_callback(World* world);
+bool world_run_rup(World* world, RupNode* rup_node);
+RupInst* world_find_instructions(World* world, BlockNode* node);
 
 #endif
 

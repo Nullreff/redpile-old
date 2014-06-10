@@ -39,7 +39,7 @@ typedef struct {
 
 int command_parse(char* command, Command* result);
 bool instruction_parse(char* instruction, Instruction* result);
-void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupInst*));
+void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupNode*));
 
 #endif
 

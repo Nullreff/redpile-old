@@ -150,15 +150,12 @@ void signal_callback(int signal)
         redpile_exit();
 }
 
-void rup_inst_run_callback(RupInst* inst)
+void rup_inst_run_callback(RupNode* node)
 {
     if (config.silent)
         return;
 
-    if (inst->command == RUP_POWER && inst->value.power == inst->node->block.power)
-        return;
-
-    rup_inst_print(inst);
+    rup_node_print(node);
 }
 
 void completion_callback(const char* buffer, linenoiseCompletions* completions)
@@ -207,7 +204,9 @@ int main(int argc, char* argv[])
     Instruction instruction;
     while ((line = linenoise(prompt)) != NULL)
     {
-        linenoiseHistoryAdd(line);
+        // Leaks memory for some reason (disabled)
+        // linenoiseHistoryAdd(line);
+
         if (line[0] == '#')
             ; // Empty command
         else if (instruction_parse(line, &instruction))

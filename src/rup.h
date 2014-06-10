@@ -20,49 +20,75 @@
 #define REDPILE_RUP_H
 
 #include "block.h"
-#include "world.h"
 
-#define RUP_CMD_COUNT 4
 typedef enum {
-    RUP_POWER = 0,
-    RUP_STATE = 1,
-    RUP_SWAP  = 2,
+    RUP_HALT   = 0,
+    RUP_POWER  = 1,
+    RUP_MOVE   = 2,
+    RUP_REMOVE = 3
 } RupCmd;
 
-typedef struct RupInst {
+typedef struct {
     RupCmd command;
-    Location source;
-    BlockNode* node;
+    BlockNode* source;
     union {
         unsigned int power;
-        unsigned int state;
-        Material material;
-        BlockNode* target;
+        Direction direction;
     } value;
-    struct RupInst* next;
 } RupInst;
 
+typedef struct RupNode {
+    RupInst inst;
+    BlockNode* target;
+    unsigned long long tick;
+    struct RupNode* next;
+    struct RupNode* prev;
+} RupNode;
+
 typedef struct {
-    RupInst* instructions;
+    RupNode* nodes;
     unsigned int size;
 } Rup;
 
-typedef struct {;
-    RupInst* instructions[RUP_CMD_COUNT];
-    unsigned int sizes[RUP_CMD_COUNT];
-} Runmap;
+typedef struct RupQueue {
+    RupInst* insts;
+    unsigned int size;
+    unsigned long long tick;
+    struct RupQueue* next;
+} RupQueue;
 
-Rup* rup_allocate(void);
+#define FOR_RUP(NODE,RUP) for (RupNode* (NODE) = (RUP)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
+#define FOR_RUP_INST(INST,LIST) for (RupInst* (INST) = (LIST); (INST)->command != RUP_HALT; (INST)++)
+
+Rup rup_empty(void);
 void rup_free(Rup* rup);
-void rup_cmd_power(Rup* rup, Location source, BlockNode* node, unsigned int power);
-void rup_cmd_state(Rup* rup, Location source, BlockNode* node, unsigned int state);
-void rup_cmd_swap(Rup* rup, Location source, BlockNode* node, BlockNode* target);
-RupInst rup_inst_create(RupCmd cmd, Location source, BlockNode* node);
-void rup_inst_run(World* world, RupInst* inst);
-void rup_inst_print(RupInst* inst);
+void rup_push(Rup* rup, RupNode* node);
+void rup_merge(Rup* rup, Rup* append);
+bool rup_contains(Rup* rup, RupNode* node);
+void rup_remove_by_source(Rup* rup, BlockNode* source);
+void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
+void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
+void rup_cmd_remove(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target);
 
-Runmap* runmap_allocate(void);
-void runmap_free(Runmap* runmap);
-void runmap_import(Runmap* runmap, Rup* rup);
+RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
+unsigned int rup_inst_size(RupInst* insts);
+RupInst* rup_inst_clone(RupInst* source, unsigned int size);
+RupInst* rup_inst_empty_allocate(void);
+RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst);
+unsigned int rup_inst_max_power(RupInst* inst);
+bool rup_inst_contains_location(RupInst* inst_list, Location loc);
+bool rup_inst_contains_power(RupInst* inst_list, Location loc);
+RupInst* rup_inst_find_move(RupInst* inst_list);
+void rup_inst_print(RupInst* node);
+void rup_node_print(RupNode* node);
+void rup_node_print_verbose(RupNode* node);
+
+RupQueue* rup_queue_allocate(unsigned long long tick);
+void rup_queue_free(RupQueue* queue);
+RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst);
+void rup_queue_add(RupQueue* queue, RupInst* inst);
+RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
+RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick);
+RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick);
 
 #endif

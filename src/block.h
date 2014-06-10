@@ -52,8 +52,6 @@ typedef struct {
 
     // Redstone state
     unsigned int power:4;
-    unsigned int power_state:2;
-    bool powered:1;
     bool modified:1;
 
     // True if this block was added by the system
@@ -72,26 +70,16 @@ typedef struct BlockNode {
     struct BlockNode* prev;
 } BlockNode;
 
-#define BLOCK_TYPE_COUNT 3
-typedef enum {
-    BOUNDARY,
-    POWERABLE,
-    UNPOWERABLE
-} BlockType;
-
 typedef struct {
-    BlockNode* nodes[BLOCK_TYPE_COUNT];
-    unsigned int sizes[BLOCK_TYPE_COUNT];
-    unsigned int total;
+    BlockNode* nodes;
+    unsigned int size;
 } BlockList;
 
 #define M_BOUNDARY(material) (material >= TORCH)
 #define M_UNPOWERABLE(material) (material <= INSULATOR)
 #define M_HAS_DIRECTION(material) (material >= TORCH)
 #define M_HAS_STATE(material) (material >= REPEATER)
-#define FOR_BLOCK_LIST(NODE,LIST,TYPE)\
-    NODE = LIST->nodes[TYPE];\
-    for (unsigned int index = 0, max = LIST->sizes[TYPE]; index < max; NODE = NODE->next, index++)
+#define FOR_BLOCK_LIST(LIST) for (BlockNode* node = LIST->nodes; node != NULL; node = node->next)
 
 int material_parse(char* material, Material* result);
 
@@ -107,5 +95,6 @@ BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
 BlockNode* block_list_append(BlockList* blocks, Block* block);
 void block_list_remove(BlockList* blocks, BlockNode* node);
+void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target);
 
 #endif

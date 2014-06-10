@@ -8,7 +8,7 @@ describe 'Piston' do
       'SET 0 0 1 PISTON SOUTH',
       'SET 0 0 2 CONDUCTOR',
       'SET 0 0 3 AIR',
-      'TICK 2',
+      'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
     ).should =~ /\(0,0,2\) 0 AIR.*\(0,0,3\) 0 CONDUCTOR/m
@@ -19,7 +19,7 @@ describe 'Piston' do
       'SET 0 0 0 TORCH UP',
       'SET 0 0 1 PISTON SOUTH',
       'SET 0 0 2 CONDUCTOR',
-      'TICK 2',
+      'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
     ).should =~ /\(0,0,2\) 0 AIR.*\(0,0,3\) 0 CONDUCTOR/m
@@ -31,9 +31,9 @@ describe 'Piston' do
       'SET 0 0 1 PISTON SOUTH',
       'SET 0 0 2 CONDUCTOR',
       'SET 0 0 3 AIR',
-      'TICK 2',
+      'TICK 3',
       'SET 0 0 0 EMPTY',
-      'TICK 2',
+      'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
     ).should =~ /\(0,0,2\) 0 CONDUCTOR.*\(0,0,3\) 0 AIR/m

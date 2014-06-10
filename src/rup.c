@@ -19,142 +19,467 @@
 #include <stdlib.h>
 #include "rup.h"
 
-Rup* rup_allocate(void)
+Rup rup_empty(void)
 {
-    Rup* rup = malloc(sizeof(Rup));
-    CHECK_OOM(rup);
-    rup->instructions = NULL;
-    rup->size = 0;
-    return rup;
+    return (Rup){NULL, 0};
 }
 
 void rup_free(Rup* rup)
 {
-    free(rup);
+    RupNode* node = rup->nodes;
+    while (node != NULL)
+    {
+        RupNode* temp = node->next;
+        free(node);
+        node = temp;
+    }
 }
 
-static RupInst* rup_push(Rup* rup, Location source, RupCmd cmd, BlockNode* node)
+static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNode* source, BlockNode* target)
+{
+    RupNode* node = malloc(sizeof(RupNode));
+    CHECK_OOM(node);
+
+    node->inst = rup_inst_create(cmd, source);
+    node->tick = tick;
+    node->target = target;
+    rup_push(rup, node);
+    return node;
+}
+
+static bool rup_node_equals(RupNode* n1, RupNode* n2)
+{
+    bool equals = n1->inst.command == n2->inst.command &&
+                  n1->inst.source == n2->inst.source &&
+                  n1->target == n2->target &&
+                  n1->tick == n2->tick;
+
+    if (!equals)
+        return false;
+
+    switch (n1->inst.command)
+    {
+        case RUP_HALT:
+            return true;
+
+        case RUP_POWER:
+            return n1->inst.value.power == n2->inst.value.power;
+
+        case RUP_MOVE:
+            return n1->inst.value.direction == n2->inst.value.direction;
+
+        case RUP_REMOVE:
+            return true;
+
+        default:
+            ERROR("Unknown RUP command\n");
+    }
+}
+
+void rup_push(Rup* rup, RupNode* node)
+{
+    node->next = rup->nodes;
+    node->prev = NULL;
+    if (rup->nodes != NULL)
+        rup->nodes->prev = node;
+    rup->nodes = node;
+    rup->size++;
+}
+
+void rup_merge(Rup* rup, Rup* append)
+{
+    // Exit early if theres nothing in the existing list
+    if (rup->nodes == NULL)
+    {
+        rup->nodes = append->nodes;
+        rup->size = append->size;
+        return;
+    }
+
+    // Otherwise find ther first non-duplicate node
+    RupNode* start = append->nodes;
+    RupNode* node = append->nodes;
+    while (true)
+    {
+        if (node == NULL)
+            return;
+
+        if (!rup_contains(rup, node))
+        {
+            node->prev = NULL;
+            node = node->next;
+            break;
+        }
+
+        start = node->next;
+        free(node);
+        node = start;
+    }
+    assert(start != NULL);
+
+    // Then remove any duplicate nodes afterwards
+    unsigned int count = 1;
+    RupNode* end = start;
+    while (node != NULL)
+    {
+        if (!rup_contains(rup, node))
+        {
+            end = node;
+            node = node->next;
+            count++;
+        }
+        else
+        {
+            node->next->prev = node->prev;
+            node->prev->next = node->next;
+            RupNode* temp = node->next;
+            free(node);
+            node = temp;
+        }
+    }
+    assert(end != NULL);
+
+    // Insert the new instructions at the begining
+    end->next = rup->nodes;
+    rup->nodes->prev = end;
+    rup->nodes = start;
+    rup->size += count;
+    append->nodes = NULL;
+}
+
+bool rup_contains(Rup* rup, RupNode* node)
+{
+    FOR_RUP(found_node, rup)
+    {
+        if (rup_node_equals(found_node, node))
+            return true;
+    }
+    return false;
+}
+
+void rup_remove_by_source(Rup* rup, BlockNode* source)
+{
+    RupNode* node = rup->nodes;
+    while (node != NULL)
+    {
+        if (node->inst.source != source)
+        {
+            node = node->next;
+            continue;
+        }
+
+        if (node->prev != NULL)
+            node->prev->next = node->next;
+        else
+            rup->nodes = node->next;
+
+        if (node->next != NULL)
+            node->next->prev = node->prev;
+
+        RupNode* deleted = node;
+        node = node->next;
+        free(deleted);
+        rup->size--;
+    }
+}
+
+void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power)
+{
+    RupNode* node = rup_push_inst(rup, RUP_POWER, tick, source, target);
+    node->inst.value.power = power;
+}
+
+void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction)
+{
+    RupNode* node = rup_push_inst(rup, RUP_MOVE, tick, source, target);
+    node->inst.value.direction = direction;
+}
+
+void rup_cmd_remove(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target)
+{
+    rup_push_inst(rup, RUP_REMOVE, tick, source, target);
+}
+
+RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
+{
+    return (RupInst){cmd, source, {0}};
+}
+
+unsigned int rup_inst_size(RupInst* insts)
+{
+    unsigned int size = 0;
+    for (RupInst* i = insts; i->command != RUP_HALT; i++)
+        size++;
+    return size;
+}
+
+RupInst* rup_inst_clone(RupInst* insts, unsigned int size)
+{
+    RupInst* new_insts = malloc(sizeof(RupInst) * (size + 1));
+    memcpy(new_insts, insts, sizeof(RupInst) * (size + 1));
+    return new_insts;
+}
+
+RupInst* rup_inst_empty_allocate(void)
 {
     RupInst* inst = malloc(sizeof(RupInst));
-    CHECK_OOM(inst);
-    *inst = rup_inst_create(cmd, source, node);
-    inst->next = rup->instructions;
-    rup->instructions = inst;
-    rup->size++;
+    *inst = rup_inst_create(RUP_HALT, NULL);
     return inst;
 }
 
-void rup_cmd_power(Rup* rup, Location source, BlockNode* node, unsigned int power)
+RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst)
 {
-    RupInst* inst = rup_push(rup, source, RUP_POWER, node);
-    inst->value.power = power;
+    // TODO: Pre-allocate space instead of reallocing on each add
+    insts = realloc(insts, sizeof(RupInst) * (size + 2));
+    CHECK_OOM(insts);
+    insts[size] = *inst;
+    insts[size + 1] = rup_inst_create(RUP_HALT, NULL);
+    return insts;
 }
 
-void rup_cmd_state(Rup* rup, Location source, BlockNode* block, unsigned int state)
+unsigned int rup_inst_max_power(RupInst* inst_list)
 {
-    RupInst* inst = rup_push(rup, source, RUP_STATE, block);
-    inst->value.state = state;
-}
-
-void rup_cmd_swap(Rup* rup, Location source, BlockNode* node, BlockNode* target)
-{
-    RupInst* inst = rup_push(rup, source, RUP_SWAP, node);
-    inst->value.target = target;
-}
-
-RupInst rup_inst_create(RupCmd cmd, Location source, BlockNode* node)
-{
-    return (RupInst){cmd, source, node, {0}, NULL};
-}
-
-void rup_inst_run(World* world, RupInst* inst)
-{
-    switch (inst->command)
+    unsigned int max = 0;
+    FOR_RUP_INST(inst, inst_list)
     {
-        case RUP_POWER:
-            inst->node->block.power = inst->value.power;
-            inst->node->block.powered = true;
-            break;
-
-        case RUP_STATE:
-            inst->node->block.power_state = inst->value.state;
-            break;
-
-        case RUP_SWAP:
-            world_block_swap(world, &inst->node->block, &inst->value.target->block);
-            break;
+        if (inst->command == RUP_POWER && inst->value.power > max)
+            max = inst->value.power;
     }
+    return max;
+}
+
+bool rup_inst_contains_location(RupInst* inst_list, Location loc)
+{
+    FOR_RUP_INST(inst, inst_list)
+    {
+        if (location_equals(inst->source->block.location, loc))
+            return true;
+    }
+    return false;
+}
+
+bool rup_inst_contains_power(RupInst* inst_list, Location loc)
+{
+    FOR_RUP_INST(inst, inst_list)
+    {
+        if (location_equals(inst->source->block.location, loc) &&
+            inst->command == RUP_POWER && inst->value.power > 0)
+            return true;
+    }
+    return false;
+}
+
+RupInst* rup_inst_find_move(RupInst* inst_list)
+{
+    FOR_RUP_INST(inst, inst_list)
+    {
+        if (inst->command == RUP_MOVE)
+            return inst;
+    }
+    return NULL;
+}
+
+bool rup_inst_equals(RupInst* i1, RupInst* i2)
+{
+    return i1->command == i2->command && i1->source == i2->source;
 }
 
 void rup_inst_print(RupInst* inst)
 {
     switch (inst->command)
     {
+        case RUP_HALT:
+            printf("HALT");
+            break;
+
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
-                inst->node->block.location.x,
-                inst->node->block.location.y,
-                inst->node->block.location.z,
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z,
                 inst->value.power);
             break;
 
-        case RUP_STATE:
-            printf("STATE (%d,%d,%d) %u\n",
-                inst->node->block.location.x,
-                inst->node->block.location.y,
-                inst->node->block.location.z,
-                inst->value.state);
+        case RUP_MOVE:
+            printf("MOVE (%d,%d,%d) %s\n",
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z,
+                Directions[inst->value.direction]);
             break;
 
-        case RUP_SWAP:
-            printf("SWAP (%d,%d,%d) (%d,%d,%d)\n",
-                inst->node->block.location.x,
-                inst->node->block.location.y,
-                inst->node->block.location.z,
-                inst->value.target->block.location.x,
-                inst->value.target->block.location.y,
-                inst->value.target->block.location.z);
+        case RUP_REMOVE:
+            printf("REMOVE (%d,%d,%d)\n",
+                inst->source->block.location.x,
+                inst->source->block.location.y,
+                inst->source->block.location.z);
             break;
     }
 }
 
-Runmap* runmap_allocate(void)
+void rup_node_print(RupNode* node)
 {
-    Runmap* runmap = calloc(1, sizeof(Runmap));
-    CHECK_OOM(runmap);
-    return runmap;
-}
-
-void runmap_free(Runmap* runmap)
-{
-    for (int i = 0; i < RUP_CMD_COUNT; i++)
-    for (RupInst* inst = runmap->instructions[i]; inst != NULL;)
+    switch (node->inst.command)
     {
-        RupInst* temp = inst->next;
-        free(inst);
-        inst = temp;
+        case RUP_HALT:
+            printf("HALT");
+            break;
+
+        case RUP_POWER:
+            printf("POWER (%d,%d,%d) %u\n",
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                node->inst.value.power);
+            break;
+
+        case RUP_MOVE:
+            printf("MOVE (%d,%d,%d) %s\n",
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                Directions[node->inst.value.direction]);
+            break;
+
+        case RUP_REMOVE:
+            printf("REMOVE (%d,%d,%d)\n",
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z);
+            break;
     }
-    free(runmap);
 }
 
-#define RUNMAP_INST(RUNMAP,INST) (RUNMAP)->instructions[(INST)->command]
-void runmap_import(Runmap* runmap, Rup* rup)
+void rup_node_print_verbose(RupNode* node)
 {
-    RupInst* next;
-    for (RupInst* inst = rup->instructions; inst != NULL; inst = next)
+    switch (node->inst.command)
     {
-        next = inst->next;
+        case RUP_HALT:
+            printf("HALT");
+            break;
 
-        if (RUNMAP_INST(runmap, inst) != NULL)
-            inst->next = RUNMAP_INST(runmap, inst);
+        case RUP_POWER:
+            printf("%llu POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
+                node->tick,
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                node->inst.value.power);
+            break;
+
+        case RUP_MOVE:
+            printf("%llu MOVE (%d,%d,%d) -> (%d,%d,%d) %s\n",
+                node->tick,
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z,
+                Directions[node->inst.value.direction]);
+            break;
+
+        case RUP_REMOVE:
+            printf("%llu REMOVE (%d,%d,%d) -> (%d,%d,%d)\n",
+                node->tick,
+                node->inst.source->block.location.x,
+                node->inst.source->block.location.y,
+                node->inst.source->block.location.z,
+                node->target->block.location.x,
+                node->target->block.location.y,
+                node->target->block.location.z);
+            break;
+    }
+}
+
+RupQueue* rup_queue_allocate(unsigned long long tick)
+{
+    RupQueue* queue = malloc(sizeof(RupQueue));
+    CHECK_OOM(queue);
+    queue->insts = malloc(sizeof(RupInst));
+    *queue->insts = rup_inst_create(RUP_HALT, NULL);
+    queue->size = 0;
+    queue->tick = tick;
+    queue->next = NULL;
+    return queue;
+}
+
+void rup_queue_free(RupQueue* queue)
+{
+    free(queue->insts);
+    free(queue);
+}
+
+RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst)
+{
+    // TODO: Faster search
+    FOR_RUP_INST(found_inst, queue->insts)
+    {
+        if (rup_inst_equals(found_inst, inst))
+            return found_inst;
+    }
+    return NULL;
+}
+
+void rup_queue_add(RupQueue* queue, RupInst* inst)
+{
+    queue->insts = rup_inst_append(queue->insts, queue->size++, inst);
+}
+
+RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
+{
+    for (;queue != NULL; queue = queue->next)
+    {
+        if (queue->tick == tick)
+            return queue;
+    }
+
+    return NULL;
+}
+
+RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
+{
+    RupQueue* found_queue = rup_queue_find(queue, tick);
+    return found_queue != NULL ? found_queue->insts : NULL;
+}
+
+// Discard any queues that are older than the current tick
+RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick)
+{
+    RupQueue* return_queue = queue;
+
+    // Remove items at the head of the list
+    while (true)
+    {
+        if (queue == NULL)
+            return NULL;
+
+        if (queue->tick >= current_tick)
+            break;
+
+        return_queue = queue->next;
+        rup_queue_free(queue);
+        queue = return_queue;
+    }
+
+    // Remove items further in
+    while (queue->next != NULL)
+    {
+        if (queue->next->tick >= current_tick)
+        {
+            queue = queue->next;
+        }
         else
-            inst->next = NULL;
-        RUNMAP_INST(runmap, inst) = inst;
-
-        runmap->sizes[inst->command]++;
+        {
+            RupQueue* temp = queue->next->next;
+            rup_queue_free(queue->next);
+            queue->next = temp;
+        }
     }
 
-    rup->instructions = NULL;
-    rup->size = 0;
+    return return_queue;
 }
 

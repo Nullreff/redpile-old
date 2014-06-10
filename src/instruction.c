@@ -114,7 +114,7 @@ error:
     return false;
 }
 
-void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupInst*))
+void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupNode*))
 {
     Block new_block;
     Block* block;
@@ -141,8 +141,8 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
             break;
 
         case TICK:
-            for (int i = 0; i < inst->values[0]; i++)
-                redstone_tick(world, rup_inst_run_callback);
+            if (inst->values[0] > 0)
+                redstone_tick(world, rup_inst_run_callback, inst->values[0]);
             break;
 
         case STATUS:

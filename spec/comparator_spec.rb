@@ -10,7 +10,7 @@ describe 'Comparator' do
       'SET 1 0 3 TORCH UP',
       'SET 0 0 3 COMPARATOR WEST 0',
       'SET -1 0 3 WIRE',
-      'TICK 2',
+      'TICK 3',
       'GET -1 0 3'
     ).should =~ /\(-1,0,3\) 15 WIRE/m
   end
@@ -22,7 +22,7 @@ describe 'Comparator' do
       'SET 1 0 1 WIRE',
       'SET 0 0 1 COMPARATOR WEST 0',
       'SET -1 0 1 WIRE',
-      'TICK 2',
+      'TICK 3',
       'GET -1 0 1'
     ).should =~ /\(-1,0,1\) 0 WIRE/m
   end

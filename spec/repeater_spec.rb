@@ -8,7 +8,7 @@ describe 'Repeater' do
         'SET 0 0 0 TORCH UP',
         'SET 0 0 1 REPEATER SOUTH 0',
         "SET 0 0 2 #{material}",
-        'TICK 2'
+        'TICK 3'
       ).should =~ /\(0,0,2\) 15/
     end
   end
@@ -19,7 +19,7 @@ describe 'Repeater' do
         'SET 0 0 0 TORCH UP',
         "SET 0 0 1 REPEATER SOUTH #{delay - 1}",
         'SET 0 0 2 WIRE',
-        "TICK #{delay}",
+        "TICK #{delay + 1}",
         'GET 0 0 2',
         'TICK',
         'GET 0 0 2'
@@ -34,7 +34,7 @@ describe 'Repeater' do
       'SET 0 0 1 REPEATER SOUTH 0',
       'SET 0 0 2 REPEATER EAST 0',
       'SET 1 0 2 WIRE',
-      'TICK 3',
+      'TICK 4',
       'GET 1 0 2'
     ).should =~ /\(1,0,2\) 0 WIRE/m
   end
@@ -46,7 +46,7 @@ describe 'Repeater' do
       'SET 0 0 1 REPEATER SOUTH 0',
       'SET 0 0 2 REPEATER WEST 0',
       'SET -1 0 2 WIRE',
-      'TICK 3',
+      'TICK 4',
       'GET -1 0 2'
     ).should =~ /\(-1,0,2\) 0 WIRE/m
   end

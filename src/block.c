@@ -75,8 +75,6 @@ Block block_create(Location location, Material material, Direction direction, un
 
         // Redstone state
         0,     // power
-        0,     // power_state
-        false, // powered
         false, // modified
         false  // system
     };
@@ -85,16 +83,6 @@ Block block_create(Location location, Material material, Direction direction, un
 static BlockNode block_node_create(Block block)
 {
     return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
-}
-
-static BlockType block_get_type(Block* block)
-{
-    if M_BOUNDARY(block->material)
-        return BOUNDARY;
-    else if M_UNPOWERABLE(block->material)
-        return UNPOWERABLE;
-    else
-        return POWERABLE;
 }
 
 void block_print(Block* block)
@@ -145,15 +133,12 @@ void block_print_power(Block* block)
 
 void block_list_print(BlockList* blocks)
 {
-    for (int i = 0; i < BLOCK_TYPE_COUNT; i++)
+    FOR_BLOCK_LIST(blocks)
     {
-        BlockNode* node;
-        FOR_BLOCK_LIST(node, blocks, i)
-            block_print(&node->block);
-        printf("Total: %u\n", blocks->sizes[i]);
+        block_print(&node->block);
     }
 
-    printf("Grand Total: %u\n", blocks->total);
+    printf("Total: %u\n", blocks->size);
 }
 
 BlockList* block_list_allocate(void)
@@ -165,15 +150,12 @@ BlockList* block_list_allocate(void)
 
 void block_list_free(BlockList* blocks)
 {
-    for (int i = 0; i < BLOCK_TYPE_COUNT; i++)
+    BlockNode* node = blocks->nodes;
+    while (node != NULL)
     {
-        BlockNode* node = blocks->nodes[i];
-        while (node != NULL)
-        {
-            BlockNode* temp = node->next;
-            free(node);
-            node = temp;
-        }
+        BlockNode* temp = node->next;
+        free(node);
+        node = temp;
     }
     free(blocks);
 }
@@ -183,35 +165,56 @@ BlockNode* block_list_append(BlockList* blocks, Block* block)
     BlockNode* node = malloc(sizeof(BlockNode));
     CHECK_OOM(node);
 
-    BlockType type = block_get_type(block);
     *node = block_node_create(*block);
 
-    if (blocks->nodes[type] != NULL)
+    if (blocks->nodes != NULL)
     {
-        node->next = blocks->nodes[type];
-        blocks->nodes[type]->prev = node;
+        node->next = blocks->nodes;
+        blocks->nodes->prev = node;
     }
-    blocks->nodes[type] = node;
+    blocks->nodes = node;
 
-    blocks->sizes[type]++;
-    blocks->total++;
+    blocks->size++;
     return node;
 }
 
 void block_list_remove(BlockList* blocks, BlockNode* node)
 {
-    BlockType type = block_get_type(&node->block);
     if (node->prev != NULL)
         node->prev->next = node->next;
     else
-        blocks->nodes[type] = node->next;
+        blocks->nodes = node->next;
 
     if (node->next != NULL)
         node->next->prev = node->prev;
 
-    blocks->total--;
-    blocks->sizes[type]--;
-
+    blocks->size--;
     free(node);
+}
+
+void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target)
+{
+    // Already in the right place
+    if (node->next == target)
+        return;
+
+    // Remove 'target' from the list
+    if (target->prev != NULL)
+        target->prev->next = target->next;
+    else
+        blocks->nodes = target->next;
+
+    if (target->next != NULL)
+        target->next->prev = target->prev;
+
+    // Add 'target' after 'node'
+    if (node->next != NULL)
+    {
+        target->next = node->next;
+        node->next->prev = target;
+    }
+
+    node->next = target;
+    target->prev = node;
 }
 
