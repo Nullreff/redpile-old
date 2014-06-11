@@ -22,10 +22,10 @@
 #include "block.h"
 
 typedef enum {
-    RUP_HALT   = 0,
-    RUP_POWER  = 1,
-    RUP_MOVE   = 2,
-    RUP_REMOVE = 3
+    RUP_HALT,
+    RUP_POWER,
+    RUP_MOVE,
+    RUP_REMOVE
 } RupCmd;
 
 typedef struct {
