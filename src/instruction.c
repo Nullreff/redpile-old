@@ -45,7 +45,7 @@ char* Commands[COMMANDS_COUNT] = {
     "PING"
 };
 
-int command_parse(char* command, Command* result)
+static int command_parse(char* command, Command* result)
 {
     for (int i = 0; i < COMMANDS_COUNT; i++)
     {
@@ -66,6 +66,7 @@ bool instruction_parse(char* instruction, Instruction* result)
 
     char* parts_ptr = parts;
     char* parse_error;
+
     Command command;
     Coord x = 0;
     Coord y = 0;
