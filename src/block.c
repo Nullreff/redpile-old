@@ -32,6 +32,11 @@ char* Materials[MATERIALS_COUNT] = {
     "SWITCH"
 };
 
+static BlockNode block_node_create(Block block)
+{
+    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
+}
+
 int material_parse(char* material, Material* result)
 {
     for (int i = 0; i < MATERIALS_COUNT; i++)
@@ -75,14 +80,8 @@ Block block_create(Location location, Material material, Direction direction, un
 
         // Redstone state
         0,     // power
-        false, // modified
         false  // system
     };
-}
-
-static BlockNode block_node_create(Block block)
-{
-    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
 }
 
 void block_print(Block* block)
@@ -129,16 +128,6 @@ void block_print_power(Block* block)
            block->location.y,
            block->location.z,
            block->power);
-}
-
-void block_list_print(BlockList* blocks)
-{
-    FOR_BLOCK_LIST(blocks)
-    {
-        block_print(&node->block);
-    }
-
-    printf("Total: %u\n", blocks->size);
 }
 
 BlockList* block_list_allocate(void)
@@ -216,5 +205,15 @@ void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target
 
     node->next = target;
     target->prev = node;
+}
+
+void block_list_print(BlockList* blocks)
+{
+    FOR_BLOCK_LIST(blocks)
+    {
+        block_print(&node->block);
+    }
+
+    printf("Total: %u\n", blocks->size);
 }
 

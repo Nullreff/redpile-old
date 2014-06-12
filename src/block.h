@@ -28,19 +28,16 @@ extern char* Materials[MATERIALS_COUNT];
 
 // The ordering of these matter
 typedef enum {
-    // Unpowerable
-    EMPTY      = 0,
-    AIR        = 1,
-    INSULATOR  = 2,
-    // Powerable
-    WIRE       = 3,
-    CONDUCTOR  = 4,
-    // Boundries
-    TORCH      = 5,
-    PISTON     = 6,
-    REPEATER   = 7,
-    COMPARATOR = 8,
-    SWITCH     = 9
+    EMPTY,
+    AIR,
+    INSULATOR,
+    WIRE,
+    CONDUCTOR,
+    TORCH,
+    PISTON,
+    REPEATER,
+    COMPARATOR,
+    SWITCH
 } Material;
 
 typedef struct {
@@ -49,10 +46,7 @@ typedef struct {
     Material material;
     Direction direction:3;
     unsigned int state:2;
-
-    // Redstone state
     unsigned int power:4;
-    bool modified:1;
 
     // True if this block was added by the system
     // False if it was added via command
@@ -75,8 +69,6 @@ typedef struct {
     unsigned int size;
 } BlockList;
 
-#define M_BOUNDARY(material) (material >= TORCH)
-#define M_UNPOWERABLE(material) (material <= INSULATOR)
 #define M_HAS_DIRECTION(material) (material >= TORCH)
 #define M_HAS_STATE(material) (material >= REPEATER)
 #define FOR_BLOCK_LIST(LIST) for (BlockNode* node = LIST->nodes; node != NULL; node = node->next)
@@ -89,12 +81,12 @@ Block block_from_location(Location loc);
 Block block_create(Location location, Material material, Direction direction, unsigned int state);
 void block_print(Block* block);
 void block_print_power(Block* block);
-void block_list_print(BlockList* blocks);
 
 BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
 BlockNode* block_list_append(BlockList* blocks, Block* block);
 void block_list_remove(BlockList* blocks, BlockNode* node);
 void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target);
+void block_list_print(BlockList* blocks);
 
 #endif
