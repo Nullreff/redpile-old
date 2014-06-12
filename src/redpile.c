@@ -75,7 +75,7 @@ static unsigned int parse_benchmark_size(char* string)
     return (unsigned int)value;
 }
 
-void load_config(int argc, char* argv[])
+static void load_config(int argc, char* argv[])
 {
     // Default options
     config.world_size = 1024;
@@ -132,7 +132,7 @@ void load_config(int argc, char* argv[])
     }
 }
 
-void redpile_exit(void)
+static void redpile_exit(void)
 {
     if (world != NULL)
         world_free(world);
@@ -144,13 +144,13 @@ void redpile_exit(void)
     exit(EXIT_SUCCESS);
 }
 
-void signal_callback(int signal)
+static void signal_callback(int signal)
 {
     if (signal == SIGINT)
         redpile_exit();
 }
 
-void rup_inst_run_callback(RupNode* node)
+static void rup_inst_run_callback(RupNode* node)
 {
     if (config.silent)
         return;
@@ -158,7 +158,7 @@ void rup_inst_run_callback(RupNode* node)
     rup_node_print(node);
 }
 
-void completion_callback(const char* buffer, linenoiseCompletions* completions)
+static void completion_callback(const char* buffer, linenoiseCompletions* completions)
 {
     for (int i = 0; i < COMMANDS_COUNT; i++)
     {

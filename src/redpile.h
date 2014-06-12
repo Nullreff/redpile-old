@@ -19,13 +19,11 @@
 #ifndef REDPILE_H
 #define REDPILE_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <limits.h>
 
 #define REDPILE_VERSION "0.4.0"
 
