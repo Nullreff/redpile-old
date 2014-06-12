@@ -96,6 +96,25 @@ static bool world_fill_missing(World* world, Location loc)
     return false;
 }
 
+static void world_remove_block(World* world, Location location)
+{
+    BlockNode* node = hashmap_remove(world->hashmap, location);
+    if (node != NULL)
+    {
+        world_reset_adjacent_nodes(world, node);
+        block_list_remove(world->blocks, node);
+    }
+}
+
+static void world_block_move(World* world, Block* block, Direction direction)
+{
+    Block copy = *block;
+    copy.location = location_move(block->location, direction, 1);
+
+    world_remove_block(world, block->location);
+    world_set_block(world, &copy);
+}
+
 World* world_allocate(unsigned int size)
 {
     World* world = malloc(sizeof(World));
@@ -151,25 +170,6 @@ BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir
             adjacent = node->adjacent[dir];
     }
     return adjacent;
-}
-
-void world_remove_block(World* world, Location location)
-{
-    BlockNode* node = hashmap_remove(world->hashmap, location);
-    if (node != NULL)
-    {
-        world_reset_adjacent_nodes(world, node);
-        block_list_remove(world->blocks, node);
-    }
-}
-
-void world_block_move(World* world, Block* block, Direction direction)
-{
-    Block copy = *block;
-    copy.location = location_move(block->location, direction, 1);
-
-    world_remove_block(world, block->location);
-    world_set_block(world, &copy);
 }
 
 WorldStats world_get_stats(World* world)
