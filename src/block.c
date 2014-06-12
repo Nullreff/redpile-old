@@ -34,7 +34,7 @@ char* Materials[MATERIALS_COUNT] = {
 
 static BlockNode block_node_create(Location location, Block block)
 {
-    return (BlockNode){location, block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
+    return (BlockNode){location, block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, false};
 }
 
 int material_parse(char* material, Material* result)
@@ -79,7 +79,6 @@ Block block_create(Material material, Direction direction, unsigned int state)
 
         // Redstone state
         0,     // power
-        false  // system
     };
 }
 
@@ -120,12 +119,13 @@ void block_list_free(BlockList* blocks)
     free(blocks);
 }
 
-BlockNode* block_list_append(BlockList* blocks, Location location, Block* block)
+BlockNode* block_list_append(BlockList* blocks, Location location, Block* block, bool system)
 {
     BlockNode* node = malloc(sizeof(BlockNode));
     CHECK_OOM(node);
 
     *node = block_node_create(location, *block);
+    node->system = system;
 
     if (blocks->nodes != NULL)
     {

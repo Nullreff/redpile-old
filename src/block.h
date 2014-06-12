@@ -46,10 +46,6 @@ typedef struct {
     Direction direction:3;
     unsigned int state:2;
     unsigned int power:4;
-
-    // True if this block was added by the system
-    // False if it was added via command
-    bool system:1;
 } Block;
 
 typedef struct BlockNode {
@@ -62,6 +58,10 @@ typedef struct BlockNode {
     struct BlockNode* adjacent[6];
     struct BlockNode* next;
     struct BlockNode* prev;
+
+    // True if this block was added by the system
+    // False if it was added via command
+    bool system:1;
 } BlockNode;
 
 typedef struct {
@@ -82,7 +82,7 @@ void block_print_power(Block* block);
 
 BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
-BlockNode* block_list_append(BlockList* blocks, Location location, Block* block);
+BlockNode* block_list_append(BlockList* blocks, Location location, Block* block, bool system);
 void block_list_remove(BlockList* blocks, BlockNode* node);
 void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target);
 void block_list_print(BlockList* blocks);

@@ -86,10 +86,9 @@ static bool block_missing_noop(Location location, Block* block)
 static bool world_fill_missing(World* world, Location location)
 {
     Block block = block_empty();
-    block.system = true;
     if (world->block_missing(location, &block))
     {
-        world_set_block(world, location, &block);
+        world_set_block(world, location, &block, true);
         return true;
     }
     return false;
@@ -111,7 +110,7 @@ static void world_block_move(World* world, BlockNode* node, Direction direction)
     Location new_location = location_move(node->location, direction, 1);
 
     world_remove_block(world, node->location);
-    world_set_block(world, new_location, &copy);
+    world_set_block(world, new_location, &copy, false);
 }
 
 World* world_allocate(unsigned int size)
@@ -136,7 +135,7 @@ void world_free(World* world)
     free(world);
 }
 
-void world_set_block(World* world, Location location, Block* block)
+void world_set_block(World* world, Location location, Block* block, bool system)
 {
     if (block->material == EMPTY)
     {
@@ -149,7 +148,7 @@ void world_set_block(World* world, Location location, Block* block)
     if (bucket->value != NULL)
         block_list_remove(world->blocks, bucket->value);
 
-    bucket->value = block_list_append(world->blocks, location, block);
+    bucket->value = block_list_append(world->blocks, location, block, system);
     world_update_adjacent_nodes(world, bucket->value);
 }
 

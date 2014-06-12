@@ -58,7 +58,7 @@ typedef struct {
 
 World* world_allocate(unsigned int size);
 void world_free(World* world);
-void world_set_block(World* world, Location location, Block* block);
+void world_set_block(World* world, Location location, Block* block, bool system);
 Block* world_get_block(World* world, Location location);
 BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir);
 WorldStats world_get_stats(World* world);

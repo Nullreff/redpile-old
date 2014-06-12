@@ -122,7 +122,7 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
     {
         case SET:
             new_block = block_from_values(inst->values + 3);
-            world_set_block(world, location_from_values(inst->values), &new_block);
+            world_set_block(world, location_from_values(inst->values), &new_block, false);
             return;
 
         case GET:
