@@ -23,7 +23,7 @@
 static BlockNode* world_get_node(World* world, Location location)
 {
     Bucket* bucket = hashmap_get(world->hashmap, location, false);
-    return BUCKET_FILLED(bucket) ? bucket->value : NULL;
+    return bucket != NULL ? bucket->value : NULL;
 }
 
 static void world_update_adjacent_nodes(World* world, BlockNode* node)

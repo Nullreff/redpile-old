@@ -49,9 +49,7 @@ typedef struct {
     x |= x >> 8;\
     x |= x >> 16;\
     x++
-#define BUCKET_FILLED(bucket) ((bucket) != NULL && (bucket)->value != NULL)
 
-void hashmap_print(Hashmap* hashmap, Bucket* selected);
 Hashmap* hashmap_allocate(unsigned int size);
 void hashmap_free(Hashmap* map);
 Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create);

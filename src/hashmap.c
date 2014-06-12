@@ -85,13 +85,13 @@ void hashmap_resize(Hashmap* hashmap, unsigned int new_size)
     for (int i = 0; i < hashmap->size; i++)
     {
         Bucket* bucket = hashmap->data + i;
+        if (bucket->value == NULL)
+            continue;
+
         do
         {
-            if BUCKET_FILLED(bucket)
-            {
-                Bucket* new_bucket = hashmap_get(new_hashmap, bucket->key, true);
-                new_bucket->value = bucket->value;
-            }
+            Bucket* new_bucket = hashmap_get(new_hashmap, bucket->key, true);
+            new_bucket->value = bucket->value;
             bucket = bucket->next;
         }
         while (bucket != NULL);
