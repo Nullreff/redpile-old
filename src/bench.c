@@ -63,8 +63,8 @@ static long long get_time(void)
 
 static void benchmark_insert(World* world)
 {
-    Block block = block_from_location(location_random());
-    world_set_block(world, &block);
+    Block block = block_random();
+    world_set_block(world, location_random(), &block);
 }
 
 static void benchmark_get(World* world)
@@ -75,8 +75,7 @@ static void benchmark_get(World* world)
 static void benchmark_delete(World* world)
 {
     Block block = block_empty();
-    block.location = location_random();
-    world_set_block(world, &block);
+    world_set_block(world, location_random(), &block);
 }
 
 void run_benchmarks(World* world, unsigned int count)

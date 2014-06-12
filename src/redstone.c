@@ -24,7 +24,7 @@
 
 #define MAX_POWER 15
 
-#define LOCATION(NODE)  ((NODE)->block.location)
+#define LOCATION(NODE)  ((NODE)->location)
 #define MATERIAL(NODE)  ((NODE)->block.material)
 #define DIRECTION(NODE) ((NODE)->block.direction)
 #define STATE(NODE)     ((NODE)->block.state)
@@ -349,7 +349,7 @@ static void redstone_switch_update(World* world, BlockNode* node, RupInst* in, R
 
 }
 
-static bool redstone_block_missing(Block* block)
+static bool redstone_block_missing(Location location, Block* block)
 {
     block->material = AIR;
     return true;

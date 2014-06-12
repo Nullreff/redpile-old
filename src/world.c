@@ -34,7 +34,7 @@ static void world_update_adjacent_nodes(World* world, BlockNode* node)
         {
             // Find the bucket next to us
             Direction dir = (Direction)i;
-            Location location = location_move(node->block.location, dir, 1);
+            Location location = location_move(node->location, dir, 1);
             BlockNode* found_node = world_get_node(world, location);
 
             if (found_node != NULL)
@@ -78,19 +78,18 @@ static void world_instructions_free(World* world)
     hashmap_free(world->instructions);
 }
 
-static bool block_missing_noop(Block* block)
+static bool block_missing_noop(Location location, Block* block)
 {
     return false;
 }
 
-static bool world_fill_missing(World* world, Location loc)
+static bool world_fill_missing(World* world, Location location)
 {
     Block block = block_empty();
-    block.location = loc;
     block.system = true;
-    if (world->block_missing(&block))
+    if (world->block_missing(location, &block))
     {
-        world_set_block(world, &block);
+        world_set_block(world, location, &block);
         return true;
     }
     return false;
@@ -106,13 +105,13 @@ static void world_remove_block(World* world, Location location)
     }
 }
 
-static void world_block_move(World* world, Block* block, Direction direction)
+static void world_block_move(World* world, BlockNode* node, Direction direction)
 {
-    Block copy = *block;
-    copy.location = location_move(block->location, direction, 1);
+    Block copy = node->block;
+    Location new_location = location_move(node->location, direction, 1);
 
-    world_remove_block(world, block->location);
-    world_set_block(world, &copy);
+    world_remove_block(world, node->location);
+    world_set_block(world, new_location, &copy);
 }
 
 World* world_allocate(unsigned int size)
@@ -137,20 +136,20 @@ void world_free(World* world)
     free(world);
 }
 
-void world_set_block(World* world, Block* block)
+void world_set_block(World* world, Location location, Block* block)
 {
     if (block->material == EMPTY)
     {
-        world_remove_block(world, block->location);
+        world_remove_block(world, location);
         return;
     }
 
-    Bucket* bucket = hashmap_get(world->hashmap, block->location, true);
+    Bucket* bucket = hashmap_get(world->hashmap, location, true);
 
     if (bucket->value != NULL)
         block_list_remove(world->blocks, bucket->value);
 
-    bucket->value = block_list_append(world->blocks, block);
+    bucket->value = block_list_append(world->blocks, location, block);
     world_update_adjacent_nodes(world, bucket->value);
 }
 
@@ -165,7 +164,7 @@ BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir
     BlockNode* adjacent = node->adjacent[dir];
     if (adjacent == NULL)
     {
-        Location loc = location_move(node->block.location, dir, 1);
+        Location loc = location_move(node->location, dir, 1);
         if (world_fill_missing(world, loc))
             adjacent = node->adjacent[dir];
     }
@@ -194,7 +193,7 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, hashmap_max_depth, u);
 }
 
-void world_set_block_missing_callback(World* world, bool (*callback)(Block* node))
+void world_set_block_missing_callback(World* world, bool (*callback)(Location location, Block* node))
 {
     world->block_missing = callback;
 }
@@ -206,7 +205,7 @@ void world_clear_block_missing_callback(World* world)
 
 bool world_run_rup(World* world, RupNode* rup_node)
 {
-    Location target_loc = rup_node->target->block.location;
+    Location target_loc = rup_node->target->location;
     switch (rup_node->inst.command)
     {
         case RUP_HALT:
@@ -220,12 +219,12 @@ bool world_run_rup(World* world, RupNode* rup_node)
             break;
 
         case RUP_MOVE:
-            world_block_move(world, &rup_node->target->block, rup_node->inst.value.direction);
+            world_block_move(world, rup_node->target, rup_node->inst.value.direction);
             world_fill_missing(world, target_loc);
             break;
 
         case RUP_REMOVE:
-            world_remove_block(world, rup_node->target->block.location);
+            world_remove_block(world, rup_node->target->location);
             break;
     }
 
@@ -234,7 +233,7 @@ bool world_run_rup(World* world, RupNode* rup_node)
 
 RupInst* world_find_instructions(World* world, BlockNode* node)
 {
-    Bucket* bucket = hashmap_get(world->instructions, node->block.location, false);
+    Bucket* bucket = hashmap_get(world->instructions, node->location, false);
     if (bucket == NULL)
         return NULL;
 

@@ -32,9 +32,9 @@ char* Materials[MATERIALS_COUNT] = {
     "SWITCH"
 };
 
-static BlockNode block_node_create(Block block)
+static BlockNode block_node_create(Location location, Block block)
 {
-    return (BlockNode){block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
+    return (BlockNode){location, block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL};
 }
 
 int material_parse(char* material, Material* result)
@@ -53,27 +53,26 @@ int material_parse(char* material, Material* result)
 
 Block block_empty(void)
 {
-    return block_create(location_empty(), MATERIAL_DEFAULT, DIRECTION_DEFAULT, 0);
+    return block_create(MATERIAL_DEFAULT, DIRECTION_DEFAULT, 0);
 }
 
 Block block_from_values(int values[])
 {
-    return block_create(location_from_values(values), values[3], values[4], values[5]);
+    return block_create(values[0], values[1], values[2]);
 }
 
-Block block_from_location(Location loc)
+Block block_random(void)
 {
-    Material mat = (Material)(location_hash_unbounded(loc) % MATERIALS_COUNT);
-    Direction dir = (Direction)location_hash(loc, 4);
-    unsigned int state = location_hash(loc, 2);
-    return block_create(loc, mat, dir, state);
+    Material mat = (Material)(rand() % MATERIALS_COUNT);
+    Direction dir = (Direction)(rand() % 4);
+    unsigned int state = rand() % 2;
+    return block_create(mat, dir, state);
 }
 
-Block block_create(Location location, Material material, Direction direction, unsigned int state)
+Block block_create(Material material, Direction direction, unsigned int state)
 {
     return (Block){
         // General information
-        location,
         material,
         direction,
         state,
@@ -86,23 +85,20 @@ Block block_create(Location location, Material material, Direction direction, un
 
 void block_print(Block* block)
 {
-    printf("(%d,%d,%d) %u %s %s %u\n",
-           block->location.x,
-           block->location.y,
-           block->location.z,
-           block->power,
+    printf("%s %s %u %u\n",
            Materials[block->material],
            Directions[block->direction],
+           block->power,
            block->state);
 }
 
-void block_print_power(Block* block)
+void block_node_print_power(BlockNode* node)
 {
     printf("(%d,%d,%d) %u\n",
-           block->location.x,
-           block->location.y,
-           block->location.z,
-           block->power);
+           node->location.x,
+           node->location.y,
+           node->location.z,
+           node->block.power);
 }
 
 BlockList* block_list_allocate(void)
@@ -124,12 +120,12 @@ void block_list_free(BlockList* blocks)
     free(blocks);
 }
 
-BlockNode* block_list_append(BlockList* blocks, Block* block)
+BlockNode* block_list_append(BlockList* blocks, Location location, Block* block)
 {
     BlockNode* node = malloc(sizeof(BlockNode));
     CHECK_OOM(node);
 
-    *node = block_node_create(*block);
+    *node = block_node_create(location, *block);
 
     if (blocks->nodes != NULL)
     {

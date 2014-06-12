@@ -15,7 +15,7 @@ describe 'Commands' do
       end
 
       it 'parses the GET command' do
-        run_case('GET 0 0 0', upper).should =~ /\(0,0,0\) 0 EMPTY/
+        run_case('GET 0 0 0', upper).should =~ /EMPTY NORTH 0 0\n/
       end
 
       it 'parses the TICK command' do
@@ -101,7 +101,7 @@ describe 'Commands' do
       run(
         "SET 0 0 0 #{block}",
         "GET 0 0 0"
-      ).should =~ /\(0,0,0\) 0 #{block} NORTH 0\n/
+      ).should =~ /#{block} NORTH 0 0\n/
     end
   end
 
@@ -111,7 +111,7 @@ describe 'Commands' do
         run(
           "SET 0 0 0 #{block} #{dir}",
           "GET 0 0 0"
-        ).should =~ /\(0,0,0\) 0 #{block} #{dir} 0\n/
+        ).should =~ /#{block} #{dir} 0 0\n/
       end
     end
   end
@@ -122,7 +122,7 @@ describe 'Commands' do
         run(
           "SET 0 0 0 #{block} #{dir} 0",
           "GET 0 0 0"
-        ).should =~ /\(0,0,0\) 0 #{block} #{dir} 0\n/
+        ).should =~ /#{block} #{dir} 0 0\n/
       end
     end
   end

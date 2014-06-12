@@ -42,7 +42,6 @@ typedef enum {
 
 typedef struct {
     // General information
-    Location location;
     Material material;
     Direction direction:3;
     unsigned int state:2;
@@ -54,6 +53,7 @@ typedef struct {
 } Block;
 
 typedef struct BlockNode {
+    Location location;
     Block block;
 
     // We keep references to the 6 blocks adjacent to this one for faster
@@ -75,14 +75,14 @@ int material_parse(char* material, Material* result);
 
 Block block_empty(void);
 Block block_from_values(int values[]);
-Block block_from_location(Location loc);
-Block block_create(Location location, Material material, Direction direction, unsigned int state);
+Block block_random(void);
+Block block_create(Material material, Direction direction, unsigned int state);
 void block_print(Block* block);
 void block_print_power(Block* block);
 
 BlockList* block_list_allocate(void);
 void block_list_free(BlockList* blocks);
-BlockNode* block_list_append(BlockList* blocks, Block* block);
+BlockNode* block_list_append(BlockList* blocks, Location location, Block* block);
 void block_list_remove(BlockList* blocks, BlockNode* node);
 void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target);
 void block_list_print(BlockList* blocks);

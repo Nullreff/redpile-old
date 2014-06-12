@@ -11,7 +11,7 @@ describe 'Piston' do
       'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
-    ).should =~ /\(0,0,2\) 0 AIR.*\(0,0,3\) 0 CONDUCTOR/m
+    ).should =~ /AIR NORTH 0 0\n.*CONDUCTOR NORTH 0 0\n/m
   end
 
   it 'extends a conductor into a empty block' do
@@ -22,7 +22,7 @@ describe 'Piston' do
       'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
-    ).should =~ /\(0,0,2\) 0 AIR.*\(0,0,3\) 0 CONDUCTOR/m
+    ).should =~ /AIR NORTH 0 0\n.*CONDUCTOR NORTH 0 0\n/m
   end
 
   it 'extends and retracts a conductor' do
@@ -36,7 +36,7 @@ describe 'Piston' do
       'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
-    ).should =~ /\(0,0,2\) 0 CONDUCTOR.*\(0,0,3\) 0 AIR/m
+    ).should =~ /CONDUCTOR NORTH 0 0\n.*AIR NORTH 0 0\n/m
   end
 end
 
