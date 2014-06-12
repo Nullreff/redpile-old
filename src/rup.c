@@ -19,22 +19,6 @@
 #include <stdlib.h>
 #include "rup.h"
 
-Rup rup_empty(void)
-{
-    return (Rup){NULL, 0};
-}
-
-void rup_free(Rup* rup)
-{
-    RupNode* node = rup->nodes;
-    while (node != NULL)
-    {
-        RupNode* temp = node->next;
-        free(node);
-        node = temp;
-    }
-}
-
 static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNode* source, BlockNode* target)
 {
     RupNode* node = malloc(sizeof(RupNode));
@@ -73,6 +57,22 @@ static bool rup_node_equals(RupNode* n1, RupNode* n2)
 
         default:
             ERROR("Unknown RUP command\n");
+    }
+}
+
+Rup rup_empty(void)
+{
+    return (Rup){NULL, 0};
+}
+
+void rup_free(Rup* rup)
+{
+    RupNode* node = rup->nodes;
+    while (node != NULL)
+    {
+        RupNode* temp = node->next;
+        free(node);
+        node = temp;
     }
 }
 
