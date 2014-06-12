@@ -69,8 +69,6 @@ typedef struct {
     unsigned int size;
 } BlockList;
 
-#define M_HAS_DIRECTION(material) (material >= TORCH)
-#define M_HAS_STATE(material) (material >= REPEATER)
 #define FOR_BLOCK_LIST(LIST) for (BlockNode* node = LIST->nodes; node != NULL; node = node->next)
 
 int material_parse(char* material, Material* result);

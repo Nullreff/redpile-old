@@ -86,39 +86,14 @@ Block block_create(Location location, Material material, Direction direction, un
 
 void block_print(Block* block)
 {
-    if (M_HAS_DIRECTION(block->material))
-    {
-        if (M_HAS_STATE(block->material))
-        {
-            printf("(%d,%d,%d) %u %s %s %u\n",
-                   block->location.x,
-                   block->location.y,
-                   block->location.z,
-                   block->power,
-                   Materials[block->material],
-                   Directions[block->direction],
-                   block->state);
-        }
-        else
-        {
-            printf("(%d,%d,%d) %u %s %s\n",
-                   block->location.x,
-                   block->location.y,
-                   block->location.z,
-                   block->power,
-                   Materials[block->material],
-                   Directions[block->direction]);
-        }
-    }
-    else
-    {
-        printf("(%d,%d,%d) %u %s\n",
-               block->location.x,
-               block->location.y,
-               block->location.z,
-               block->power,
-               Materials[block->material]);
-    }
+    printf("(%d,%d,%d) %u %s %s %u\n",
+           block->location.x,
+           block->location.y,
+           block->location.z,
+           block->power,
+           Materials[block->material],
+           Directions[block->direction],
+           block->state);
 }
 
 void block_print_power(Block* block)

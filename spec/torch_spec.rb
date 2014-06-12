@@ -20,7 +20,7 @@ describe 'Torch' do
       *(1..end_block).map {|r| "SET 0 0 #{r} WIRE"},
       'TICK 2',
       "GET 0 0 #{end_block}"
-    ).should =~ /\(0,0,#{end_block}\) 0 WIRE\n/
+    ).should =~ /\(0,0,#{end_block}\) 0 WIRE NORTH 0\n/
   end
 
   it 'takes power from the closer torch' do

@@ -24,14 +24,16 @@
 
 #define PARSE_STRING(NAME) do {\
     char* str_ ## NAME = strsep(&parts, " ");\
-    if (str_ ## NAME == NULL || NAME ## _parse(str_ ## NAME, &NAME) == -1)\
+    if (str_ ## NAME == NULL)\
+        goto success;\
+    if(NAME ## _parse(str_ ## NAME, &NAME) == -1)\
         goto error;\
 } while (0)
 
 #define PARSE_NUMBER(NAME) do {\
     char* str_ ## NAME = strsep(&parts, " ");\
     if (str_ ## NAME == NULL)\
-        goto error;\
+        goto success;\
     NAME = strtol(str_ ## NAME , &parse_error, 10);\
     if (*parse_error)\
         goto error;\
@@ -95,12 +97,8 @@ bool instruction_parse(char* instruction, Instruction* result)
         goto success;
 
     PARSE_STRING(material);
-
-    if (M_HAS_DIRECTION(material))
-        PARSE_STRING(direction);
-
-    if (M_HAS_STATE(material))
-        PARSE_NUMBER(state);
+    PARSE_STRING(direction);
+    PARSE_NUMBER(state);
 
     if (state < 0 || state > 3)
         goto error;

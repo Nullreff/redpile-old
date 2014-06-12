@@ -101,7 +101,7 @@ describe 'Commands' do
       run(
         "SET 0 0 0 #{block}",
         "GET 0 0 0"
-      ).should =~ /\(0,0,0\) 0 #{block}\n/
+      ).should =~ /\(0,0,0\) 0 #{block} NORTH 0\n/
     end
   end
 
@@ -111,7 +111,7 @@ describe 'Commands' do
         run(
           "SET 0 0 0 #{block} #{dir}",
           "GET 0 0 0"
-        ).should =~ /\(0,0,0\) 0 #{block} #{dir}\n/
+        ).should =~ /\(0,0,0\) 0 #{block} #{dir} 0\n/
       end
     end
   end
