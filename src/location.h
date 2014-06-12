@@ -24,11 +24,10 @@
 // I chose 101 because it kind of looks like two redstone torches
 // If you have a better prime number, feel free to use it :)
 #define MAGIC_HASH_NUMBER 101
+
 #define DIRECTIONS_COUNT 6
 #define DIRECTION_DEFAULT NORTH
-
 char* Directions[DIRECTIONS_COUNT];
-
 typedef enum {
     NORTH,
     SOUTH,
@@ -45,21 +44,17 @@ typedef struct {
     Coord z;
 } Location;
 
-#define IS_POWER_OF_2(x) ((max & (max - 1)) == 0)
-
 int direction_parse(char* direction, Direction* result);
 Direction direction_invert(Direction dir);
 Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
 
 Location location_empty(void);
-Location location_max(void);
 Location location_from_values(int values[]);
 Location location_random(void);
 Location location_create(Coord x, Coord y, Coord z);
 Location location_move(Location loc, Direction dir, int length);
 bool location_equals(Location l1, Location l2);
-bool location_is_maxed(Location loc);
 unsigned int location_hash_unbounded(Location loc);
 unsigned int location_hash(Location loc, unsigned int max);
 
