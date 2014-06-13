@@ -383,7 +383,6 @@ static void process_output(World* world, Node* node, Rup* input, Rup* output)
 {
     FOR_RUP(rup_node, input)
     {
-
         if (rup_node->tick == world->ticks &&
             !location_equals(LOCATION(rup_node->target), LOCATION(rup_node->inst.source)) &&
             !rup_contains(output, rup_node))
