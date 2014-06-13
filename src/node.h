@@ -74,7 +74,7 @@ typedef struct {
 
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
 #define FIELD_SET(NODE,INDEX,VALUE) (assert((INDEX) < (NODE)->fields.count), (NODE)->fields.data[INDEX] = VALUE)
-#define FOR_BLOCK_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
+#define FOR_NODE_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
 
 int material_parse(char* material, Material* result);
 

@@ -24,12 +24,12 @@
 #define MAX_POWER 15
 
 #define LOCATION(NODE)  ((NODE)->location)
-#define MATERIAL(NODE)  ((NODE)->block.material)
-#define DIRECTION(NODE) ((NODE)->block.direction)
-#define STATE(NODE)     ((NODE)->block.state)
-#define POWER(NODE)     ((NODE)->block.power)
+#define MATERIAL(NODE)  ((NODE)->type)
+#define POWER(NODE)     FIELD_GET(NODE, 0)
+#define DIRECTION(NODE) FIELD_GET(NODE, 1)
+#define STATE(NODE)     FIELD_GET(NODE, 2)
 
-#define NODE_ADJACENT(NODE,DIR) world_get_adjacent_block(world, NODE, DIR)
+#define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
 #define SEND_POWER(NODE,POWER,DELAY) rup_cmd_power(out, world->ticks + (DELAY), node, NODE, POWER)
@@ -348,9 +348,9 @@ static void redstone_switch_update(World* world, Node* node, RupInst* in, Rup* o
 
 }
 
-static bool redstone_block_missing(Location location, Block* block)
+static bool redstone_node_missing(Location location, Type* type)
 {
-    block->material = AIR;
+    *type = AIR;
     return true;
 }
 
@@ -389,7 +389,7 @@ static void process_output(World* world, Node* node, Rup* input, Rup* output)
             !rup_contains(output, rup_node))
         {
             rup_remove_by_source(output, rup_node->target);
-            node_list_move_after(world->blocks, node, rup_node->target);
+            node_list_move_after(world->nodes, node, rup_node->target);
         }
     }
 
@@ -433,14 +433,14 @@ static void run_output(World* world, Rup* output, void (*inst_run_callback)(RupN
 
 void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count)
 {
-    world_set_block_missing_callback(world, redstone_block_missing);
+    world_set_node_missing_callback(world, redstone_node_missing);
 
     for (unsigned int i = 0; i < count; i++)
     {
         unsigned int loops = 0;
         Rup output = rup_empty();
 
-        FOR_BLOCK_LIST(world->blocks)
+        FOR_NODE_LIST(world->nodes)
         {
             RupInst* in = find_input(world, node, &output);
             Rup out = rup_empty();
@@ -464,7 +464,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             process_output(world, node, &out, &output);
 
             loops++;
-            if (loops > world->blocks->size * 2)
+            if (loops > world->nodes->size * 2)
             {
                 printf("Error: Logic loop detected while performing tick.\n");
                 break;
@@ -476,6 +476,6 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
         world->ticks++;
     }
 
-    world_clear_block_missing_callback(world);
+    world_clear_node_missing_callback(world);
 }
 
