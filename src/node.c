@@ -32,9 +32,17 @@ char* Materials[MATERIALS_COUNT] = {
     "SWITCH"
 };
 
-static Node node_create(Location location, Block block)
+static Node* node_allocate(Location location, Type type, bool system)
 {
-    return (Node){location, block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, false};
+    unsigned int count = FieldCounts[type];
+
+    Node* node = calloc(1, sizeof(Node) + (count * sizeof(Field)));
+    CHECK_OOM(node);
+    node->location = location;
+    node->type = type;
+    node->system = system;
+    node->fields.count = count;
+    return node;
 }
 
 int material_parse(char* material, Material* result)
@@ -51,44 +59,27 @@ int material_parse(char* material, Material* result)
     return -1;
 }
 
-Block block_empty(void)
+void node_print(Node* node)
 {
-    return block_create(MATERIAL_DEFAULT, DIRECTION_DEFAULT, 0);
-}
+    printf("(%d,%d,%d) %s",
+           node->location.x,
+           node->location.y,
+           node->location.z,
+           Materials[node->type]);
 
-Block block_from_values(int values[])
-{
-    return block_create(values[0], values[1], values[2]);
-}
+    // Power
+    if (node->fields.count > 0)
+        printf(" %u", node->fields.data[0]);
 
-Block block_random(void)
-{
-    Material mat = (Material)(rand() % MATERIALS_COUNT);
-    Direction dir = (Direction)(rand() % 4);
-    unsigned int state = rand() % 2;
-    return block_create(mat, dir, state);
-}
+    // Direction
+    if (node->fields.count > 1)
+        printf(" %s", Directions[node->fields.data[1]]);
 
-Block block_create(Material material, Direction direction, unsigned int state)
-{
-    return (Block){
-        // General information
-        material,
-        direction,
-        state,
+    // State
+    if (node->fields.count > 2)
+        printf(" %u", node->fields.data[2]);
 
-        // Redstone state
-        0,     // power
-    };
-}
-
-void block_print(Block* block)
-{
-    printf("%s %s %u %u\n",
-           Materials[block->material],
-           Directions[block->direction],
-           block->power,
-           block->state);
+    printf("\n");
 }
 
 void node_print_power(Node* node)
@@ -97,7 +88,7 @@ void node_print_power(Node* node)
            node->location.x,
            node->location.y,
            node->location.z,
-           node->block.power);
+           FIELD_GET(node, 0));
 }
 
 NodeList* node_list_allocate(void)
@@ -119,13 +110,9 @@ void node_list_free(NodeList* blocks)
     free(blocks);
 }
 
-Node* node_list_append(NodeList* blocks, Location location, Block* block, bool system)
+Node* node_list_append(NodeList* blocks, Location location, Type type, bool system)
 {
-    Node* node = malloc(sizeof(Node));
-    CHECK_OOM(node);
-
-    *node = node_create(location, *block);
-    node->system = system;
+    Node* node = node_allocate(location, type, system);
 
     if (blocks->nodes != NULL)
     {
@@ -182,7 +169,7 @@ void node_list_print(NodeList* blocks)
 {
     FOR_BLOCK_LIST(blocks)
     {
-        block_print(&node->block);
+        node_print(node);
     }
 
     printf("Total: %u\n", blocks->size);
