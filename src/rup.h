@@ -19,7 +19,7 @@
 #ifndef REDPILE_RUP_H
 #define REDPILE_RUP_H
 
-#include "block.h"
+#include "node.h"
 
 typedef enum {
     RUP_HALT,
@@ -30,7 +30,7 @@ typedef enum {
 
 typedef struct {
     RupCmd command;
-    BlockNode* source;
+    Node* source;
     union {
         unsigned int power;
         Direction direction;
@@ -39,7 +39,7 @@ typedef struct {
 
 typedef struct RupNode {
     RupInst inst;
-    BlockNode* target;
+    Node* target;
     unsigned long long tick;
     struct RupNode* next;
     struct RupNode* prev;
@@ -65,12 +65,12 @@ void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
 void rup_merge(Rup* rup, Rup* append);
 bool rup_contains(Rup* rup, RupNode* node);
-void rup_remove_by_source(Rup* rup, BlockNode* source);
-void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power);
-void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction);
-void rup_cmd_remove(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target);
+void rup_remove_by_source(Rup* rup, Node* source);
+void rup_cmd_power(Rup* rup, unsigned long long tick, Node* source, Node* target, unsigned int power);
+void rup_cmd_move(Rup* rup, unsigned long long tick, Node* source, Node* target, Direction direction);
+void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* target);
 
-RupInst rup_inst_create(RupCmd cmd, BlockNode* source);
+RupInst rup_inst_create(RupCmd cmd, Node* source);
 unsigned int rup_inst_size(RupInst* insts);
 RupInst* rup_inst_clone(RupInst* source, unsigned int size);
 RupInst* rup_inst_empty_allocate(void);

@@ -1,4 +1,4 @@
-/* block.c - Blocks and block related data structures
+/* node.c - Node storage
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "block.h"
+#include "node.h"
 #include "redpile.h"
 
 char* Materials[MATERIALS_COUNT] = {
@@ -32,9 +32,9 @@ char* Materials[MATERIALS_COUNT] = {
     "SWITCH"
 };
 
-static BlockNode block_node_create(Location location, Block block)
+static Node node_create(Location location, Block block)
 {
-    return (BlockNode){location, block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, false};
+    return (Node){location, block, {NULL, NULL, NULL, NULL, NULL, NULL}, NULL, NULL, false};
 }
 
 int material_parse(char* material, Material* result)
@@ -91,7 +91,7 @@ void block_print(Block* block)
            block->state);
 }
 
-void block_node_print_power(BlockNode* node)
+void node_print_power(Node* node)
 {
     printf("(%d,%d,%d) %u\n",
            node->location.x,
@@ -100,31 +100,31 @@ void block_node_print_power(BlockNode* node)
            node->block.power);
 }
 
-BlockList* block_list_allocate(void)
+NodeList* node_list_allocate(void)
 {
-    BlockList* blocks = calloc(1, sizeof(BlockList));
+    NodeList* blocks = calloc(1, sizeof(NodeList));
     CHECK_OOM(blocks);
     return blocks;
 }
 
-void block_list_free(BlockList* blocks)
+void node_list_free(NodeList* blocks)
 {
-    BlockNode* node = blocks->nodes;
+    Node* node = blocks->nodes;
     while (node != NULL)
     {
-        BlockNode* temp = node->next;
+        Node* temp = node->next;
         free(node);
         node = temp;
     }
     free(blocks);
 }
 
-BlockNode* block_list_append(BlockList* blocks, Location location, Block* block, bool system)
+Node* node_list_append(NodeList* blocks, Location location, Block* block, bool system)
 {
-    BlockNode* node = malloc(sizeof(BlockNode));
+    Node* node = malloc(sizeof(Node));
     CHECK_OOM(node);
 
-    *node = block_node_create(location, *block);
+    *node = node_create(location, *block);
     node->system = system;
 
     if (blocks->nodes != NULL)
@@ -138,7 +138,7 @@ BlockNode* block_list_append(BlockList* blocks, Location location, Block* block,
     return node;
 }
 
-void block_list_remove(BlockList* blocks, BlockNode* node)
+void node_list_remove(NodeList* blocks, Node* node)
 {
     if (node->prev != NULL)
         node->prev->next = node->next;
@@ -152,7 +152,7 @@ void block_list_remove(BlockList* blocks, BlockNode* node)
     free(node);
 }
 
-void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target)
+void node_list_move_after(NodeList* blocks, Node* node, Node* target)
 {
     // Already in the right place
     if (node->next == target)
@@ -178,7 +178,7 @@ void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target
     target->prev = node;
 }
 
-void block_list_print(BlockList* blocks)
+void node_list_print(NodeList* blocks)
 {
     FOR_BLOCK_LIST(blocks)
     {

@@ -17,8 +17,6 @@
 
 #include "instruction.h"
 #include "redpile.h"
-#include "block.h"
-#include "world.h"
 #include "redstone.h"
 #include <ctype.h>
 

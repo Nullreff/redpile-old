@@ -19,7 +19,7 @@
 #ifndef REDPILE_WORLD_H
 #define REDPILE_WORLD_H
 
-#include "block.h"
+#include "node.h"
 #include "hashmap.h"
 #include "redpile.h"
 #include "rup.h"
@@ -27,7 +27,7 @@
 typedef struct {
     // All blocks are stored in a linked list.
     // See block.c for more information.
-    BlockList* blocks;
+    NodeList* blocks;
 
     // Fast block lookup is done using a hashmap.
     // See hashmap.c for more information.
@@ -60,13 +60,13 @@ World* world_allocate(unsigned int size);
 void world_free(World* world);
 void world_set_block(World* world, Location location, Block* block, bool system);
 Block* world_get_block(World* world, Location location);
-BlockNode* world_get_adjacent_block(World* world, BlockNode* node, Direction dir);
+Node* world_get_adjacent_block(World* world, Node* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
 void world_set_block_missing_callback(World* world, bool (*callback)(Location location, Block* node));
 void world_clear_block_missing_callback(World* world);
 bool world_run_rup(World* world, RupNode* rup_node);
-RupInst* world_find_instructions(World* world, BlockNode* node);
+RupInst* world_find_instructions(World* world, Node* node);
 
 #endif
 

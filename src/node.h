@@ -1,4 +1,4 @@
-/* block.h - Blocks and block related data structures
+/* node.h - Node storage
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -48,28 +48,28 @@ typedef struct {
     unsigned int power:4;
 } Block;
 
-typedef struct BlockNode {
+typedef struct Node {
     Location location;
     Block block;
 
     // We keep references to the 6 blocks adjacent to this one for faster
     // access during redstone ticks.  This adds a bit of extra time to
     // insertions but more than makes up for it when running ticks
-    struct BlockNode* adjacent[6];
-    struct BlockNode* next;
-    struct BlockNode* prev;
+    struct Node* adjacent[6];
+    struct Node* next;
+    struct Node* prev;
 
     // True if this block was added by the system
     // False if it was added via command
     bool system:1;
-} BlockNode;
+} Node;
 
 typedef struct {
-    BlockNode* nodes;
+    Node* nodes;
     unsigned int size;
-} BlockList;
+} NodeList;
 
-#define FOR_BLOCK_LIST(LIST) for (BlockNode* node = LIST->nodes; node != NULL; node = node->next)
+#define FOR_BLOCK_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
 
 int material_parse(char* material, Material* result);
 
@@ -78,13 +78,13 @@ Block block_from_values(int values[]);
 Block block_random(void);
 Block block_create(Material material, Direction direction, unsigned int state);
 void block_print(Block* block);
-void block_print_power(Block* block);
+void node_print_power(Node* node);
 
-BlockList* block_list_allocate(void);
-void block_list_free(BlockList* blocks);
-BlockNode* block_list_append(BlockList* blocks, Location location, Block* block, bool system);
-void block_list_remove(BlockList* blocks, BlockNode* node);
-void block_list_move_after(BlockList* blocks, BlockNode* node, BlockNode* target);
-void block_list_print(BlockList* blocks);
+NodeList* node_list_allocate(void);
+void node_list_free(NodeList* blocks);
+Node* node_list_append(NodeList* blocks, Location location, Block* block, bool system);
+void node_list_remove(NodeList* blocks, Node* node);
+void node_list_move_after(NodeList* blocks, Node* node, Node* target);
+void node_list_print(NodeList* blocks);
 
 #endif

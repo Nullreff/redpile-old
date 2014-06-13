@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include "rup.h"
 
-static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, BlockNode* source, BlockNode* target)
+static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Node* source, Node* target)
 {
     RupNode* node = malloc(sizeof(RupNode));
     CHECK_OOM(node);
@@ -157,7 +157,7 @@ bool rup_contains(Rup* rup, RupNode* node)
     return false;
 }
 
-void rup_remove_by_source(Rup* rup, BlockNode* source)
+void rup_remove_by_source(Rup* rup, Node* source)
 {
     RupNode* node = rup->nodes;
     while (node != NULL)
@@ -183,24 +183,24 @@ void rup_remove_by_source(Rup* rup, BlockNode* source)
     }
 }
 
-void rup_cmd_power(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, unsigned int power)
+void rup_cmd_power(Rup* rup, unsigned long long tick, Node* source, Node* target, unsigned int power)
 {
     RupNode* node = rup_push_inst(rup, RUP_POWER, tick, source, target);
     node->inst.value.power = power;
 }
 
-void rup_cmd_move(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target, Direction direction)
+void rup_cmd_move(Rup* rup, unsigned long long tick, Node* source, Node* target, Direction direction)
 {
     RupNode* node = rup_push_inst(rup, RUP_MOVE, tick, source, target);
     node->inst.value.direction = direction;
 }
 
-void rup_cmd_remove(Rup* rup, unsigned long long tick, BlockNode* source, BlockNode* target)
+void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* target)
 {
     rup_push_inst(rup, RUP_REMOVE, tick, source, target);
 }
 
-RupInst rup_inst_create(RupCmd cmd, BlockNode* source)
+RupInst rup_inst_create(RupCmd cmd, Node* source)
 {
     return (RupInst){cmd, source, {0}};
 }

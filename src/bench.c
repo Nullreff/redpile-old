@@ -17,7 +17,6 @@
  */
 
 #include "bench.h"
-#include "block.h"
 #include "redstone.h"
 #include <stdio.h>
 #include <stdlib.h>
