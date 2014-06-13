@@ -62,19 +62,18 @@ static long long get_time(void)
 
 static void benchmark_insert(World* world)
 {
-    Block block = block_random();
-    world_set_block(world, location_random(), &block, false);
+    Type type = rand() % MATERIALS_COUNT;
+    world_set_node(world, location_random(), type, false);
 }
 
 static void benchmark_get(World* world)
 {
-    world_get_block(world, location_random());
+    world_get_node(world, location_random());
 }
 
 static void benchmark_delete(World* world)
 {
-    Block block = block_empty();
-    world_set_block(world, location_random(), &block, false);
+    world_remove_node(world, location_random());
 }
 
 void run_benchmarks(World* world, unsigned int count)
