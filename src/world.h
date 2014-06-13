@@ -26,7 +26,7 @@
 
 typedef struct {
     // All nodes are stored in a linked list.
-    // See block.c for more information.
+    // See node.c for more information.
     NodeList* nodes;
 
     // Fast block lookup is done using a hashmap.
@@ -34,7 +34,7 @@ typedef struct {
     Hashmap* hashmap;
 
     // Used for calculating and storing missing
-    // blocks during a redstone tick.
+    // nodes during a redstone tick.
     bool (*node_missing)(Location location, Type* type);
 
     Hashmap* instructions;
