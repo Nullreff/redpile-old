@@ -27,6 +27,7 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * ~~Command line interface~~
 * ~~Basic Redstone~~
 * ~~Block message passing~~
+* Field storage
 * More tests!
 * Tick caching
 * Map loading/saving
