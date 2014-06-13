@@ -25,6 +25,7 @@
 #define MATERIALS_COUNT 10
 #define MATERIAL_DEFAULT EMPTY
 extern char* Materials[MATERIALS_COUNT];
+extern unsigned int FieldCounts[MATERIALS_COUNT];
 
 // The ordering of these matter
 typedef enum {
@@ -40,17 +41,16 @@ typedef enum {
     SWITCH
 } Material;
 
+typedef unsigned int Type;
+typedef int Field;
 typedef struct {
-    // General information
-    Material material;
-    Direction direction:3;
-    unsigned int state:2;
-    unsigned int power:4;
-} Block;
+    unsigned int count;
+    Field data[];
+} Fields;
 
 typedef struct Node {
     Location location;
-    Block block;
+    Type type;
 
     // We keep references to the 6 blocks adjacent to this one for faster
     // access during redstone ticks.  This adds a bit of extra time to
@@ -62,6 +62,8 @@ typedef struct Node {
     // True if this block was added by the system
     // False if it was added via command
     bool system:1;
+
+    Fields fields;
 } Node;
 
 typedef struct {
@@ -69,20 +71,18 @@ typedef struct {
     unsigned int size;
 } NodeList;
 
-#define FOR_BLOCK_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
+#define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
+#define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
+#define FOR_NODE_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
 
 int material_parse(char* material, Material* result);
 
-Block block_empty(void);
-Block block_from_values(int values[]);
-Block block_random(void);
-Block block_create(Material material, Direction direction, unsigned int state);
-void block_print(Block* block);
+void node_print(Node* node);
 void node_print_power(Node* node);
 
 NodeList* node_list_allocate(void);
 void node_list_free(NodeList* blocks);
-Node* node_list_append(NodeList* blocks, Location location, Block* block, bool system);
+Node* node_list_append(NodeList* blocks, Location location, Type type, bool system);
 void node_list_remove(NodeList* blocks, Node* node);
 void node_list_move_after(NodeList* blocks, Node* node, Node* target);
 void node_list_print(NodeList* blocks);

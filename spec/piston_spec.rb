@@ -3,7 +3,7 @@ include Helpers
 
 describe 'Piston' do
   it 'extends a conductor when powered' do
-    run(
+    result = run(
       'SET 0 0 0 TORCH UP',
       'SET 0 0 1 PISTON SOUTH',
       'SET 0 0 2 CONDUCTOR',
@@ -11,22 +11,26 @@ describe 'Piston' do
       'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
-    ).should =~ /AIR NORTH 0 0\n.*CONDUCTOR NORTH 0 0\n/m
+    )
+    result.should =~ /^\(0,0,2\) AIR$/
+    result.should =~ /^\(0,0,3\) CONDUCTOR 0$/
   end
 
   it 'extends a conductor into a empty block' do
-    run(
+    result = run(
       'SET 0 0 0 TORCH UP',
       'SET 0 0 1 PISTON SOUTH',
       'SET 0 0 2 CONDUCTOR',
       'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
-    ).should =~ /AIR NORTH 0 0\n.*CONDUCTOR NORTH 0 0\n/m
+    )
+    result.should =~ /^\(0,0,2\) AIR$/
+    result.should =~ /^\(0,0,3\) CONDUCTOR 0$/
   end
 
   it 'extends and retracts a conductor' do
-    run(
+    result = run(
       'SET 0 0 0 TORCH UP',
       'SET 0 0 1 PISTON SOUTH',
       'SET 0 0 2 CONDUCTOR',
@@ -36,7 +40,9 @@ describe 'Piston' do
       'TICK 3',
       'GET 0 0 2',
       'GET 0 0 3'
-    ).should =~ /CONDUCTOR NORTH 0 0\n.*AIR NORTH 0 0\n/m
+    )
+    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
+    result.should =~ /^\(0,0,3\) AIR$/
   end
 end
 

@@ -23,7 +23,7 @@ describe 'Repeater' do
         'GET 0 0 2',
         'TICK',
         'GET 0 0 2'
-      ).should =~ /WIRE NORTH 0 0\n.*WIRE NORTH 15 0\n/m
+      ).should =~ /^\(0,0,2\) WIRE 0$.*^\(0,0,2\) WIRE 15$/m
     end
   end
 
@@ -36,7 +36,7 @@ describe 'Repeater' do
       'SET 1 0 2 WIRE',
       'TICK 4',
       'GET 1 0 2'
-    ).should =~ /WIRE NORTH 0 0\n/
+    ).should =~ /^\(1,0,2\) WIRE 0$/
   end
 
   it 'is blocked from being powered by a repeater on the right' do
@@ -48,6 +48,6 @@ describe 'Repeater' do
       'SET -1 0 2 WIRE',
       'TICK 4',
       'GET -1 0 2'
-    ).should =~ /WIRE NORTH 0 0\n/
+    ).should =~ /^\(-1,0,2\) WIRE 0$/
   end
 end

@@ -31,7 +31,7 @@ describe 'Wire' do
       'SET 0 1 1 CONDUCTOR',
       'TICK 2',
       'GET 0 1 2'
-    ).should =~ /WIRE NORTH 0 0\n/
+    ).should =~ /^\(0,1,2\) WIRE 0$/
   end
 
   it 'powers an adjacent conductor' do
@@ -52,7 +52,7 @@ describe 'Wire' do
       'TICK 2',
       'GET 0 0 2'
     )
-    result.should =~ /CONDUCTOR NORTH 0 0\n/
+    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
   end
 
   it 'diverts power from a condutor when a wire is on the right' do
@@ -64,7 +64,7 @@ describe 'Wire' do
       'TICK 2',
       'GET 0 0 2'
     )
-    result.should =~ /CONDUCTOR NORTH 0 0\n/
+    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
   end
 
   it 'diverts power from a condutor when a wire is on both sides' do
@@ -77,7 +77,7 @@ describe 'Wire' do
        'TICK 2',
       'GET 0 0 2'
     )
-    result.should =~ /CONDUCTOR NORTH 0 0\n/
+    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
   end
 
   it 'does not divert power from a conductor if there is a wire on top' do
@@ -91,7 +91,7 @@ describe 'Wire' do
        'TICK 2',
        'GET 0 0 2'
     )
-    result.should =~ /CONDUCTOR NORTH 14 0\n/
+    result.should =~ /^\(0,0,2\) CONDUCTOR 14$/
   end
 
   it 'propigates power to a conductor underneath wire' do
