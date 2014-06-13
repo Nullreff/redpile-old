@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_BLOCK_H
-#define REDPILE_BLOCK_H
+#ifndef REDPILE_NODE_H
+#define REDPILE_NODE_H
 
 #include "location.h"
 #include "redpile.h"
