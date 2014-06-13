@@ -25,6 +25,7 @@
 #define MATERIALS_COUNT 10
 #define MATERIAL_DEFAULT EMPTY
 extern char* Materials[MATERIALS_COUNT];
+extern unsigned int FieldCounts[MATERIALS_COUNT];
 
 // The ordering of these matter
 typedef enum {
@@ -39,8 +40,6 @@ typedef enum {
     COMPARATOR,
     SWITCH
 } Material;
-
-unsigned int FieldCounts[MATERIALS_COUNT] = {0, 0, 0, 1, 1, 2, 2, 3, 3, 3};
 
 typedef unsigned int Type;
 typedef int Field;
@@ -73,7 +72,7 @@ typedef struct {
 } NodeList;
 
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
-#define FIELD_SET(NODE,INDEX,VALUE) (assert((INDEX) < (NODE)->fields.count), (NODE)->fields.data[INDEX] = VALUE)
+#define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
 #define FOR_NODE_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
 
 int material_parse(char* material, Material* result);

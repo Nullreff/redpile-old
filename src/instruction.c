@@ -113,27 +113,28 @@ error:
 
 void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupNode*))
 {
-    Block new_block;
-    Block* block;
+    Location location;
+    Node* node;
 
     switch (inst->cmd)
     {
         case SET:
-            new_block = block_from_values(inst->values + 3);
-            world_set_block(world, location_from_values(inst->values), &new_block, false);
+            location = location_from_values(inst->values);
+            node = world_set_node(world, location, inst->values[3], false);
+            if (node != NULL)
+            {
+                FIELD_SET(node, 1, inst->values[4]);
+                FIELD_SET(node, 2, inst->values[5]);
+            }
             return;
 
         case GET:
-            block = world_get_block(world, location_from_values(inst->values));
-            if (block == NULL)
-            {
-                new_block = block_empty();
-                block_print(&new_block);
-            }
+            location = location_from_values(inst->values);
+            node = world_get_node(world, location);
+            if (node == NULL)
+                printf("(%d,%d,%d) EMPTY", location.x, location.y, location.z);
             else
-            {
-                block_print(block);
-            }
+                node_print(node);
             break;
 
         case TICK:

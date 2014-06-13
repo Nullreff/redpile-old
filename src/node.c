@@ -32,6 +32,8 @@ char* Materials[MATERIALS_COUNT] = {
     "SWITCH"
 };
 
+unsigned int FieldCounts[MATERIALS_COUNT] = {0, 0, 0, 1, 1, 2, 2, 3, 3, 3};
+
 static Node* node_allocate(Location location, Type type, bool system)
 {
     unsigned int count = FieldCounts[type];

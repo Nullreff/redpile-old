@@ -118,12 +118,12 @@ void world_free(World* world)
     free(world);
 }
 
-void world_set_node(World* world, Location location, Type type, bool system)
+Node* world_set_node(World* world, Location location, Type type, bool system)
 {
     if (type == EMPTY)
     {
         world_remove_node(world, location);
-        return;
+        return NULL;
     }
 
     Bucket* bucket = hashmap_get(world->hashmap, location, true);
@@ -133,6 +133,7 @@ void world_set_node(World* world, Location location, Type type, bool system)
 
     bucket->value = node_list_append(world->nodes, location, type, system);
     world_update_adjacent_nodes(world, bucket->value);
+    return bucket->value;
 }
 
 Node* world_get_node(World* world, Location location)
@@ -151,7 +152,7 @@ void world_remove_node(World* world, Location location)
     }
 }
 
-Node* world_get_adjacent_block(World* world, Node* node, Direction dir)
+Node* world_get_adjacent_node(World* world, Node* node, Direction dir)
 {
     Node* adjacent = node->adjacent[dir];
     if (adjacent == NULL)
