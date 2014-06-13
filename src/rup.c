@@ -413,19 +413,15 @@ void rup_queue_free(RupQueue* queue)
     free(queue);
 }
 
-RupInst* rup_queue_find_inst(RupQueue* queue, RupInst* inst)
+void rup_queue_add(RupQueue* queue, RupInst* inst)
 {
     // TODO: Faster search
     FOR_RUP_INST(found_inst, queue->insts)
     {
         if (rup_inst_equals(found_inst, inst))
-            return found_inst;
+            return;
     }
-    return NULL;
-}
 
-void rup_queue_add(RupQueue* queue, RupInst* inst)
-{
     queue->insts = rup_inst_append(queue->insts, queue->size++, inst);
 }
 
