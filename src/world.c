@@ -19,12 +19,6 @@
 #include "world.h"
 #include "hashmap.h"
 
-static Node* world_get_node(World* world, Location location)
-{
-    Bucket* bucket = hashmap_get(world->hashmap, location, false);
-    return bucket != NULL ? bucket->value : NULL;
-}
-
 static void world_update_adjacent_nodes(World* world, Node* node)
 {
     for (int i = 0; i < 6; i++)
@@ -77,39 +71,29 @@ static void world_instructions_free(World* world)
     hashmap_free(world->instructions);
 }
 
-static bool block_missing_noop(Location location, Block* block)
+static bool node_missing_noop(Location location, Type* type)
 {
     return false;
 }
 
 static bool world_fill_missing(World* world, Location location)
 {
-    Block block = block_empty();
-    if (world->block_missing(location, &block))
+    Type type;
+    if (world->node_missing(location, &type))
     {
-        world_set_block(world, location, &block, true);
+        world_set_node(world, location, type, true);
         return true;
     }
     return false;
 }
 
-static void world_remove_block(World* world, Location location)
+static void world_node_move(World* world, Node* node, Direction direction)
 {
-    Node* node = hashmap_remove(world->hashmap, location);
-    if (node != NULL)
-    {
-        world_reset_adjacent_nodes(world, node);
-        node_list_remove(world->blocks, node);
-    }
-}
-
-static void world_block_move(World* world, Node* node, Direction direction)
-{
-    Block copy = node->block;
+    Type type = node->type;
     Location new_location = location_move(node->location, direction, 1);
 
-    world_remove_block(world, node->location);
-    world_set_block(world, new_location, &copy, false);
+    world_remove_node(world, node->location);
+    world_set_node(world, new_location, type, false);
 }
 
 World* world_allocate(unsigned int size)
@@ -119,8 +103,8 @@ World* world_allocate(unsigned int size)
 
     world->ticks = 0;
     world->hashmap = hashmap_allocate(size);
-    world->blocks = node_list_allocate();
-    world->block_missing = block_missing_noop;
+    world->nodes = node_list_allocate();
+    world->node_missing = node_missing_noop;
     world->instructions = hashmap_allocate(size);
 
     return world;
@@ -129,32 +113,42 @@ World* world_allocate(unsigned int size)
 void world_free(World* world)
 {
     hashmap_free(world->hashmap);
-    node_list_free(world->blocks);
+    node_list_free(world->nodes);
     world_instructions_free(world);
     free(world);
 }
 
-void world_set_block(World* world, Location location, Block* block, bool system)
+void world_set_node(World* world, Location location, Type type, bool system)
 {
-    if (block->material == EMPTY)
+    if (type == EMPTY)
     {
-        world_remove_block(world, location);
+        world_remove_node(world, location);
         return;
     }
 
     Bucket* bucket = hashmap_get(world->hashmap, location, true);
 
     if (bucket->value != NULL)
-        node_list_remove(world->blocks, bucket->value);
+        node_list_remove(world->nodes, bucket->value);
 
-    bucket->value = node_list_append(world->blocks, location, block, system);
+    bucket->value = node_list_append(world->nodes, location, type, system);
     world_update_adjacent_nodes(world, bucket->value);
 }
 
-Block* world_get_block(World* world, Location location)
+Node* world_get_node(World* world, Location location)
 {
-    Node* node = world_get_node(world, location);
-    return node != NULL ? &node->block : NULL;
+    Bucket* bucket = hashmap_get(world->hashmap, location, false);
+    return bucket != NULL ? bucket->value : NULL;
+}
+
+void world_remove_node(World* world, Location location)
+{
+    Node* node = hashmap_remove(world->hashmap, location);
+    if (node != NULL)
+    {
+        world_reset_adjacent_nodes(world, node);
+        node_list_remove(world->nodes, node);
+    }
 }
 
 Node* world_get_adjacent_block(World* world, Node* node, Direction dir)
@@ -173,7 +167,7 @@ WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
         world->ticks,
-        world->blocks->size,
+        world->nodes->size,
         world->hashmap->size,
         world->hashmap->overflow,
         world->hashmap->resizes,
@@ -184,21 +178,21 @@ WorldStats world_get_stats(World* world)
 void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks, llu);
-    STAT_PRINT(stats, blocks, u);
+    STAT_PRINT(stats, nodes, u);
     STAT_PRINT(stats, hashmap_allocated, u);
     STAT_PRINT(stats, hashmap_overflow, u);
     STAT_PRINT(stats, hashmap_resizes, u);
     STAT_PRINT(stats, hashmap_max_depth, u);
 }
 
-void world_set_block_missing_callback(World* world, bool (*callback)(Location location, Block* node))
+void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type))
 {
-    world->block_missing = callback;
+    world->node_missing = callback;
 }
 
-void world_clear_block_missing_callback(World* world)
+void world_clear_node_missing_callback(World* world)
 {
-    world->block_missing = block_missing_noop;
+    world->node_missing = node_missing_noop;
 }
 
 bool world_run_rup(World* world, RupNode* rup_node)
@@ -211,18 +205,18 @@ bool world_run_rup(World* world, RupNode* rup_node)
             break;
 
         case RUP_POWER:
-            if (rup_node->inst.source->block.power == rup_node->inst.value.power)
+            if (FIELD_GET(rup_node->inst.source, 0) == rup_node->inst.value.power)
                 return false;
-            rup_node->inst.source->block.power = rup_node->inst.value.power;
+            FIELD_SET(rup_node->inst.source, 0, rup_node->inst.value.power);
             break;
 
         case RUP_MOVE:
-            world_block_move(world, rup_node->target, rup_node->inst.value.direction);
+            world_node_move(world, rup_node->target, rup_node->inst.value.direction);
             world_fill_missing(world, target_loc);
             break;
 
         case RUP_REMOVE:
-            world_remove_block(world, rup_node->target->location);
+            world_remove_node(world, rup_node->target->location);
             break;
     }
 

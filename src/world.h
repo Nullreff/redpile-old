@@ -25,9 +25,9 @@
 #include "rup.h"
 
 typedef struct {
-    // All blocks are stored in a linked list.
+    // All nodes are stored in a linked list.
     // See block.c for more information.
-    NodeList* blocks;
+    NodeList* nodes;
 
     // Fast block lookup is done using a hashmap.
     // See hashmap.c for more information.
@@ -35,7 +35,7 @@ typedef struct {
 
     // Used for calculating and storing missing
     // blocks during a redstone tick.
-    bool (*block_missing)(Location location, Block* node);
+    bool (*node_missing)(Location location, Type* type);
 
     Hashmap* instructions;
 
@@ -45,7 +45,7 @@ typedef struct {
 
 typedef struct {
     unsigned long long ticks;
-    unsigned int blocks;
+    unsigned int nodes;
     unsigned int hashmap_allocated;
     unsigned int hashmap_overflow;
     unsigned int hashmap_resizes;
@@ -53,18 +53,17 @@ typedef struct {
 } WorldStats;
 
 #define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)
-#define BLOCK_INDEX(world,block) (block - world->blocks->data)
-#define INDEX_BLOCK(world,index) (world->blocks->data + index)
 
 World* world_allocate(unsigned int size);
 void world_free(World* world);
-void world_set_block(World* world, Location location, Block* block, bool system);
-Block* world_get_block(World* world, Location location);
-Node* world_get_adjacent_block(World* world, Node* node, Direction dir);
+void world_set_node(World* world, Location location, Type type, bool system);
+Node* world_get_node(World* world, Location location);
+void world_remove_node(World* world, Location location);
+Node* world_get_adjacent_node(World* world, Node* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
-void world_set_block_missing_callback(World* world, bool (*callback)(Location location, Block* node));
-void world_clear_block_missing_callback(World* world);
+void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type));
+void world_clear_node_missing_callback(World* world);
 bool world_run_rup(World* world, RupNode* rup_node);
 RupInst* world_find_instructions(World* world, Node* node);
 
