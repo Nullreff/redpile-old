@@ -12,7 +12,7 @@ describe 'Comparator' do
       'SET -1 0 3 WIRE',
       'TICK 3',
       'GET -1 0 3'
-    ).should =~ /WIRE NORTH 15 0\n/
+    ).should =~ /^\(-1,0,3\) WIRE 15$/
   end
 
   it 'does not allow power through if side power is greater than the input' do
@@ -24,7 +24,7 @@ describe 'Comparator' do
       'SET -1 0 1 WIRE',
       'TICK 3',
       'GET -1 0 1'
-    ).should =~ /WIRE NORTH 0 0\n/
+    ).should =~ /^\(-1,0,1\) WIRE 0$/
   end
 end
 

@@ -15,7 +15,7 @@ describe 'Commands' do
       end
 
       it 'parses the GET command' do
-        run_case('GET 0 0 0', upper).should =~ /EMPTY NORTH 0 0\n/
+        run_case('GET 0 0 0', upper).should =~ /^\(0,0,0\) EMPTY$/
       end
 
       it 'parses the TICK command' do
@@ -23,11 +23,11 @@ describe 'Commands' do
       end
 
       it 'parses the STATUS command' do
-        run_case('STATUS', upper).should =~ /ticks: 0/
+        run_case('STATUS', upper).should =~ /^ticks: 0$/
       end
 
       it 'parses the PING command' do
-        run_case('PING', upper).should =~ /PONG\n/
+        run_case('PING', upper).should =~ /^PONG$/
       end
     end
   end
@@ -37,31 +37,31 @@ describe 'Commands' do
   end
 
   it 'error if given an incorrect material' do
-    run('SET 0 0 0 INVALID').should =~ /Invalid Command\n/
+    run('SET 0 0 0 INVALID').should =~ /^Invalid Command$/
   end
 
   it 'errors if given an incorrect direction' do
-    run('SET 0 0 0 TORCH INVALID').should =~ /Invalid Command\n/
+    run('SET 0 0 0 TORCH INVALID').should =~ /^Invalid Command$/
   end
 
   it 'errors with a negative state' do
-    run('SET 0 0 0 REPEATER NORTH -1').should =~ /Invalid Command\n/
+    run('SET 0 0 0 REPEATER NORTH -1').should =~ /^Invalid Command$/
   end
 
   it 'errors with a state greater than 3' do
-    run('SET 0 0 0 REPEATER NORTH 4').should =~ /Invalid Command\n/
+    run('SET 0 0 0 REPEATER NORTH 4').should =~ /^Invalid Command$/
   end
 
   it 'runs multiple ticks' do
-    run('TICK 4', 'STATUS').should =~ /ticks: 4\n/
+    run('TICK 4', 'STATUS').should =~ /^ticks: 4$/
   end
 
   it 'does not run negative ticks' do
-    run('TICK -2', 'STATUS').should =~ /ticks: 0\n/
+    run('TICK -2', 'STATUS').should =~ /^ticks: 0$/
   end
 
   it 'errors for non numerical ticks' do
-    run('TICK abc', 'STATUS').should =~ /Invalid Command\n/
+    run('TICK abc', 'STATUS').should =~ /^Invalid Command$/
   end
 
   it 'adds a block' do
@@ -69,7 +69,7 @@ describe 'Commands' do
       'SET 0 0 0 AIR',
       'SET 0 0 1 WIRE',
       'STATUS'
-    ).should =~ /blocks: 2\n/
+    ).should =~ /^nodes: 2$/
   end
 
   it 'adds a block overlapping' do
@@ -77,7 +77,7 @@ describe 'Commands' do
       'SET 0 0 0 AIR',
       'SET 0 0 0 WIRE',
       'STATUS'
-    ).should =~ /blocks: 1\n/
+    ).should =~ /^nodes: 1$/
   end
 
   it 'removes a block' do
@@ -86,22 +86,31 @@ describe 'Commands' do
       'SET 0 0 1 WIRE',
       'SET 0 0 0 EMPTY',
       'STATUS'
-    ).should =~ /blocks: 1\n/
+    ).should =~ /^nodes: 1$/
   end
 
   it "doesn't add an empty block" do
     run(
       'SET 0 0 0 EMPTY',
       'STATUS'
-    ).should =~ /blocks: 0\n/
+    ).should =~ /^nodes: 0$/
   end
 
-  %w(AIR WIRE CONDUCTOR INSULATOR).each do |block|
+  %w(AIR INSULATOR).each do |block|
     it "inserts an #{block} block" do
       run(
         "SET 0 0 0 #{block}",
         "GET 0 0 0"
-      ).should =~ /#{block} NORTH 0 0\n/
+      ).should =~ /^\(0,0,0\) #{block}$/
+    end
+  end
+
+  %w(WIRE CONDUCTOR).each do |block|
+    it "inserts an #{block} block" do
+      run(
+        "SET 0 0 0 #{block}",
+        "GET 0 0 0"
+      ).should =~ /^\(0,0,0\) #{block} 0$/
     end
   end
 
@@ -111,7 +120,7 @@ describe 'Commands' do
         run(
           "SET 0 0 0 #{block} #{dir}",
           "GET 0 0 0"
-        ).should =~ /#{block} #{dir} 0 0\n/
+        ).should =~ /^\(0,0,0\) #{block} 0 #{dir}$/
       end
     end
   end
@@ -122,7 +131,7 @@ describe 'Commands' do
         run(
           "SET 0 0 0 #{block} #{dir} 0",
           "GET 0 0 0"
-        ).should =~ /#{block} #{dir} 0 0\n/
+        ).should =~ /^\(0,0,0\) #{block} 0 #{dir} 0$/
       end
     end
   end
