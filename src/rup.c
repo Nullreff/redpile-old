@@ -96,7 +96,7 @@ void rup_merge(Rup* rup, Rup* append)
         return;
     }
 
-    // Otherwise find ther first non-duplicate node
+    // Otherwise find the first non-duplicate node
     RupNode* start = append->nodes;
     RupNode* node = append->nodes;
     while (true)
@@ -117,7 +117,7 @@ void rup_merge(Rup* rup, Rup* append)
     }
     assert(start != NULL);
 
-    // Then remove any duplicate nodes afterwards
+    // Then remove any duplicate nodes
     unsigned int count = 1;
     RupNode* end = start;
     while (node != NULL)
