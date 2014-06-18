@@ -107,9 +107,6 @@ void rup_merge(Rup* rup, Rup* append)
     RupNode* node = append->nodes;
     while (true)
     {
-        if (node == NULL)
-            return;
-
         if (!rup_contains(rup, node))
         {
             node->prev = NULL;
@@ -119,6 +116,11 @@ void rup_merge(Rup* rup, Rup* append)
 
         start = node->next;
         free(node);
+
+        // Reached the end of the list
+        if (start == NULL)
+            return;
+
         node = start;
     }
     assert(start != NULL);
