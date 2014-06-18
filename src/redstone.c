@@ -109,7 +109,6 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
             // Add charge to the block
             Node* right = NODE_ADJACENT(node, direction_left(dir));
             Node* left = NODE_ADJACENT(node, direction_right(dir));
-            Location behind = location_move(LOCATION(node), direction_invert(dir), 1);
 
             if (MATERIAL(right) != WIRE && MATERIAL(left) != WIRE &&
                 rup_inst_power_check(in, LOCATION(found_node), wire_power))
