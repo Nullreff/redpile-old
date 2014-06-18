@@ -1,6 +1,8 @@
 Implementation
 ==============
 
+**NOTE: This is horribly out of date, I'll be updating it once code churn settles down.**
+
 Block Storage
 -------------
 
