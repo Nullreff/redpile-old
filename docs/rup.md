@@ -30,12 +30,6 @@ Syntax: `GET key` => `{value}`
 
 Gets a value from the current node
 
-### QUERY
-
-Syntax: `QUERY target key` => `{value}`
-
-Returns a value from another node
-
 Parameters
 ----------
 
