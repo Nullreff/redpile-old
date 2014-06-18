@@ -102,4 +102,25 @@ describe 'Wire' do
        'TICK 2'
     ).should =~ /\(0,-1,1\) 15/
   end
+
+  it 'propigates power in a loop' do
+    result = run(
+      'set 0 0 0 torch up',
+      'set 0 0 1 wire',
+      'set 0 0 2 wire',
+      'set 1 0 2 wire',
+      'set 2 0 2 wire',
+      'set 2 0 1 wire',
+      'set 2 0 0 wire',
+      'set 1 0 0 wire',
+      'tick 2',
+    )
+    result.should =~ /^POWER \(0,0,1\) 15$/
+    result.should =~ /^POWER \(0,0,2\) 14$/
+    result.should =~ /^POWER \(1,0,2\) 13$/
+    result.should =~ /^POWER \(2,0,2\) 12$/
+    result.should =~ /^POWER \(2,0,1\) 13$/
+    result.should =~ /^POWER \(2,0,0\) 14$/
+    result.should =~ /^POWER \(1,0,0\) 15$/
+  end
 end

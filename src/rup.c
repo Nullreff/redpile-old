@@ -31,14 +31,17 @@ static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Nod
     return node;
 }
 
+static bool rup_node_type_equals(RupNode* n1, RupNode* n2)
+{
+    return n1->inst.command == n2->inst.command &&
+           n1->inst.source == n2->inst.source &&
+           n1->target == n2->target &&
+           n1->tick == n2->tick;
+}
+
 static bool rup_node_equals(RupNode* n1, RupNode* n2)
 {
-    bool equals = n1->inst.command == n2->inst.command &&
-                  n1->inst.source == n2->inst.source &&
-                  n1->target == n2->target &&
-                  n1->tick == n2->tick;
-
-    if (!equals)
+    if (!rup_node_type_equals(n1, n2))
         return false;
 
     switch (n1->inst.command)
@@ -88,7 +91,10 @@ void rup_push(Rup* rup, RupNode* node)
 
 void rup_merge(Rup* rup, Rup* append)
 {
-    // Exit early if theres nothing in the existing list
+    // Exit early if theres nothing in one of the lists
+    if (append->nodes == NULL)
+        return;
+
     if (rup->nodes == NULL)
     {
         rup->nodes = append->nodes;
@@ -248,25 +254,16 @@ unsigned int rup_inst_max_power(RupInst* inst_list)
     return max;
 }
 
-bool rup_inst_contains_location(RupInst* inst_list, Location loc)
-{
-    FOR_RUP_INST(inst, inst_list)
-    {
-        if (location_equals(inst->source->location, loc))
-            return true;
-    }
-    return false;
-}
-
-bool rup_inst_contains_power(RupInst* inst_list, Location loc)
+bool rup_inst_power_check(RupInst* inst_list, Location loc, unsigned int power)
 {
     FOR_RUP_INST(inst, inst_list)
     {
         if (location_equals(inst->source->location, loc) &&
-            inst->command == RUP_POWER && inst->value.power > 0)
-            return true;
+            inst->command == RUP_POWER &&
+            inst->value.power >= power)
+            return false;
     }
-    return false;
+    return true;
 }
 
 RupInst* rup_inst_find_move(RupInst* inst_list)
@@ -419,7 +416,10 @@ void rup_queue_add(RupQueue* queue, RupInst* inst)
     FOR_RUP_INST(found_inst, queue->insts)
     {
         if (rup_inst_equals(found_inst, inst))
+        {
+            *found_inst = *inst;
             return;
+        }
     }
 
     queue->insts = rup_inst_append(queue->insts, queue->size++, inst);

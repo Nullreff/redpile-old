@@ -59,10 +59,8 @@ static void redstone_conductor_update(World* world, Node* node, RupInst* in, Rup
     {
         Direction dir = (Direction)i;
         Node* found_node = NODE_ADJACENT(node, dir);
-        if (rup_inst_contains_location(in, LOCATION(found_node)))
-            continue;
-
-        SEND_POWER(found_node, power, 0);
+        if (rup_inst_power_check(in, LOCATION(found_node), power))
+            SEND_POWER(found_node, power, 0);
     }
 }
 
@@ -114,7 +112,7 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
             Location behind = location_move(LOCATION(node), direction_invert(dir), 1);
 
             if (MATERIAL(right) != WIRE && MATERIAL(left) != WIRE &&
-                rup_inst_contains_power(in, behind))
+                rup_inst_power_check(in, LOCATION(found_node), wire_power))
             {
                 SEND_POWER(found_node, wire_power, 0);
             }
@@ -127,15 +125,15 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
                 continue;
         }
 
-        if (!rup_inst_contains_location(in, LOCATION(found_node)))
+        if (rup_inst_power_check(in, LOCATION(found_node), wire_power))
             SEND_POWER(found_node, wire_power, 0);
     }
 
     // Block below
     Node* down_node = NODE_ADJACENT(node, DOWN);
 
-    if (!rup_inst_contains_location(in, LOCATION(down_node)) &&
-        MATERIAL(down_node) == CONDUCTOR)
+    if (MATERIAL(down_node) == CONDUCTOR &&
+        rup_inst_power_check(in, LOCATION(down_node), new_power))
     {
         SEND_POWER(down_node, new_power, 0);
     }
@@ -373,7 +371,7 @@ static RupInst* find_input(World* world, Node* node, Rup* output)
     FOR_RUP(rup_node, output)
     {
         if (rup_node->target == node)
-            insts = rup_inst_append(insts, size, &rup_node->inst);
+            insts = rup_inst_append(insts, size++, &rup_node->inst);
     }
 
     return insts;
