@@ -47,20 +47,6 @@ static Node* node_allocate(Location location, Type type, bool system)
     return node;
 }
 
-int material_parse(char* material, Material* result)
-{
-    for (int i = 0; i < MATERIALS_COUNT; i++)
-    {
-        if (strcasecmp(material, Materials[i]) == 0)
-        {
-            *result = (Material)i;
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
 void node_print(Node* node)
 {
     printf("(%d,%d,%d) %s",

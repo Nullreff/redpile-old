@@ -24,7 +24,7 @@
     char* str_ ## NAME = strsep(&parts, " ");\
     if (str_ ## NAME == NULL)\
         goto success;\
-    if(NAME ## _parse(str_ ## NAME, &NAME) == -1)\
+    if(!NAME ## _parse(str_ ## NAME, &NAME))\
         goto error;\
 } while (0)
 
@@ -45,18 +45,46 @@ char* Commands[COMMANDS_COUNT] = {
     "PING"
 };
 
-static int command_parse(char* command, Command* result)
+static bool command_parse(char* command, Command* result)
 {
     for (int i = 0; i < COMMANDS_COUNT; i++)
     {
         if (strcasecmp(command, Commands[i]) == 0)
         {
             *result = (Command)i;
-            return 0;
+            return true;
         }
     }
 
-    return -1;
+    return false;
+}
+
+static bool material_parse(char* material, Material* result)
+{
+    for (int i = 0; i < MATERIALS_COUNT; i++)
+    {
+        if (strcasecmp(material, Materials[i]) == 0)
+        {
+            *result = (Material)i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool direction_parse(char* direction, Direction* result)
+{
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
+    {
+        if (strcasecmp(direction, Directions[i]) == 0)
+        {
+            *result = (Direction)i;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool instruction_parse(char* instruction, Instruction* result)
