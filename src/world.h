@@ -65,7 +65,7 @@ void world_stats_print(WorldStats world);
 void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type));
 void world_clear_node_missing_callback(World* world);
 bool world_run_rup(World* world, RupNode* rup_node);
-RupInst* world_find_instructions(World* world, Node* node);
+RupInsts* world_find_instructions(World* world, Node* node);
 
 #endif
 

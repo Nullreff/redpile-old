@@ -29,6 +29,7 @@
 #define DIRECTION(NODE) FIELD_GET(NODE, 1)
 #define STATE(NODE)     FIELD_GET(NODE, 2)
 
+#define LOWER_POWER(NODE,POWER) rup_insts_power_check(in, LOCATION(NODE), POWER)
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
@@ -38,18 +39,18 @@
 #define CMD_MOVE(DIR) SEND_MOVE(node, DIR, 0)
 #define CMD_REMOVE() rup_cmd_remove(out, world->ticks, node, node)
 
-static void redstone_conductor_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_conductor_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == CONDUCTOR);
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
         CMD_MOVE(move_inst->value.direction);
         return;
     }
 
-    unsigned int power = rup_inst_max_power(in);
+    unsigned int power = rup_insts_max_power(in);
     SEND_POWER(node, power, 0);
 
     if (power < MAX_POWER)
@@ -59,16 +60,16 @@ static void redstone_conductor_update(World* world, Node* node, RupInst* in, Rup
     {
         Direction dir = (Direction)i;
         Node* found_node = NODE_ADJACENT(node, dir);
-        if (rup_inst_power_check(in, LOCATION(found_node), power))
+        if (LOWER_POWER(found_node, power))
             SEND_POWER(found_node, power, 0);
     }
 }
 
-static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_wire_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == WIRE);
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -78,7 +79,7 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
     Node* above = NODE_ADJACENT(node, UP);
     bool covered = above != NULL && MATERIAL(above) != AIR && MATERIAL(above) != EMPTY;
 
-    int new_power = rup_inst_max_power(in);
+    int new_power = rup_insts_max_power(in);
     SEND_POWER(node, new_power, 0);
 
     if (new_power == 0)
@@ -111,7 +112,7 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
             Node* left = NODE_ADJACENT(node, direction_right(dir));
 
             if (MATERIAL(right) != WIRE && MATERIAL(left) != WIRE &&
-                rup_inst_power_check(in, LOCATION(found_node), wire_power))
+                LOWER_POWER(found_node, wire_power))
             {
                 SEND_POWER(found_node, wire_power, 0);
             }
@@ -124,15 +125,14 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
                 continue;
         }
 
-        if (rup_inst_power_check(in, LOCATION(found_node), wire_power))
+        if (LOWER_POWER(found_node, wire_power))
             SEND_POWER(found_node, wire_power, 0);
     }
 
     // Block below
     Node* down_node = NODE_ADJACENT(node, DOWN);
 
-    if (MATERIAL(down_node) == CONDUCTOR &&
-        rup_inst_power_check(in, LOCATION(down_node), new_power))
+    if (MATERIAL(down_node) == CONDUCTOR && LOWER_POWER(down_node, new_power))
     {
         SEND_POWER(down_node, new_power, 0);
     }
@@ -142,14 +142,14 @@ static void redstone_wire_update(World* world, Node* node, RupInst* in, Rup* out
 #define RETRACTING 1
 #define EXTENDED 2
 #define EXTENDING 3
-static void redstone_piston_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_piston_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == PISTON);
 
     Node* first = NODE_ADJACENT(node, DIRECTION(node));
     Node* second = NODE_ADJACENT(first, DIRECTION(node));
 
-    unsigned int new_power = rup_inst_max_power(in);
+    unsigned int new_power = rup_insts_max_power(in);
 
     unsigned int state;
     if (new_power == 0)
@@ -167,7 +167,7 @@ static void redstone_piston_update(World* world, Node* node, RupInst* in, Rup* o
             state = EXTENDED;
     }
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL && state == RETRACTED)
     {
         CMD_MOVE(move_inst->value.direction);
@@ -182,11 +182,11 @@ static void redstone_piston_update(World* world, Node* node, RupInst* in, Rup* o
         SEND_MOVE(second, direction_invert(DIRECTION(node)), 1);
 }
 
-static void redstone_comparator_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_comparator_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == COMPARATOR);
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -199,8 +199,10 @@ static void redstone_comparator_update(World* world, Node* node, RupInst* in, Ru
     Location left   = location_move(LOCATION(node), direction_left(DIRECTION(node)), 1);
     Location behind = location_move(LOCATION(node), direction_invert(DIRECTION(node)), 1);
     
-    FOR_RUP_INST(inst, in)
+    for (int i = 0; i < in->size; i++)
     {
+        RupInst* inst = in->data + i;
+
         // Power coming from the side
         if ((location_equals(LOCATION(inst->source), right) ||
              location_equals(LOCATION(inst->source), left)) &&
@@ -235,11 +237,11 @@ static void redstone_comparator_update(World* world, Node* node, RupInst* in, Ru
     SEND_POWER(found_node, new_power, 1);
 }
 
-static void redstone_repeater_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_repeater_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == REPEATER);
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -252,8 +254,10 @@ static void redstone_repeater_update(World* world, Node* node, RupInst* in, Rup*
     Location left   = location_move(LOCATION(node), direction_left(DIRECTION(node)), 1);
     Location behind = location_move(LOCATION(node), direction_invert(DIRECTION(node)), 1);
     
-    FOR_RUP_INST(inst, in)
+    for (int i = 0; i < in->size; i++)
     {
+        RupInst* inst = in->data + i;
+
         // Power coming from the side
         if (MATERIAL(inst->source) == REPEATER &&
             (location_equals(LOCATION(inst->source), right) ||
@@ -277,11 +281,11 @@ static void redstone_repeater_update(World* world, Node* node, RupInst* in, Rup*
     SEND_POWER(found_node, MAX_POWER, STATE(node) + 1);
 }
 
-static void redstone_torch_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_torch_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == TORCH);
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -290,8 +294,10 @@ static void redstone_torch_update(World* world, Node* node, RupInst* in, Rup* ou
 
     unsigned int new_power = 0;
     Location loc_behind = location_move(LOCATION(node), direction_invert(DIRECTION(node)), 1);
-    FOR_RUP_INST(inst, in)
+    for (int i = 0; i < in->size; i++)
     {
+        RupInst* inst = in->data + i;
+
         // Power coming from behind
         if (location_equals(LOCATION(inst->source), loc_behind))
             new_power = inst->value.power;
@@ -321,11 +327,11 @@ static void redstone_torch_update(World* world, Node* node, RupInst* in, Rup* ou
         SEND_POWER(up_node, MAX_POWER, 1);
 }
 
-static void redstone_switch_update(World* world, Node* node, RupInst* in, Rup* out)
+static void redstone_switch_update(World* world, Node* node, RupInsts* in, Rup* out)
 {
     assert(MATERIAL(node) == SWITCH);
 
-    RupInst* move_inst = rup_inst_find_move(in);
+    RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -351,26 +357,16 @@ static bool redstone_node_missing(Location location, Type* type)
     return true;
 }
 
-static RupInst* find_input(World* world, Node* node, Rup* output)
+static RupInsts* find_input(World* world, Node* node, Rup* output)
 {
-    RupInst* insts = world_find_instructions(world, node);
-    unsigned int size = 0;
-
-    if (insts != NULL)
-    {
-        size = rup_inst_size(insts);
-        insts = rup_inst_clone(insts, size);
-    }
-    else
-    {
-        insts = rup_inst_empty_allocate();
-    }
+    RupInsts* found_insts = world_find_instructions(world, node);
+    RupInsts* insts = found_insts != NULL ? rup_insts_clone(found_insts) : rup_insts_allocate();
 
     // Include any instructions generated this tick
     FOR_RUP(rup_node, output)
     {
         if (rup_node->target == node)
-            insts = rup_inst_append(insts, size++, &rup_node->inst);
+            insts = rup_insts_append(insts, &rup_node->inst);
     }
 
     return insts;
@@ -437,7 +433,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
 
         FOR_NODE_LIST(world->nodes)
         {
-            RupInst* in = find_input(world, node, &output);
+            RupInsts* in = find_input(world, node, &output);
             Rup out = rup_empty();
 
             switch (MATERIAL(node))

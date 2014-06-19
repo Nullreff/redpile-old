@@ -46,9 +46,6 @@ static bool rup_node_equals(RupNode* n1, RupNode* n2)
 
     switch (n1->inst.command)
     {
-        case RUP_HALT:
-            return true;
-
         case RUP_POWER:
             return n1->inst.value.power == n2->inst.value.power;
 
@@ -213,67 +210,65 @@ RupInst rup_inst_create(RupCmd cmd, Node* source)
     return (RupInst){cmd, source, {0}};
 }
 
-unsigned int rup_inst_size(RupInst* insts)
+unsigned int rup_insts_size(RupInsts* insts)
 {
-    unsigned int size = 0;
-    for (RupInst* i = insts; i->command != RUP_HALT; i++)
-        size++;
-    return size;
+    return insts->size;
 }
 
-RupInst* rup_inst_clone(RupInst* insts, unsigned int size)
+RupInsts* rup_insts_clone(RupInsts* insts)
 {
-    RupInst* new_insts = malloc(sizeof(RupInst) * (size + 1));
-    memcpy(new_insts, insts, sizeof(RupInst) * (size + 1));
+    size_t struct_size = RUP_INSTS_ALLOC_SIZE(insts->size);
+    RupInsts* new_insts = malloc(struct_size);
+    memcpy(new_insts, insts, struct_size);
     return new_insts;
 }
 
-RupInst* rup_inst_empty_allocate(void)
+RupInsts* rup_insts_allocate(void)
 {
-    RupInst* inst = malloc(sizeof(RupInst));
-    *inst = rup_inst_create(RUP_HALT, NULL);
-    return inst;
-}
-
-RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst)
-{
-    // TODO: Pre-allocate space instead of reallocing on each add
-    insts = realloc(insts, sizeof(RupInst) * (size + 2));
-    CHECK_OOM(insts);
-    insts[size] = *inst;
-    insts[size + 1] = rup_inst_create(RUP_HALT, NULL);
+    RupInsts* insts = malloc(sizeof(RupInsts));
+    insts->size = 0;
     return insts;
 }
 
-unsigned int rup_inst_max_power(RupInst* inst_list)
+RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst)
+{
+    // TODO: Pre-allocate space instead of reallocing on each add
+    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(insts->size + 1));
+    CHECK_OOM(insts);
+    insts->data[insts->size] = *inst;
+    insts->size++;
+    return insts;
+}
+
+unsigned int rup_insts_max_power(RupInsts* insts)
 {
     unsigned int max = 0;
-    FOR_RUP_INST(inst, inst_list)
+    for (int i = 0; i < insts->size; i++)
     {
-        if (inst->command == RUP_POWER && inst->value.power > max)
-            max = inst->value.power;
+        if (insts->data[i].command == RUP_POWER && insts->data[i].value.power > max)
+            max = insts->data[i].value.power;
     }
     return max;
 }
 
-bool rup_inst_power_check(RupInst* inst_list, Location loc, unsigned int power)
+bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power)
 {
-    FOR_RUP_INST(inst, inst_list)
+    for (int i = 0; i < insts->size; i++)
     {
-        if (location_equals(inst->source->location, loc) &&
-            inst->command == RUP_POWER &&
-            inst->value.power >= power)
+        if (location_equals(insts->data[i].source->location, loc) &&
+            insts->data[i].command == RUP_POWER &&
+            insts->data[i].value.power >= power)
             return false;
     }
     return true;
 }
 
-RupInst* rup_inst_find_move(RupInst* inst_list)
+RupInst* rup_insts_find_move(RupInsts* insts)
 {
-    FOR_RUP_INST(inst, inst_list)
+    for (int i = 0; i < insts->size; i++)
     {
-        if (inst->command == RUP_MOVE)
-            return inst;
+        if (insts->data[i].command == RUP_MOVE)
+            return insts->data + i;
     }
     return NULL;
 }
@@ -287,10 +282,6 @@ void rup_inst_print(RupInst* inst)
 {
     switch (inst->command)
     {
-        case RUP_HALT:
-            printf("HALT");
-            break;
-
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
                 inst->source->location.x,
@@ -320,10 +311,6 @@ void rup_node_print(RupNode* node)
 {
     switch (node->inst.command)
     {
-        case RUP_HALT:
-            printf("HALT");
-            break;
-
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
                 node->target->location.x,
@@ -353,10 +340,6 @@ void rup_node_print_verbose(RupNode* node)
 {
     switch (node->inst.command)
     {
-        case RUP_HALT:
-            printf("HALT");
-            break;
-
         case RUP_POWER:
             printf("%llu POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
                 node->tick,
@@ -398,9 +381,7 @@ RupQueue* rup_queue_allocate(unsigned long long tick)
 {
     RupQueue* queue = malloc(sizeof(RupQueue));
     CHECK_OOM(queue);
-    queue->insts = malloc(sizeof(RupInst));
-    *queue->insts = rup_inst_create(RUP_HALT, NULL);
-    queue->size = 0;
+    queue->insts = rup_insts_allocate();
     queue->tick = tick;
     queue->next = NULL;
     return queue;
@@ -415,8 +396,10 @@ void rup_queue_free(RupQueue* queue)
 void rup_queue_add(RupQueue* queue, RupInst* inst)
 {
     // TODO: Faster search
-    FOR_RUP_INST(found_inst, queue->insts)
+    for (int i = 0; i < queue->insts->size; i++)
     {
+        RupInst* found_inst = queue->insts->data + i;
+
         if (rup_inst_equals(found_inst, inst))
         {
             *found_inst = *inst;
@@ -424,7 +407,7 @@ void rup_queue_add(RupQueue* queue, RupInst* inst)
         }
     }
 
-    queue->insts = rup_inst_append(queue->insts, queue->size++, inst);
+    queue->insts = rup_insts_append(queue->insts, inst);
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
@@ -438,7 +421,7 @@ RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
     return NULL;
 }
 
-RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
+RupInsts* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick)
 {
     RupQueue* found_queue = rup_queue_find(queue, tick);
     return found_queue != NULL ? found_queue->insts : NULL;

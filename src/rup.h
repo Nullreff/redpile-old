@@ -22,7 +22,6 @@
 #include "node.h"
 
 typedef enum {
-    RUP_HALT,
     RUP_POWER,
     RUP_MOVE,
     RUP_REMOVE
@@ -36,6 +35,11 @@ typedef struct {
         Direction direction;
     } value;
 } RupInst;
+
+typedef struct {
+    unsigned int size;
+    RupInst data[];
+} RupInsts;
 
 typedef struct RupNode {
     RupInst inst;
@@ -51,14 +55,13 @@ typedef struct {
 } Rup;
 
 typedef struct RupQueue {
-    RupInst* insts;
-    unsigned int size;
+    RupInsts* insts;
     unsigned long long tick;
     struct RupQueue* next;
 } RupQueue;
 
 #define FOR_RUP(NODE,RUP) for (RupNode* (NODE) = (RUP)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
-#define FOR_RUP_INST(INST,LIST) for (RupInst* (INST) = (LIST); (INST)->command != RUP_HALT; (INST)++)
+#define RUP_INSTS_ALLOC_SIZE(SIZE) (sizeof(RupInsts) + sizeof(RupInst) * (SIZE))
 
 Rup rup_empty(void);
 void rup_free(Rup* rup);
@@ -72,12 +75,12 @@ void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* targe
 
 RupInst rup_inst_create(RupCmd cmd, Node* source);
 unsigned int rup_inst_size(RupInst* insts);
-RupInst* rup_inst_clone(RupInst* source, unsigned int size);
-RupInst* rup_inst_empty_allocate(void);
-RupInst* rup_inst_append(RupInst* insts, unsigned int size, RupInst* inst);
-unsigned int rup_inst_max_power(RupInst* inst);
-bool rup_inst_power_check(RupInst* inst_list, Location loc, unsigned int power);
-RupInst* rup_inst_find_move(RupInst* inst_list);
+RupInsts* rup_insts_clone(RupInsts* source);
+RupInsts* rup_insts_allocate(void);
+RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst);
+unsigned int rup_insts_max_power(RupInsts* inst);
+bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power);
+RupInst* rup_insts_find_move(RupInsts* insts);
 void rup_inst_print(RupInst* node);
 void rup_node_print(RupNode* node);
 void rup_node_print_verbose(RupNode* node);
@@ -85,7 +88,7 @@ void rup_node_print_verbose(RupNode* node);
 RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);
 void rup_queue_add(RupQueue* queue, RupInst* inst);
-RupInst* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
+RupInsts* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick);
 

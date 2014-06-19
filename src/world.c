@@ -201,10 +201,6 @@ bool world_run_rup(World* world, RupNode* rup_node)
     Location target_loc = rup_node->target->location;
     switch (rup_node->inst.command)
     {
-        case RUP_HALT:
-            // NOOP
-            break;
-
         case RUP_POWER:
             if (FIELD_GET(rup_node->inst.source, 0) == rup_node->inst.value.power)
                 return false;
@@ -224,7 +220,7 @@ bool world_run_rup(World* world, RupNode* rup_node)
     return true;
 }
 
-RupInst* world_find_instructions(World* world, Node* node)
+RupInsts* world_find_instructions(World* world, Node* node)
 {
     Bucket* bucket = hashmap_get(world->instructions, node->location, false);
     if (bucket == NULL)
@@ -235,7 +231,7 @@ RupInst* world_find_instructions(World* world, Node* node)
     if (queue == NULL)
         return NULL;
 
-    RupInst* insts = rup_queue_find_instructions(queue, world->ticks);
+    RupInsts* insts = rup_queue_find_instructions(queue, world->ticks);
     if (insts == NULL)
         return NULL;
 
