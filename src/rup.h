@@ -29,7 +29,8 @@ typedef enum {
 
 typedef struct {
     RupCmd command;
-    Node* source;
+    Location source;
+    Material source_material;
     union {
         unsigned int power;
         Direction direction;
@@ -68,12 +69,12 @@ void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
 void rup_merge(Rup* rup, Rup* append);
 bool rup_contains(Rup* rup, RupNode* node);
-void rup_remove_by_source(Rup* rup, Node* source);
+void rup_remove_by_source(Rup* rup, Location source);
 void rup_cmd_power(Rup* rup, unsigned long long tick, Node* source, Node* target, unsigned int power);
 void rup_cmd_move(Rup* rup, unsigned long long tick, Node* source, Node* target, Direction direction);
 void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* target);
 
-RupInst rup_inst_create(RupCmd cmd, Node* source);
+RupInst rup_inst_create(RupCmd cmd, Node* node);
 unsigned int rup_inst_size(RupInst* insts);
 RupInsts* rup_insts_clone(RupInsts* source);
 RupInsts* rup_insts_allocate(void);

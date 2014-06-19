@@ -34,7 +34,7 @@ static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Nod
 static bool rup_node_type_equals(RupNode* n1, RupNode* n2)
 {
     return n1->inst.command == n2->inst.command &&
-           n1->inst.source == n2->inst.source &&
+           location_equals(n1->inst.source, n2->inst.source) &&
            n1->target == n2->target &&
            n1->tick == n2->tick;
 }
@@ -162,12 +162,12 @@ bool rup_contains(Rup* rup, RupNode* node)
     return false;
 }
 
-void rup_remove_by_source(Rup* rup, Node* source)
+void rup_remove_by_source(Rup* rup, Location source)
 {
     RupNode* node = rup->nodes;
     while (node != NULL)
     {
-        if (node->inst.source != source)
+        if (!location_equals(node->inst.source, source))
         {
             node = node->next;
             continue;
@@ -205,9 +205,9 @@ void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* targe
     rup_push_inst(rup, RUP_REMOVE, tick, source, target);
 }
 
-RupInst rup_inst_create(RupCmd cmd, Node* source)
+RupInst rup_inst_create(RupCmd cmd, Node* node)
 {
-    return (RupInst){cmd, source, {0}};
+    return (RupInst){cmd, node->location, node->type, {0}};
 }
 
 unsigned int rup_insts_size(RupInsts* insts)
@@ -255,7 +255,7 @@ bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power)
 {
     for (int i = 0; i < insts->size; i++)
     {
-        if (location_equals(insts->data[i].source->location, loc) &&
+        if (location_equals(insts->data[i].source, loc) &&
             insts->data[i].command == RUP_POWER &&
             insts->data[i].value.power >= power)
             return false;
@@ -275,7 +275,7 @@ RupInst* rup_insts_find_move(RupInsts* insts)
 
 bool rup_inst_equals(RupInst* i1, RupInst* i2)
 {
-    return i1->command == i2->command && i1->source == i2->source;
+    return i1->command == i2->command && location_equals(i1->source, i2->source);
 }
 
 void rup_inst_print(RupInst* inst)
@@ -284,25 +284,25 @@ void rup_inst_print(RupInst* inst)
     {
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
-                inst->source->location.x,
-                inst->source->location.y,
-                inst->source->location.z,
+                inst->source.x,
+                inst->source.y,
+                inst->source.z,
                 inst->value.power);
             break;
 
         case RUP_MOVE:
             printf("MOVE (%d,%d,%d) %s\n",
-                inst->source->location.x,
-                inst->source->location.y,
-                inst->source->location.z,
+                inst->source.x,
+                inst->source.y,
+                inst->source.z,
                 Directions[inst->value.direction]);
             break;
 
         case RUP_REMOVE:
             printf("REMOVE (%d,%d,%d)\n",
-                inst->source->location.x,
-                inst->source->location.y,
-                inst->source->location.z);
+                inst->source.x,
+                inst->source.y,
+                inst->source.z);
             break;
     }
 }
@@ -343,9 +343,9 @@ void rup_node_print_verbose(RupNode* node)
         case RUP_POWER:
             printf("%llu POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
                 node->tick,
-                node->inst.source->location.x,
-                node->inst.source->location.y,
-                node->inst.source->location.z,
+                node->inst.source.x,
+                node->inst.source.y,
+                node->inst.source.z,
                 node->target->location.x,
                 node->target->location.y,
                 node->target->location.z,
@@ -355,9 +355,9 @@ void rup_node_print_verbose(RupNode* node)
         case RUP_MOVE:
             printf("%llu MOVE (%d,%d,%d) -> (%d,%d,%d) %s\n",
                 node->tick,
-                node->inst.source->location.x,
-                node->inst.source->location.y,
-                node->inst.source->location.z,
+                node->inst.source.x,
+                node->inst.source.y,
+                node->inst.source.z,
                 node->target->location.x,
                 node->target->location.y,
                 node->target->location.z,
@@ -367,9 +367,9 @@ void rup_node_print_verbose(RupNode* node)
         case RUP_REMOVE:
             printf("%llu REMOVE (%d,%d,%d) -> (%d,%d,%d)\n",
                 node->tick,
-                node->inst.source->location.x,
-                node->inst.source->location.y,
-                node->inst.source->location.z,
+                node->inst.source.x,
+                node->inst.source.y,
+                node->inst.source.z,
                 node->target->location.x,
                 node->target->location.y,
                 node->target->location.z);

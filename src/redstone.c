@@ -204,15 +204,15 @@ static void redstone_comparator_update(World* world, Node* node, RupInsts* in, R
         RupInst* inst = in->data + i;
 
         // Power coming from the side
-        if ((location_equals(LOCATION(inst->source), right) ||
-             location_equals(LOCATION(inst->source), left)) &&
+        if ((location_equals(inst->source, right) ||
+             location_equals(inst->source, left)) &&
             side_power < inst->value.power)
         {
             side_power = inst->value.power;
         }
 
         // Power coming from behind
-        if (location_equals(LOCATION(inst->source), behind))
+        if (location_equals(inst->source, behind))
             new_power = inst->value.power;
     }
 
@@ -259,15 +259,15 @@ static void redstone_repeater_update(World* world, Node* node, RupInsts* in, Rup
         RupInst* inst = in->data + i;
 
         // Power coming from the side
-        if (MATERIAL(inst->source) == REPEATER &&
-            (location_equals(LOCATION(inst->source), right) ||
-            location_equals(LOCATION(inst->source), left)))
+        if (inst->source_material == REPEATER &&
+            (location_equals(inst->source, right) ||
+            location_equals(inst->source, left)))
         {
             side_powered = (inst->value.power > 0) || side_powered;
         }
 
         // Power coming from behind
-        if (location_equals(LOCATION(inst->source), behind))
+        if (location_equals(inst->source, behind))
             new_power = inst->value.power;
     }
 
@@ -299,7 +299,7 @@ static void redstone_torch_update(World* world, Node* node, RupInsts* in, Rup* o
         RupInst* inst = in->data + i;
 
         // Power coming from behind
-        if (location_equals(LOCATION(inst->source), loc_behind))
+        if (location_equals(inst->source, loc_behind))
             new_power = inst->value.power;
     }
 
@@ -377,10 +377,10 @@ static void process_output(World* world, Node* node, Rup* input, Rup* output)
     FOR_RUP(rup_node, input)
     {
         if (rup_node->tick == world->ticks &&
-            !location_equals(LOCATION(rup_node->target), LOCATION(rup_node->inst.source)) &&
+            !location_equals(LOCATION(rup_node->target), rup_node->inst.source) &&
             !rup_contains(output, rup_node))
         {
-            rup_remove_by_source(output, rup_node->target);
+            rup_remove_by_source(output, rup_node->target->location);
             node_list_move_after(world->nodes, node, rup_node->target);
         }
     }
@@ -393,7 +393,7 @@ static void run_output(World* world, Rup* output, void (*inst_run_callback)(RupN
     FOR_RUP(rup_node, output)
     {
         if (rup_node->tick == world->ticks &&
-            location_equals(LOCATION(rup_node->target), LOCATION(rup_node->inst.source)))
+            location_equals(LOCATION(rup_node->target), rup_node->inst.source))
         {
             inst_run_callback(rup_node);
             world_run_rup(world, rup_node);
