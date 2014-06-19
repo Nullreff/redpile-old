@@ -63,7 +63,7 @@ static long long get_time(void)
 static void benchmark_insert(World* world)
 {
     Type type = rand() % MATERIALS_COUNT;
-    world_set_node(world, location_random(), type, false);
+    world_set_node(world, location_random(), type);
 }
 
 static void benchmark_get(World* world)

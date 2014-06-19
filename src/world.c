@@ -81,7 +81,7 @@ static bool world_fill_missing(World* world, Location location)
     Type type;
     if (world->node_missing(location, &type))
     {
-        world_set_node(world, location, type, true);
+        world_set_node(world, location, type);
         return true;
     }
     return false;
@@ -93,7 +93,7 @@ static void world_node_move(World* world, Node* node, Direction direction)
     Location new_location = location_move(node->location, direction, 1);
 
     world_remove_node(world, node->location);
-    world_set_node(world, new_location, type, false);
+    world_set_node(world, new_location, type);
 }
 
 World* world_allocate(unsigned int size)
@@ -118,7 +118,7 @@ void world_free(World* world)
     free(world);
 }
 
-Node* world_set_node(World* world, Location location, Type type, bool system)
+Node* world_set_node(World* world, Location location, Type type)
 {
     if (type == EMPTY)
     {
@@ -131,7 +131,7 @@ Node* world_set_node(World* world, Location location, Type type, bool system)
     if (bucket->value != NULL)
         node_list_remove(world->nodes, bucket->value);
 
-    bucket->value = node_list_append(world->nodes, location, type, system);
+    bucket->value = node_list_append(world->nodes, location, type);
     world_update_adjacent_nodes(world, bucket->value);
     return bucket->value;
 }

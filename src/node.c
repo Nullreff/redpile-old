@@ -34,7 +34,7 @@ char* Materials[MATERIALS_COUNT] = {
 
 unsigned int FieldCounts[MATERIALS_COUNT] = {0, 0, 0, 1, 1, 2, 2, 3, 3, 3};
 
-static Node* node_allocate(Location location, Type type, bool system)
+static Node* node_allocate(Location location, Type type)
 {
     unsigned int count = FieldCounts[type];
 
@@ -42,7 +42,6 @@ static Node* node_allocate(Location location, Type type, bool system)
     CHECK_OOM(node);
     node->location = location;
     node->type = type;
-    node->system = system;
     node->fields.count = count;
     return node;
 }
@@ -98,9 +97,9 @@ void node_list_free(NodeList* blocks)
     free(blocks);
 }
 
-Node* node_list_append(NodeList* blocks, Location location, Type type, bool system)
+Node* node_list_append(NodeList* blocks, Location location, Type type)
 {
-    Node* node = node_allocate(location, type, system);
+    Node* node = node_allocate(location, type);
 
     if (blocks->nodes != NULL)
     {

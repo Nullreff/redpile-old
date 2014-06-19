@@ -56,7 +56,7 @@ typedef struct {
 
 World* world_allocate(unsigned int size);
 void world_free(World* world);
-Node* world_set_node(World* world, Location location, Type type, bool system);
+Node* world_set_node(World* world, Location location, Type type);
 Node* world_get_node(World* world, Location location);
 void world_remove_node(World* world, Location location);
 Node* world_get_adjacent_node(World* world, Node* node, Direction dir);

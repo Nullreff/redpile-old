@@ -148,7 +148,7 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
     {
         case SET:
             location = location_from_values(inst->values);
-            node = world_set_node(world, location, inst->values[3], false);
+            node = world_set_node(world, location, inst->values[3]);
             if (node != NULL)
             {
                 FIELD_SET(node, 1, inst->values[4]);

@@ -59,10 +59,6 @@ typedef struct Node {
     struct Node* next;
     struct Node* prev;
 
-    // True if this block was added by the system
-    // False if it was added via command
-    bool system:1;
-
     Fields fields;
 } Node;
 
@@ -80,7 +76,7 @@ void node_print_power(Node* node);
 
 NodeList* node_list_allocate(void);
 void node_list_free(NodeList* blocks);
-Node* node_list_append(NodeList* blocks, Location location, Type type, bool system);
+Node* node_list_append(NodeList* blocks, Location location, Type type);
 void node_list_remove(NodeList* blocks, Node* node);
 void node_list_move_after(NodeList* blocks, Node* node, Node* target);
 void node_list_print(NodeList* blocks);
