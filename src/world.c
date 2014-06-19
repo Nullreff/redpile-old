@@ -199,24 +199,22 @@ void world_clear_node_missing_callback(World* world)
 bool world_run_rup(World* world, RupNode* rup_node)
 {
     Location target_loc;
-    Node* source_node;
     switch (rup_node->inst.command)
     {
         case RUP_POWER:
-            source_node = world_get_node(world, rup_node->inst.source);
-            if (FIELD_GET(source_node, 0) == rup_node->inst.value.power)
+            if (FIELD_GET(rup_node->target, 0) == rup_node->inst.value.power)
                 return false;
-            FIELD_SET(source_node, 0, rup_node->inst.value.power);
+            FIELD_SET(rup_node->target, 0, rup_node->inst.value.power);
             break;
 
         case RUP_MOVE:
-            target_loc = rup_node->target->location;
+            target_loc = rup_node->inst.source;
             world_node_move(world, rup_node->target, rup_node->inst.value.direction);
             world_fill_missing(world, target_loc);
             break;
 
         case RUP_REMOVE:
-            world_remove_node(world, rup_node->target->location);
+            world_remove_node(world, rup_node->inst.source);
             break;
     }
 
