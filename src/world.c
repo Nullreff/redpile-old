@@ -198,7 +198,7 @@ void world_clear_node_missing_callback(World* world)
 
 bool world_run_rup(World* world, RupNode* rup_node)
 {
-    Location target_loc = rup_node->target->location;
+    Location target_loc;
     Node* source_node;
     switch (rup_node->inst.command)
     {
@@ -210,6 +210,7 @@ bool world_run_rup(World* world, RupNode* rup_node)
             break;
 
         case RUP_MOVE:
+            target_loc = rup_node->target->location;
             world_node_move(world, rup_node->target, rup_node->inst.value.direction);
             world_fill_missing(world, target_loc);
             break;
