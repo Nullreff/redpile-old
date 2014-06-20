@@ -39,10 +39,18 @@
 #define CMD_MOVE(DIR) SEND_MOVE(node, DIR, 0)
 #define CMD_REMOVE() rup_cmd_remove(out, world->ticks, node, node)
 
-static void redstone_conductor_update(World* world, Node* node, RupInsts* in, Rup* out)
-{
-    assert(MATERIAL(node) == CONDUCTOR);
+#define RUP_METHOD(TYPE)\
+    static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Rup* out)
 
+#define RUP_REGISTER(TYPE)\
+    case TYPE: redstone_ ## TYPE ## _update(world, node, in, &out); break
+
+RUP_METHOD(EMPTY) {}
+RUP_METHOD(AIR) {}
+RUP_METHOD(INSULATOR) {}
+
+RUP_METHOD(CONDUCTOR)
+{
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
@@ -65,10 +73,8 @@ static void redstone_conductor_update(World* world, Node* node, RupInsts* in, Ru
     }
 }
 
-static void redstone_wire_update(World* world, Node* node, RupInsts* in, Rup* out)
+RUP_METHOD(WIRE)
 {
-    assert(MATERIAL(node) == WIRE);
-
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
@@ -142,10 +148,8 @@ static void redstone_wire_update(World* world, Node* node, RupInsts* in, Rup* ou
 #define RETRACTING 1
 #define EXTENDED 2
 #define EXTENDING 3
-static void redstone_piston_update(World* world, Node* node, RupInsts* in, Rup* out)
+RUP_METHOD(PISTON)
 {
-    assert(MATERIAL(node) == PISTON);
-
     Node* first = NODE_ADJACENT(node, DIRECTION(node));
     Node* second = NODE_ADJACENT(first, DIRECTION(node));
 
@@ -182,10 +186,8 @@ static void redstone_piston_update(World* world, Node* node, RupInsts* in, Rup* 
         SEND_MOVE(second, direction_invert(DIRECTION(node)), 1);
 }
 
-static void redstone_comparator_update(World* world, Node* node, RupInsts* in, Rup* out)
+RUP_METHOD(COMPARATOR)
 {
-    assert(MATERIAL(node) == COMPARATOR);
-
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
@@ -237,10 +239,8 @@ static void redstone_comparator_update(World* world, Node* node, RupInsts* in, R
     SEND_POWER(found_node, new_power, 1);
 }
 
-static void redstone_repeater_update(World* world, Node* node, RupInsts* in, Rup* out)
+RUP_METHOD(REPEATER)
 {
-    assert(MATERIAL(node) == REPEATER);
-
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
@@ -281,10 +281,8 @@ static void redstone_repeater_update(World* world, Node* node, RupInsts* in, Rup
     SEND_POWER(found_node, MAX_POWER, STATE(node) + 1);
 }
 
-static void redstone_torch_update(World* world, Node* node, RupInsts* in, Rup* out)
+RUP_METHOD(TORCH)
 {
-    assert(MATERIAL(node) == TORCH);
-
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
@@ -327,10 +325,8 @@ static void redstone_torch_update(World* world, Node* node, RupInsts* in, Rup* o
         SEND_POWER(up_node, MAX_POWER, 1);
 }
 
-static void redstone_switch_update(World* world, Node* node, RupInsts* in, Rup* out)
+RUP_METHOD(SWITCH)
 {
-    assert(MATERIAL(node) == SWITCH);
-
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
@@ -438,16 +434,16 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
 
             switch (MATERIAL(node))
             {
-                case EMPTY:      free(in); continue;
-                case AIR:        free(in); continue;
-                case INSULATOR:  free(in); continue;
-                case WIRE:       redstone_wire_update      (world, node, in, &out); break;
-                case CONDUCTOR:  redstone_conductor_update (world, node, in, &out); break;
-                case TORCH:      redstone_torch_update     (world, node, in, &out); break;
-                case PISTON:     redstone_piston_update    (world, node, in, &out); break;
-                case REPEATER:   redstone_repeater_update  (world, node, in, &out); break;
-                case COMPARATOR: redstone_comparator_update(world, node, in, &out); break;
-                case SWITCH:     redstone_switch_update    (world, node, in, &out); break;
+                RUP_REGISTER(EMPTY);
+                RUP_REGISTER(AIR);
+                RUP_REGISTER(INSULATOR);
+                RUP_REGISTER(WIRE);
+                RUP_REGISTER(CONDUCTOR);
+                RUP_REGISTER(TORCH);
+                RUP_REGISTER(PISTON);
+                RUP_REGISTER(REPEATER);
+                RUP_REGISTER(COMPARATOR);
+                RUP_REGISTER(SWITCH);
                 default: ERROR("Encountered unknown block material");
             }
             free(in);
