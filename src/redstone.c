@@ -448,6 +448,9 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
             free(in);
 
+            if (out.size == 0)
+                continue;
+
             process_output(world, node, &out, &output);
 
             loops++;
