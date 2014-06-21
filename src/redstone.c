@@ -33,17 +33,17 @@
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
-#define SEND_POWER(NODE,POWER,DELAY) rup_cmd_power(out, world->ticks + (DELAY), node, NODE, POWER)
-#define SEND_MOVE(NODE,DIR,DELAY) rup_cmd_move(out, world->ticks + (DELAY), node, NODE, DIR)
-#define CMD_POWER(POWER) SEND_POWER(node, POWER, 0)
-#define CMD_MOVE(DIR) SEND_MOVE(node, DIR, 0)
-#define CMD_REMOVE() rup_cmd_remove(out, world->ticks, node, node)
+#define SEND_POWER(NODE,POWER,DELAY) rup_cmd_power (messages,  world->ticks + (DELAY), node, NODE, POWER)
+#define SEND_MOVE(NODE,DIR,DELAY)    rup_cmd_move  (messages,  world->ticks + (DELAY), node, NODE, DIR  )
+#define CMD_POWER(POWER)             rup_cmd_power (sets,      world->ticks,           node, node, POWER)
+#define CMD_MOVE(DIR)                rup_cmd_move  (sets,      world->ticks,           node, node, DIR  )
+#define CMD_REMOVE()                 rup_cmd_remove(sets,      world->ticks,           node, node       )
 
 #define RUP_METHOD(TYPE)\
-    static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Rup* out)
+    static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Rup* messages, Rup* sets)
 
 #define RUP_REGISTER(TYPE)\
-    case TYPE: redstone_ ## TYPE ## _update(world, node, in, &out); break
+    case TYPE: redstone_ ## TYPE ## _update(world, node, in, &messages, &sets_out); break
 
 RUP_METHOD(EMPTY) {}
 RUP_METHOD(AIR) {}
@@ -59,7 +59,7 @@ RUP_METHOD(CONDUCTOR)
     }
 
     unsigned int power = rup_insts_max_power(in);
-    SEND_POWER(node, power, 0);
+    CMD_POWER(power);
 
     if (power < MAX_POWER)
         return;
@@ -86,7 +86,7 @@ RUP_METHOD(WIRE)
     bool covered = above != NULL && MATERIAL(above) != AIR && MATERIAL(above) != EMPTY;
 
     int new_power = rup_insts_max_power(in);
-    SEND_POWER(node, new_power, 0);
+    CMD_POWER(new_power);
 
     if (new_power == 0)
         return;
@@ -178,7 +178,7 @@ RUP_METHOD(PISTON)
         return;
     }
 
-    SEND_POWER(node, new_power, 0);
+    CMD_POWER(new_power);
 
     if (state == EXTENDING)
         SEND_MOVE(first, DIRECTION(node), 1);
@@ -218,7 +218,7 @@ RUP_METHOD(COMPARATOR)
             new_power = inst->value.power;
     }
 
-    SEND_POWER(node, new_power, 0);
+    CMD_POWER(new_power);
 
     if (new_power == 0)
         return;
@@ -271,7 +271,7 @@ RUP_METHOD(REPEATER)
             new_power = inst->value.power;
     }
 
-    SEND_POWER(node, new_power, 0);
+    CMD_POWER(new_power);
 
     if (new_power == 0 || side_powered)
         return;
@@ -301,7 +301,7 @@ RUP_METHOD(TORCH)
             new_power = inst->value.power;
     }
 
-    SEND_POWER(node, new_power, 0);
+    CMD_POWER(new_power);
 
     if (new_power > 0)
         return;
@@ -368,53 +368,57 @@ static RupInsts* find_input(World* world, Node* node, Rup* output)
     return insts;
 }
 
-static void process_output(World* world, Node* node, Rup* input, Rup* output)
+static void process_output(World* world, Node* node, Rup* input, Rup* messages_out, Rup* sets_out)
 {
     FOR_RUP(rup_node, input)
     {
         if (rup_node->tick == world->ticks &&
-            !location_equals(LOCATION(rup_node->target), rup_node->inst.source) &&
-            !rup_contains(output, rup_node))
+            !rup_contains(messages_out, rup_node))
         {
-            rup_remove_by_source(output, rup_node->target->location);
+            assert(!location_equals(LOCATION(rup_node->target), rup_node->inst.source));
+            rup_remove_by_source(messages_out, rup_node->target->location);
+            rup_remove_by_source(sets_out, rup_node->target->location);
             node_list_move_after(world->nodes, node, rup_node->target);
         }
     }
 
-    rup_merge(output, input);
+    rup_merge(messages_out, input);
 }
 
-static void run_output(World* world, Rup* output, void (*inst_run_callback)(RupNode*))
+static void run_messages(World* world, Rup* messages, void (*inst_run_callback)(RupNode*))
 {
-    FOR_RUP(rup_node, output)
+    FOR_RUP(message, messages)
     {
-        if (rup_node->tick == world->ticks &&
-            location_equals(LOCATION(rup_node->target), rup_node->inst.source))
-        {
-            inst_run_callback(rup_node);
-            world_run_rup(world, rup_node);
-            continue;
-        }
+        assert(!location_equals(LOCATION(message->target), message->inst.source));
 
-        Bucket* bucket = hashmap_get(world->instructions, LOCATION(rup_node->target), true);
+        Bucket* bucket = hashmap_get(world->instructions, LOCATION(message->target), true);
         RupQueue* queue = (RupQueue*)bucket->value;
         if (queue == NULL)
         {
-            queue = rup_queue_allocate(rup_node->tick);
+            queue = rup_queue_allocate(message->tick);
             bucket->value = queue;
         }
         else
         {
-            queue = rup_queue_find(queue, rup_node->tick);
+            queue = rup_queue_find(queue, message->tick);
             if (queue == NULL)
             {
-                queue = rup_queue_allocate(rup_node->tick);
+                queue = rup_queue_allocate(message->tick);
                 queue->next = bucket->value;
                 bucket->value = queue;
             }
         }
 
-        rup_queue_add(queue, &rup_node->inst);
+        rup_queue_add(queue, &message->inst);
+    }
+}
+
+static void run_sets(World* world, Rup* sets, void (*inst_run_callback)(RupNode*))
+{
+    FOR_RUP(set, sets)
+    {
+        inst_run_callback(set);
+        world_run_rup(world, set);
     }
 }
 
@@ -425,12 +429,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
     for (unsigned int i = 0; i < count; i++)
     {
         unsigned int loops = 0;
-        Rup output = rup_empty();
+        Rup messages_out = rup_empty();
+        Rup sets_out = rup_empty();
 
         FOR_NODE_LIST(world->nodes)
         {
-            RupInsts* in = find_input(world, node, &output);
-            Rup out = rup_empty();
+            RupInsts* in = find_input(world, node, &messages_out);
+            Rup messages = rup_empty();
 
             switch (MATERIAL(node))
             {
@@ -448,10 +453,10 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
             free(in);
 
-            if (out.size == 0)
+            if (messages.size == 0)
                 continue;
 
-            process_output(world, node, &out, &output);
+            process_output(world, node, &messages, &messages_out, &sets_out);
 
             loops++;
             if (loops > world->nodes->size * 2)
@@ -461,8 +466,10 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
         }
 
-        run_output(world, &output, inst_run_callback);
-        rup_free(&output);
+        run_messages(world, &messages_out, inst_run_callback);
+        run_sets(world, &sets_out, inst_run_callback);
+        rup_free(&messages_out);
+        rup_free(&sets_out);
         world->ticks++;
     }
 
