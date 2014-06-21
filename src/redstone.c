@@ -43,7 +43,7 @@
     static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Rup* messages, Rup* sets)
 
 #define RUP_REGISTER(TYPE)\
-    case TYPE: redstone_ ## TYPE ## _update(world, node, in, &messages, &sets_out); break
+    case TYPE: redstone_ ## TYPE ## _update(world, node, in, &output, &sets); break
 
 RUP_METHOD(EMPTY) {}
 RUP_METHOD(AIR) {}
@@ -368,9 +368,9 @@ static RupInsts* find_input(World* world, Node* node, Rup* output)
     return insts;
 }
 
-static void process_output(World* world, Node* node, Rup* input, Rup* messages_out, Rup* sets_out)
+static void process_output(World* world, Node* node, Rup* output, Rup* messages_out, Rup* sets_out)
 {
-    FOR_RUP(rup_node, input)
+    FOR_RUP(rup_node, output)
     {
         if (rup_node->tick == world->ticks &&
             !rup_contains(messages_out, rup_node))
@@ -382,7 +382,7 @@ static void process_output(World* world, Node* node, Rup* input, Rup* messages_o
         }
     }
 
-    rup_merge(messages_out, input);
+    rup_merge(messages_out, output);
 }
 
 static void run_messages(World* world, Rup* messages, void (*inst_run_callback)(RupNode*))
@@ -429,13 +429,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
     for (unsigned int i = 0; i < count; i++)
     {
         unsigned int loops = 0;
-        Rup messages_out = rup_empty();
-        Rup sets_out = rup_empty();
+        Rup messages = rup_empty();
+        Rup sets = rup_empty();
 
         FOR_NODE_LIST(world->nodes)
         {
-            RupInsts* in = find_input(world, node, &messages_out);
-            Rup messages = rup_empty();
+            RupInsts* in = find_input(world, node, &messages);
+            Rup output = rup_empty();
 
             switch (MATERIAL(node))
             {
@@ -453,10 +453,10 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
             free(in);
 
-            if (messages.size == 0)
+            if (output.size == 0)
                 continue;
 
-            process_output(world, node, &messages, &messages_out, &sets_out);
+            process_output(world, node, &output, &messages, &sets);
 
             loops++;
             if (loops > world->nodes->size * 2)
@@ -466,10 +466,10 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
         }
 
-        run_messages(world, &messages_out, inst_run_callback);
-        run_sets(world, &sets_out, inst_run_callback);
-        rup_free(&messages_out);
-        rup_free(&sets_out);
+        run_messages(world, &messages, inst_run_callback);
+        run_sets(world, &sets, inst_run_callback);
+        rup_free(&messages);
+        rup_free(&sets);
         world->ticks++;
     }
 
