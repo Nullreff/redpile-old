@@ -137,11 +137,8 @@ RUP_METHOD(WIRE)
 
     // Block below
     Node* down_node = NODE_ADJACENT(node, DOWN);
-
     if (MATERIAL(down_node) == CONDUCTOR && LOWER_POWER(down_node, new_power))
-    {
         SEND_POWER(down_node, new_power, 0);
-    }
 }
 
 #define RETRACTED 0
@@ -372,8 +369,7 @@ static void process_output(World* world, Node* node, Rup* output, Rup* messages_
 {
     FOR_RUP(rup_node, output)
     {
-        if (rup_node->tick == world->ticks &&
-            !rup_contains(messages_out, rup_node))
+        if (rup_node->tick == world->ticks && !rup_contains(messages_out, rup_node))
         {
             assert(!location_equals(LOCATION(rup_node->target), rup_node->inst.source));
             rup_remove_by_source(messages_out, rup_node->target->location);
