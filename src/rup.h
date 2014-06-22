@@ -54,7 +54,13 @@ typedef struct RupNode {
 typedef struct {
     RupNode* nodes;
     Hashmap* targetmap;
+    Hashmap* sourcemap;
 } Rup;
+
+typedef struct {
+    unsigned int size;
+    RupNode* data[];
+} RupNodeList;
 
 typedef struct RupQueue {
     RupInsts* insts;
@@ -65,7 +71,7 @@ typedef struct RupQueue {
 #define FOR_RUP(NODE,RUP) for (RupNode* (NODE) = (RUP)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
 #define RUP_INSTS_ALLOC_SIZE(SIZE) (sizeof(RupInsts) + sizeof(RupInst) * (SIZE))
 
-Rup rup_empty(bool include_hashmap);
+Rup rup_empty(bool track_targets, bool track_sources);
 void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
 void rup_merge(Rup* rup, Rup* append);
