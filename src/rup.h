@@ -20,6 +20,7 @@
 #define REDPILE_RUP_H
 
 #include "node.h"
+#include "hashmap.h"
 
 typedef enum {
     RUP_POWER,
@@ -52,7 +53,7 @@ typedef struct RupNode {
 
 typedef struct {
     RupNode* nodes;
-    unsigned int size;
+    Hashmap* targetmap;
 } Rup;
 
 typedef struct RupQueue {
@@ -64,7 +65,7 @@ typedef struct RupQueue {
 #define FOR_RUP(NODE,RUP) for (RupNode* (NODE) = (RUP)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
 #define RUP_INSTS_ALLOC_SIZE(SIZE) (sizeof(RupInsts) + sizeof(RupInst) * (SIZE))
 
-Rup rup_empty(void);
+Rup rup_empty(bool include_hashmap);
 void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
 void rup_merge(Rup* rup, Rup* append);

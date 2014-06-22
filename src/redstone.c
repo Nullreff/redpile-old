@@ -350,16 +350,22 @@ static bool redstone_node_missing(Location location, Type* type)
     return true;
 }
 
-static RupInsts* find_input(World* world, Node* node, Rup* output)
+static RupInsts* find_input(World* world, Node* node, Rup* messages)
 {
     RupInsts* found_insts = world_find_instructions(world, node);
     RupInsts* insts = found_insts != NULL ? rup_insts_clone(found_insts) : rup_insts_allocate();
 
     // Include any instructions generated this tick
-    FOR_RUP(rup_node, output)
+    Bucket* bucket = hashmap_get(messages->targetmap, node->location, false);
+    if (bucket != NULL)
     {
-        if (rup_node->target == node)
-            insts = rup_insts_append(insts, &rup_node->inst);
+        RupNode* found = bucket->value;
+        do
+        {
+            insts = rup_insts_append(insts, &found->inst);
+            found = found->next;
+        }
+        while (found != NULL && location_equals(found->target->location, node->location));
     }
 
     return insts;
@@ -425,13 +431,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
     for (unsigned int i = 0; i < count; i++)
     {
         unsigned int loops = 0;
-        Rup messages = rup_empty();
-        Rup sets = rup_empty();
+        Rup messages = rup_empty(true);
+        Rup sets = rup_empty(false);
 
         FOR_NODE_LIST(world->nodes)
         {
             RupInsts* in = find_input(world, node, &messages);
-            Rup output = rup_empty();
+            Rup output = rup_empty(false);
 
             switch (MATERIAL(node))
             {
@@ -448,9 +454,6 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
                 default: ERROR("Encountered unknown block material");
             }
             free(in);
-
-            if (output.size == 0)
-                continue;
 
             process_output(world, node, &output, &messages, &sets);
 

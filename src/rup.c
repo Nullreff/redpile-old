@@ -60,9 +60,10 @@ static bool rup_node_equals(RupNode* n1, RupNode* n2)
     }
 }
 
-Rup rup_empty(void)
+Rup rup_empty(bool include_hashmap)
 {
-    return (Rup){NULL, 0};
+    Hashmap* hashmap = include_hashmap ? hashmap_allocate(1) : NULL;
+    return (Rup){NULL, hashmap};
 }
 
 void rup_free(Rup* rup)
@@ -74,91 +75,83 @@ void rup_free(Rup* rup)
         free(node);
         node = temp;
     }
+
+    if (rup->targetmap != NULL)
+        hashmap_free(rup->targetmap);
 }
 
 void rup_push(Rup* rup, RupNode* node)
 {
-    node->next = rup->nodes;
-    node->prev = NULL;
-    if (rup->nodes != NULL)
-        rup->nodes->prev = node;
-    rup->nodes = node;
-    rup->size++;
+    if (rup->targetmap == NULL)
+    {
+        node->next = rup->nodes;
+        node->prev = NULL;
+        if (rup->nodes != NULL)
+            rup->nodes->prev = node;
+        rup->nodes = node;
+        return;
+    }
+
+    Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, true);
+    if (bucket->value == NULL)
+    {
+        // No nodes with this source exist yet
+        // Stick it in the front of the list
+        node->next = rup->nodes;
+        node->prev = NULL;
+        if (rup->nodes != NULL)
+            rup->nodes->prev = node;
+        rup->nodes = node;
+        bucket->value = node;
+    }
+    else
+    {
+        // Otherwise stick it after the existing one
+        RupNode* existing = bucket->value;
+        node->next = existing->next;
+        node->prev = existing;
+        if (existing->next != NULL)
+            existing->next->prev = node;
+        existing->next = node;
+    }
 }
 
 void rup_merge(Rup* rup, Rup* append)
 {
-    // Exit early if theres nothing in one of the lists
+    // Exit early if theres nothing to append
     if (append->nodes == NULL)
         return;
 
-    if (rup->nodes == NULL)
-    {
-        rup->nodes = append->nodes;
-        rup->size = append->size;
-        return;
-    }
-
-    // Otherwise find the first non-duplicate node
-    RupNode* start = append->nodes;
+    // Merge in any that haven't already been added
     RupNode* node = append->nodes;
-    while (true)
-    {
-        if (!rup_contains(rup, node))
-        {
-            node->prev = NULL;
-            node = node->next;
-            break;
-        }
-
-        start = node->next;
-        free(node);
-
-        // Reached the end of the list
-        if (start == NULL)
-            return;
-
-        node = start;
-    }
-    assert(start != NULL);
-
-    // Then remove any duplicate nodes
-    unsigned int count = 1;
-    RupNode* end = start;
     while (node != NULL)
     {
+        RupNode* temp = node->next;
         if (!rup_contains(rup, node))
-        {
-            end = node;
-            node = node->next;
-            count++;
-        }
+            rup_push(rup, node);
         else
-        {
-            node->next->prev = node->prev;
-            node->prev->next = node->next;
-            RupNode* temp = node->next;
             free(node);
-            node = temp;
-        }
+        node = temp;
     }
-    assert(end != NULL);
 
-    // Insert the new instructions at the begining
-    end->next = rup->nodes;
-    rup->nodes->prev = end;
-    rup->nodes = start;
-    rup->size += count;
     append->nodes = NULL;
 }
 
 bool rup_contains(Rup* rup, RupNode* node)
 {
-    FOR_RUP(found_node, rup)
+    Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
+    if (bucket == NULL)
+        return false;
+
+    RupNode* found = bucket->value;
+    do
     {
-        if (rup_node_equals(found_node, node))
+        if (rup_node_equals(found, node))
             return true;
+        found = found->next;
     }
+    while (found != NULL && location_equals(found->target->location, node->target->location));
+
     return false;
 }
 
@@ -173,6 +166,22 @@ void rup_remove_by_source(Rup* rup, Location source)
             continue;
         }
 
+        if (rup->targetmap != NULL)
+        {
+            if (node->next != NULL && location_equals(node->target->location, node->next->target->location))
+            {
+                // Change the hashmap to target the next node
+                Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
+                assert(bucket != NULL);
+                bucket->value = node->next;
+            }
+            else
+            {
+                // We ran out of nodes with this target, just remove the hashmap entry
+                hashmap_remove(rup->targetmap, node->target->location);
+            }
+        }
+
         if (node->prev != NULL)
             node->prev->next = node->next;
         else
@@ -184,7 +193,6 @@ void rup_remove_by_source(Rup* rup, Location source)
         RupNode* deleted = node;
         node = node->next;
         free(deleted);
-        rup->size--;
     }
 }
 
