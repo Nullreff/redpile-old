@@ -34,14 +34,20 @@ static Bucket* hashmap_add_next(Hashmap* hashmap, Bucket* bucket)
     return new_bucket;
 }
 
-static void hashmap_free_data(Hashmap* hashmap)
+static void hashmap_free_buckets(Hashmap* hashmap, void (*free_values)(void* value))
 {
     for (int i = 0; i < hashmap->size; i++)
     {
-        Bucket* current = hashmap->data[i].next;
+        Bucket* current = hashmap->data + i;
+        if (free_values && current->value != NULL)
+            free_values(current->value);
+
+        current = current->next;
         while (current != NULL)
         {
             Bucket* temp = current->next;
+            if (free_values)
+                free_values(current->value);
             free(current);
             current = temp;
         }
@@ -70,9 +76,9 @@ Hashmap* hashmap_allocate(unsigned int size)
     return hashmap;
 }
 
-void hashmap_free(Hashmap* hashmap)
+void hashmap_free(Hashmap* hashmap, void (*free_values)(void* value))
 {
-    hashmap_free_data(hashmap);
+    hashmap_free_buckets(hashmap, free_values);
     free(hashmap);
 }
 
@@ -97,7 +103,7 @@ void hashmap_resize(Hashmap* hashmap, unsigned int new_size)
         while (bucket != NULL);
     }
 
-    hashmap_free_data(hashmap);
+    hashmap_free_buckets(hashmap, NULL);
     memcpy(hashmap, new_hashmap, sizeof(Hashmap));
     free(new_hashmap);
 }

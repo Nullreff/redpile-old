@@ -52,23 +52,14 @@ static void world_reset_adjacent_nodes(World* world, Node* node)
     }
 }
 
+static void rup_queue_free_void(void* value)
+{
+    rup_queue_free(value);
+}
+
 static void world_instructions_free(World* world)
 {
-    for (int i = 0; i < world->instructions->size; i++)
-    {
-        for (Bucket* bucket = world->instructions->data + i; bucket != NULL; bucket = bucket->next)
-        {
-            RupQueue* queue = bucket->value;
-            while (queue != NULL)
-            {
-                RupQueue* temp = queue->next;
-                rup_queue_free(queue);
-                queue = temp;
-            }
-        }
-    }
-
-    hashmap_free(world->instructions);
+    hashmap_free(world->instructions, rup_queue_free_void);
 }
 
 static bool node_missing_noop(Location location, Type* type)
@@ -112,7 +103,7 @@ World* world_allocate(unsigned int size)
 
 void world_free(World* world)
 {
-    hashmap_free(world->hashmap);
+    hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
     world_instructions_free(world);
     free(world);

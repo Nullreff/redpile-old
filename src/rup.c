@@ -77,7 +77,7 @@ void rup_free(Rup* rup)
     }
 
     if (rup->targetmap != NULL)
-        hashmap_free(rup->targetmap);
+        hashmap_free(rup->targetmap, NULL);
 }
 
 void rup_push(Rup* rup, RupNode* node)
@@ -395,10 +395,20 @@ RupQueue* rup_queue_allocate(unsigned long long tick)
     return queue;
 }
 
-void rup_queue_free(RupQueue* queue)
+static void rup_queue_free_one(RupQueue* queue)
 {
     free(queue->insts);
     free(queue);
+}
+
+void rup_queue_free(RupQueue* queue)
+{
+    while (queue != NULL)
+    {
+        RupQueue* temp = queue->next;
+        rup_queue_free_one(queue);
+        queue = temp;
+    }
 }
 
 void rup_queue_add(RupQueue* queue, RupInst* inst)
@@ -450,7 +460,7 @@ RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick
             break;
 
         return_queue = queue->next;
-        rup_queue_free(queue);
+        rup_queue_free_one(queue);
         queue = return_queue;
     }
 
@@ -464,7 +474,7 @@ RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick
         else
         {
             RupQueue* temp = queue->next->next;
-            rup_queue_free(queue->next);
+            rup_queue_free_one(queue->next);
             queue->next = temp;
         }
     }
