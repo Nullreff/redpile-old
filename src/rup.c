@@ -34,7 +34,7 @@ static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Nod
 static bool rup_node_type_equals(RupNode* n1, RupNode* n2)
 {
     return n1->inst.command == n2->inst.command &&
-           location_equals(n1->inst.source, n2->inst.source) &&
+           LOCATION_EQUALS(n1->inst.source, n2->inst.source) &&
            n1->target == n2->target &&
            n1->tick == n2->tick;
 }
@@ -150,7 +150,7 @@ bool rup_contains(Rup* rup, RupNode* node)
             return true;
         found = found->next;
     }
-    while (found != NULL && location_equals(found->target->location, node->target->location));
+    while (found != NULL && LOCATION_EQUALS(found->target->location, node->target->location));
 
     return false;
 }
@@ -160,7 +160,7 @@ void rup_remove_by_source(Rup* rup, Location source)
     RupNode* node = rup->nodes;
     while (node != NULL)
     {
-        if (!location_equals(node->inst.source, source))
+        if (!LOCATION_EQUALS(node->inst.source, source))
         {
             node = node->next;
             continue;
@@ -168,7 +168,7 @@ void rup_remove_by_source(Rup* rup, Location source)
 
         if (rup->targetmap != NULL)
         {
-            if (node->next != NULL && location_equals(node->target->location, node->next->target->location))
+            if (node->next != NULL && LOCATION_EQUALS(node->target->location, node->next->target->location))
             {
                 // Change the hashmap to target the next node
                 Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
@@ -263,7 +263,7 @@ bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power)
 {
     for (int i = 0; i < insts->size; i++)
     {
-        if (location_equals(insts->data[i].source, loc) &&
+        if (LOCATION_EQUALS(insts->data[i].source, loc) &&
             insts->data[i].command == RUP_POWER &&
             insts->data[i].value.power >= power)
             return false;
@@ -283,7 +283,7 @@ RupInst* rup_insts_find_move(RupInsts* insts)
 
 bool rup_inst_equals(RupInst* i1, RupInst* i2)
 {
-    return i1->command == i2->command && location_equals(i1->source, i2->source);
+    return i1->command == i2->command && LOCATION_EQUALS(i1->source, i2->source);
 }
 
 void rup_inst_print(RupInst* inst)

@@ -5,8 +5,7 @@
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
+ * (at your option) any later version.  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -106,11 +105,6 @@ Location location_move(Location loc, Direction dir, int length)
         case DOWN:  return (Location){loc.x, loc.y - length, loc.z};
         default:    ERROR("Invalid direction provided to location_move\n");
     }
-}
-
-bool location_equals(Location l1, Location l2)
-{
-    return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
 }
 
 unsigned int location_hash_unbounded(Location loc)

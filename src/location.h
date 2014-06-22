@@ -44,6 +44,8 @@ typedef struct {
     Coord z;
 } Location;
 
+#define LOCATION_EQUALS(LOC1,LOC2) (LOC1.x == LOC2.x && LOC1.y == LOC2.y && LOC1.z == LOC2.z)
+
 Direction direction_invert(Direction dir);
 Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
@@ -53,7 +55,6 @@ Location location_from_values(int values[]);
 Location location_random(void);
 Location location_create(Coord x, Coord y, Coord z);
 Location location_move(Location loc, Direction dir, int length);
-bool location_equals(Location l1, Location l2);
 unsigned int location_hash_unbounded(Location loc);
 unsigned int location_hash(Location loc, unsigned int max);
 
