@@ -71,7 +71,7 @@ typedef struct RupQueue {
 #define FOR_RUP(NODE,RUP) for (RupNode* (NODE) = (RUP)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
 #define RUP_INSTS_ALLOC_SIZE(SIZE) (sizeof(RupInsts) + sizeof(RupInst) * (SIZE))
 
-Rup rup_empty(bool track_targets, bool track_sources);
+Rup rup_empty(bool track_targets, bool track_sources, unsigned int size);
 void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
 void rup_merge(Rup* rup, Rup* append);

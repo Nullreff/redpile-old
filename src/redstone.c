@@ -419,13 +419,13 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
     for (unsigned int i = 0; i < count; i++)
     {
         unsigned int loops = 0;
-        Rup messages = rup_empty(true, true);
-        Rup sets = rup_empty(false, true);
+        Rup messages = rup_empty(true, true, world->hashmap->size);
+        Rup sets = rup_empty(false, true, world->hashmap->size);
 
         FOR_NODE_LIST(world->nodes)
         {
             RupInsts* in = find_input(world, node, &messages);
-            Rup output = rup_empty(false, false);
+            Rup output = rup_empty(false, false, 0);
 
             switch (MATERIAL(node))
             {

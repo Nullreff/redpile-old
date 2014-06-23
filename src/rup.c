@@ -61,10 +61,10 @@ static bool rup_node_equals(RupNode* n1, RupNode* n2)
     }
 }
 
-Rup rup_empty(bool track_targets, bool track_sources)
+Rup rup_empty(bool track_targets, bool track_sources, unsigned int size)
 {
-    Hashmap* targetmap = track_targets ? hashmap_allocate(1) : NULL;
-    Hashmap* sourcemap = track_sources ? hashmap_allocate(1) : NULL;
+    Hashmap* targetmap = track_targets ? hashmap_allocate(size) : NULL;
+    Hashmap* sourcemap = track_sources ? hashmap_allocate(size) : NULL;
     return (Rup){NULL, targetmap, sourcemap};
 }
 
