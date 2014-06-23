@@ -469,14 +469,14 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             FOR_RUP(message, &messages)
             {
                 if (message->tick == world->ticks)
-                    rup_node_print_verbose(message);
+                    rup_node_print_verbose(message, world->ticks);
             }
 
             printf("Queued:\n");
             FOR_RUP(message, &messages)
             {
                 if (message->tick > world->ticks)
-                    rup_node_print_verbose(message);
+                    rup_node_print_verbose(message, world->ticks);
             }
             printf("Output:\n");
         }

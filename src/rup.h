@@ -92,7 +92,7 @@ bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power);
 RupInst* rup_insts_find_move(RupInsts* insts);
 void rup_inst_print(RupInst* node);
 void rup_node_print(RupNode* node);
-void rup_node_print_verbose(RupNode* node);
+void rup_node_print_verbose(RupNode* node, unsigned long long current_tick);
 
 RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);

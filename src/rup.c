@@ -400,10 +400,14 @@ void rup_node_print(RupNode* node)
     }
 }
 
-void rup_node_print_verbose(RupNode* node)
+void rup_node_print_verbose(RupNode* node, unsigned long long current_tick)
 {
-    printf("%llu (%d,%d,%d) => (%d,%d,%d) ",
-        node->tick,
+    if (node->tick > current_tick)
+        printf("%llu ", node->tick - current_tick);
+    else if (node->tick < current_tick)
+        printf("-%llu ", current_tick - node->tick);
+
+    printf("(%d,%d,%d) => (%d,%d,%d) ",
         node->inst.source.x,
         node->inst.source.y,
         node->inst.source.z,
