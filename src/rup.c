@@ -284,7 +284,7 @@ RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst)
     return insts;
 }
 
-RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target)
+RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target, unsigned long long tick)
 {
     Bucket* bucket = hashmap_get(messages->targetmap, target, false);
     if (bucket == NULL)
@@ -296,7 +296,8 @@ RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target
 
     do
     {
-        insts = rup_insts_append(insts, &found->inst);
+        if (found->tick == tick)
+            insts = rup_insts_append(insts, &found->inst);
         found = found->next;
     }
     while (found != NULL && LOCATION_EQUALS(found->target->location, target));

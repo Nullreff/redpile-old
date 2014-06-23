@@ -363,7 +363,7 @@ static RupInsts* find_input(World* world, Node* node, Rup* messages)
     RupInsts* insts = found_insts != NULL ? rup_insts_clone(found_insts) : rup_insts_allocate();
 
     // Include any instructions generated this tick
-    return rup_insts_append_nodes(insts, messages, node->location);
+    return rup_insts_append_nodes(insts, messages, node->location, world->ticks);
 }
 
 static void process_output(World* world, Node* node, Rup* output, Rup* messages_out, Rup* sets_out)
