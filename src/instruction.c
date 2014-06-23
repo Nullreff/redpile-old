@@ -38,11 +38,11 @@
 } while (0)
 
 char* Commands[COMMANDS_COUNT] = {
+    "PING",
+    "STATUS",
     "SET",
     "GET",
-    "TICK",
-    "STATUS",
-    "PING"
+    "TICK"
 };
 
 static bool command_parse(char* command, Command* result)
@@ -146,6 +146,14 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
 
     switch (inst->cmd)
     {
+        case PING:
+            printf("PONG\n");
+            break;
+
+        case STATUS:
+            world_stats_print(world_get_stats(world));
+            break;
+
         case SET:
             location = location_from_values(inst->values);
             node = world_set_node(world, location, inst->values[3]);
@@ -168,14 +176,6 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
         case TICK:
             if (inst->values[0] > 0)
                 redstone_tick(world, rup_inst_run_callback, inst->values[0]);
-            break;
-
-        case STATUS:
-            world_stats_print(world_get_stats(world));
-            break;
-
-        case PING:
-            printf("PONG\n");
             break;
     }
 }

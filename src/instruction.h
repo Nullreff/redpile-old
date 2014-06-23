@@ -25,11 +25,11 @@
 #define COMMANDS_COUNT 5
 extern char* Commands[COMMANDS_COUNT];
 typedef enum {
+    PING,
+    STATUS,
     SET,
     GET,
-    TICK,
-    STATUS,
-    PING
+    TICK
 } Command;
 
 typedef struct {
