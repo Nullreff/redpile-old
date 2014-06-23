@@ -352,7 +352,7 @@ static bool redstone_node_missing(Location location, Type* type)
 
 static RupInsts* find_input(World* world, Node* node, Rup* messages)
 {
-    RupInsts* found_insts = world_find_instructions(world, node);
+    RupInsts* found_insts = world_find_messages(world, node);
     RupInsts* insts = found_insts != NULL ? rup_insts_clone(found_insts) : rup_insts_allocate();
 
     // Include any instructions generated this tick
@@ -381,7 +381,7 @@ static void run_messages(World* world, Rup* messages, void (*inst_run_callback)(
     {
         assert(!LOCATION_EQUALS(LOCATION(message->target), message->inst.source));
 
-        Bucket* bucket = hashmap_get(world->instructions, LOCATION(message->target), true);
+        Bucket* bucket = hashmap_get(world->messages, LOCATION(message->target), true);
         RupQueue* queue = (RupQueue*)bucket->value;
         if (queue == NULL)
         {

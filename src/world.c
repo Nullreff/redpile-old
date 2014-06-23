@@ -57,9 +57,9 @@ static void rup_queue_free_void(void* value)
     rup_queue_free(value);
 }
 
-static void world_instructions_free(World* world)
+static void world_messages_free(World* world)
 {
-    hashmap_free(world->instructions, rup_queue_free_void);
+    hashmap_free(world->messages, rup_queue_free_void);
 }
 
 static bool node_missing_noop(Location location, Type* type)
@@ -96,7 +96,7 @@ World* world_allocate(unsigned int size)
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
     world->node_missing = node_missing_noop;
-    world->instructions = hashmap_allocate(size);
+    world->messages = hashmap_allocate(size);
 
     return world;
 }
@@ -105,7 +105,7 @@ void world_free(World* world)
 {
     hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
-    world_instructions_free(world);
+    world_messages_free(world);
     free(world);
 }
 
@@ -212,9 +212,9 @@ bool world_run_rup(World* world, RupNode* rup_node)
     return true;
 }
 
-RupInsts* world_find_instructions(World* world, Node* node)
+RupInsts* world_find_messages(World* world, Node* node)
 {
-    Bucket* bucket = hashmap_get(world->instructions, node->location, false);
+    Bucket* bucket = hashmap_get(world->messages, node->location, false);
     if (bucket == NULL)
         return NULL;
 
@@ -229,3 +229,4 @@ RupInsts* world_find_instructions(World* world, Node* node)
 
     return insts;
 }
+
