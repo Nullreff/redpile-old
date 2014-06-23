@@ -60,6 +60,8 @@ RUP_METHOD(CONDUCTOR)
 
     unsigned int power = rup_insts_max_power(in);
     CMD_POWER(power);
+    if (power == 0)
+        return;
 
     bool max_powered = power == MAX_POWER;
 
