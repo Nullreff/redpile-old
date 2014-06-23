@@ -412,12 +412,15 @@ static void run_sets(World* world, Rup* sets, void (*inst_run_callback)(RupNode*
     }
 }
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count)
+void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, bool verbose)
 {
     world_set_node_missing_callback(world, redstone_node_missing);
 
     for (unsigned int i = 0; i < count; i++)
     {
+        if (verbose)
+            printf("--- Tick %llu ---\n", world->ticks);
+
         unsigned int loops = 0;
         Rup messages = rup_empty(true, true, world->hashmap->size);
         Rup sets = rup_empty(false, true, world->hashmap->size);
@@ -453,8 +456,17 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
         }
 
+        if (verbose)
+        {
+            printf("Messages:\n");
+            FOR_RUP(message, &messages)
+                rup_node_print_verbose(message);
+            printf("Output:\n");
+        }
+
         run_messages(world, &messages, inst_run_callback);
         run_sets(world, &sets, inst_run_callback);
+        
         rup_free(&messages);
         rup_free(&sets);
         world->ticks++;

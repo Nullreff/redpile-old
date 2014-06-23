@@ -402,42 +402,20 @@ void rup_node_print(RupNode* node)
 
 void rup_node_print_verbose(RupNode* node)
 {
+    printf("%llu (%d,%d,%d) => (%d,%d,%d) ",
+        node->tick,
+        node->inst.source.x,
+        node->inst.source.y,
+        node->inst.source.z,
+        node->target->location.x,
+        node->target->location.y,
+        node->target->location.z);
+
     switch (node->inst.command)
     {
-        case RUP_POWER:
-            printf("%llu POWER (%d,%d,%d) -> (%d,%d,%d) %u\n",
-                node->tick,
-                node->inst.source.x,
-                node->inst.source.y,
-                node->inst.source.z,
-                node->target->location.x,
-                node->target->location.y,
-                node->target->location.z,
-                node->inst.value.power);
-            break;
-
-        case RUP_MOVE:
-            printf("%llu MOVE (%d,%d,%d) -> (%d,%d,%d) %s\n",
-                node->tick,
-                node->inst.source.x,
-                node->inst.source.y,
-                node->inst.source.z,
-                node->target->location.x,
-                node->target->location.y,
-                node->target->location.z,
-                Directions[node->inst.value.direction]);
-            break;
-
-        case RUP_REMOVE:
-            printf("%llu REMOVE (%d,%d,%d) -> (%d,%d,%d)\n",
-                node->tick,
-                node->inst.source.x,
-                node->inst.source.y,
-                node->inst.source.z,
-                node->target->location.x,
-                node->target->location.y,
-                node->target->location.z);
-            break;
+        case RUP_POWER:  printf("POWER %u\n", node->inst.value.power); break; 
+        case RUP_MOVE:   printf("MOVE %s\n", Directions[node->inst.value.direction]); break;
+        case RUP_REMOVE: printf("REMOVE\n"); break;
     }
 }
 

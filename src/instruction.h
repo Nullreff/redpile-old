@@ -22,7 +22,7 @@
 #include "world.h"
 #include "rup.h"
 
-#define COMMANDS_COUNT 6
+#define COMMANDS_COUNT 7
 extern char* Commands[COMMANDS_COUNT];
 typedef enum {
     PING,
@@ -30,6 +30,7 @@ typedef enum {
     SET,
     GET,
     TICK,
+    VTICK,
     MESSAGES
 } Command;
 
