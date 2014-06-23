@@ -130,7 +130,7 @@ void rup_push(Rup* rup, RupNode* node)
             RupNodeList* source_list = malloc(sizeof(RupNodeList) +  sizeof(RupNode));
             CHECK_OOM(source_list);
             source_list->size = 1;
-            source_list->data[0] = node;
+            source_list->nodes[0] = node;
             bucket->value = source_list;
         }
         else
@@ -142,7 +142,7 @@ void rup_push(Rup* rup, RupNode* node)
             source_list = realloc(source_list, sizeof(RupNodeList) + (sizeof(RupNode) * new_size));
             CHECK_OOM(source_list);
             source_list->size = new_size;
-            source_list->data[new_size - 1] = node;
+            source_list->nodes[new_size - 1] = node;
             bucket->value = source_list;
         }
     }
@@ -227,7 +227,7 @@ void rup_remove_by_source(Rup* rup, Location source)
 
     RupNodeList* node_list = bucket->value;
     for (int i = 0; i < node_list->size; i++)
-        rup_remove(rup, node_list->data[i]);
+        rup_remove(rup, node_list->nodes[i]);
 
     node_list->size = 0;
 }

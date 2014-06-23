@@ -59,7 +59,7 @@ typedef struct {
 
 typedef struct {
     unsigned int size;
-    RupNode* data[];
+    RupNode* nodes[];
 } RupNodeList;
 
 typedef struct RupQueue {
