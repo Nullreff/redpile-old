@@ -61,13 +61,18 @@ RUP_METHOD(CONDUCTOR)
     unsigned int power = rup_insts_max_power(in);
     CMD_POWER(power);
 
-    if (power < MAX_POWER)
-        return;
+    bool max_powered = power == MAX_POWER;
 
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         Direction dir = (Direction)i;
         Node* found_node = NODE_ADJACENT(node, dir);
+        if (MATERIAL(found_node) == CONDUCTOR)
+            continue;
+
+        if (!max_powered && MATERIAL(found_node) == WIRE)
+            continue;
+
         if (LOWER_POWER(found_node, power))
             SEND_POWER(found_node, power, 0);
     }

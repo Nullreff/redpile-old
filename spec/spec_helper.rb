@@ -26,6 +26,14 @@ module Helpers
   def run(*commands)
     redpile.run(commands)
   end
+
+  def powered(x, y, z)
+    /^\(#{x},#{y},#{z}\) \S+ [^0]\d+\s/
+  end
+
+  def unpowered(x, y, z)
+    /^\(#{x},#{y},#{z}\) \S+ 0\s/
+  end
 end
 
 RSpec.configure do |config|
