@@ -119,4 +119,45 @@ describe 'Logic' do
     it('1 0 => 0') {nor_gate(1, 0).should =~ unpowered(1, 0, 2)}
     it('1 1 => 0') {nor_gate(1, 1).should =~ unpowered(1, 0, 2)}
   end
+
+  context 'XOR' do
+    def xor_gate(in1, in2)
+      run(
+        "SET 0 0 0 SWITCH NORTH #{in1}",
+        "SET 2 0 0 SWITCH NORTH #{in2}",
+
+        'SET 0 0 1 CONDUCTOR',
+        'SET 1 0 1 CONDUCTOR',
+        'SET 2 0 1 CONDUCTOR',
+        'SET 0 1 1 TORCH UP',
+        'SET 1 1 1 WIRE',
+        'SET 2 1 1 TORCH UP',
+
+        'SET 0 0 2 TORCH SOUTH',
+        'SET 1 0 2 CONDUCTOR',
+        'SET 2 0 2 TORCH SOUTH',
+        'SET 1 1 2 WIRE',
+
+        'SET 0 0 3 WIRE',
+        'SET 1 0 3 TORCH SOUTH',
+        'SET 2 0 3 WIRE',
+
+        'SET 0 0 4 CONDUCTOR',
+        'SET 2 0 4 CONDUCTOR',
+        'SET 0 1 4 WIRE',
+        'SET 2 1 4 WIRE',
+
+        'SET 0 0 5 TORCH SOUTH',
+        'SET 1 0 5 WIRE',
+        'SET 2 0 5 TORCH SOUTH',
+
+        'TICK 5',
+        'GET 1 0 5')
+    end
+
+    it('0 0 => 0') {xor_gate(0, 0).should =~ unpowered(1, 0, 5)}
+    it('0 1 => 1') {xor_gate(0, 1).should =~   powered(1, 0, 5)}
+    it('1 0 => 1') {xor_gate(1, 0).should =~   powered(1, 0, 5)}
+    it('1 1 => 0') {xor_gate(1, 1).should =~ unpowered(1, 0, 5)}
+  end
 end
