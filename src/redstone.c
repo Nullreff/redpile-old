@@ -356,19 +356,7 @@ static RupInsts* find_input(World* world, Node* node, Rup* messages)
     RupInsts* insts = found_insts != NULL ? rup_insts_clone(found_insts) : rup_insts_allocate();
 
     // Include any instructions generated this tick
-    Bucket* bucket = hashmap_get(messages->targetmap, node->location, false);
-    if (bucket != NULL)
-    {
-        RupNode* found = bucket->value;
-        do
-        {
-            insts = rup_insts_append(insts, &found->inst);
-            found = found->next;
-        }
-        while (found != NULL && LOCATION_EQUALS(found->target->location, node->location));
-    }
-
-    return insts;
+    return rup_insts_append_nodes(insts, messages, node->location);
 }
 
 static void process_output(World* world, Node* node, Rup* output, Rup* messages_out, Rup* sets_out)

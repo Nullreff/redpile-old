@@ -282,6 +282,23 @@ RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst)
     return insts;
 }
 
+RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target)
+{
+    Bucket* bucket = hashmap_get(messages->targetmap, target, false);
+    if (bucket == NULL)
+        return insts;
+
+    RupNode* found = bucket->value;
+    do
+    {
+        insts = rup_insts_append(insts, &found->inst);
+        found = found->next;
+    }
+    while (found != NULL && LOCATION_EQUALS(found->target->location, target));
+
+    return insts;
+}
+
 unsigned int rup_insts_max_power(RupInsts* insts)
 {
     unsigned int max = 0;

@@ -86,6 +86,7 @@ unsigned int rup_inst_size(RupInst* insts);
 RupInsts* rup_insts_clone(RupInsts* source);
 RupInsts* rup_insts_allocate(void);
 RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst);
+RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target);
 unsigned int rup_insts_max_power(RupInsts* inst);
 bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power);
 RupInst* rup_insts_find_move(RupInsts* insts);
