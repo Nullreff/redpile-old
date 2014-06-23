@@ -230,3 +230,35 @@ RupInsts* world_find_messages(World* world, Node* node)
     return insts;
 }
 
+void world_print_messages(World* world)
+{
+    for (int i = 0; i < world->messages->size; i++)
+    {
+        Bucket* bucket = world->messages->data + i;
+        if (bucket->value == NULL)
+            continue;
+
+        do
+        {
+            printf("(%d,%d,%d):\n", bucket->key.x, bucket->key.y, bucket->key.z);
+            RupQueue* queue = bucket->value;
+            do
+            {
+                if (queue->tick >= world->ticks)
+                {
+                    printf("  %llu:\n", queue->tick - world->ticks);
+                    for (int j = 0; j < queue->insts->size; j++)
+                    {
+                        printf("    ");
+                        rup_inst_print(queue->insts->data + j);
+                    }
+                }
+                queue = queue->next;
+            }
+            while (queue != NULL);
+            bucket = bucket->next;
+        }
+        while (bucket != NULL);
+    }
+}
+

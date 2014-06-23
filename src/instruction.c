@@ -42,7 +42,8 @@ char* Commands[COMMANDS_COUNT] = {
     "STATUS",
     "SET",
     "GET",
-    "TICK"
+    "TICK",
+    "MESSAGES"
 };
 
 static bool command_parse(char* command, Command* result)
@@ -104,7 +105,7 @@ bool instruction_parse(char* instruction, Instruction* result)
     int state = 0;
 
     PARSE_STRING(command);
-    if (command == STATUS || command == PING)
+    if (command == STATUS || command == PING || command == MESSAGES)
         goto success;
 
     if (command == TICK)
@@ -176,6 +177,10 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
         case TICK:
             if (inst->values[0] > 0)
                 redstone_tick(world, rup_inst_run_callback, inst->values[0]);
+            break;
+
+        case MESSAGES:
+            world_print_messages(world);
             break;
     }
 }
