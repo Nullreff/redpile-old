@@ -191,17 +191,17 @@ static void rup_remove(Rup* rup, RupNode* node)
 {
     if (rup->targetmap != NULL)
     {
-        if (node->next != NULL && LOCATION_EQUALS(node->target->location, node->next->target->location))
+        Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
+        assert(bucket != NULL);
+
+        if (bucket->value == node)
         {
-            // Change the hashmap to target the next node
-            Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
-            assert(bucket != NULL);
-            bucket->value = node->next;
-        }
-        else
-        {
-            // We ran out of nodes with this target, just remove the hashmap entry
-            hashmap_remove(rup->targetmap, node->target->location);
+            if (node->next != NULL && LOCATION_EQUALS(node->target->location, node->next->target->location))
+                // Change the hashmap to target the next node
+                bucket->value = node->next;
+            else
+                // We ran out of nodes with this target, just remove the hashmap entry
+                hashmap_remove(rup->targetmap, node->target->location);
         }
     }
 
