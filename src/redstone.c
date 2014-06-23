@@ -67,13 +67,14 @@ RUP_METHOD(CONDUCTOR)
     {
         Direction dir = (Direction)i;
         Node* found_node = NODE_ADJACENT(node, dir);
-        if (LOWER_POWER(found_node, power))
-        {
-            if (!max_powered && (MATERIAL(found_node) == WIRE || MATERIAL(found_node) == CONDUCTOR))
-                continue;
+        if (MATERIAL(found_node) == CONDUCTOR)
+            continue;
 
+        if (!max_powered && MATERIAL(found_node) == WIRE)
+            continue;
+
+        if (LOWER_POWER(found_node, power))
             SEND_POWER(found_node, power, 0);
-        }
     }
 }
 
