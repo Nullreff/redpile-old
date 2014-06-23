@@ -176,6 +176,9 @@ bool rup_contains(Rup* rup, RupNode* node)
         return false;
 
     RupNode* found = bucket->value;
+    if (found == NULL)
+        return false;
+
     do
     {
         if (rup_node_equals(found, node))
@@ -200,8 +203,8 @@ static void rup_remove(Rup* rup, RupNode* node)
                 // Change the hashmap to target the next node
                 bucket->value = node->next;
             else
-                // We ran out of nodes with this target, just remove the hashmap entry
-                hashmap_remove(rup->targetmap, node->target->location);
+                // We ran out of nodes with this target
+                bucket->value = NULL;
         }
     }
 
@@ -226,8 +229,7 @@ void rup_remove_by_source(Rup* rup, Location source)
     for (int i = 0; i < node_list->size; i++)
         rup_remove(rup, node_list->data[i]);
 
-    free(node_list);
-    hashmap_remove(rup->sourcemap, source);
+    node_list->size = 0;
 }
 
 void rup_cmd_power(Rup* rup, unsigned long long tick, Node* source, Node* target, unsigned int power)
@@ -289,6 +291,9 @@ RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target
         return insts;
 
     RupNode* found = bucket->value;
+    if (found == NULL)
+        return insts;
+
     do
     {
         insts = rup_insts_append(insts, &found->inst);
