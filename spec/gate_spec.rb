@@ -160,4 +160,51 @@ describe 'Logic' do
     it('1 0 => 1') {xor_gate(1, 0).should =~   powered(1, 0, 5)}
     it('1 1 => 0') {xor_gate(1, 1).should =~ unpowered(1, 0, 5)}
   end
+
+  context 'XNOR' do
+    def xnor_gate(in1, in2)
+      run(
+        "SET 0 0 0 SWITCH NORTH #{in1}",
+        "SET 2 0 0 SWITCH NORTH #{in2}",
+
+        'SET 0 0 1 CONDUCTOR',
+        'SET 1 0 1 CONDUCTOR',
+        'SET 2 0 1 CONDUCTOR',
+        'SET 0 1 1 TORCH UP',
+        'SET 1 1 1 WIRE',
+        'SET 2 1 1 TORCH UP',
+
+        'SET 0 0 2 TORCH SOUTH',
+        'SET 1 0 2 CONDUCTOR',
+        'SET 2 0 2 TORCH SOUTH',
+        'SET 1 1 2 WIRE',
+
+        'SET 0 0 3 WIRE',
+        'SET 1 0 3 TORCH SOUTH',
+        'SET 2 0 3 WIRE',
+
+        'SET 0 0 4 CONDUCTOR',
+        'SET 2 0 4 CONDUCTOR',
+        'SET 0 1 4 WIRE',
+        'SET 2 1 4 WIRE',
+
+        'SET 0 0 5 TORCH SOUTH',
+        'SET 1 0 5 WIRE',
+        'SET 2 0 5 TORCH SOUTH',
+
+        'SET 1 0 6 CONDUCTOR',
+        'SET 1 1 6 WIRE',
+        'SET 2 0 6 TORCH EAST',
+
+        'SET 2 0 7 WIRE',
+
+        'TICK 6',
+        'GET 2 0 7')
+    end
+
+    it('0 0 => 1') {xnor_gate(0, 0).should =~   powered(2, 0, 7)}
+    it('0 1 => 0') {xnor_gate(0, 1).should =~ unpowered(2, 0, 7)}
+    it('1 0 => 0') {xnor_gate(1, 0).should =~ unpowered(2, 0, 7)}
+    it('1 1 => 1') {xnor_gate(1, 1).should =~   powered(2, 0, 7)}
+  end
 end
