@@ -161,19 +161,6 @@ void rup_queue_free(RupQueue* queue)
 
 void rup_queue_add(RupQueue* queue, QueueData* data)
 {
-    // TODO: Faster search
-    for (int i = 0; i < queue->insts->size; i++)
-    {
-        RupInst* found_inst = queue->insts->data + i;
-
-        if (found_inst->type == data->type &&
-            LOCATION_EQUALS(found_inst->source.location, data->source.location))
-        {
-            *found_inst = rup_inst_create(data);
-            return;
-        }
-    }
-
     queue->insts = rup_insts_append(queue->insts, data);
 }
 
