@@ -410,22 +410,23 @@ static void run_messages(World* world, Rup* messages, void (*inst_run_callback)(
     }
 }
 
-static void run_sets(World* world, Rup* sets, void (*inst_run_callback)(RupNode*))
+static void run_sets(World* world, Rup* sets, void (*inst_run_callback)(RupNode*), LogLevel log_level)
 {
     FOR_RUP(set, sets)
     {
-        inst_run_callback(set);
+        if (log_level != SILENT)
+            inst_run_callback(set);
         world_run_rup(world, set);
     }
 }
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, bool verbose)
+void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, LogLevel log_level)
 {
     world_set_node_missing_callback(world, redstone_node_missing);
 
     for (unsigned int i = 0; i < count; i++)
     {
-        if (verbose)
+        if (log_level == VERBOSE)
             printf("--- Tick %llu ---\n", world->ticks);
 
         unsigned int loops = 0;
@@ -463,7 +464,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
             }
         }
 
-        if (verbose)
+        if (log_level == VERBOSE)
         {
             printf("Messages:\n");
             FOR_RUP(message, &messages)
@@ -482,7 +483,7 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
         }
 
         run_messages(world, &messages, inst_run_callback);
-        run_sets(world, &sets, inst_run_callback);
+        run_sets(world, &sets, inst_run_callback, log_level);
         
         rup_free(&messages);
         rup_free(&sets);

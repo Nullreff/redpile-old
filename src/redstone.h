@@ -21,6 +21,12 @@
 
 #include "rup.h"
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, bool verbose);
+typedef enum {
+    SILENT,
+    NORMAL,
+    VERBOSE
+} LogLevel;
+
+void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, LogLevel log_level);
 
 #endif
