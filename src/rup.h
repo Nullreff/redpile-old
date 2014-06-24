@@ -26,16 +26,15 @@ typedef enum {
     RUP_POWER,
     RUP_MOVE,
     RUP_REMOVE
-} RupCmd;
+} MessageType;
 
 typedef struct {
-    RupCmd command;
-    Location source;
-    Material source_material;
-    union {
-        unsigned int power;
-        Direction direction;
-    } value;
+    struct {
+        Location location;
+        Type type;
+    } source;
+    MessageType type;
+    unsigned int message;
 } RupInst;
 
 typedef struct {
@@ -74,14 +73,11 @@ typedef struct RupQueue {
 Rup rup_empty(bool track_targets, bool track_sources, unsigned int size);
 void rup_free(Rup* rup);
 void rup_push(Rup* rup, RupNode* node);
+RupNode* rup_push_inst(Rup* rup, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message);
 void rup_merge(Rup* rup, Rup* append);
 bool rup_contains(Rup* rup, RupNode* node);
 void rup_remove_by_source(Rup* rup, Location source);
-void rup_cmd_power(Rup* rup, unsigned long long tick, Node* source, Node* target, unsigned int power);
-void rup_cmd_move(Rup* rup, unsigned long long tick, Node* source, Node* target, Direction direction);
-void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* target);
 
-RupInst rup_inst_create(RupCmd cmd, Node* node);
 unsigned int rup_inst_size(RupInst* insts);
 RupInsts* rup_insts_clone(RupInsts* source);
 RupInsts* rup_insts_allocate(void);

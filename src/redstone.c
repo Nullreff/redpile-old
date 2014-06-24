@@ -33,11 +33,11 @@
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
-#define SEND_POWER(NODE,POWER,DELAY) rup_cmd_power (messages,  world->ticks + (DELAY), node, NODE, POWER)
-#define SEND_MOVE(NODE,DIR,DELAY)    rup_cmd_move  (messages,  world->ticks + (DELAY), node, NODE, DIR  )
-#define CMD_POWER(POWER)             rup_cmd_power (sets,      world->ticks,           node, node, POWER)
-#define CMD_MOVE(DIR)                rup_cmd_move  (sets,      world->ticks,           node, node, DIR  )
-#define CMD_REMOVE()                 rup_cmd_remove(sets,      world->ticks,           node, node       )
+#define SEND_POWER(NODE,POWER,DELAY) rup_push_inst(messages, RUP_POWER,  world->ticks + (DELAY), node, NODE, POWER)
+#define SEND_MOVE(NODE,DIR,DELAY)    rup_push_inst(messages, RUP_MOVE,   world->ticks + (DELAY), node, NODE, DIR  )
+#define CMD_POWER(POWER)             rup_push_inst(sets,     RUP_POWER,  world->ticks,           node, node, POWER)
+#define CMD_MOVE(DIR)                rup_push_inst(sets,     RUP_MOVE,   world->ticks,           node, node, DIR  )
+#define CMD_REMOVE()                 rup_push_inst(sets,     RUP_REMOVE, world->ticks,           node, node, 0    )
 
 #define RUP_METHOD(TYPE)\
     static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Rup* messages, Rup* sets)
@@ -54,7 +54,7 @@ RUP_METHOD(CONDUCTOR)
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL)
     {
-        CMD_MOVE(move_inst->value.direction);
+        CMD_MOVE(move_inst->message);
         return;
     }
 
@@ -178,7 +178,7 @@ RUP_METHOD(PISTON)
     RupInst* move_inst = rup_insts_find_move(in);
     if (move_inst != NULL && state == RETRACTED)
     {
-        CMD_MOVE(move_inst->value.direction);
+        CMD_MOVE(move_inst->message);
         return;
     }
 
@@ -210,16 +210,16 @@ RUP_METHOD(COMPARATOR)
         RupInst* inst = in->data + i;
 
         // Power coming from the side
-        if ((LOCATION_EQUALS(inst->source, right) ||
-             LOCATION_EQUALS(inst->source, left)) &&
-            side_power < inst->value.power)
+        if ((LOCATION_EQUALS(inst->source.location, right) ||
+             LOCATION_EQUALS(inst->source.location, left)) &&
+            side_power < inst->message)
         {
-            side_power = inst->value.power;
+            side_power = inst->message;
         }
 
         // Power coming from behind
-        if (LOCATION_EQUALS(inst->source, behind))
-            new_power = inst->value.power;
+        if (LOCATION_EQUALS(inst->source.location, behind))
+            new_power = inst->message;
     }
 
     CMD_POWER(new_power);
@@ -263,16 +263,16 @@ RUP_METHOD(REPEATER)
         RupInst* inst = in->data + i;
 
         // Power coming from the side
-        if (inst->source_material == REPEATER &&
-            (LOCATION_EQUALS(inst->source, right) ||
-            LOCATION_EQUALS(inst->source, left)))
+        if (inst->source.type == REPEATER &&
+            (LOCATION_EQUALS(inst->source.location, right) ||
+            LOCATION_EQUALS(inst->source.location, left)))
         {
-            side_powered = (inst->value.power > 0) || side_powered;
+            side_powered = (inst->message > 0) || side_powered;
         }
 
         // Power coming from behind
-        if (LOCATION_EQUALS(inst->source, behind))
-            new_power = inst->value.power;
+        if (LOCATION_EQUALS(inst->source.location, behind))
+            new_power = inst->message;
     }
 
     CMD_POWER(new_power);
@@ -301,8 +301,8 @@ RUP_METHOD(TORCH)
         RupInst* inst = in->data + i;
 
         // Power coming from behind
-        if (LOCATION_EQUALS(inst->source, loc_behind))
-            new_power = inst->value.power;
+        if (LOCATION_EQUALS(inst->source.location, loc_behind))
+            new_power = inst->message;
     }
 
     CMD_POWER(new_power);
@@ -372,7 +372,7 @@ static void process_output(World* world, Node* node, Rup* output, Rup* messages_
     {
         if (rup_node->tick == world->ticks && !rup_contains(messages_out, rup_node))
         {
-            assert(!LOCATION_EQUALS(LOCATION(rup_node->target), rup_node->inst.source));
+            assert(!LOCATION_EQUALS(LOCATION(rup_node->target), rup_node->inst.source.location));
             rup_remove_by_source(messages_out, rup_node->target->location);
             rup_remove_by_source(sets_out, rup_node->target->location);
             node_list_move_after(world->nodes, node, rup_node->target);
@@ -386,7 +386,7 @@ static void run_messages(World* world, Rup* messages, void (*inst_run_callback)(
 {
     FOR_RUP(message, messages)
     {
-        assert(!LOCATION_EQUALS(LOCATION(message->target), message->inst.source));
+        assert(!LOCATION_EQUALS(LOCATION(message->target), message->inst.source.location));
 
         Bucket* bucket = hashmap_get(world->messages, LOCATION(message->target), true);
         RupQueue* queue = (RupQueue*)bucket->value;

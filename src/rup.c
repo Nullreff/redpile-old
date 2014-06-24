@@ -19,46 +19,18 @@
 #include <stdlib.h>
 #include "rup.h"
 
-static RupNode* rup_push_inst(Rup* rup, RupCmd cmd, unsigned long long tick, Node* source, Node* target)
+static RupInst rup_inst_create(MessageType type, Node* node, unsigned int message)
 {
-    RupNode* node = malloc(sizeof(RupNode));
-    CHECK_OOM(node);
-
-    node->inst = rup_inst_create(cmd, source);
-    node->tick = tick;
-    node->target = target;
-
-    rup_push(rup, node);
-    return node;
-}
-
-static bool rup_node_type_equals(RupNode* n1, RupNode* n2)
-{
-    return n1->inst.command == n2->inst.command &&
-           LOCATION_EQUALS(n1->inst.source, n2->inst.source) &&
-           n1->target == n2->target &&
-           n1->tick == n2->tick;
+    return (RupInst){{node->location, node->type}, type, message};
 }
 
 static bool rup_node_equals(RupNode* n1, RupNode* n2)
 {
-    if (!rup_node_type_equals(n1, n2))
-        return false;
-
-    switch (n1->inst.command)
-    {
-        case RUP_POWER:
-            return n1->inst.value.power == n2->inst.value.power;
-
-        case RUP_MOVE:
-            return n1->inst.value.direction == n2->inst.value.direction;
-
-        case RUP_REMOVE:
-            return true;
-
-        default:
-            ERROR("Unknown RUP command\n");
-    }
+    return n1->inst.type == n2->inst.type &&
+           LOCATION_EQUALS(n1->inst.source.location, n2->inst.source.location) &&
+           n1->inst.message == n2->inst.message &&
+           n1->target == n2->target &&
+           n1->tick == n2->tick;
 }
 
 Rup rup_empty(bool track_targets, bool track_sources, unsigned int size)
@@ -124,7 +96,7 @@ void rup_push(Rup* rup, RupNode* node)
     if (rup->sourcemap != NULL)
     {
         // Add a reference to it by source
-        Bucket* bucket = hashmap_get(rup->sourcemap, node->inst.source, true);
+        Bucket* bucket = hashmap_get(rup->sourcemap, node->inst.source.location, true);
         if (bucket->value == NULL)
         {
             RupNodeList* source_list = malloc(sizeof(RupNodeList) +  sizeof(RupNode));
@@ -146,6 +118,19 @@ void rup_push(Rup* rup, RupNode* node)
             bucket->value = source_list;
         }
     }
+}
+
+RupNode* rup_push_inst(Rup* rup, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
+{
+    RupNode* node = malloc(sizeof(RupNode));
+    CHECK_OOM(node);
+
+    node->inst = rup_inst_create(type, source, message);
+    node->tick = tick;
+    node->target = target;
+
+    rup_push(rup, node);
+    return node;
 }
 
 void rup_merge(Rup* rup, Rup* append)
@@ -232,28 +217,6 @@ void rup_remove_by_source(Rup* rup, Location source)
     node_list->size = 0;
 }
 
-void rup_cmd_power(Rup* rup, unsigned long long tick, Node* source, Node* target, unsigned int power)
-{
-    RupNode* node = rup_push_inst(rup, RUP_POWER, tick, source, target);
-    node->inst.value.power = power;
-}
-
-void rup_cmd_move(Rup* rup, unsigned long long tick, Node* source, Node* target, Direction direction)
-{
-    RupNode* node = rup_push_inst(rup, RUP_MOVE, tick, source, target);
-    node->inst.value.direction = direction;
-}
-
-void rup_cmd_remove(Rup* rup, unsigned long long tick, Node* source, Node* target)
-{
-    rup_push_inst(rup, RUP_REMOVE, tick, source, target);
-}
-
-RupInst rup_inst_create(RupCmd cmd, Node* node)
-{
-    return (RupInst){cmd, node->location, node->type, {0}};
-}
-
 unsigned int rup_insts_size(RupInsts* insts)
 {
     return insts->size;
@@ -310,8 +273,8 @@ unsigned int rup_insts_max_power(RupInsts* insts)
     unsigned int max = 0;
     for (int i = 0; i < insts->size; i++)
     {
-        if (insts->data[i].command == RUP_POWER && insts->data[i].value.power > max)
-            max = insts->data[i].value.power;
+        if (insts->data[i].type == RUP_POWER && insts->data[i].message > max)
+            max = insts->data[i].message;
     }
     return max;
 }
@@ -320,9 +283,9 @@ bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power)
 {
     for (int i = 0; i < insts->size; i++)
     {
-        if (LOCATION_EQUALS(insts->data[i].source, loc) &&
-            insts->data[i].command == RUP_POWER &&
-            insts->data[i].value.power >= power)
+        if (LOCATION_EQUALS(insts->data[i].source.location, loc) &&
+            insts->data[i].type == RUP_POWER &&
+            insts->data[i].message >= power)
             return false;
     }
     return true;
@@ -332,7 +295,7 @@ RupInst* rup_insts_find_move(RupInsts* insts)
 {
     for (int i = 0; i < insts->size; i++)
     {
-        if (insts->data[i].command == RUP_MOVE)
+        if (insts->data[i].type == RUP_MOVE)
             return insts->data + i;
     }
     return NULL;
@@ -340,34 +303,35 @@ RupInst* rup_insts_find_move(RupInsts* insts)
 
 bool rup_inst_equals(RupInst* i1, RupInst* i2)
 {
-    return i1->command == i2->command && LOCATION_EQUALS(i1->source, i2->source);
+    return i1->type == i2->type &&
+           LOCATION_EQUALS(i1->source.location, i2->source.location);
 }
 
 void rup_inst_print(RupInst* inst)
 {
-    switch (inst->command)
+    switch (inst->type)
     {
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
-                inst->source.x,
-                inst->source.y,
-                inst->source.z,
-                inst->value.power);
+                inst->source.location.x,
+                inst->source.location.y,
+                inst->source.location.z,
+                inst->message);
             break;
 
         case RUP_MOVE:
             printf("MOVE (%d,%d,%d) %s\n",
-                inst->source.x,
-                inst->source.y,
-                inst->source.z,
-                Directions[inst->value.direction]);
+                inst->source.location.x,
+                inst->source.location.y,
+                inst->source.location.z,
+                Directions[inst->message]);
             break;
 
         case RUP_REMOVE:
             printf("REMOVE (%d,%d,%d)\n",
-                inst->source.x,
-                inst->source.y,
-                inst->source.z);
+                inst->source.location.x,
+                inst->source.location.y,
+                inst->source.location.z);
             break;
     }
 }
@@ -377,31 +341,31 @@ void rup_inst_print_verbose(RupInst* inst, unsigned long long tick, Location tar
     printf("%llu ", tick);
 
     printf("(%d,%d,%d) => (%d,%d,%d) ",
-        inst->source.x,
-        inst->source.y,
-        inst->source.z,
+        inst->source.location.x,
+        inst->source.location.y,
+        inst->source.location.z,
         target.x,
         target.y,
         target.z);
 
-    switch (inst->command)
+    switch (inst->type)
     {
-        case RUP_POWER:  printf("POWER %u\n", inst->value.power); break;
-        case RUP_MOVE:   printf("MOVE %s\n", Directions[inst->value.direction]); break;
+        case RUP_POWER:  printf("POWER %u\n", inst->message); break;
+        case RUP_MOVE:   printf("MOVE %s\n", Directions[inst->message]); break;
         case RUP_REMOVE: printf("REMOVE\n"); break;
     }
 }
 
 void rup_node_print(RupNode* node)
 {
-    switch (node->inst.command)
+    switch (node->inst.type)
     {
         case RUP_POWER:
             printf("POWER (%d,%d,%d) %u\n",
                 node->target->location.x,
                 node->target->location.y,
                 node->target->location.z,
-                node->inst.value.power);
+                node->inst.message);
             break;
 
         case RUP_MOVE:
@@ -409,7 +373,7 @@ void rup_node_print(RupNode* node)
                 node->target->location.x,
                 node->target->location.y,
                 node->target->location.z,
-                Directions[node->inst.value.direction]);
+                Directions[node->inst.message]);
             break;
 
         case RUP_REMOVE:
