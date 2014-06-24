@@ -18,8 +18,6 @@
 #include "location.h"
 #include "redpile.h"
 
-#define IS_POWER_OF_TWO(x) ((max & (max - 1)) == 0)
-
 char* Directions[6] = {
     "NORTH",
     "SOUTH",

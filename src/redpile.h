@@ -30,6 +30,7 @@
 #define ERROR(MESSAGE) do { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); } while(0)
 #define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { ERROR(MESSAGE); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
+#define IS_POWER_OF_TWO(x) ((x & (x - 1)) == 0)
 
 typedef struct {
     int world_size;

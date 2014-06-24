@@ -60,6 +60,7 @@ static unsigned int parse_world_size(char* string)
 
     ERROR_IF(*parse_error, "You must pass an integer as the world size\n");
     ERROR_IF(value <= 0, "You must provide a world size larger than zero\n");
+    ERROR_IF(!IS_POWER_OF_TWO(value), "You must provide a world size that is a power of two\n");
 
     return (unsigned int)value;
 }

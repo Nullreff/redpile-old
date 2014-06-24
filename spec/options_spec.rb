@@ -5,6 +5,7 @@ include Helpers
 REDPILE_VERSION = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
 BAD_NEGATIVES = [0, -1, -20]
 BAD_NUMBERS = ['abc', 'a12', '12c']
+BAD_POWERS = [3, 13, 28]
 
 describe 'Options' do
   [true, false].each do |short|
@@ -22,7 +23,7 @@ describe 'Options' do
         redpile(short ? '-i' : '--interactive').run.should == "\n"
       end
 
-      [1, 20, 2000].each do |size|
+      [1, 32, 1024].each do |size|
         it "runs with a custom world size of '#{size}'" do
           redpile("#{short ? '-w' : '--world-size'} #{size}").run.should == "\n"
         end
@@ -39,6 +40,13 @@ describe 'Options' do
         it "errors when run with a world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}", false)
           .run.should =~ /You must provide a world size larger than zero\n/
+        end
+      end
+
+      BAD_POWERS.each do |size|
+        it "errors when run with a world size of '#{size}'" do
+          redpile(short ? "-w #{size}" : "--world-size #{size}", false)
+          .run.should =~ /You must provide a world size that is a power of two\n/
         end
       end
     end
