@@ -40,8 +40,8 @@ describe 'Torch' do
       'SET 0 0 1 WIRE',
       'SET 0 0 0 TORCH SOUTH',
       'SET 0 0 -1 WIRE',
-      'SET 0 0 -2 TORCH UP',
-      'TICK 3'
+      'SET 0 0 -2 SWITCH UP 1',
+      'TICK 2'
     ).should =~ /\(0,0,1\) 0\n/
   end
 
