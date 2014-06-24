@@ -19,34 +19,35 @@
 #include <stdlib.h>
 #include "rup.h"
 
-static RupInst rup_inst_create(MessageType type, Node* node, unsigned int message)
+static RupInst rup_inst_create(QueueData* data)
 {
-    return (RupInst){{node->location, node->type}, type, message};
+    return (RupInst){{data->source.location, data->source.type}, data->type, data->message};
 }
 
-bool rup_node_equals(void* np1, void* np2)
+static RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
 {
-    RupNode* n1 = np1;
-    RupNode* n2 = np2;
-    return n1->inst.type == n2->inst.type &&
-           LOCATION_EQUALS(n1->inst.source.location, n2->inst.source.location) &&
-           n1->inst.message == n2->inst.message &&
-           n1->target == n2->target &&
-           n1->tick == n2->tick;
+    // TODO: Pre-allocate space instead of reallocing on each add
+    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(insts->size + 1));
+    CHECK_OOM(insts);
+    insts->data[insts->size] = rup_inst_create(data);
+    insts->size++;
+    return insts;
 }
 
-RupNode* queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
+void queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
 {
     RupNode* node = malloc(sizeof(RupNode));
     CHECK_OOM(node);
 
-    node->inst = rup_inst_create(type, source, message);
-    node->tick = tick;
-    node->target = target;
-
-    QueueNode* queue_node = queue_add(queue, source->location, target->location);
-    queue_node->value = node;
-    return node;
+    queue_add(queue, (QueueData){
+        .source.location = source->location,
+        .source.type = source->type,
+        .target.location = target->location,
+        .target.node = target,
+        .tick = tick,
+        .type = type,
+        .message = message
+    });
 }
 
 unsigned int rup_insts_size(RupInsts* insts)
@@ -69,35 +70,25 @@ RupInsts* rup_insts_allocate(void)
     return insts;
 }
 
-RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst)
-{
-    // TODO: Pre-allocate space instead of reallocing on each add
-    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(insts->size + 1));
-    CHECK_OOM(insts);
-    insts->data[insts->size] = *inst;
-    insts->size++;
-    return insts;
-}
-
 RupInsts* rup_insts_append_nodes(RupInsts* insts, Queue* messages, Location target, unsigned long long tick)
 {
     Bucket* bucket = hashmap_get(messages->targetmap, target, false);
     if (bucket == NULL)
         return insts;
 
-    QueueNode* queue_node = bucket->value;
-    if (queue_node == NULL)
+    QueueNode* found = bucket->value;
+    if (found == NULL)
         return insts;
-
 
     do
     {
-        RupNode* found = queue_node->value;
-        if (found->tick == tick)
-            insts = rup_insts_append(insts, &found->inst);
-        queue_node = queue_node->next;
+        if (found->data.tick == tick)
+        {
+            insts = rup_insts_append(insts, &found->data);
+        }
+        found = found->next;
     }
-    while (queue_node != NULL && LOCATION_EQUALS(queue_node->target, target));
+    while (found != NULL && LOCATION_EQUALS(found->data.target.location, target));
 
     return insts;
 }
@@ -135,93 +126,14 @@ RupInst* rup_insts_find_move(RupInsts* insts)
     return NULL;
 }
 
-bool rup_inst_equals(RupInst* i1, RupInst* i2)
+void message_type_print(MessageType type, unsigned int message)
 {
-    return i1->type == i2->type &&
-           LOCATION_EQUALS(i1->source.location, i2->source.location);
-}
-
-void rup_inst_print(RupInst* inst)
-{
-    switch (inst->type)
+    switch (type)
     {
-        case RUP_POWER:
-            printf("POWER (%d,%d,%d) %u\n",
-                inst->source.location.x,
-                inst->source.location.y,
-                inst->source.location.z,
-                inst->message);
-            break;
-
-        case RUP_MOVE:
-            printf("MOVE (%d,%d,%d) %s\n",
-                inst->source.location.x,
-                inst->source.location.y,
-                inst->source.location.z,
-                Directions[inst->message]);
-            break;
-
-        case RUP_REMOVE:
-            printf("REMOVE (%d,%d,%d)\n",
-                inst->source.location.x,
-                inst->source.location.y,
-                inst->source.location.z);
-            break;
-    }
-}
-
-void rup_inst_print_verbose(RupInst* inst, unsigned long long tick, Location target)
-{
-    printf("%llu ", tick);
-
-    printf("(%d,%d,%d) => (%d,%d,%d) ",
-        inst->source.location.x,
-        inst->source.location.y,
-        inst->source.location.z,
-        target.x,
-        target.y,
-        target.z);
-
-    switch (inst->type)
-    {
-        case RUP_POWER:  printf("POWER %u\n", inst->message); break;
-        case RUP_MOVE:   printf("MOVE %s\n", Directions[inst->message]); break;
+        case RUP_POWER:  printf("POWER %u\n", message); break;
+        case RUP_MOVE:   printf("MOVE %s\n", Directions[message]); break;
         case RUP_REMOVE: printf("REMOVE\n"); break;
     }
-}
-
-void rup_node_print(RupNode* node)
-{
-    switch (node->inst.type)
-    {
-        case RUP_POWER:
-            printf("POWER (%d,%d,%d) %u\n",
-                node->target->location.x,
-                node->target->location.y,
-                node->target->location.z,
-                node->inst.message);
-            break;
-
-        case RUP_MOVE:
-            printf("MOVE (%d,%d,%d) %s\n",
-                node->target->location.x,
-                node->target->location.y,
-                node->target->location.z,
-                Directions[node->inst.message]);
-            break;
-
-        case RUP_REMOVE:
-            printf("REMOVE (%d,%d,%d)\n",
-                node->target->location.x,
-                node->target->location.y,
-                node->target->location.z);
-            break;
-    }
-}
-
-void rup_node_print_verbose(RupNode* node, unsigned long long current_tick)
-{
-    rup_inst_print_verbose(&node->inst, node->tick - current_tick, node->target->location);
 }
 
 RupQueue* rup_queue_allocate(unsigned long long tick)
@@ -250,21 +162,22 @@ void rup_queue_free(RupQueue* queue)
     }
 }
 
-void rup_queue_add(RupQueue* queue, RupInst* inst)
+void rup_queue_add(RupQueue* queue, QueueData* data)
 {
     // TODO: Faster search
     for (int i = 0; i < queue->insts->size; i++)
     {
         RupInst* found_inst = queue->insts->data + i;
 
-        if (rup_inst_equals(found_inst, inst))
+        if (found_inst->type == data->type &&
+            LOCATION_EQUALS(found_inst->source.location, data->source.location))
         {
-            *found_inst = *inst;
+            *found_inst = rup_inst_create(data);
             return;
         }
     }
 
-    queue->insts = rup_insts_append(queue->insts, inst);
+    queue->insts = rup_insts_append(queue->insts, data);
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)

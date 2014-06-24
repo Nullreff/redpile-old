@@ -142,7 +142,7 @@ error:
     return false;
 }
 
-void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callback)(RupNode*))
+void instruction_run(World* world, Instruction* inst)
 {
     Location location;
     Node* node;
@@ -180,7 +180,7 @@ void instruction_run(World* world, Instruction* inst, void (*rup_inst_run_callba
         case VTICK:
         case STICK:
             if (inst->values[0] > 0)
-                redstone_tick(world, rup_inst_run_callback, inst->values[0],
+                redstone_tick(world, inst->values[0],
                     inst->cmd == VTICK ? VERBOSE :
                     inst->cmd == STICK ? SILENT :
                     NORMAL);

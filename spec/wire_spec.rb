@@ -9,7 +9,7 @@ describe 'Wire' do
       'SET 0 0 2 AIR',
       'SET 0 -1 2 WIRE',
       'TICK'
-    ).should =~ /\(0,-1,2\) 14/
+    ).should =~ /\(0,-1,2\) POWER 14/
   end
 
   it 'propigates power to the side and up' do
@@ -19,7 +19,7 @@ describe 'Wire' do
       'SET 0 0 2 CONDUCTOR',
       'SET 0 1 2 WIRE',
       'TICK'
-    ).should =~ /\(0,1,2\) 14/
+    ).should =~ /\(0,1,2\) POWER 14/
   end
 
   it 'does not propigate to the side and up when a block is on top' do
@@ -40,7 +40,7 @@ describe 'Wire' do
       'SET 0 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'TICK'
-    ).should =~ /\(0,0,2\) 14/
+    ).should =~ /\(0,0,2\) POWER 14/
   end
 
   it 'diverts power from a condutor when a wire is on the left' do
@@ -100,7 +100,7 @@ describe 'Wire' do
        'SET 0 0 1 WIRE',
        'SET 0 -1 1 CONDUCTOR',
        'TICK'
-    ).should =~ /\(0,-1,1\) 15/
+    ).should =~ /\(0,-1,1\) POWER 15/
   end
 
   it 'propigates power in a loop' do
@@ -115,12 +115,12 @@ describe 'Wire' do
       'set 1 0 0 wire',
       'tick',
     )
-    result.should =~ /^POWER \(0,0,1\) 15$/
-    result.should =~ /^POWER \(0,0,2\) 14$/
-    result.should =~ /^POWER \(1,0,2\) 13$/
-    result.should =~ /^POWER \(2,0,2\) 12$/
-    result.should =~ /^POWER \(2,0,1\) 13$/
-    result.should =~ /^POWER \(2,0,0\) 14$/
-    result.should =~ /^POWER \(1,0,0\) 15$/
+    result.should =~ /^\(0,0,1\) POWER 15$/
+    result.should =~ /^\(0,0,2\) POWER 14$/
+    result.should =~ /^\(1,0,2\) POWER 13$/
+    result.should =~ /^\(2,0,2\) POWER 12$/
+    result.should =~ /^\(2,0,1\) POWER 13$/
+    result.should =~ /^\(2,0,0\) POWER 14$/
+    result.should =~ /^\(1,0,0\) POWER 15$/
   end
 end

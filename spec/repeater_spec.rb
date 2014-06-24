@@ -9,7 +9,7 @@ describe 'Repeater' do
         'SET 0 0 1 REPEATER SOUTH 0',
         "SET 0 0 2 #{material}",
         'TICK 2'
-      ).should =~ /\(0,0,2\) 15/
+      ).should =~ /\(0,0,2\) POWER 15/
     end
   end
 

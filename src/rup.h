@@ -57,25 +57,20 @@ typedef struct RupQueue {
 
 #define RUP_INSTS_ALLOC_SIZE(SIZE) (sizeof(RupInsts) + sizeof(RupInst) * (SIZE))
 
-bool rup_node_equals(void* np1, void* np2);
-RupNode* queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message);
+void queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message);
 
 unsigned int rup_inst_size(RupInst* insts);
 RupInsts* rup_insts_clone(RupInsts* source);
 RupInsts* rup_insts_allocate(void);
-RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst);
 RupInsts* rup_insts_append_nodes(RupInsts* insts, Queue* messages, Location target, unsigned long long tick);
 unsigned int rup_insts_max_power(RupInsts* inst);
 bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power);
 RupInst* rup_insts_find_move(RupInsts* insts);
-void rup_inst_print(RupInst* node);
-void rup_inst_print_verbose(RupInst* inst, unsigned long long tick, Location target);
-void rup_node_print(RupNode* node);
-void rup_node_print_verbose(RupNode* node, unsigned long long current_tick);
+void message_type_print(MessageType type, unsigned int message);
 
 RupQueue* rup_queue_allocate(unsigned long long tick);
 void rup_queue_free(RupQueue* queue);
-void rup_queue_add(RupQueue* queue, RupInst* inst);
+void rup_queue_add(RupQueue* queue, QueueData* data);
 RupInsts* rup_queue_find_instructions(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick);
 RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick);

@@ -150,14 +150,6 @@ static void signal_callback(int signal)
         redpile_exit();
 }
 
-static void rup_inst_run_callback(RupNode* node)
-{
-    if (config.silent)
-        return;
-
-    rup_node_print(node);
-}
-
 static void completion_callback(const char* buffer, linenoiseCompletions* completions)
 {
     for (int i = 0; i < COMMANDS_COUNT; i++)
@@ -210,7 +202,7 @@ int main(int argc, char* argv[])
         if (line[0] == '#')
             ; // Empty command
         else if (instruction_parse(line, &instruction))
-            instruction_run(world, &instruction, rup_inst_run_callback);
+            instruction_run(world, &instruction);
         else
             printf("Invalid Command\n");
         free(line);

@@ -18,44 +18,21 @@
 
 #include "queue.h"
 
-Queue queue_empty(bool track_targets, bool track_sources, unsigned int size)
+static bool queue_data_equals(QueueData* n1, QueueData* n2)
 {
-    Hashmap* targetmap = track_targets ? hashmap_allocate(size) : NULL;
-    Hashmap* sourcemap = track_sources ? hashmap_allocate(size) : NULL;
-    return (Queue){NULL, targetmap, sourcemap};
+    return n1->type == n2->type &&
+           LOCATION_EQUALS(n1->source.location, n2->source.location) &&
+           n1->target.node == n2->target.node &&
+           n1->message == n2->message &&
+           n1->tick == n2->tick;
 }
 
-void queue_free(Queue* queue)
-{
-    QueueNode* node = queue->nodes;
-    while (node != NULL)
-    {
-        QueueNode* temp = node->next;
-        free(node);
-        node = temp;
-    }
-
-    if (queue->targetmap != NULL)
-        hashmap_free(queue->targetmap, NULL);
-    if (queue->sourcemap != NULL)
-        hashmap_free(queue->sourcemap, free);
-}
-
-QueueNode* queue_add(Queue* queue, Location source, Location target)
-{
-    QueueNode* node = malloc(sizeof(QueueNode));
-    node->source = source;
-    node->target = target;
-    queue_push(queue, node);
-    return node;
-}
-
-void queue_push(Queue* queue, QueueNode* node)
+static void queue_push(Queue* queue, QueueNode* node)
 {
     if (queue->targetmap != NULL)
     {
         // Add the node to the list by it's target
-        Bucket* bucket = hashmap_get(queue->targetmap, node->target, true);
+        Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, true);
         if (bucket->value == NULL)
         {
             // No nodes with this source exist yet
@@ -90,7 +67,7 @@ void queue_push(Queue* queue, QueueNode* node)
     if (queue->sourcemap != NULL)
     {
         // Add a reference to it by source
-        Bucket* bucket = hashmap_get(queue->sourcemap, node->source, true);
+        Bucket* bucket = hashmap_get(queue->sourcemap, node->data.source.location, true);
         if (bucket->value == NULL)
         {
             QueueNodeList* source_list = malloc(sizeof(QueueNodeList) +  sizeof(QueueNode));
@@ -104,7 +81,7 @@ void queue_push(Queue* queue, QueueNode* node)
             QueueNodeList* source_list = bucket->value;
             unsigned int new_size = source_list->size + 1;
 
-            // TODO: Pre-allocate space instead of reallocing on each add
+            // TODO: Pre-allocate space instead of reallocating on each add
             source_list = realloc(source_list, sizeof(QueueNodeList) + (sizeof(QueueNode) * new_size));
             CHECK_OOM(source_list);
             source_list->size = new_size;
@@ -114,58 +91,16 @@ void queue_push(Queue* queue, QueueNode* node)
     }
 }
 
-bool queue_contains(Queue* queue, QueueNode* node, bool (*compare)(void* first, void* second))
-{
-    Bucket* bucket = hashmap_get(queue->targetmap, node->target, false);
-    if (bucket == NULL)
-        return false;
-
-    QueueNode* found = bucket->value;
-    if (found == NULL)
-        return false;
-
-    do
-    {
-        if (compare(found->value, node->value))
-            return true;
-        found = found->next;
-    }
-    while (found != NULL && LOCATION_EQUALS(found->target, node->target));
-
-    return false;
-}
-
-void queue_merge(Queue* queue, Queue* append, bool (*compare)(void* first, void* second))
-{
-    // Exit early if theres nothing to append
-    if (append->nodes == NULL)
-        return;
-
-    // Merge in any that haven't already been added
-    QueueNode* node = append->nodes;
-    while (node != NULL)
-    {
-        QueueNode* temp = node->next;
-        if (!queue_contains(queue, node, compare))
-            queue_push(queue, node);
-        else
-            free(node);
-        node = temp;
-    }
-
-    append->nodes = NULL;
-}
-
-void queue_remove(Queue* queue, QueueNode* node)
+static void queue_remove(Queue* queue, QueueNode* node)
 {
     if (queue->targetmap != NULL)
     {
-        Bucket* bucket = hashmap_get(queue->targetmap, node->target, false);
+        Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, false);
         assert(bucket != NULL);
 
         if (bucket->value == node)
         {
-            if (node->next != NULL && LOCATION_EQUALS(node->target, node->next->target))
+            if (node->next != NULL && node->data.target.node == node->next->data.target.node)
                 // Change the hashmap to target the next node
                 bucket->value = node->next;
             else
@@ -185,6 +120,78 @@ void queue_remove(Queue* queue, QueueNode* node)
     free(node);
 }
 
+Queue queue_empty(bool track_targets, bool track_sources, unsigned int size)
+{
+    Hashmap* targetmap = track_targets ? hashmap_allocate(size) : NULL;
+    Hashmap* sourcemap = track_sources ? hashmap_allocate(size) : NULL;
+    return (Queue){NULL, targetmap, sourcemap};
+}
+
+void queue_free(Queue* queue)
+{
+    QueueNode* node = queue->nodes;
+    while (node != NULL)
+    {
+        QueueNode* temp = node->next;
+        free(node);
+        node = temp;
+    }
+
+    if (queue->targetmap != NULL)
+        hashmap_free(queue->targetmap, NULL);
+    if (queue->sourcemap != NULL)
+        hashmap_free(queue->sourcemap, free);
+}
+
+void queue_add(Queue* queue, QueueData data)
+{
+    QueueNode* node = malloc(sizeof(QueueNode));
+    node->data = data;
+    queue_push(queue, node);
+}
+
+bool queue_contains(Queue* queue, QueueNode* node)
+{
+    Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, false);
+    if (bucket == NULL)
+        return false;
+
+    QueueNode* found = bucket->value;
+    if (found == NULL)
+        return false;
+
+    do
+    {
+        if (queue_data_equals(&found->data, &node->data))
+            return true;
+        found = found->next;
+    }
+    while (found != NULL && found->data.target.node == node->data.target.node);
+
+    return false;
+}
+
+void queue_merge(Queue* queue, Queue* append)
+{
+    // Exit early if theres nothing to append
+    if (append->nodes == NULL)
+        return;
+
+    // Merge in any that haven't already been added
+    QueueNode* node = append->nodes;
+    while (node != NULL)
+    {
+        QueueNode* temp = node->next;
+        if (!queue_contains(queue, node))
+            queue_push(queue, node);
+        else
+            free(node);
+        node = temp;
+    }
+
+    append->nodes = NULL;
+}
+
 void queue_remove_source(Queue* queue, Location source)
 {
     Bucket* bucket = hashmap_get(queue->sourcemap, source, false);
@@ -196,5 +203,35 @@ void queue_remove_source(Queue* queue, Location source)
         queue_remove(queue, node_list->nodes[i]);
 
     node_list->size = 0;
+}
+
+void queue_data_print(
+    QueueData* data,
+    void (*print_message)(unsigned int type, unsigned int message))
+{
+    printf("(%d,%d,%d) ",
+        data->target.location.x,
+        data->target.location.y,
+        data->target.location.z);
+
+    print_message(data->type, data->message);
+}
+
+
+void queue_data_print_verbose(
+    QueueData* data,
+    void (*print_message)(unsigned int type, unsigned int message),
+    unsigned long long current_tick)
+{
+    printf("%llu (%d,%d,%d) => (%d,%d,%d) ",
+        data->tick - current_tick,
+        data->source.location.x,
+        data->source.location.y,
+        data->source.location.z,
+        data->target.location.x,
+        data->target.location.y,
+        data->target.location.z);
+
+    print_message(data->type, data->message);
 }
 

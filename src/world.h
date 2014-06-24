@@ -64,7 +64,7 @@ WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
 void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type));
 void world_clear_node_missing_callback(World* world);
-bool world_run_rup(World* world, RupNode* rup_node);
+bool world_run_data(World* world, QueueData* data);
 RupInsts* world_find_messages(World* world, Node* node);
 void world_print_messages(World* world);
 

@@ -21,13 +21,26 @@
 
 #include "location.h"
 #include "hashmap.h"
+#include "node.h"
+
+typedef struct {
+    struct {
+        Location location;
+        unsigned int type;
+    } source;
+    struct {
+        Location location;
+        Node* node;
+    } target;
+    unsigned long long tick;
+    unsigned int type;
+    unsigned int message;
+} QueueData;
 
 typedef struct QueueNode {
-    Location source;
-    Location target;
-    void* value;
     struct QueueNode* next;
     struct QueueNode* prev;
+    QueueData data;
 } QueueNode;
 
 typedef struct {
@@ -45,12 +58,12 @@ typedef struct {
 
 Queue queue_empty(bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
-QueueNode* queue_add(Queue* queue, Location source, Location target);
-void queue_push(Queue* queue, QueueNode* node);
-bool queue_contains(Queue* queue, QueueNode* node, bool (*compare)(void* first, void* second));
-void queue_merge(Queue* queue, Queue* append, bool (*compare)(void* first, void* second));
-void queue_remove(Queue* queue, QueueNode* node);
+void queue_add(Queue* queue, QueueData data);
+bool queue_contains(Queue* queue, QueueNode* node);
+void queue_merge(Queue* queue, Queue* append);
 void queue_remove_source(Queue* queue, Location source);
+void queue_data_print(QueueData* data, void (*print_message)(unsigned int type, unsigned int message));
+void queue_data_print_verbose(QueueData* data, void (*print_message)(unsigned int type, unsigned int message), unsigned long long current_tick);
 
 #endif
 

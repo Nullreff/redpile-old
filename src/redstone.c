@@ -370,60 +370,57 @@ static void process_output(World* world, Node* node, Queue* output, Queue* messa
 {
     FOR_QUEUE(queue_node, output)
     {
-        RupNode* rup_node = queue_node->value;
-        if (rup_node->tick == world->ticks && !queue_contains(messages_out, queue_node, rup_node_equals))
+        if (queue_node->data.tick == world->ticks && !queue_contains(messages_out, queue_node))
         {
-            assert(!LOCATION_EQUALS(LOCATION(rup_node->target), rup_node->inst.source.location));
-            queue_remove_source(messages_out, rup_node->target->location);
-            queue_remove_source(sets_out, rup_node->target->location);
-            node_list_move_after(world->nodes, node, rup_node->target);
+            assert(!LOCATION_EQUALS(queue_node->data.target.location, queue_node->data.source.location));
+            queue_remove_source(messages_out, queue_node->data.target.location);
+            queue_remove_source(sets_out, queue_node->data.target.location);
+            node_list_move_after(world->nodes, node, queue_node->data.target.node);
         }
     }
 
-    queue_merge(messages_out, output, rup_node_equals);
+    queue_merge(messages_out, output);
 }
 
-static void run_messages(World* world, Queue* messages, void (*inst_run_callback)(RupNode*))
+static void run_messages(World* world, Queue* messages)
 {
-    FOR_QUEUE(queue_node, messages)
+    FOR_QUEUE(message, messages)
     {
-        RupNode* message = queue_node->value;
-        assert(!LOCATION_EQUALS(queue_node->target, queue_node->source));
+        assert(!LOCATION_EQUALS(message->data.target.location, message->data.source.location));
 
-        Bucket* bucket = hashmap_get(world->messages, queue_node->target, true);
+        Bucket* bucket = hashmap_get(world->messages, message->data.target.location, true);
         RupQueue* queue = (RupQueue*)bucket->value;
         if (queue == NULL)
         {
-            queue = rup_queue_allocate(message->tick);
+            queue = rup_queue_allocate(message->data.tick);
             bucket->value = queue;
         }
         else
         {
-            queue = rup_queue_find(queue, message->tick);
+            queue = rup_queue_find(queue, message->data.tick);
             if (queue == NULL)
             {
-                queue = rup_queue_allocate(message->tick);
+                queue = rup_queue_allocate(message->data.tick);
                 queue->next = bucket->value;
                 bucket->value = queue;
             }
         }
 
-        rup_queue_add(queue, &message->inst);
+        rup_queue_add(queue, &message->data);
     }
 }
 
-static void run_sets(World* world, Queue* sets, void (*inst_run_callback)(RupNode*), LogLevel log_level)
+static void run_sets(World* world, Queue* sets, LogLevel log_level)
 {
-    FOR_QUEUE(queue_node, sets)
+    FOR_QUEUE(set, sets)
     {
-        RupNode* set = queue_node->value;
         if (log_level != SILENT)
-            inst_run_callback(set);
-        world_run_rup(world, set);
+            queue_data_print(&set->data, message_type_print);
+        world_run_data(world, &set->data);
     }
 }
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, LogLevel log_level)
+void redstone_tick(World* world, unsigned int count, LogLevel log_level)
 {
     world_set_node_missing_callback(world, redstone_node_missing);
 
@@ -470,25 +467,23 @@ void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned i
         if (log_level == VERBOSE)
         {
             printf("Messages:\n");
-            FOR_QUEUE(queue_node, &messages)
+            FOR_QUEUE(message, &messages)
             {
-                RupNode* message = queue_node->value;
-                if (message->tick == world->ticks)
-                    rup_node_print_verbose(message, world->ticks);
+                if (message->data.tick == world->ticks)
+                    queue_data_print_verbose(&message->data, message_type_print, world->ticks);
             }
 
             printf("Queued:\n");
-            FOR_QUEUE(queue_node, &messages)
+            FOR_QUEUE(message, &messages)
             {
-                RupNode* message = queue_node->value;
-                if (message->tick > world->ticks)
-                    rup_node_print_verbose(message, world->ticks);
+                if (message->data.tick > world->ticks)
+                    queue_data_print_verbose(&message->data, message_type_print, world->ticks);
             }
             printf("Output:\n");
         }
 
-        run_messages(world, &messages, inst_run_callback);
-        run_sets(world, &sets, inst_run_callback, log_level);
+        run_messages(world, &messages);
+        run_sets(world, &sets, log_level);
         
         queue_free(&messages);
         queue_free(&sets);

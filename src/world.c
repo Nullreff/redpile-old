@@ -187,25 +187,25 @@ void world_clear_node_missing_callback(World* world)
     world->node_missing = node_missing_noop;
 }
 
-bool world_run_rup(World* world, RupNode* rup_node)
+bool world_run_data(World* world, QueueData* data)
 {
     Location target_loc;
-    switch (rup_node->inst.type)
+    switch (data->type)
     {
         case RUP_POWER:
-            if (FIELD_GET(rup_node->target, 0) == rup_node->inst.message)
+            if (FIELD_GET(data->target.node, 0) == data->message)
                 return false;
-            FIELD_SET(rup_node->target, 0, rup_node->inst.message);
+            FIELD_SET(data->target.node, 0, data->message);
             break;
 
         case RUP_MOVE:
-            target_loc = rup_node->inst.source.location;
-            world_node_move(world, rup_node->target, rup_node->inst.message);
+            target_loc = data->source.location;
+            world_node_move(world, data->target.node, data->message);
             world_fill_missing(world, target_loc);
             break;
 
         case RUP_REMOVE:
-            world_remove_node(world, rup_node->inst.source.location);
+            world_remove_node(world, data->source.location);
             break;
     }
 
@@ -246,7 +246,18 @@ void world_print_messages(World* world)
                 if (queue->tick >= world->ticks)
                 {
                     for (int j = 0; j < queue->insts->size; j++)
-                        rup_inst_print_verbose(queue->insts->data + j, queue->tick - world->ticks, bucket->key);
+                    {
+                        RupInst* inst = queue->insts->data + j;
+                        QueueData data = (QueueData) {
+                            .source.location = inst->source.location,
+                            .source.type = inst->source.type,
+                            .target.location = bucket->key,
+                            .tick = queue->tick,
+                            .type = inst->type,
+                            .message = inst->message
+                        };
+                        queue_data_print_verbose(&data, message_type_print, world->ticks);
+                    }
                 }
                 queue = queue->next;
             }

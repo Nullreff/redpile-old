@@ -27,6 +27,6 @@ typedef enum {
     VERBOSE
 } LogLevel;
 
-void redstone_tick(World* world, void (*inst_run_callback)(RupNode*), unsigned int count, LogLevel log_level);
+void redstone_tick(World* world, unsigned int count, LogLevel log_level);
 
 #endif

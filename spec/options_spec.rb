@@ -22,14 +22,6 @@ describe 'Options' do
         redpile(short ? '-i' : '--interactive').run.should == "\n"
       end
 
-      it 'runs silently' do
-        redpile(short ? '-s' : '--silent').run(
-          'SET 0 0 0 TORCH UP',
-          'SET 0 0 1 WIRE',
-          'TICK'
-        ).should == "\n"
-      end
-
       [1, 20, 2000].each do |size|
         it "runs with a custom world size of '#{size}'" do
           redpile("#{short ? '-w' : '--world-size'} #{size}").run.should == "\n"
