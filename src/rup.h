@@ -21,6 +21,7 @@
 
 #include "node.h"
 #include "hashmap.h"
+#include "queue.h"
 
 typedef enum {
     RUP_POWER,
@@ -46,20 +47,7 @@ typedef struct RupNode {
     RupInst inst;
     Node* target;
     unsigned long long tick;
-    struct RupNode* next;
-    struct RupNode* prev;
 } RupNode;
-
-typedef struct {
-    RupNode* nodes;
-    Hashmap* targetmap;
-    Hashmap* sourcemap;
-} Rup;
-
-typedef struct {
-    unsigned int size;
-    RupNode* nodes[];
-} RupNodeList;
 
 typedef struct RupQueue {
     RupInsts* insts;
@@ -67,22 +55,16 @@ typedef struct RupQueue {
     struct RupQueue* next;
 } RupQueue;
 
-#define FOR_RUP(NODE,RUP) for (RupNode* (NODE) = (RUP)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
 #define RUP_INSTS_ALLOC_SIZE(SIZE) (sizeof(RupInsts) + sizeof(RupInst) * (SIZE))
 
-Rup rup_empty(bool track_targets, bool track_sources, unsigned int size);
-void rup_free(Rup* rup);
-void rup_push(Rup* rup, RupNode* node);
-RupNode* rup_push_inst(Rup* rup, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message);
-void rup_merge(Rup* rup, Rup* append);
-bool rup_contains(Rup* rup, RupNode* node);
-void rup_remove_by_source(Rup* rup, Location source);
+bool rup_node_equals(void* np1, void* np2);
+RupNode* queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message);
 
 unsigned int rup_inst_size(RupInst* insts);
 RupInsts* rup_insts_clone(RupInsts* source);
 RupInsts* rup_insts_allocate(void);
 RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst);
-RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target, unsigned long long tick);
+RupInsts* rup_insts_append_nodes(RupInsts* insts, Queue* messages, Location target, unsigned long long tick);
 unsigned int rup_insts_max_power(RupInsts* inst);
 bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power);
 RupInst* rup_insts_find_move(RupInsts* insts);

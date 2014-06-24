@@ -24,8 +24,10 @@ static RupInst rup_inst_create(MessageType type, Node* node, unsigned int messag
     return (RupInst){{node->location, node->type}, type, message};
 }
 
-static bool rup_node_equals(RupNode* n1, RupNode* n2)
+bool rup_node_equals(void* np1, void* np2)
 {
+    RupNode* n1 = np1;
+    RupNode* n2 = np2;
     return n1->inst.type == n2->inst.type &&
            LOCATION_EQUALS(n1->inst.source.location, n2->inst.source.location) &&
            n1->inst.message == n2->inst.message &&
@@ -33,94 +35,7 @@ static bool rup_node_equals(RupNode* n1, RupNode* n2)
            n1->tick == n2->tick;
 }
 
-Rup rup_empty(bool track_targets, bool track_sources, unsigned int size)
-{
-    Hashmap* targetmap = track_targets ? hashmap_allocate(size) : NULL;
-    Hashmap* sourcemap = track_sources ? hashmap_allocate(size) : NULL;
-    return (Rup){NULL, targetmap, sourcemap};
-}
-
-void rup_free(Rup* rup)
-{
-    RupNode* node = rup->nodes;
-    while (node != NULL)
-    {
-        RupNode* temp = node->next;
-        free(node);
-        node = temp;
-    }
-
-    if (rup->targetmap != NULL)
-        hashmap_free(rup->targetmap, NULL);
-    if (rup->sourcemap != NULL)
-        hashmap_free(rup->sourcemap, free);
-}
-
-void rup_push(Rup* rup, RupNode* node)
-{
-    if (rup->targetmap != NULL)
-    {
-        // Add the node to the list by it's target
-        Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, true);
-        if (bucket->value == NULL)
-        {
-            // No nodes with this source exist yet
-            // Stick it in the front of the list
-            node->next = rup->nodes;
-            node->prev = NULL;
-            if (rup->nodes != NULL)
-                rup->nodes->prev = node;
-            rup->nodes = node;
-            bucket->value = node;
-        }
-        else
-        {
-            // Otherwise stick it after the existing one
-            RupNode* existing = bucket->value;
-            node->next = existing->next;
-            node->prev = existing;
-            if (existing->next != NULL)
-                existing->next->prev = node;
-            existing->next = node;
-        }
-    }
-    else
-    {
-        node->next = rup->nodes;
-        node->prev = NULL;
-        if (rup->nodes != NULL)
-            rup->nodes->prev = node;
-        rup->nodes = node;
-    }
-
-    if (rup->sourcemap != NULL)
-    {
-        // Add a reference to it by source
-        Bucket* bucket = hashmap_get(rup->sourcemap, node->inst.source.location, true);
-        if (bucket->value == NULL)
-        {
-            RupNodeList* source_list = malloc(sizeof(RupNodeList) +  sizeof(RupNode));
-            CHECK_OOM(source_list);
-            source_list->size = 1;
-            source_list->nodes[0] = node;
-            bucket->value = source_list;
-        }
-        else
-        {
-            RupNodeList* source_list = bucket->value;
-            unsigned int new_size = source_list->size + 1;
-
-            // TODO: Pre-allocate space instead of reallocing on each add
-            source_list = realloc(source_list, sizeof(RupNodeList) + (sizeof(RupNode) * new_size));
-            CHECK_OOM(source_list);
-            source_list->size = new_size;
-            source_list->nodes[new_size - 1] = node;
-            bucket->value = source_list;
-        }
-    }
-}
-
-RupNode* rup_push_inst(Rup* rup, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
+RupNode* queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
 {
     RupNode* node = malloc(sizeof(RupNode));
     CHECK_OOM(node);
@@ -129,92 +44,9 @@ RupNode* rup_push_inst(Rup* rup, MessageType type, unsigned long long tick, Node
     node->tick = tick;
     node->target = target;
 
-    rup_push(rup, node);
+    QueueNode* queue_node = queue_add(queue, source->location, target->location);
+    queue_node->value = node;
     return node;
-}
-
-void rup_merge(Rup* rup, Rup* append)
-{
-    // Exit early if theres nothing to append
-    if (append->nodes == NULL)
-        return;
-
-    // Merge in any that haven't already been added
-    RupNode* node = append->nodes;
-    while (node != NULL)
-    {
-        RupNode* temp = node->next;
-        if (!rup_contains(rup, node))
-            rup_push(rup, node);
-        else
-            free(node);
-        node = temp;
-    }
-
-    append->nodes = NULL;
-}
-
-bool rup_contains(Rup* rup, RupNode* node)
-{
-    Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
-    if (bucket == NULL)
-        return false;
-
-    RupNode* found = bucket->value;
-    if (found == NULL)
-        return false;
-
-    do
-    {
-        if (rup_node_equals(found, node))
-            return true;
-        found = found->next;
-    }
-    while (found != NULL && LOCATION_EQUALS(found->target->location, node->target->location));
-
-    return false;
-}
-
-static void rup_remove(Rup* rup, RupNode* node)
-{
-    if (rup->targetmap != NULL)
-    {
-        Bucket* bucket = hashmap_get(rup->targetmap, node->target->location, false);
-        assert(bucket != NULL);
-
-        if (bucket->value == node)
-        {
-            if (node->next != NULL && LOCATION_EQUALS(node->target->location, node->next->target->location))
-                // Change the hashmap to target the next node
-                bucket->value = node->next;
-            else
-                // We ran out of nodes with this target
-                bucket->value = NULL;
-        }
-    }
-
-    if (node->prev != NULL)
-        node->prev->next = node->next;
-    else
-        rup->nodes = node->next;
-
-    if (node->next != NULL)
-        node->next->prev = node->prev;
-
-    free(node);
-}
-
-void rup_remove_by_source(Rup* rup, Location source)
-{
-    Bucket* bucket = hashmap_get(rup->sourcemap, source, false);
-    if (bucket == NULL)
-        return;
-
-    RupNodeList* node_list = bucket->value;
-    for (int i = 0; i < node_list->size; i++)
-        rup_remove(rup, node_list->nodes[i]);
-
-    node_list->size = 0;
 }
 
 unsigned int rup_insts_size(RupInsts* insts)
@@ -247,23 +79,25 @@ RupInsts* rup_insts_append(RupInsts* insts, RupInst* inst)
     return insts;
 }
 
-RupInsts* rup_insts_append_nodes(RupInsts* insts, Rup* messages, Location target, unsigned long long tick)
+RupInsts* rup_insts_append_nodes(RupInsts* insts, Queue* messages, Location target, unsigned long long tick)
 {
     Bucket* bucket = hashmap_get(messages->targetmap, target, false);
     if (bucket == NULL)
         return insts;
 
-    RupNode* found = bucket->value;
-    if (found == NULL)
+    QueueNode* queue_node = bucket->value;
+    if (queue_node == NULL)
         return insts;
+
 
     do
     {
+        RupNode* found = queue_node->value;
         if (found->tick == tick)
             insts = rup_insts_append(insts, &found->inst);
-        found = found->next;
+        queue_node = queue_node->next;
     }
-    while (found != NULL && LOCATION_EQUALS(found->target->location, target));
+    while (queue_node != NULL && LOCATION_EQUALS(queue_node->target, target));
 
     return insts;
 }
