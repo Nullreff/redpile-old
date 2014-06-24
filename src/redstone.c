@@ -346,7 +346,7 @@ RUP_METHOD(SWITCH)
     {
         Node* found_node = NODE_ADJACENT(node, dir);
         if (MATERIAL(found_node) != CONDUCTOR || dir == behind)
-            SEND_POWER(found_node, MAX_POWER, 1);
+            SEND_POWER(found_node, MAX_POWER, 0);
     }
 
 }

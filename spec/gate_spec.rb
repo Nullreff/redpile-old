@@ -11,7 +11,7 @@ describe 'Logic' do
         "SET 0 0 0 SWITCH NORTH #{in1}",
         'SET 0 0 1 CONDUCTOR',
         'SET 0 0 2 WIRE',
-        'TICK 2',
+        'TICK',
         'GET 0 0 2')
     end
 
@@ -26,7 +26,7 @@ describe 'Logic' do
         'SET 0 0 1 CONDUCTOR',
         'SET 0 0 2 TORCH SOUTH',
         'SET 0 0 3 WIRE',
-        'TICK 3',
+        'TICK 2',
         'GET 0 0 3')
     end
 
@@ -47,7 +47,7 @@ describe 'Logic' do
         'SET 2 1 1 TORCH UP',
         'SET 1 0 2 TORCH SOUTH',
         'SET 1 0 3 WIRE',
-        'TICK 4',
+        'TICK 3',
         'GET 1 0 3')
     end
 
@@ -69,7 +69,7 @@ describe 'Logic' do
         'SET 1 1 1 WIRE',
         'SET 2 1 1 TORCH UP',
         'SET 1 0 2 WIRE',
-        'TICK 3',
+        'TICK 2',
         'GET 1 0 2')
     end
 
@@ -92,7 +92,7 @@ describe 'Logic' do
         'SET 1 0 3 WIRE',
         'SET 2 0 3 WIRE',
         'SET 1 0 4 WIRE',
-        'TICK 4',
+        'TICK 3',
         'GET 1 0 4')
     end
 
@@ -110,7 +110,7 @@ describe 'Logic' do
         "SET 2 0 0 SWITCH EAST #{in2}",
         'SET 1 0 1 TORCH SOUTH',
         'SET 1 0 2 WIRE',
-        'TICK 3',
+        'TICK 2',
         'GET 1 0 2')
     end
 
@@ -151,7 +151,7 @@ describe 'Logic' do
         'SET 1 0 5 WIRE',
         'SET 2 0 5 TORCH SOUTH',
 
-        'TICK 5',
+        'TICK 4',
         'GET 1 0 5')
     end
 
@@ -198,7 +198,7 @@ describe 'Logic' do
 
         'SET 2 0 7 WIRE',
 
-        'TICK 6',
+        'TICK 5',
         'GET 2 0 7')
     end
 
