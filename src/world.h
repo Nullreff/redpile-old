@@ -67,7 +67,8 @@ void world_stats_print(WorldStats world);
 void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type));
 void world_clear_node_missing_callback(World* world);
 bool world_run_data(World* world, QueueData* data);
-RupInsts* world_find_messages(World* world, Node* node);
+RupInsts* world_find_insts(World* world, Location target);
+RupQueue* world_find_queue(World* world, Location target, unsigned long long tick);
 void world_print_messages(World* world);
 
 #endif

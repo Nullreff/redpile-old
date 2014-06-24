@@ -217,9 +217,9 @@ bool world_run_data(World* world, QueueData* data)
     return true;
 }
 
-RupInsts* world_find_messages(World* world, Node* node)
+RupInsts* world_find_insts(World* world, Location target)
 {
-    Bucket* bucket = hashmap_get(world->messages, node->location, false);
+    Bucket* bucket = hashmap_get(world->messages, target, false);
     if (bucket == NULL)
         return NULL;
 
@@ -233,6 +233,29 @@ RupInsts* world_find_messages(World* world, Node* node)
         return NULL;
 
     return insts;
+}
+
+RupQueue* world_find_queue(World* world, Location target, unsigned long long tick)
+{
+    Bucket* bucket = hashmap_get(world->messages, target, true);
+    RupQueue* queue = (RupQueue*)bucket->value;
+    if (queue == NULL)
+    {
+        queue = rup_queue_allocate(tick);
+        bucket->value = queue;
+    }
+    else
+    {
+        queue = rup_queue_find(queue, tick);
+        if (queue == NULL)
+        {
+            queue = rup_queue_allocate(tick);
+            queue->next = bucket->value;
+            bucket->value = queue;
+        }
+    }
+
+    return queue;
 }
 
 void world_print_messages(World* world)

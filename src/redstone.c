@@ -370,7 +370,7 @@ static RupInsts* find_input(World* world, Node* node, Queue* messages)
         iter = iter->next;
     }
 
-    RupInsts* found_insts = world_find_messages(world, node);
+    RupInsts* found_insts = world_find_insts(world, node->location);
     int total = (found_insts != NULL ? found_insts->size : 0) + new_messages;
 
     RupInsts* insts = rup_insts_allocate(total);
@@ -413,25 +413,7 @@ static void run_messages(World* world, Queue* messages)
     FOR_QUEUE(message, messages)
     {
         assert(!LOCATION_EQUALS(message->data.target.location, message->data.source.location));
-
-        Bucket* bucket = hashmap_get(world->messages, message->data.target.location, true);
-        RupQueue* queue = (RupQueue*)bucket->value;
-        if (queue == NULL)
-        {
-            queue = rup_queue_allocate(message->data.tick);
-            bucket->value = queue;
-        }
-        else
-        {
-            queue = rup_queue_find(queue, message->data.tick);
-            if (queue == NULL)
-            {
-                queue = rup_queue_allocate(message->data.tick);
-                queue->next = bucket->value;
-                bucket->value = queue;
-            }
-        }
-
+        RupQueue* queue = world_find_queue(world, message->data.target.location, message->data.tick);
         queue->insts = rup_insts_append(queue->insts, &message->data);
     }
 }
