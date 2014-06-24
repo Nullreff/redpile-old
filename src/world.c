@@ -100,6 +100,8 @@ World* world_allocate(unsigned int size)
     // Stats
     world->ticks = 0;
     world->max_inputs = 0;
+    world->max_outputs = 0;
+    world->max_queued = 0;
 
     return world;
 }
@@ -167,7 +169,9 @@ WorldStats world_get_stats(World* world)
         world->hashmap->overflow,
         world->hashmap->resizes,
         world->hashmap->max_depth,
-        world->max_inputs
+        world->max_inputs,
+        world->max_outputs,
+        world->max_queued,
     };
 }
 
@@ -180,6 +184,8 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, hashmap_resizes, u);
     STAT_PRINT(stats, hashmap_max_depth, u);
     STAT_PRINT(stats, message_max_inputs, u);
+    STAT_PRINT(stats, message_max_outputs, u);
+    STAT_PRINT(stats, message_max_queued, u);
 }
 
 void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type))

@@ -179,16 +179,18 @@ bool queue_contains(Queue* queue, QueueNode* node)
     return false;
 }
 
-void queue_merge(Queue* queue, Queue* append)
+unsigned int queue_merge(Queue* queue, Queue* append)
 {
     // Exit early if theres nothing to append
     if (append->nodes == NULL)
-        return;
+        return 0;
 
     // Merge in any that haven't already been added
     QueueNode* node = append->nodes;
+    unsigned int count = 0;
     while (node != NULL)
     {
+        count++;
         QueueNode* temp = node->next;
         if (!queue_contains(queue, node))
             queue_push(queue, node);
@@ -198,6 +200,7 @@ void queue_merge(Queue* queue, Queue* append)
     }
 
     append->nodes = NULL;
+    return count;
 }
 
 void queue_remove_source(Queue* queue, Location source)

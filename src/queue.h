@@ -60,7 +60,7 @@ Queue queue_empty(bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
 void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int message);
 bool queue_contains(Queue* queue, QueueNode* node);
-void queue_merge(Queue* queue, Queue* append);
+unsigned int queue_merge(Queue* queue, Queue* append);
 void queue_remove_source(Queue* queue, Location source);
 QueueNode* queue_find_nodes(Queue* messages, Node* target, unsigned long long tick);
 void queue_data_print(QueueData* data, void (*print_message)(unsigned int type, unsigned int message));

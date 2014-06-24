@@ -405,7 +405,9 @@ static void process_output(World* world, Node* node, Queue* output, Queue* messa
         }
     }
 
-    queue_merge(messages_out, output);
+    unsigned int count = queue_merge(messages_out, output);
+    if (world->max_outputs < count)
+        world->max_outputs = count;
 }
 
 static void run_messages(World* world, Queue* messages)
@@ -435,6 +437,9 @@ static void run_messages(World* world, Queue* messages)
             message = message->next;
             queue->insts->data[old_size + i] = rup_inst_create(&message->data);
         }
+
+        if (world->max_queued < count)
+            world->max_queued = count;
     }
 }
 
