@@ -372,6 +372,26 @@ void rup_inst_print(RupInst* inst)
     }
 }
 
+void rup_inst_print_verbose(RupInst* inst, unsigned long long tick, Location target)
+{
+    printf("%llu ", tick);
+
+    printf("(%d,%d,%d) => (%d,%d,%d) ",
+        inst->source.x,
+        inst->source.y,
+        inst->source.z,
+        target.x,
+        target.y,
+        target.z);
+
+    switch (inst->command)
+    {
+        case RUP_POWER:  printf("POWER %u\n", inst->value.power); break;
+        case RUP_MOVE:   printf("MOVE %s\n", Directions[inst->value.direction]); break;
+        case RUP_REMOVE: printf("REMOVE\n"); break;
+    }
+}
+
 void rup_node_print(RupNode* node)
 {
     switch (node->inst.command)
@@ -403,25 +423,7 @@ void rup_node_print(RupNode* node)
 
 void rup_node_print_verbose(RupNode* node, unsigned long long current_tick)
 {
-    if (node->tick > current_tick)
-        printf("%llu ", node->tick - current_tick);
-    else if (node->tick < current_tick)
-        printf("-%llu ", current_tick - node->tick);
-
-    printf("(%d,%d,%d) => (%d,%d,%d) ",
-        node->inst.source.x,
-        node->inst.source.y,
-        node->inst.source.z,
-        node->target->location.x,
-        node->target->location.y,
-        node->target->location.z);
-
-    switch (node->inst.command)
-    {
-        case RUP_POWER:  printf("POWER %u\n", node->inst.value.power); break; 
-        case RUP_MOVE:   printf("MOVE %s\n", Directions[node->inst.value.direction]); break;
-        case RUP_REMOVE: printf("REMOVE\n"); break;
-    }
+    rup_inst_print_verbose(&node->inst, node->tick - current_tick, node->target->location);
 }
 
 RupQueue* rup_queue_allocate(unsigned long long tick)

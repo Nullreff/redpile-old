@@ -240,18 +240,13 @@ void world_print_messages(World* world)
 
         do
         {
-            printf("(%d,%d,%d):\n", bucket->key.x, bucket->key.y, bucket->key.z);
             RupQueue* queue = bucket->value;
             do
             {
                 if (queue->tick >= world->ticks)
                 {
-                    printf("  %llu:\n", queue->tick - world->ticks);
                     for (int j = 0; j < queue->insts->size; j++)
-                    {
-                        printf("    ");
-                        rup_inst_print(queue->insts->data + j);
-                    }
+                        rup_inst_print_verbose(queue->insts->data + j, queue->tick - world->ticks, bucket->key);
                 }
                 queue = queue->next;
             }
