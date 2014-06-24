@@ -143,10 +143,18 @@ void queue_free(Queue* queue)
         hashmap_free(queue->sourcemap, free);
 }
 
-void queue_add(Queue* queue, QueueData data)
+void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int message)
 {
     QueueNode* node = malloc(sizeof(QueueNode));
-    node->data = data;
+    node->data = (QueueData) {
+        .source.location = source->location,
+        .source.type = source->type,
+        .target.location = target->location,
+        .target.node = target,
+        .tick = tick,
+        .type = type,
+        .message = message
+    };
     queue_push(queue, node);
 }
 

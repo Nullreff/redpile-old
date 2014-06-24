@@ -19,32 +19,16 @@
 #include <stdlib.h>
 #include "rup.h"
 
-static RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
-{
-    // TODO: Pre-allocate space instead of reallocing on each add
-    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(insts->size + 1));
-    CHECK_OOM(insts);
-    insts->data[insts->size] = rup_inst_create(data);
-    insts->size++;
-    return insts;
-}
-
 RupInst rup_inst_create(QueueData* data)
 {
     return (RupInst){{data->source.location, data->source.type}, data->type, data->message};
 }
 
-void queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
+RupInsts* rup_insts_allocate(unsigned int size)
 {
-    queue_add(queue, (QueueData) {
-        .source.location = source->location,
-        .source.type = source->type,
-        .target.location = target->location,
-        .target.node = target,
-        .tick = tick,
-        .type = type,
-        .message = message
-    });
+    RupInsts* insts = malloc(RUP_INSTS_ALLOC_SIZE(size));
+    insts->size = size;
+    return insts;
 }
 
 void rup_insts_copy(RupInst* dest, RupInsts* source)
@@ -52,10 +36,13 @@ void rup_insts_copy(RupInst* dest, RupInsts* source)
     memcpy(dest, source->data, sizeof(RupInst) * source->size);
 }
 
-RupInsts* rup_insts_allocate(unsigned int size)
+RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
 {
-    RupInsts* insts = malloc(RUP_INSTS_ALLOC_SIZE(size));
-    insts->size = size;
+    // TODO: Pre-allocate space instead of reallocing on each add
+    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(insts->size + 1));
+    CHECK_OOM(insts);
+    insts->data[insts->size] = rup_inst_create(data);
+    insts->size++;
     return insts;
 }
 
@@ -92,16 +79,6 @@ RupInst* rup_insts_find_move(RupInsts* insts)
     return NULL;
 }
 
-void message_type_print(MessageType type, unsigned int message)
-{
-    switch (type)
-    {
-        case RUP_POWER:  printf("POWER %u\n", message); break;
-        case RUP_MOVE:   printf("MOVE %s\n", Directions[message]); break;
-        case RUP_REMOVE: printf("REMOVE\n"); break;
-    }
-}
-
 RupQueue* rup_queue_allocate(unsigned long long tick)
 {
     RupQueue* queue = malloc(sizeof(RupQueue));
@@ -126,11 +103,6 @@ void rup_queue_free(RupQueue* queue)
         rup_queue_free_one(queue);
         queue = temp;
     }
-}
-
-void rup_queue_add(RupQueue* queue, QueueData* data)
-{
-    queue->insts = rup_insts_append(queue->insts, data);
 }
 
 RupQueue* rup_queue_find(RupQueue* queue, unsigned long long tick)
@@ -185,5 +157,15 @@ RupQueue* rup_queue_discard_old(RupQueue* queue, unsigned long long current_tick
     }
 
     return return_queue;
+}
+
+void message_type_print(MessageType type, unsigned int message)
+{
+    switch (type)
+    {
+        case RUP_POWER:  printf("POWER %u\n", message); break;
+        case RUP_MOVE:   printf("MOVE %s\n", Directions[message]); break;
+        case RUP_REMOVE: printf("REMOVE\n"); break;
+    }
 }
 

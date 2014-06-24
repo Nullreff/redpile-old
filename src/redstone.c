@@ -33,11 +33,11 @@
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
-#define SEND_POWER(NODE,POWER,DELAY) queue_push_inst(messages, RUP_POWER,  world->ticks + (DELAY), node, NODE, POWER)
-#define SEND_MOVE(NODE,DIR,DELAY)    queue_push_inst(messages, RUP_MOVE,   world->ticks + (DELAY), node, NODE, DIR  )
-#define CMD_POWER(POWER)             queue_push_inst(sets,     RUP_POWER,  world->ticks,           node, node, POWER)
-#define CMD_MOVE(DIR)                queue_push_inst(sets,     RUP_MOVE,   world->ticks,           node, node, DIR  )
-#define CMD_REMOVE()                 queue_push_inst(sets,     RUP_REMOVE, world->ticks,           node, node, 0    )
+#define SEND_POWER(NODE,POWER,DELAY) queue_add(messages, RUP_POWER,  world->ticks + (DELAY), node, NODE, POWER)
+#define SEND_MOVE(NODE,DIR,DELAY)    queue_add(messages, RUP_MOVE,   world->ticks + (DELAY), node, NODE, DIR  )
+#define CMD_POWER(POWER)             queue_add(sets,     RUP_POWER,  world->ticks,           node, node, POWER)
+#define CMD_MOVE(DIR)                queue_add(sets,     RUP_MOVE,   world->ticks,           node, node, DIR  )
+#define CMD_REMOVE()                 queue_add(sets,     RUP_REMOVE, world->ticks,           node, node, 0    )
 
 #define RUP_METHOD(TYPE)\
     static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Queue* messages, Queue* sets)
@@ -432,7 +432,7 @@ static void run_messages(World* world, Queue* messages)
             }
         }
 
-        rup_queue_add(queue, &message->data);
+        queue->insts = rup_insts_append(queue->insts, &message->data);
     }
 }
 
