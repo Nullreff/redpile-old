@@ -142,11 +142,9 @@ void node_list_move_after(NodeList* blocks, Node* node, Node* target)
         target->next->prev = target->prev;
 
     // Add 'target' after 'node'
+    target->next = node->next;
     if (node->next != NULL)
-    {
-        target->next = node->next;
         node->next->prev = target;
-    }
 
     node->next = target;
     target->prev = node;
