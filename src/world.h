@@ -41,6 +41,7 @@ typedef struct {
 
     // Additional stats
     unsigned long long ticks; // Redstone ticks
+    unsigned int max_inputs;
 } World;
 
 typedef struct {
@@ -50,6 +51,7 @@ typedef struct {
     unsigned int hashmap_overflow;
     unsigned int hashmap_resizes;
     unsigned int hashmap_max_depth;
+    unsigned int message_max_inputs;
 } WorldStats;
 
 #define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)

@@ -359,11 +359,37 @@ static bool redstone_node_missing(Location location, Type* type)
 
 static RupInsts* find_input(World* world, Node* node, Queue* messages)
 {
-    RupInsts* found_insts = world_find_messages(world, node);
-    RupInsts* insts = found_insts != NULL ? rup_insts_clone(found_insts) : rup_insts_allocate();
+    QueueNode* found = queue_find_nodes(messages, node, world->ticks);
+    int new_messages = 0;
+    QueueNode* iter = found;
+    while (iter != NULL &&
+           iter->data.tick == world->ticks &&
+           iter->data.target.node == node)
+    {
+        new_messages++;
+        iter = iter->next;
+    }
 
-    // Include any instructions generated this tick
-    return rup_insts_append_nodes(insts, messages, node->location, world->ticks);
+    RupInsts* found_insts = world_find_messages(world, node);
+    int total = (found_insts != NULL ? found_insts->size : 0) + new_messages;
+
+    RupInsts* insts = rup_insts_allocate(total);
+    if (total == 0)
+        return insts;
+
+    for (int i = 0; i < new_messages; i++)
+    {
+        insts->data[i] = rup_inst_create(&found->data);
+        found = found->next;
+    }
+
+    if (found_insts != NULL)
+        rup_insts_copy(insts->data + new_messages, found_insts);
+
+    if (world->max_inputs < total)
+        world->max_inputs = total;
+
+    return insts;
 }
 
 static void process_output(World* world, Node* node, Queue* output, Queue* messages_out, Queue* sets_out)

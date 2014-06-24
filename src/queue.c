@@ -205,6 +205,27 @@ void queue_remove_source(Queue* queue, Location source)
     node_list->size = 0;
 }
 
+QueueNode* queue_find_nodes(Queue* messages, Node* target, unsigned long long tick)
+{
+    Bucket* bucket = hashmap_get(messages->targetmap, target->location, false);
+    if (bucket == NULL)
+        return NULL;
+
+    QueueNode* found = bucket->value;
+    if (found == NULL)
+        return NULL;
+
+    do
+    {
+        if (found->data.tick == tick)
+            return found;
+        found = found->next;
+    }
+    while (found != NULL && found->data.target.node == target);
+
+    return NULL;
+}
+
 void queue_data_print(
     QueueData* data,
     void (*print_message)(unsigned int type, unsigned int message))

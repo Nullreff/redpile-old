@@ -19,11 +19,6 @@
 #include <stdlib.h>
 #include "rup.h"
 
-static RupInst rup_inst_create(QueueData* data)
-{
-    return (RupInst){{data->source.location, data->source.type}, data->type, data->message};
-}
-
 static RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
 {
     // TODO: Pre-allocate space instead of reallocing on each add
@@ -32,6 +27,11 @@ static RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
     insts->data[insts->size] = rup_inst_create(data);
     insts->size++;
     return insts;
+}
+
+RupInst rup_inst_create(QueueData* data)
+{
+    return (RupInst){{data->source.location, data->source.type}, data->type, data->message};
 }
 
 void queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
@@ -47,46 +47,15 @@ void queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, No
     });
 }
 
-unsigned int rup_insts_size(RupInsts* insts)
+void rup_insts_copy(RupInst* dest, RupInsts* source)
 {
-    return insts->size;
+    memcpy(dest, source->data, sizeof(RupInst) * source->size);
 }
 
-RupInsts* rup_insts_clone(RupInsts* insts)
+RupInsts* rup_insts_allocate(unsigned int size)
 {
-    size_t struct_size = RUP_INSTS_ALLOC_SIZE(insts->size);
-    RupInsts* new_insts = malloc(struct_size);
-    memcpy(new_insts, insts, struct_size);
-    return new_insts;
-}
-
-RupInsts* rup_insts_allocate(void)
-{
-    RupInsts* insts = malloc(sizeof(RupInsts));
-    insts->size = 0;
-    return insts;
-}
-
-RupInsts* rup_insts_append_nodes(RupInsts* insts, Queue* messages, Location target, unsigned long long tick)
-{
-    Bucket* bucket = hashmap_get(messages->targetmap, target, false);
-    if (bucket == NULL)
-        return insts;
-
-    QueueNode* found = bucket->value;
-    if (found == NULL)
-        return insts;
-
-    do
-    {
-        if (found->data.tick == tick)
-        {
-            insts = rup_insts_append(insts, &found->data);
-        }
-        found = found->next;
-    }
-    while (found != NULL && LOCATION_EQUALS(found->data.target.location, target));
-
+    RupInsts* insts = malloc(RUP_INSTS_ALLOC_SIZE(size));
+    insts->size = size;
     return insts;
 }
 
@@ -137,7 +106,7 @@ RupQueue* rup_queue_allocate(unsigned long long tick)
 {
     RupQueue* queue = malloc(sizeof(RupQueue));
     CHECK_OOM(queue);
-    queue->insts = rup_insts_allocate();
+    queue->insts = rup_insts_allocate(0);
     queue->tick = tick;
     queue->next = NULL;
     return queue;

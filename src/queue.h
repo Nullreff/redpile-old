@@ -62,6 +62,7 @@ void queue_add(Queue* queue, QueueData data);
 bool queue_contains(Queue* queue, QueueNode* node);
 void queue_merge(Queue* queue, Queue* append);
 void queue_remove_source(Queue* queue, Location source);
+QueueNode* queue_find_nodes(Queue* messages, Node* target, unsigned long long tick);
 void queue_data_print(QueueData* data, void (*print_message)(unsigned int type, unsigned int message));
 void queue_data_print_verbose(QueueData* data, void (*print_message)(unsigned int type, unsigned int message), unsigned long long current_tick);
 
