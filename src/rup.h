@@ -61,7 +61,7 @@ RupInst rup_inst_create(QueueData* data);
 
 RupInsts* rup_insts_allocate(unsigned int size);
 void rup_insts_copy(RupInst* dest, RupInsts* source);
-RupInsts* rup_insts_append(RupInsts* insts, QueueData* data);
+RupInsts* rup_insts_resize(RupInsts* insts, unsigned int size);
 unsigned int rup_insts_max_power(RupInsts* inst);
 bool rup_insts_power_check(RupInsts* insts, Location loc, unsigned int power);
 RupInst* rup_insts_find_move(RupInsts* insts);

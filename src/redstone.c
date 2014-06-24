@@ -360,7 +360,7 @@ static bool redstone_node_missing(Location location, Type* type)
 static RupInsts* find_input(World* world, Node* node, Queue* messages)
 {
     QueueNode* found = queue_find_nodes(messages, node, world->ticks);
-    int new_messages = 0;
+    unsigned int new_messages = 0;
     QueueNode* iter = found;
     while (iter != NULL &&
            iter->data.tick == world->ticks &&
@@ -371,7 +371,7 @@ static RupInsts* find_input(World* world, Node* node, Queue* messages)
     }
 
     RupInsts* found_insts = world_find_insts(world, node->location);
-    int total = (found_insts != NULL ? found_insts->size : 0) + new_messages;
+    unsigned int total = (found_insts != NULL ? found_insts->size : 0) + new_messages;
 
     RupInsts* insts = rup_insts_allocate(total);
     if (total == 0)
@@ -413,8 +413,28 @@ static void run_messages(World* world, Queue* messages)
     FOR_QUEUE(message, messages)
     {
         assert(!LOCATION_EQUALS(message->data.target.location, message->data.source.location));
+        Node* target = message->data.target.node;
         RupQueue* queue = world_find_queue(world, message->data.target.location, message->data.tick);
-        queue->insts = rup_insts_append(queue->insts, &message->data);
+
+        unsigned int count = 0;
+        QueueNode* iter = message;
+        while (iter != NULL &&
+               iter->data.tick == queue->tick &&
+               iter->data.target.node == target)
+        {
+            count++;
+            iter = iter->next;
+        }
+
+        unsigned int old_size = queue->insts->size;
+        queue->insts = rup_insts_resize(queue->insts, old_size + count);
+
+        queue->insts->data[old_size] = rup_inst_create(&message->data);
+        for (int i = 1; i < count; i++)
+        {
+            message = message->next;
+            queue->insts->data[old_size + i] = rup_inst_create(&message->data);
+        }
     }
 }
 

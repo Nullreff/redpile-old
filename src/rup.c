@@ -36,13 +36,11 @@ void rup_insts_copy(RupInst* dest, RupInsts* source)
     memcpy(dest, source->data, sizeof(RupInst) * source->size);
 }
 
-RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
+RupInsts* rup_insts_resize(RupInsts* insts, unsigned int size)
 {
-    // TODO: Pre-allocate space instead of reallocing on each add
-    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(insts->size + 1));
+    insts = realloc(insts, RUP_INSTS_ALLOC_SIZE(size));
     CHECK_OOM(insts);
-    insts->data[insts->size] = rup_inst_create(data);
-    insts->size++;
+    insts->size = size;
     return insts;
 }
 
