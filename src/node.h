@@ -41,8 +41,6 @@ typedef enum {
     SWITCH
 } Material;
 
-typedef unsigned int Type;
-typedef int Field;
 typedef struct {
     unsigned int count;
     Field data[];

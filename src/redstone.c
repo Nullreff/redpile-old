@@ -29,36 +29,36 @@
 #define DIRECTION(NODE) FIELD_GET(NODE, 1)
 #define STATE(NODE)     FIELD_GET(NODE, 2)
 
-#define LOWER_POWER(NODE,POWER) rup_insts_power_check(in, LOCATION(NODE), POWER)
+#define LOWER_POWER(NODE,POWER) messages_power_check(in, LOCATION(NODE), POWER)
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
-#define SEND_POWER(NODE,POWER,DELAY) queue_add(messages, RUP_POWER,  world->ticks + (DELAY), node, NODE, POWER)
-#define SEND_MOVE(NODE,DIR,DELAY)    queue_add(messages, RUP_MOVE,   world->ticks + (DELAY), node, NODE, DIR  )
-#define CMD_POWER(POWER)             queue_add(sets,     RUP_POWER,  world->ticks,           node, node, POWER)
-#define CMD_MOVE(DIR)                queue_add(sets,     RUP_MOVE,   world->ticks,           node, node, DIR  )
-#define CMD_REMOVE()                 queue_add(sets,     RUP_REMOVE, world->ticks,           node, node, 0    )
+#define SEND_POWER(NODE,POWER,DELAY) queue_add(messages, MESSAGE_POWER,  world->ticks + (DELAY), node, NODE, POWER)
+#define SEND_MOVE(NODE,DIR,DELAY)    queue_add(messages, MESSAGE_MOVE,   world->ticks + (DELAY), node, NODE, DIR  )
+#define CMD_POWER(POWER)             queue_add(sets,     MESSAGE_POWER,  world->ticks,           node, node, POWER)
+#define CMD_MOVE(DIR)                queue_add(sets,     MESSAGE_MOVE,   world->ticks,           node, node, DIR  )
+#define CMD_REMOVE()                 queue_add(sets,     MESSAGE_REMOVE, world->ticks,           node, node, 0    )
 
-#define RUP_METHOD(TYPE)\
-    static void redstone_ ## TYPE ## _update(World* world, Node* node, RupInsts* in, Queue* messages, Queue* sets)
+#define TYPE_METHOD(TYPE)\
+    static void redstone_ ## TYPE ## _update(World* world, Node* node, Messages* in, Queue* messages, Queue* sets)
 
-#define RUP_REGISTER(TYPE)\
+#define TYPE_REGISTER(TYPE)\
     case TYPE: redstone_ ## TYPE ## _update(world, node, in, &output, &sets); break
 
-RUP_METHOD(EMPTY) {}
-RUP_METHOD(AIR) {}
-RUP_METHOD(INSULATOR) {}
+TYPE_METHOD(EMPTY) {}
+TYPE_METHOD(AIR) {}
+TYPE_METHOD(INSULATOR) {}
 
-RUP_METHOD(CONDUCTOR)
+TYPE_METHOD(CONDUCTOR)
 {
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL)
     {
         CMD_MOVE(move_inst->message);
         return;
     }
 
-    unsigned int power = rup_insts_max_power(in);
+    unsigned int power = messages_max_power(in);
     CMD_POWER(power);
     if (power == 0)
         return;
@@ -80,9 +80,9 @@ RUP_METHOD(CONDUCTOR)
     }
 }
 
-RUP_METHOD(WIRE)
+TYPE_METHOD(WIRE)
 {
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -92,7 +92,7 @@ RUP_METHOD(WIRE)
     Node* above = NODE_ADJACENT(node, UP);
     bool covered = above != NULL && MATERIAL(above) != AIR && MATERIAL(above) != EMPTY;
 
-    int new_power = rup_insts_max_power(in);
+    int new_power = messages_max_power(in);
     CMD_POWER(new_power);
 
     if (new_power == 0)
@@ -152,12 +152,12 @@ RUP_METHOD(WIRE)
 #define RETRACTING 1
 #define EXTENDED 2
 #define EXTENDING 3
-RUP_METHOD(PISTON)
+TYPE_METHOD(PISTON)
 {
     Node* first = NODE_ADJACENT(node, DIRECTION(node));
     Node* second = NODE_ADJACENT(first, DIRECTION(node));
 
-    unsigned int new_power = rup_insts_max_power(in);
+    unsigned int new_power = messages_max_power(in);
 
     unsigned int state;
     if (new_power == 0)
@@ -175,7 +175,7 @@ RUP_METHOD(PISTON)
             state = EXTENDED;
     }
 
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL && state == RETRACTED)
     {
         CMD_MOVE(move_inst->message);
@@ -190,9 +190,9 @@ RUP_METHOD(PISTON)
         SEND_MOVE(second, direction_invert(DIRECTION(node)), 1);
 }
 
-RUP_METHOD(COMPARATOR)
+TYPE_METHOD(COMPARATOR)
 {
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -207,7 +207,7 @@ RUP_METHOD(COMPARATOR)
     
     for (int i = 0; i < in->size; i++)
     {
-        RupInst* inst = in->data + i;
+        Message* inst = in->data + i;
 
         // Power coming from the side
         if ((LOCATION_EQUALS(inst->source.location, right) ||
@@ -243,9 +243,9 @@ RUP_METHOD(COMPARATOR)
     SEND_POWER(found_node, new_power, 1);
 }
 
-RUP_METHOD(REPEATER)
+TYPE_METHOD(REPEATER)
 {
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -260,7 +260,7 @@ RUP_METHOD(REPEATER)
     
     for (int i = 0; i < in->size; i++)
     {
-        RupInst* inst = in->data + i;
+        Message* inst = in->data + i;
 
         // Power coming from the side
         if (inst->source.type == REPEATER &&
@@ -285,9 +285,9 @@ RUP_METHOD(REPEATER)
     SEND_POWER(found_node, MAX_POWER, STATE(node) + 1);
 }
 
-RUP_METHOD(TORCH)
+TYPE_METHOD(TORCH)
 {
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -298,7 +298,7 @@ RUP_METHOD(TORCH)
     Location loc_behind = location_move(LOCATION(node), direction_invert(DIRECTION(node)), 1);
     for (int i = 0; i < in->size; i++)
     {
-        RupInst* inst = in->data + i;
+        Message* inst = in->data + i;
 
         // Power coming from behind
         if (LOCATION_EQUALS(inst->source.location, loc_behind))
@@ -329,9 +329,9 @@ RUP_METHOD(TORCH)
         SEND_POWER(up_node, MAX_POWER, 1);
 }
 
-RUP_METHOD(SWITCH)
+TYPE_METHOD(SWITCH)
 {
-    RupInst* move_inst = rup_insts_find_move(in);
+    Message* move_inst = messages_find_move(in);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -357,9 +357,14 @@ static bool redstone_node_missing(Location location, Type* type)
     return true;
 }
 
-static RupInsts* find_input(World* world, Node* node, Queue* messages)
+static Message message_create(QueueData* data)
 {
-    QueueNode* found = queue_find_nodes(messages, node, world->ticks);
+    return (Message){{data->source.location, data->source.type}, data->type, data->message};
+}
+
+static Messages* find_input(World* world, Node* node, Queue* queue)
+{
+    QueueNode* found = queue_find_nodes(queue, node, world->ticks);
     unsigned int new_messages = 0;
     QueueNode* iter = found;
     while (iter != NULL &&
@@ -370,26 +375,26 @@ static RupInsts* find_input(World* world, Node* node, Queue* messages)
         iter = iter->next;
     }
 
-    RupInsts* found_insts = world_find_insts(world, node->location);
-    unsigned int total = (found_insts != NULL ? found_insts->size : 0) + new_messages;
+    Messages* found_messages = world_find_messages(world, node->location);
+    unsigned int total = (found_messages != NULL ? found_messages->size : 0) + new_messages;
 
-    RupInsts* insts = rup_insts_allocate(total);
+    Messages* messages = messages_allocate(total);
     if (total == 0)
-        return insts;
+        return messages;
 
     for (int i = 0; i < new_messages; i++)
     {
-        insts->data[i] = rup_inst_create(&found->data);
+        messages->data[i] = message_create(&found->data);
         found = found->next;
     }
 
-    if (found_insts != NULL)
-        rup_insts_copy(insts->data + new_messages, found_insts);
+    if (found_messages != NULL)
+        messages_copy(messages->data + new_messages, found_messages);
 
     if (world->max_inputs < total)
         world->max_inputs = total;
 
-    return insts;
+    return messages;
 }
 
 static void process_output(World* world, Node* node, Queue* output, Queue* messages_out, Queue* sets_out)
@@ -416,7 +421,7 @@ static void run_messages(World* world, Queue* messages)
     {
         assert(!LOCATION_EQUALS(message->data.target.location, message->data.source.location));
         Node* target = message->data.target.node;
-        RupQueue* queue = world_find_queue(world, message->data.target.location, message->data.tick);
+        MessageStore* queue = world_find_store(world, message->data.target.location, message->data.tick);
 
         unsigned int count = 0;
         QueueNode* iter = message;
@@ -428,14 +433,14 @@ static void run_messages(World* world, Queue* messages)
             iter = iter->next;
         }
 
-        unsigned int old_size = queue->insts->size;
-        queue->insts = rup_insts_resize(queue->insts, old_size + count);
+        unsigned int old_size = queue->messages->size;
+        queue->messages = messages_resize(queue->messages, old_size + count);
 
-        queue->insts->data[old_size] = rup_inst_create(&message->data);
+        queue->messages->data[old_size] = message_create(&message->data);
         for (int i = 1; i < count; i++)
         {
             message = message->next;
-            queue->insts->data[old_size + i] = rup_inst_create(&message->data);
+            queue->messages->data[old_size + i] = message_create(&message->data);
         }
 
         if (world->max_queued < count)
@@ -468,21 +473,21 @@ void redstone_tick(World* world, unsigned int count, LogLevel log_level)
 
         FOR_NODE_LIST(world->nodes)
         {
-            RupInsts* in = find_input(world, node, &messages);
+            Messages* in = find_input(world, node, &messages);
             Queue output = queue_empty(false, false, 0);
 
             switch (MATERIAL(node))
             {
-                RUP_REGISTER(EMPTY);
-                RUP_REGISTER(AIR);
-                RUP_REGISTER(INSULATOR);
-                RUP_REGISTER(WIRE);
-                RUP_REGISTER(CONDUCTOR);
-                RUP_REGISTER(TORCH);
-                RUP_REGISTER(PISTON);
-                RUP_REGISTER(REPEATER);
-                RUP_REGISTER(COMPARATOR);
-                RUP_REGISTER(SWITCH);
+                TYPE_REGISTER(EMPTY);
+                TYPE_REGISTER(AIR);
+                TYPE_REGISTER(INSULATOR);
+                TYPE_REGISTER(WIRE);
+                TYPE_REGISTER(CONDUCTOR);
+                TYPE_REGISTER(TORCH);
+                TYPE_REGISTER(PISTON);
+                TYPE_REGISTER(REPEATER);
+                TYPE_REGISTER(COMPARATOR);
+                TYPE_REGISTER(SWITCH);
                 default: ERROR("Encountered unknown block material");
             }
             free(in);

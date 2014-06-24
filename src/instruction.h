@@ -20,7 +20,7 @@
 #define REDPILE_INSTRUCTION_H
 
 #include "world.h"
-#include "rup.h"
+#include "message.h"
 
 #define COMMANDS_COUNT 8
 extern char* Commands[COMMANDS_COUNT];

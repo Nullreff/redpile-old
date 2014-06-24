@@ -19,7 +19,7 @@
 #ifndef REDPILE_REDSTONE_H
 #define REDPILE_REDSTONE_H
 
-#include "rup.h"
+#include "message.h"
 
 typedef enum {
     SILENT,

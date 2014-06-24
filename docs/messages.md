@@ -1,7 +1,7 @@
-Redpile Update Programming
-==========================
+Messages
+========
 
-Interface used for logic implementations.
+Interface used for passing messages.
 
 Commands
 --------
@@ -68,7 +68,7 @@ Language
 --------
 
 In order to make Redpile easier to program, a higher level language should be implemented.
-This language will be compiled down to a series of RUP commands.
+This language will be compiled down to a series of commands.
 
 * Use pattern matching on messages sent.
 * Patterns are processed in order and the first matching one is run.

@@ -38,4 +38,7 @@ typedef struct {
     unsigned int benchmark;
 } RedpileConfig;
 
+typedef unsigned int Type;
+typedef int Field;
+
 #endif
