@@ -36,7 +36,7 @@ static RupInsts* rup_insts_append(RupInsts* insts, QueueData* data)
 
 void queue_push_inst(Queue* queue, MessageType type, unsigned long long tick, Node* source, Node* target, unsigned int message)
 {
-    queue_add(queue, (QueueData){
+    queue_add(queue, (QueueData) {
         .source.location = source->location,
         .source.type = source->type,
         .target.location = target->location,
