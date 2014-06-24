@@ -43,8 +43,6 @@ static void print_help()
            "        Run in interactive mode with a prompt for reading commands\n\n"
            "    -w, --world-size\n"
            "        The number of blocks to allocate initially\n\n"
-           "    -s, --silent\n"
-           "        Don't produce any output from TICK commands.\n\n"
            "    -v, --version\n"
            "        Print the current version\n\n"
            "    -h, --help\n"
@@ -81,13 +79,11 @@ static void load_config(int argc, char* argv[])
     // Default options
     config.world_size = 1024;
     config.interactive = 0;
-    config.silent = 0;
     config.benchmark = 0;
 
     static struct option long_options[] =
     {
         {"world-size",  required_argument, NULL, 'w'},
-        {"silent",      no_argument,       NULL, 's'},
         {"interactive", no_argument,       NULL, 'i'},
         {"version",     no_argument,       NULL, 'v'},
         {"help",        no_argument,       NULL, 'h'},
@@ -97,7 +93,7 @@ static void load_config(int argc, char* argv[])
 
     while (1)
     {
-        int opt = getopt_long(argc, argv, "w:sivh", long_options, NULL);
+        int opt = getopt_long(argc, argv, "w:ivh", long_options, NULL);
         switch (opt)
         {
             case -1:
@@ -105,10 +101,6 @@ static void load_config(int argc, char* argv[])
 
             case 'w':
                 config.world_size = parse_world_size(optarg);
-                break;
-
-            case 's':
-                config.silent = 1;
                 break;
 
             case 'i':
