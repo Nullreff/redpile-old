@@ -20,13 +20,14 @@
 
 #include "../world.h"
 #include "../redstone.h"
+#include "../location.h"
 
 extern World* current_world;
 
 void command_ping(void);
 void command_status(void);
-void command_set(int x, int y, int z, char* material_str);
-void command_get(int x, int y, int z);
+void command_set(Location location, char* material_str);
+void command_get(Location location);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);
 

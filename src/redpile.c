@@ -29,6 +29,8 @@
 RedpileConfig config;
 char* prompt;
 
+int yyparse(void);
+
 static void print_version()
 {
     printf("Redpile %s\n", REDPILE_VERSION);
@@ -160,8 +162,6 @@ int read_input(char *buff, int buffsize)
     free(line);
     return buffsize;
 }
-
-int yyparse(void);
 
 int main(int argc, char* argv[])
 {

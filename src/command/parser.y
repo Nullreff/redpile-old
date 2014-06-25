@@ -25,16 +25,22 @@ int yylex(void);
 void yyerror(const char* const message);
 %}
 
+%code requires {
+    #include "../location.h"
+}
+
 %union {
-	int ival;
-	char *sval;
+	int integer;
+	char *string;
+    Location location;
 }
 
 %token LINE_BREAK
 
 /* Data */
-%token <ival> INT
-%token <sval> STRING
+%token <integer> INT
+%token <string> STRING
+%type  <location> location
 
 /* Commands */
 %token PING
@@ -54,14 +60,17 @@ line:     LINE_BREAK
         | command LINE_BREAK
 ;
 
+location: INT INT INT           { location_create($1, $2, $3); }
+;
+
 unknown: | STRING unknown
          | INT unknown
 ;
 
 command: PING                   { command_ping();                }
        | STATUS                 { command_status();              }
-       | SET INT INT INT STRING { command_set($2, $3, $4, $5);   }
-       | GET INT INT INT        { command_get($2, $3, $4);       }
+       | SET location STRING    { command_set($2, $3);           }
+       | GET location           { command_get($2);               }
        | TICK INT               { command_tick($2, LOG_NORMAL);  }
        | VTICK INT              { command_tick($2, LOG_VERBOSE); }
        | STICK INT              { command_tick($2, LOG_SILENT);  }

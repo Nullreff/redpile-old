@@ -45,7 +45,7 @@ void command_status(void)
     world_stats_print(world_get_stats(current_world));
 }
 
-void command_set(int x, int y, int z, char* material_str)
+void command_set(Location location, char* material_str)
 {
     Material material = 0;
     if (!material_parse(material_str, &material))
@@ -54,12 +54,11 @@ void command_set(int x, int y, int z, char* material_str)
         return;
     }
 
-    world_set_node(current_world, location_create(x, y, z), material);
+    world_set_node(current_world, location, material);
 }
 
-void command_get(int x, int y, int z)
+void command_get(Location location)
 {
-    Location location = location_create(x, y, z);
     Node* node = world_get_node(current_world, location);
     if (node == NULL)
         printf("(%d,%d,%d) EMPTY\n", location.x, location.y, location.z);
