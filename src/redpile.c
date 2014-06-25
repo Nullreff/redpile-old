@@ -18,8 +18,8 @@
 
 #include "redpile.h"
 #include "world.h"
-#include "instruction.h"
 #include "bench.h"
+#include "command/parser.h"
 #include "linenoise.h"
 #include <getopt.h>
 #include <signal.h>
@@ -176,30 +176,32 @@ int main(int argc, char* argv[])
         redpile_exit();
     }
 
-    if (config.interactive)
-    {
-        linenoiseSetCompletionCallback(completion_callback);
-        prompt = "> ";
-    }
-    else
-    {
-        prompt = "";
-    }
+    yyparse();
 
-    Instruction instruction;
-    while ((line = linenoise(prompt)) != NULL)
-    {
-        // Leaks memory for some reason (disabled)
-        // linenoiseHistoryAdd(line);
+    //if (config.interactive)
+    //{
+    //    linenoiseSetCompletionCallback(completion_callback);
+    //    prompt = "> ";
+    //}
+    //else
+    //{
+    //    prompt = "";
+    //}
 
-        if (line[0] == '#')
-            ; // Empty command
-        else if (instruction_parse(line, &instruction))
-            instruction_run(world, &instruction);
-        else
-            printf("Invalid Command\n");
-        free(line);
-    }
+    //Instruction instruction;
+    //while ((line = linenoise(prompt)) != NULL)
+    //{
+    //    // Leaks memory for some reason (disabled)
+    //    // linenoiseHistoryAdd(line);
+
+    //    if (line[0] == '#')
+    //        ; // Empty command
+    //    else if (instruction_parse(line, &instruction))
+    //        instruction_run(world, &instruction);
+    //    else
+    //        printf("Invalid Command\n");
+    //    free(line);
+    //}
 
     redpile_exit();
 }
