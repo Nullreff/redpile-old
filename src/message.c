@@ -74,82 +74,82 @@ Message* messages_find_move(Messages* messages)
 
 MessageStore* message_store_allocate(unsigned long long tick)
 {
-    MessageStore* queue = malloc(sizeof(MessageStore));
-    CHECK_OOM(queue);
-    queue->messages = messages_allocate(0);
-    queue->tick = tick;
-    queue->next = NULL;
-    return queue;
+    MessageStore* store = malloc(sizeof(MessageStore));
+    CHECK_OOM(store);
+    store->messages = messages_allocate(0);
+    store->tick = tick;
+    store->next = NULL;
+    return store;
 }
 
-static void message_store_free_one(MessageStore* queue)
+static void message_store_free_one(MessageStore* store)
 {
-    free(queue->messages);
-    free(queue);
+    free(store->messages);
+    free(store);
 }
 
-void message_store_free(MessageStore* queue)
+void message_store_free(MessageStore* store)
 {
-    while (queue != NULL)
+    while (store != NULL)
     {
-        MessageStore* temp = queue->next;
-        message_store_free_one(queue);
-        queue = temp;
+        MessageStore* temp = store->next;
+        message_store_free_one(store);
+        store = temp;
     }
 }
 
-MessageStore* message_store_find(MessageStore* queue, unsigned long long tick)
+MessageStore* message_store_find(MessageStore* store, unsigned long long tick)
 {
-    for (;queue != NULL; queue = queue->next)
+    for (;store != NULL; store = store->next)
     {
-        if (queue->tick == tick)
-            return queue;
+        if (store->tick == tick)
+            return store;
     }
 
     return NULL;
 }
 
-Messages* message_store_find_instructions(MessageStore* queue, unsigned long long tick)
+Messages* message_store_find_instructions(MessageStore* store, unsigned long long tick)
 {
-    MessageStore* found_queue = message_store_find(queue, tick);
-    return found_queue != NULL ? found_queue->messages : NULL;
+    MessageStore* found_store = message_store_find(store, tick);
+    return found_store != NULL ? found_store->messages : NULL;
 }
 
-// Discard any queues that are older than the current tick
-MessageStore* message_store_discard_old(MessageStore* queue, unsigned long long current_tick)
+// Discard any stores that are older than the current tick
+MessageStore* message_store_discard_old(MessageStore* store, unsigned long long current_tick)
 {
-    MessageStore* return_queue = queue;
+    MessageStore* return_store = store;
 
     // Remove items at the head of the list
     while (true)
     {
-        if (queue == NULL)
+        if (store == NULL)
             return NULL;
 
-        if (queue->tick >= current_tick)
+        if (store->tick >= current_tick)
             break;
 
-        return_queue = queue->next;
-        message_store_free_one(queue);
-        queue = return_queue;
+        return_store = store->next;
+        message_store_free_one(store);
+        store = return_store;
     }
 
     // Remove items further in
-    while (queue->next != NULL)
+    while (store->next != NULL)
     {
-        if (queue->next->tick >= current_tick)
+        if (store->next->tick >= current_tick)
         {
-            queue = queue->next;
+            store = store->next;
         }
         else
         {
-            MessageStore* temp = queue->next->next;
-            message_store_free_one(queue->next);
-            queue->next = temp;
+            MessageStore* temp = store->next->next;
+            message_store_free_one(store->next);
+            store->next = temp;
         }
     }
 
-    return return_queue;
+    return return_store;
 }
 
 void message_type_print(MessageType type, unsigned int message)

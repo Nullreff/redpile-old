@@ -57,10 +57,10 @@ bool messages_power_check(Messages* insts, Location loc, unsigned int power);
 Message* messages_find_move(Messages* insts);
 
 MessageStore* message_store_allocate(unsigned long long tick);
-void message_store_free(MessageStore* queue);
-Messages* message_store_find_instructions(MessageStore* queue, unsigned long long tick);
-MessageStore* message_store_find(MessageStore* queue, unsigned long long tick);
-MessageStore* message_store_discard_old(MessageStore* queue, unsigned long long current_tick);
+void message_store_free(MessageStore* store);
+Messages* message_store_find_instructions(MessageStore* store, unsigned long long tick);
+MessageStore* message_store_find(MessageStore* store, unsigned long long tick);
+MessageStore* message_store_discard_old(MessageStore* store, unsigned long long current_tick);
 
 void message_type_print(MessageType type, unsigned int message);
 

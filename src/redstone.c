@@ -401,12 +401,14 @@ static void process_output(World* world, Node* node, Queue* output, Queue* messa
 {
     FOR_QUEUE(queue_node, output)
     {
-        if (queue_node->data.tick == world->ticks && !queue_contains(messages_out, queue_node))
+        QueueData* data = &queue_node->data;
+
+        if (data->tick == world->ticks && !queue_contains(messages_out, queue_node))
         {
-            assert(!LOCATION_EQUALS(queue_node->data.target.location, queue_node->data.source.location));
-            queue_remove_source(messages_out, queue_node->data.target.location);
-            queue_remove_source(sets_out, queue_node->data.target.location);
-            node_list_move_after(world->nodes, node, queue_node->data.target.node);
+            assert(!LOCATION_EQUALS(data->target.location, data->source.location));
+            queue_remove_source(messages_out, data->target.location);
+            queue_remove_source(sets_out, data->target.location);
+            node_list_move_after(world->nodes, node, data->target.node);
         }
     }
 
@@ -415,32 +417,34 @@ static void process_output(World* world, Node* node, Queue* output, Queue* messa
         world->max_outputs = count;
 }
 
-static void run_messages(World* world, Queue* messages)
+static void run_messages(World* world, Queue* queue)
 {
-    FOR_QUEUE(message, messages)
+    FOR_QUEUE(queue_node, queue)
     {
-        assert(!LOCATION_EQUALS(message->data.target.location, message->data.source.location));
-        Node* target = message->data.target.node;
-        MessageStore* queue = node_find_store(message->data.target.node, message->data.tick);
+        QueueData* data = &queue_node->data;
+
+        assert(!LOCATION_EQUALS(data->target.location, data->source.location));
+        Node* target = data->target.node;
+        MessageStore* store = node_find_store(data->target.node, data->tick);
 
         unsigned int count = 0;
-        QueueNode* iter = message;
+        QueueNode* iter = queue_node;
         while (iter != NULL &&
-               iter->data.tick == queue->tick &&
+               iter->data.tick == store->tick &&
                iter->data.target.node == target)
         {
             count++;
             iter = iter->next;
         }
 
-        unsigned int old_size = queue->messages->size;
-        queue->messages = messages_resize(queue->messages, old_size + count);
+        unsigned int old_size = store->messages->size;
+        store->messages = messages_resize(store->messages, old_size + count);
 
-        queue->messages->data[old_size] = message_create(&message->data);
+        store->messages->data[old_size] = message_create(data);
         for (int i = 1; i < count; i++)
         {
-            message = message->next;
-            queue->messages->data[old_size + i] = message_create(&message->data);
+            queue_node = queue_node->next;
+            store->messages->data[old_size + i] = message_create(data);
         }
 
         if (world->max_queued < count)
