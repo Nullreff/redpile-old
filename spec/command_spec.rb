@@ -32,36 +32,40 @@ describe 'Commands' do
     end
   end
 
+  it 'errors on an unknown command' do
+    run('INVALID').should =~ /^Unknown command 'INVALID'$/
+  end
+
   it 'does not execute a commented out line' do
     run('# Comment goes here').should == "\n"
   end
 
-  it 'error if given an incorrect material' do
-    run('SET 0 0 0 INVALID').should =~ /^Invalid Command$/
+  it 'error if given an incorrect type' do
+    run('SET 0 0 0 INVALID').should =~ /^Unknown type: 'INVALID'$/
   end
 
   it 'errors if given an incorrect direction' do
-    run('SET 0 0 0 TORCH INVALID').should =~ /^Invalid Command$/
+    run('SET 0 0 0 TORCH INVALID').should =~ /^Unknown direction: 'INVALID'$/
   end
 
   it 'errors with a negative state' do
-    run('SET 0 0 0 REPEATER NORTH -1').should =~ /^Invalid Command$/
+    run('SET 0 0 0 REPEATER NORTH -1').should =~ /^State must be non-negative$/
   end
 
   it 'errors with a state greater than 3' do
-    run('SET 0 0 0 REPEATER NORTH 4').should =~ /^Invalid Command$/
+    run('SET 0 0 0 REPEATER NORTH 4').should =~ /^State must be less than three$/
   end
 
   it 'runs multiple ticks' do
     run('TICK 4', 'STATUS').should =~ /^ticks: 4$/
   end
 
-  it 'does not run negative ticks' do
-    run('TICK -2', 'STATUS').should =~ /^ticks: 0$/
+  it 'errors for negative ticks' do
+    run('TICK -2').should =~ /^Tick count must be greater than zero$/
   end
 
   it 'errors for non numerical ticks' do
-    run('TICK abc', 'STATUS').should =~ /^Invalid Command$/
+    run('TICK abc').should =~ /^Tick count must be numeric$/
   end
 
   it 'adds a block' do
