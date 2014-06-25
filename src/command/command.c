@@ -31,9 +31,11 @@ void command_status(void)
     world_stats_print(world_get_stats(current_world));
 }
 
-void command_set(Location location, Type type)
+void command_set(Location location, Type type, SetArgs args)
 {
-    world_set_node(current_world, location, type);
+    Node* node = world_set_node(current_world, location, type);
+    if (node != NULL)
+        FIELD_SET(node, 1, args.direction);
 }
 
 void command_get(Location location)

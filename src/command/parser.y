@@ -19,14 +19,15 @@
 %{
 #include <ctype.h>
 #include "parser.h"
-#include "command.h"
 
 int yylex(void);
 void yyerror(const char* const message);
 bool type_parse(char* string, Type* type);
+bool direction_parse(char* string, Direction* dir);
 %}
 
 %code requires {
+    #include "command.h"
     #include "../location.h"
     #include "../node.h"
 }
@@ -36,6 +37,8 @@ bool type_parse(char* string, Type* type);
 	char *string;
     Location location;
     Type type;
+    Direction direction;
+    SetArgs set_args;
 }
 
 %token LINE_BREAK
@@ -46,6 +49,9 @@ bool type_parse(char* string, Type* type);
 %token <string> STRING
 %type  <location> location
 %type  <type> type
+%type  <direction> direction
+%type  <set_args> set_args
+%type  <integer> tick_args
 
 /* Commands */
 %token PING
@@ -58,33 +64,44 @@ bool type_parse(char* string, Type* type);
 %token MESSAGES
 
 %%
-input:  | input line
+input:  | line input
 ;
 
 line:     LINE_BREAK
         | command LINE_BREAK
 ;
 
-location: INT INT INT           { location_create($1, $2, $3); }
+location: INT INT INT { $$ = location_create($1, $2, $3); }
 ;
 
-type: STRING                    { Type type; if (!type_parse($1, &type)) YYABORT; return type; }
+type: STRING { Type type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
+;
+
+direction: STRING { Direction dir; if (!direction_parse($1, &dir)) YYABORT; $$ = dir; }
 ;
 
 unknown: | STRING unknown
          | INT unknown
 ;
 
-command: PING                   { command_ping();                }
-       | STATUS                 { command_status();              }
-       | SET location type      { command_set($2, $3);           }
-       | GET location           { command_get($2);               }
-       | TICK INT               { command_tick($2, LOG_NORMAL);  }
-       | VTICK INT              { command_tick($2, LOG_VERBOSE); }
-       | STICK INT              { command_tick($2, LOG_SILENT);  }
-       | MESSAGES               { command_messages();            }
+set_args: /* empty */ { $$ = (SetArgs){0};  }
+        | direction   { $$ = (SetArgs){$1}; }
+;
+
+tick_args: /* empty */ { $$ = 1; }
+         | INT         { $$ = $1; }
+;
+
+command: PING                        { command_ping();                }
+       | STATUS                      { command_status();              }
+       | SET location type set_args  { command_set($2, $3, $4);       }
+       | GET location                { command_get($2);               }
+       | TICK tick_args              { command_tick($2, LOG_NORMAL);  }
+       | VTICK tick_args             { command_tick($2, LOG_VERBOSE); }
+       | STICK tick_args             { command_tick($2, LOG_SILENT);  }
+       | MESSAGES                    { command_messages();            }
        | COMMENT unknown
-       | STRING unknown         { command_unknown($1);           }
+       | STRING unknown              { command_unknown($1);           }
 ;
 %%
 
@@ -106,5 +123,21 @@ bool type_parse(char* string, Type* type)
 
     fprintf(stderr, "Unknown type: '%s'\n", string);
     return false;
+}
+
+bool direction_parse(char* string, Direction* dir)
+{
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
+    {
+        if (strcasecmp(string, Directions[i]) == 0)
+        {
+            *dir = i;
+            return true;
+        }
+    }
+
+    fprintf(stderr, "Unknown direction: '%s'\n", string);
+    return false;
+
 }
 

@@ -155,6 +155,7 @@ int read_input(char *buff, int buffsize)
     if (size + 2 > buffsize)
         fprintf(stderr, "Error: Line too long, truncating to %i\n", buffsize);
 
+    memset(buff, '\0', buffsize);
     memcpy(buff, line, size);
     buff[size]     = '\n';
     buff[size + 1] = '\0';
