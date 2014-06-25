@@ -23,12 +23,14 @@
 
 extern World* current_world;
 
-void command_error(const char* message);
 void command_ping(void);
 void command_status(void);
 void command_set(int x, int y, int z, char* material_str);
 void command_get(int x, int y, int z);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);
+
+void command_error(const char* message);
+void command_unknown(const char* command);
 
 #endif

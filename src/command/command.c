@@ -35,11 +35,6 @@ static bool material_parse(char* material, Material* result)
     return false;
 }
 
-void command_error(const char* message)
-{
-    fprintf(stderr, "Error: %s\n", message);
-}
-
 void command_ping(void)
 {
     printf("PONG\n");
@@ -55,7 +50,7 @@ void command_set(int x, int y, int z, char* material_str)
     Material material = 0;
     if (!material_parse(material_str, &material))
     {
-        printf("Invalid material: %s\n", material_str);
+        fprintf(stderr, "Invalid material: %s\n", material_str);
         return;
     }
 
@@ -81,5 +76,15 @@ void command_tick(int count, LogLevel log_level)
 void command_messages(void)
 {
     world_print_messages(current_world);
+}
+
+void command_error(const char* message)
+{
+    fprintf(stderr, "%s\n", message);
+}
+
+void command_unknown(const char* command)
+{
+    fprintf(stderr, "Unknown command '%s'\n", command);
 }
 
