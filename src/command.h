@@ -1,4 +1,4 @@
-/* command/command.h - Command line instruction parser and dispatcher
+/* command.h - Command line instruction dispatcher
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -18,9 +18,9 @@
 #ifndef REDPILE_COMMAND_H
 #define REDPILE_COMMAND_H
 
-#include "../world.h"
-#include "../redstone.h"
-#include "../location.h"
+#include "world.h"
+#include "redstone.h"
+#include "location.h"
 
 extern World* current_world;
 

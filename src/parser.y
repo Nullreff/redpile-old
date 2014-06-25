@@ -1,4 +1,4 @@
-/* command/parser.y - Command line instruction parser and dispatcher
+/* parser.y - Command line instruction parser
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -30,8 +30,8 @@ bool check_tick(int tick);
 
 %code requires {
     #include "command.h"
-    #include "../location.h"
-    #include "../node.h"
+    #include "location.h"
+    #include "node.h"
 }
 
 %union {

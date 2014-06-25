@@ -17,8 +17,8 @@
  */
 
 #include "redpile.h"
-#include "command/parser.h"
-#include "command/command.h"
+#include "parser.h"
+#include "command.h"
 #include "world.h"
 #include "bench.h"
 #include "linenoise.h"

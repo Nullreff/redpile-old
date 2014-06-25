@@ -1,4 +1,4 @@
-/* command/lexer.l - Command line instruction parser and dispatcher
+/* lexer.l - Command line instruction lexer
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 

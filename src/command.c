@@ -1,4 +1,4 @@
-/* command/command.c - Command line instruction parser and dispatcher
+/* command.c - Command line instruction dispatcher
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
