@@ -17,8 +17,13 @@
 
 %{
 #include <ctype.h>
-#include "instruction.tab.h"
+#include "parser.h"
 #include "command.h"
+
+void yyerror(const char* message)
+{
+    command_error(message);
+}
 %}
 
 %union {
@@ -41,7 +46,7 @@
 %token MESSAGES
 
 %%
-input:    line
+input:    /* blank */
         | input line
 ;
 
@@ -59,8 +64,4 @@ command: PING                   { command_ping();                }
        | MESSAGES               { command_messages();            }
 ;
 %%
-yyerror(const char* const message)
-{
-    command_error(message);
-}
 

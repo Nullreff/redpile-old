@@ -18,8 +18,8 @@
 #ifndef REDPILE_COMMAND_H
 #define REDPILE_COMMAND_H
 
-#include "world.h"
-#include "redstone.h"
+#include "../world.h"
+#include "../redstone.h"
 
 extern World* current_world;
 

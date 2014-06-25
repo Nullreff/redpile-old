@@ -16,8 +16,6 @@
  */
 
 #include "command.h"
-#include "world.h"
-#include "node.h"
 #include <stdlib.h>
 #include <stdio.h>
 

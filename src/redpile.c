@@ -17,16 +17,16 @@
  */
 
 #include "redpile.h"
+#include "command/parser.h"
+#include "command/command.h"
 #include "world.h"
 #include "bench.h"
-#include "command/parser.h"
 #include "linenoise.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
 
 RedpileConfig config;
-World* world;
 char* line;
 
 static void print_version()
@@ -127,8 +127,8 @@ static void load_config(int argc, char* argv[])
 
 static void redpile_exit(void)
 {
-    if (world != NULL)
-        world_free(world);
+    if (current_world != NULL)
+        world_free(current_world);
 
     if (line != NULL)
         free(line);
@@ -143,36 +143,17 @@ static void signal_callback(int signal)
         redpile_exit();
 }
 
-static void completion_callback(const char* buffer, linenoiseCompletions* completions)
-{
-    for (int i = 0; i < COMMANDS_COUNT; i++)
-    {
-        bool found = true;
-        for (int j = 0; buffer[j] != '\0'; j++)
-        {
-            if (toupper(buffer[j]) != Commands[i][j])
-            {
-                found = false;
-                break;
-            }
-        }
-
-        if (found)
-            linenoiseAddCompletion(completions, Commands[i]);
-    }
-}
-
 int main(int argc, char* argv[])
 {
     char* prompt;
 
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    world = world_allocate(config.world_size);
+    current_world = world_allocate(config.world_size);
 
     if (config.benchmark)
     {
-        run_benchmarks(world, config.benchmark);
+        run_benchmarks(current_world, config.benchmark);
         redpile_exit();
     }
 

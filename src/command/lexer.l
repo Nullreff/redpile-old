@@ -17,8 +17,7 @@
 
 %{
 #include <stdio.h>
-#include "instruction.tab.h"
-#define YY_INPUT(buff, res, buffsize) (res = my_abstractread(buff, buffsize))
+#include "parser.h"
 %}
 %%
 [ \t\n]         ;
