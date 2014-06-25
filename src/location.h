@@ -26,7 +26,6 @@
 #define MAGIC_HASH_NUMBER 101
 
 #define DIRECTIONS_COUNT 6
-#define DIRECTION_DEFAULT NORTH
 char* Directions[DIRECTIONS_COUNT];
 typedef enum {
     NORTH,

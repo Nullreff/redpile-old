@@ -24,7 +24,6 @@
 #include "message.h"
 
 #define MATERIALS_COUNT 10
-#define MATERIAL_DEFAULT EMPTY
 extern char* Materials[MATERIALS_COUNT];
 extern unsigned int FieldCounts[MATERIALS_COUNT];
 

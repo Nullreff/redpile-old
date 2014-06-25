@@ -102,8 +102,8 @@ bool instruction_parse(char* instruction, Instruction* result)
     Coord x = 0;
     Coord y = 0;
     Coord z = 0;
-    Material material = MATERIAL_DEFAULT;
-    Direction direction = DIRECTION_DEFAULT;
+    Material material = 0;
+    Direction direction = 0;
     int state = 0;
 
     PARSE_STRING(command);
