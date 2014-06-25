@@ -25,6 +25,7 @@
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
+#include <unistd.h>
 
 RedpileConfig config;
 char* prompt;
@@ -144,21 +145,27 @@ static void signal_callback(int signal)
 
 int read_input(char *buff, int buffsize)
 {
+    if (!config.interactive)
+        return read(STDIN_FILENO, buff, buffsize);
+
     char* line = linenoise("> ");
     if (line == NULL)
         return 0;
 
     // Linenoise has a buffer size of 4096
     // Flex has a default buffer size of at least 8192 on 32 bit
-    // TODO: Patch linenoise to read in buffsize
     int size = strlen(line);
     if (size + 2 > buffsize)
         fprintf(stderr, "Error: Line too long, truncating to %i\n", buffsize);
 
+    // Flex won't generate output until we fill it's buffer
+    // Since this is interactive mode, we just zero it out
+    // and fill it with whatever we read in.
     memset(buff, '\0', buffsize);
     memcpy(buff, line, size);
+
+    // Linenoise strips out the line return
     buff[size]     = '\n';
-    buff[size + 1] = '\0';
 
     free(line);
     return buffsize;

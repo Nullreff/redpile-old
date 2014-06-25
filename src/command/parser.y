@@ -66,7 +66,7 @@ bool check_tick(int tick);
 %token MESSAGES
 
 %%
-input:  | line input
+input:  | input line
 ;
 
 line:     LINE_BREAK
