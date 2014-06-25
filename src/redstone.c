@@ -456,7 +456,7 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
 {
     FOR_QUEUE(set, sets)
     {
-        if (log_level != SILENT)
+        if (log_level != LOG_SILENT)
             queue_data_print(&set->data, message_type_print);
         world_run_data(world, &set->data);
     }
@@ -468,7 +468,7 @@ void redstone_tick(World* world, unsigned int count, LogLevel log_level)
 
     for (unsigned int i = 0; i < count; i++)
     {
-        if (log_level == VERBOSE)
+        if (log_level == LOG_VERBOSE)
             printf("--- Tick %llu ---\n", world->ticks);
 
         unsigned int loops = 0;
@@ -506,7 +506,7 @@ void redstone_tick(World* world, unsigned int count, LogLevel log_level)
             }
         }
 
-        if (log_level == VERBOSE)
+        if (log_level == LOG_VERBOSE)
         {
             printf("Messages:\n");
             FOR_QUEUE(message, &messages)

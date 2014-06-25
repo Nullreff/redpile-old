@@ -181,9 +181,9 @@ void instruction_run(World* world, Instruction* inst)
         case STICK:
             if (inst->values[0] > 0)
                 redstone_tick(world, inst->values[0],
-                    inst->cmd == VTICK ? VERBOSE :
-                    inst->cmd == STICK ? SILENT :
-                    NORMAL);
+                    inst->cmd == VTICK ? LOG_VERBOSE :
+                    inst->cmd == STICK ? LOG_SILENT :
+                    LOG_NORMAL);
             break;
 
         case MESSAGES:

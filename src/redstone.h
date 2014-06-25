@@ -22,9 +22,9 @@
 #include "message.h"
 
 typedef enum {
-    SILENT,
-    NORMAL,
-    VERBOSE
+    LOG_SILENT,
+    LOG_NORMAL,
+    LOG_VERBOSE
 } LogLevel;
 
 void redstone_tick(World* world, unsigned int count, LogLevel log_level);
