@@ -20,19 +20,17 @@
 #include <ctype.h>
 #include "parser.h"
 #include "command.h"
-#define YYDEBUG 1
 
 int yylex(void);
-void yyerror(const char* const message)
-{
-    command_error(message);
-}
+void yyerror(const char* const message);
 %}
 
 %union {
 	int ival;
 	char *sval;
 }
+
+%token LINE_BREAK
 
 /* Data */
 %token <ival> INT
@@ -49,12 +47,11 @@ void yyerror(const char* const message)
 %token MESSAGES
 
 %%
-input:    /* blank */
-        | input line
+input:  | input line
 ;
 
-line:     '\n'
-        | command '\n'
+line:     LINE_BREAK
+        | command LINE_BREAK
 ;
 
 command: PING                   { command_ping();                }
@@ -67,4 +64,9 @@ command: PING                   { command_ping();                }
        | MESSAGES               { command_messages();            }
 ;
 %%
+
+void yyerror(const char* const message)
+{
+    command_error(message);
+}
 

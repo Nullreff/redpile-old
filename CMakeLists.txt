@@ -4,20 +4,18 @@ PROJECT(redpile)
 
 FIND_PACKAGE(FLEX REQUIRED)
 FIND_PACKAGE(BISON REQUIRED)
+ADD_DEFINITIONS(-std=gnu99 -Wall)
 
-BISON_TARGET(CommandParser src/command/parser.y src/command/parser.c)
-FLEX_TARGET(CommandScanner src/command/lexer.l  src/command/lexer.c)
+FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src/command)
+BISON_TARGET(CommandParser src/command/parser.y ${CMAKE_CURRENT_BINARY_DIR}/src/command/parser.c)
+FLEX_TARGET(CommandScanner src/command/lexer.l  ${CMAKE_CURRENT_BINARY_DIR}/src/command/lexer.c)
 ADD_FLEX_BISON_DEPENDENCY(CommandScanner CommandParser)
 
-FILE(GLOB SOURCE_FILES src/*.c src/command/*.c)
+INCLUDE_DIRECTORIES(src/command)
 INCLUDE_DIRECTORIES(deps/linenoise)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/src)
 
-ADD_DEFINITIONS(-std=gnu99 -Wall)
-ADD_EXECUTABLE(redpile
-    ${SOURCE_FILES}
-    ${BISON_CommandParser_OUTPUTS}
-    ${FLEX_CommandScanner_OUTPUTS}
-    deps/linenoise/linenoise.c
-)
+FILE(GLOB_RECURSE SOURCE_FILES src/*.c src/command/*.c deps/linenoise/linenoise.c)
+ADD_EXECUTABLE(redpile ${SOURCE_FILES} ${FLEX_CommandScanner_OUTPUTS} ${BISON_CommandParser_OUTPUTS})
 TARGET_LINK_LIBRARIES(redpile ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
 

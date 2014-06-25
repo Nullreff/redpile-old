@@ -35,14 +35,14 @@ static bool material_parse(char* material, Material* result)
     return false;
 }
 
-void command_error(const char* const message)
+void command_error(const char* message)
 {
-    printf("Error: %s\n", message);
+    fprintf(stderr, "Error: %s\n", message);
 }
 
 void command_ping(void)
 {
-    printf("PONG");
+    printf("PONG\n");
 }
 
 void command_status(void)
@@ -53,7 +53,7 @@ void command_status(void)
 void command_set(int x, int y, int z, char* material_str)
 {
     Material material = 0;
-    if (material_parse(material_str, &material))
+    if (!material_parse(material_str, &material))
     {
         printf("Invalid material: %s\n", material_str);
         return;
@@ -67,7 +67,7 @@ void command_get(int x, int y, int z)
     Location location = location_create(x, y, z);
     Node* node = world_get_node(current_world, location);
     if (node == NULL)
-        printf("(%d,%d,%d) EMPTY", location.x, location.y, location.z);
+        printf("(%d,%d,%d) EMPTY\n", location.x, location.y, location.z);
     else
         node_print(node);
 }

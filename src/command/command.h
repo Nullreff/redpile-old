@@ -23,7 +23,7 @@
 
 extern World* current_world;
 
-void command_error(const char* const message);
+void command_error(const char* message);
 void command_ping(void);
 void command_status(void);
 void command_set(int x, int y, int z, char* material_str);

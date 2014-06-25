@@ -146,13 +146,19 @@ int read_input(char *buff, int buffsize)
     if (line == NULL)
         return EOF;
 
+    // Linenoise has a buffer size of 4096
+    // Flex has a default buffer size of at least 8192 on 32 bit
+    // TODO: Patch linenoise to read in buffsize
     int size = strlen(line);
-    if (size > buffsize)
-        printf("Line too long\n");
+    if (size + 2 > buffsize)
+        fprintf(stderr, "Error: Line too long, truncating to %i\n", buffsize);
 
     memcpy(buff, line, size);
+    buff[size]     = '\n';
+    buff[size + 1] = '\0';
+
     free(line);
-    return size;
+    return buffsize;
 }
 
 int yyparse(void);
@@ -169,7 +175,12 @@ int main(int argc, char* argv[])
         redpile_exit();
     }
 
-    yyparse();
+    int result;
+    do
+    {
+        result = yyparse();
+    } while (result != 0);
+
     redpile_exit();
 }
 

@@ -25,15 +25,16 @@ extern int read_input(char *buff, int buffsize);
 %option nounput
 %option noinput
 %%
-[ \t\n]         ;
-(?i:ping)       { return PING;     }
-(?i:status)     { return STATUS;   }
-(?i:set)        { return SET;      }
-(?i:get)        { return GET;      }
-(?i:tick)       { return TICK;     }
-(?i:vtick)      { return VTICK;    }
-(?i:stick)      { return STICK;    }
-(?i:messages)   { return MESSAGES; }
+[ \t]           ;
+\n              { return LINE_BREAK; }
+(?i:ping)       { return PING;       }
+(?i:status)     { return STATUS;     }
+(?i:set)        { return SET;        }
+(?i:get)        { return GET;        }
+(?i:tick)       { return TICK;       }
+(?i:vtick)      { return VTICK;      }
+(?i:stick)      { return STICK;      }
+(?i:messages)   { return MESSAGES;   }
 (-?)[0-9]+      { yylval.ival = strtol(yytext, NULL, 10); return INT;    }
 [a-zA-Z0-9]+    { yylval.sval = strdup(yytext);           return STRING; }
 %%
