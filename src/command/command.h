@@ -26,6 +26,7 @@ extern World* current_world;
 
 typedef struct {
     Direction direction;
+    unsigned int state;
 } SetArgs;
 
 void command_ping(void);

@@ -35,7 +35,10 @@ void command_set(Location location, Type type, SetArgs args)
 {
     Node* node = world_set_node(current_world, location, type);
     if (node != NULL)
+    {
         FIELD_SET(node, 1, args.direction);
+        FIELD_SET(node, 2, args.state);
+    }
 }
 
 void command_get(Location location)

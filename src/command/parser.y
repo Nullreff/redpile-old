@@ -24,6 +24,8 @@ int yylex(void);
 void yyerror(const char* const message);
 bool type_parse(char* string, Type* type);
 bool direction_parse(char* string, Direction* dir);
+bool check_state(int state);
+bool check_tick(int tick);
 %}
 
 %code requires {
@@ -84,12 +86,14 @@ anything: | STRING anything
           | INT anything
 ;
 
-set_args: /* empty */ { $$ = (SetArgs){0};  }
-        | direction   { $$ = (SetArgs){$1}; }
+set_args: /* empty */   { $$ = (SetArgs){0, 0};  }
+        | direction     { $$ = (SetArgs){$1, 0}; }
+        | direction INT { if (!check_state($2)) YYABORT; $$ = (SetArgs){$1, $2}; }
 ;
 
 tick_args: /* empty */ { $$ = 1; }
-         | INT         { $$ = $1; }
+         | INT         { if (!check_tick($1)) YYABORT; $$ = $1; }
+         | STRING      { fprintf(stderr, "Tick count must be numeric\n"); YYABORT; }
 ;
 
 command: PING                        { command_ping();                }
@@ -138,6 +142,32 @@ bool direction_parse(char* string, Direction* dir)
 
     fprintf(stderr, "Unknown direction: '%s'\n", string);
     return false;
+}
 
+bool check_state(int state)
+{
+    if (state < 0)
+    {
+        fprintf(stderr, "State must be non-negative\n");
+        return false;
+    }
+
+    if (state > 3)
+    {
+        fprintf(stderr, "State must be less than three\n");
+        return false;
+    }
+    return true;
+}
+
+bool check_tick(int tick)
+{
+    if (tick < 0)
+    {
+        fprintf(stderr, "Tick count must be greater than zero\n");
+        return false;
+    }
+
+    return true;
 }
 
