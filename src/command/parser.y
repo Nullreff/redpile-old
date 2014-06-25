@@ -15,12 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+%error-verbose
 %{
 #include <ctype.h>
 #include "parser.h"
 #include "command.h"
+#define YYDEBUG 1
 
-void yyerror(const char* message)
+int yylex(void);
+void yyerror(const char* const message)
 {
     command_error(message);
 }

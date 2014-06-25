@@ -27,7 +27,7 @@
 #include <ctype.h>
 
 RedpileConfig config;
-char* line;
+char* prompt;
 
 static void print_version()
 {
@@ -130,9 +130,6 @@ static void redpile_exit(void)
     if (current_world != NULL)
         world_free(current_world);
 
-    if (line != NULL)
-        free(line);
-
     printf("\n");
     exit(EXIT_SUCCESS);
 }
@@ -143,10 +140,25 @@ static void signal_callback(int signal)
         redpile_exit();
 }
 
+int read_input(char *buff, int buffsize)
+{
+    char* line = linenoise("> ");
+    if (line == NULL)
+        return EOF;
+
+    int size = strlen(line);
+    if (size > buffsize)
+        printf("Line too long\n");
+
+    memcpy(buff, line, size);
+    free(line);
+    return size;
+}
+
+int yyparse(void);
+
 int main(int argc, char* argv[])
 {
-    char* prompt;
-
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
     current_world = world_allocate(config.world_size);
@@ -158,32 +170,6 @@ int main(int argc, char* argv[])
     }
 
     yyparse();
-
-    //if (config.interactive)
-    //{
-    //    linenoiseSetCompletionCallback(completion_callback);
-    //    prompt = "> ";
-    //}
-    //else
-    //{
-    //    prompt = "";
-    //}
-
-    //Instruction instruction;
-    //while ((line = linenoise(prompt)) != NULL)
-    //{
-    //    // Leaks memory for some reason (disabled)
-    //    // linenoiseHistoryAdd(line);
-
-    //    if (line[0] == '#')
-    //        ; // Empty command
-    //    else if (instruction_parse(line, &instruction))
-    //        instruction_run(world, &instruction);
-    //    else
-    //        printf("Invalid Command\n");
-    //    free(line);
-    //}
-
     redpile_exit();
 }
 
