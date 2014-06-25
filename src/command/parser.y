@@ -36,6 +36,7 @@ void yyerror(const char* const message);
 }
 
 %token LINE_BREAK
+%token COMMENT
 
 /* Data */
 %token <integer> INT
@@ -75,6 +76,7 @@ command: PING                   { command_ping();                }
        | VTICK INT              { command_tick($2, LOG_VERBOSE); }
        | STICK INT              { command_tick($2, LOG_SILENT);  }
        | MESSAGES               { command_messages();            }
+       | COMMENT unknown
        | STRING unknown         { command_unknown($1);           }
 ;
 %%

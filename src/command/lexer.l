@@ -27,6 +27,7 @@ extern int read_input(char *buff, int buffsize);
 %%
 [ \t\0]         ;
 \n              { return LINE_BREAK; }
+#               { return COMMENT;    }
 (?i:ping)       { return PING;       }
 (?i:status)     { return STATUS;     }
 (?i:set)        { return SET;        }
