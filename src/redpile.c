@@ -146,7 +146,7 @@ int read_input(char *buff, int buffsize)
 {
     char* line = linenoise("> ");
     if (line == NULL)
-        return EOF;
+        return 0;
 
     // Linenoise has a buffer size of 4096
     // Flex has a default buffer size of at least 8192 on 32 bit
