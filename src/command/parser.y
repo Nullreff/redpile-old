@@ -23,16 +23,19 @@
 
 int yylex(void);
 void yyerror(const char* const message);
+bool type_parse(char* string, Type* type);
 %}
 
 %code requires {
     #include "../location.h"
+    #include "../node.h"
 }
 
 %union {
 	int integer;
 	char *string;
     Location location;
+    Type type;
 }
 
 %token LINE_BREAK
@@ -42,6 +45,7 @@ void yyerror(const char* const message);
 %token <integer> INT
 %token <string> STRING
 %type  <location> location
+%type  <type> type
 
 /* Commands */
 %token PING
@@ -64,13 +68,16 @@ line:     LINE_BREAK
 location: INT INT INT           { location_create($1, $2, $3); }
 ;
 
+type: STRING                    { Type type; if (!type_parse($1, &type)) YYABORT; return type; }
+;
+
 unknown: | STRING unknown
          | INT unknown
 ;
 
 command: PING                   { command_ping();                }
        | STATUS                 { command_status();              }
-       | SET location STRING    { command_set($2, $3);           }
+       | SET location type      { command_set($2, $3);           }
        | GET location           { command_get($2);               }
        | TICK INT               { command_tick($2, LOG_NORMAL);  }
        | VTICK INT              { command_tick($2, LOG_VERBOSE); }
@@ -84,5 +91,20 @@ command: PING                   { command_ping();                }
 void yyerror(const char* const message)
 {
     command_error(message);
+}
+
+bool type_parse(char* string, Type* type)
+{
+    for (int i = 0; i < MATERIALS_COUNT; i++)
+    {
+        if (strcasecmp(string, Materials[i]) == 0)
+        {
+            *type = i;
+            return true;
+        }
+    }
+
+    fprintf(stderr, "Unknown type: '%s'\n", string);
+    return false;
 }
 

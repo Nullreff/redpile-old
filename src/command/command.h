@@ -26,7 +26,7 @@ extern World* current_world;
 
 void command_ping(void);
 void command_status(void);
-void command_set(Location location, char* material_str);
+void command_set(Location location, Material material);
 void command_get(Location location);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);

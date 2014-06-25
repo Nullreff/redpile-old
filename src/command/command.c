@@ -21,20 +21,6 @@
 
 World* current_world;
 
-static bool material_parse(char* material, Material* result)
-{
-    for (int i = 0; i < MATERIALS_COUNT; i++)
-    {
-        if (strcasecmp(material, Materials[i]) == 0)
-        {
-            *result = (Material)i;
-            return true;
-        }
-    }
-
-    return false;
-}
-
 void command_ping(void)
 {
     printf("PONG\n");
@@ -45,16 +31,9 @@ void command_status(void)
     world_stats_print(world_get_stats(current_world));
 }
 
-void command_set(Location location, char* material_str)
+void command_set(Location location, Type type)
 {
-    Material material = 0;
-    if (!material_parse(material_str, &material))
-    {
-        fprintf(stderr, "Invalid material: %s\n", material_str);
-        return;
-    }
-
-    world_set_node(current_world, location, material);
+    world_set_node(current_world, location, type);
 }
 
 void command_get(Location location)
