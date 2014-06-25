@@ -25,7 +25,7 @@ extern int read_input(char *buff, int buffsize);
 %option nounput
 %option noinput
 %%
-[ \t]           ;
+[ \t\0]         ;
 \n              { return LINE_BREAK; }
 (?i:ping)       { return PING;       }
 (?i:status)     { return STATUS;     }
