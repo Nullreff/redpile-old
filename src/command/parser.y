@@ -80,8 +80,8 @@ type: STRING { Type type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
 direction: STRING { Direction dir; if (!direction_parse($1, &dir)) YYABORT; $$ = dir; }
 ;
 
-unknown: | STRING unknown
-         | INT unknown
+anything: | STRING anything
+          | INT anything
 ;
 
 set_args: /* empty */ { $$ = (SetArgs){0};  }
@@ -100,8 +100,8 @@ command: PING                        { command_ping();                }
        | VTICK tick_args             { command_tick($2, LOG_VERBOSE); }
        | STICK tick_args             { command_tick($2, LOG_SILENT);  }
        | MESSAGES                    { command_messages();            }
-       | COMMENT unknown
-       | STRING unknown              { command_unknown($1);           }
+       | COMMENT anything
+       | STRING anything             { command_unknown($1);           }
 ;
 %%
 
