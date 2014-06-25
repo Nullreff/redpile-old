@@ -21,6 +21,7 @@
 
 #include "location.h"
 #include "redpile.h"
+#include "message.h"
 
 #define MATERIALS_COUNT 10
 #define MATERIAL_DEFAULT EMPTY
@@ -57,6 +58,7 @@ typedef struct Node {
     struct Node* next;
     struct Node* prev;
 
+    MessageStore* store;
     Fields fields;
 } Node;
 
@@ -69,6 +71,8 @@ typedef struct {
 #define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
 #define FOR_NODE_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
 
+Messages* node_find_messages(Node* node, unsigned long long tick);
+MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print(Node* node);
 void node_print_power(Node* node);
 

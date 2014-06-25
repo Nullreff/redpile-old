@@ -42,8 +42,51 @@ static Node* node_allocate(Location location, Type type)
     CHECK_OOM(node);
     node->location = location;
     node->type = type;
+    node->store = NULL;
     node->fields.count = count;
     return node;
+}
+
+static void node_free(Node* node)
+{
+    message_store_free(node->store);
+    free(node);
+}
+
+Messages* node_find_messages(Node* node, unsigned long long tick)
+{
+    node->store = message_store_discard_old(node->store, tick);
+    MessageStore* store = node->store;
+    if (store == NULL)
+        return NULL;
+
+    Messages* messages = message_store_find_instructions(store, tick);
+    if (messages == NULL)
+        return NULL;
+
+    return messages;
+}
+
+MessageStore* node_find_store(Node* node, unsigned long long tick)
+{
+    MessageStore* store = node->store;
+    if (store == NULL)
+    {
+        store = message_store_allocate(tick);
+        node->store = store;
+    }
+    else
+    {
+        store = message_store_find(store, tick);
+        if (store == NULL)
+        {
+            store = message_store_allocate(tick);
+            store->next = node->store;
+            node->store = store;
+        }
+    }
+
+    return store;
 }
 
 void node_print(Node* node)
@@ -91,7 +134,7 @@ void node_list_free(NodeList* blocks)
     while (node != NULL)
     {
         Node* temp = node->next;
-        free(node);
+        node_free(node);
         node = temp;
     }
     free(blocks);
@@ -123,7 +166,7 @@ void node_list_remove(NodeList* blocks, Node* node)
         node->next->prev = node->prev;
 
     blocks->size--;
-    free(node);
+    node_free(node);
 }
 
 void node_list_move_after(NodeList* blocks, Node* node, Node* target)

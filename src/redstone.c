@@ -375,7 +375,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
         iter = iter->next;
     }
 
-    Messages* found_messages = world_find_messages(world, node->location);
+    Messages* found_messages = node_find_messages(node, world->ticks);
     unsigned int total = (found_messages != NULL ? found_messages->size : 0) + new_messages;
 
     Messages* messages = messages_allocate(total);
@@ -421,7 +421,7 @@ static void run_messages(World* world, Queue* messages)
     {
         assert(!LOCATION_EQUALS(message->data.target.location, message->data.source.location));
         Node* target = message->data.target.node;
-        MessageStore* queue = world_find_store(world, message->data.target.location, message->data.tick);
+        MessageStore* queue = node_find_store(message->data.target.node, message->data.tick);
 
         unsigned int count = 0;
         QueueNode* iter = message;

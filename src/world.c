@@ -52,16 +52,6 @@ static void world_reset_adjacent_nodes(World* world, Node* node)
     }
 }
 
-static void message_store_free_void(void* value)
-{
-    message_store_free(value);
-}
-
-static void world_messages_free(World* world)
-{
-    hashmap_free(world->messages, message_store_free_void);
-}
-
 static bool node_missing_noop(Location location, Type* type)
 {
     return false;
@@ -95,7 +85,6 @@ World* world_allocate(unsigned int size)
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
     world->node_missing = node_missing_noop;
-    world->messages = hashmap_allocate(size);
 
     // Stats
     world->ticks = 0;
@@ -110,7 +99,6 @@ void world_free(World* world)
 {
     hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
-    world_messages_free(world);
     free(world);
 }
 
@@ -223,82 +211,31 @@ bool world_run_data(World* world, QueueData* data)
     return true;
 }
 
-Messages* world_find_messages(World* world, Location target)
-{
-    Bucket* bucket = hashmap_get(world->messages, target, false);
-    if (bucket == NULL)
-        return NULL;
-
-    bucket->value = message_store_discard_old(bucket->value, world->ticks);
-    MessageStore* queue = (MessageStore*)bucket->value;
-    if (queue == NULL)
-        return NULL;
-
-    Messages* messages = message_store_find_instructions(queue, world->ticks);
-    if (messages == NULL)
-        return NULL;
-
-    return messages;
-}
-
-MessageStore* world_find_store(World* world, Location target, unsigned long long tick)
-{
-    Bucket* bucket = hashmap_get(world->messages, target, true);
-    MessageStore* queue = (MessageStore*)bucket->value;
-    if (queue == NULL)
-    {
-        queue = message_store_allocate(tick);
-        bucket->value = queue;
-    }
-    else
-    {
-        queue = message_store_find(queue, tick);
-        if (queue == NULL)
-        {
-            queue = message_store_allocate(tick);
-            queue->next = bucket->value;
-            bucket->value = queue;
-        }
-    }
-
-    return queue;
-}
-
 void world_print_messages(World* world)
 {
-    for (int i = 0; i < world->messages->size; i++)
+    FOR_NODE_LIST(world->nodes)
     {
-        Bucket* bucket = world->messages->data + i;
-        if (bucket->value == NULL)
-            continue;
-
-        do
+        MessageStore* store = node->store;
+        while (store != NULL);
         {
-            MessageStore* queue = bucket->value;
-            do
+            if (store->tick >= world->ticks)
             {
-                if (queue->tick >= world->ticks)
+                for (int j = 0; j < store->messages->size; j++)
                 {
-                    for (int j = 0; j < queue->messages->size; j++)
-                    {
-                        Message* inst = queue->messages->data + j;
-                        QueueData data = (QueueData) {
-                            .source.location = inst->source.location,
-                            .source.type = inst->source.type,
-                            .target.location = bucket->key,
-                            .tick = queue->tick,
-                            .type = inst->type,
-                            .message = inst->message
-                        };
-                        queue_data_print_verbose(&data, message_type_print, world->ticks);
-                    }
+                    Message* inst = store->messages->data + j;
+                    QueueData data = (QueueData) {
+                        .source.location = inst->source.location,
+                        .source.type = inst->source.type,
+                        .target.location = node->location,
+                        .tick = store->tick,
+                        .type = inst->type,
+                        .message = inst->message
+                    };
+                    queue_data_print_verbose(&data, message_type_print, world->ticks);
                 }
-                queue = queue->next;
             }
-            while (queue != NULL);
-            bucket = bucket->next;
+            store = store->next;
         }
-        while (bucket != NULL);
     }
 }
 

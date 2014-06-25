@@ -38,8 +38,6 @@ typedef struct {
     // nodes during a redstone tick.
     bool (*node_missing)(Location location, Type* type);
 
-    Hashmap* messages;
-
     // Additional stats
     unsigned long long ticks; // Redstone ticks
     unsigned int max_inputs;
@@ -72,8 +70,6 @@ void world_stats_print(WorldStats world);
 void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type));
 void world_clear_node_missing_callback(World* world);
 bool world_run_data(World* world, QueueData* data);
-Messages* world_find_messages(World* world, Location target);
-MessageStore* world_find_store(World* world, Location target, unsigned long long tick);
 void world_print_messages(World* world);
 
 #endif
