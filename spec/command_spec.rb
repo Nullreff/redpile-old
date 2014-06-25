@@ -32,6 +32,10 @@ describe 'Commands' do
     end
   end
 
+  it 'errors on an unknown command' do
+    run('INVALID').should =~ /^Unknown command 'INVALID'$/
+  end
+
   it 'does not execute a commented out line' do
     run('# Comment goes here').should == "\n"
   end
