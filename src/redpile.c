@@ -31,6 +31,7 @@ RedpileConfig config;
 char* prompt;
 
 int yyparse(void);
+int yylex_destroy(void);
 
 static void print_version()
 {
@@ -128,19 +129,24 @@ static void load_config(int argc, char* argv[])
     }
 }
 
-static void redpile_exit(void)
+static void redpile_cleanup(void)
 {
     if (current_world != NULL)
         world_free(current_world);
 
+    if (!config.benchmark)
+        yylex_destroy();
+
     printf("\n");
-    exit(EXIT_SUCCESS);
 }
 
 static void signal_callback(int signal)
 {
     if (signal == SIGINT)
-        redpile_exit();
+    {
+        redpile_cleanup();
+        exit(EXIT_SUCCESS);
+    }
 }
 
 int read_input(char *buff, int buffsize)
@@ -180,15 +186,14 @@ int main(int argc, char* argv[])
     if (config.benchmark)
     {
         run_benchmarks(current_world, config.benchmark);
-        redpile_exit();
+    }
+    else
+    {
+        int result;
+        do { result = yyparse(); } while (result != 0);
     }
 
-    int result;
-    do
-    {
-        result = yyparse();
-    } while (result != 0);
-
-    redpile_exit();
+    redpile_cleanup();
+    return EXIT_SUCCESS;
 }
 

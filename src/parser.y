@@ -82,7 +82,7 @@ type: STRING { Type type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
 direction: STRING { Direction dir; if (!direction_parse($1, &dir)) YYABORT; $$ = dir; }
 ;
 
-anything: | STRING anything
+anything: | STRING anything { free($1); }
           | INT anything
 ;
 
@@ -121,11 +121,13 @@ bool type_parse(char* string, Type* type)
         if (strcasecmp(string, Materials[i]) == 0)
         {
             *type = i;
+            free(string);
             return true;
         }
     }
 
     fprintf(stderr, "Unknown type: '%s'\n", string);
+    free(string);
     return false;
 }
 
@@ -136,11 +138,13 @@ bool direction_parse(char* string, Direction* dir)
         if (strcasecmp(string, Directions[i]) == 0)
         {
             *dir = i;
+            free(string);
             return true;
         }
     }
 
     fprintf(stderr, "Unknown direction: '%s'\n", string);
+    free(string);
     return false;
 }
 
