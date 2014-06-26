@@ -17,13 +17,13 @@ def generate(name, x_range, y_range, z_range)
   end
 end
 
-generate('100x100grid.txt', (-50..50), (-50..50), 0) do |x, y, z|
-  torch = x % 10 == 0 && y % 10 == 0
+generate('100x100grid.txt', (-50..50), 0, (-50..50)) do |x, y, z|
+  torch = x % 10 == 0 && z % 10 == 0
   "SET #{x} #{y} #{z} #{torch ? 'TORCH UP' : 'WIRE'}"
 end
 
-generate('1000x1000grid.txt', (-500..500), (-500..500), 0) do |x, y, z|
-  torch = x % 100 == 0 && y % 100 == 0
+generate('1000x1000grid.txt', (-500..500), 0, (-500..500)) do |x, y, z|
+  torch = x % 100 == 0 && z % 100 == 0
   "SET #{x} #{y} #{z} #{torch ? 'TORCH UP' : 'WIRE'}"
 end
 
