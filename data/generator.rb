@@ -13,7 +13,7 @@ def generate(name, x_range, y_range, z_range)
         end
       end
     end
-    f.puts 'TICK'
+    f.puts 'STICK 2'
   end
 end
 
