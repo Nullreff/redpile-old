@@ -36,8 +36,8 @@ bool direction_parse(char* string, Direction* dir);
 }
 
 %union {
-	int integer;
-	char *string;
+    int integer;
+    char *string;
     Location location;
     Type type;
     Direction direction;
@@ -67,11 +67,12 @@ bool direction_parse(char* string, Direction* dir);
 %token MESSAGES
 
 %%
-input:  | input line
+input: /* empty */
+     | input line
 ;
 
-line:     LINE_BREAK
-        | command LINE_BREAK
+line: LINE_BREAK
+    | command LINE_BREAK
 ;
 
 location: INT INT INT { $$ = location_create($1, $2, $3); }
@@ -83,8 +84,9 @@ type: STRING { Type type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
 direction: STRING { Direction dir; if (!direction_parse($1, &dir)) YYABORT; $$ = dir; }
 ;
 
-anything: | STRING anything { free($1); }
-          | INT anything
+anything: /* empty */
+        | STRING anything { free($1); }
+        | INT anything
 ;
 
 set_args: /* empty */   { $$ = (SetArgs){0, 0};  }
