@@ -12,7 +12,15 @@ It's intended to be very simple: You can set blocks, get blocks and run redstone
 Building & Usage
 ----------------
 
-Requires [CMake](http://www.cmake.org/) for building and [Rspec](http://rspec.info/) for CLI tests.
+Requires:
+
+* C compiler
+* Make
+* CMake
+* Bison
+* Flex
+* Rspec (tests)
+
 Run `make` to compile or `make test` to run tests.
 
 Redpile reads commands for block updates from the standard input and writes the resulting changes to the standard output.
