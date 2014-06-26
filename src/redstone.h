@@ -22,7 +22,7 @@
 #include "message.h"
 
 typedef enum {
-    LOG_SILENT,
+    LOG_QUIET,
     LOG_NORMAL,
     LOG_VERBOSE
 } LogLevel;

@@ -35,8 +35,8 @@ extern int read_input(char *buff, int buffsize);
 (?i:setrs)      { return SETRS;      }
 (?i:get)        { return GET;        }
 (?i:tick)       { return TICK;       }
-(?i:vtick)      { return VTICK;      }
-(?i:stick)      { return STICK;      }
+(?i:tickv)      { return TICKV;      }
+(?i:tickq)      { return TICKQ;      }
 (?i:messages)   { return MESSAGES;   }
 -?[0-9]+        { yylval.integer = strtol(yytext, NULL, 10); return INT;    }
 [a-zA-Z0-9]+    { yylval.string  = strdup(yytext);           return STRING; }

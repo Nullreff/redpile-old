@@ -64,8 +64,8 @@ bool direction_parse(char* string, Direction* dir);
 %token SETRS
 %token GET
 %token TICK
-%token VTICK
-%token STICK
+%token TICKV
+%token TICKQ
 %token MESSAGES
 
 %%
@@ -110,8 +110,8 @@ command: PING                                           { command_ping();       
        | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6);         }
        | GET location                                   { command_get($2);                           }
        | TICK tick_args                                 { command_tick($2, LOG_NORMAL);              }
-       | VTICK tick_args                                { command_tick($2, LOG_VERBOSE);             }
-       | STICK tick_args                                { command_tick($2, LOG_SILENT);              }
+       | TICKV tick_args                                { command_tick($2, LOG_VERBOSE);             }
+       | TICKQ tick_args                                { command_tick($2, LOG_QUIET);               }
        | MESSAGES                                       { command_messages();                        }
        | COMMENT anything
        | STRING anything                                { PARSE_ERROR("Unknown command '%s'\n", $1); }

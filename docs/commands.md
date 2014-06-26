@@ -53,7 +53,7 @@ Syntax: `SETRS x_start y_start z_start x_end y_end z_end x_step y_step z_step ma
 Runs a `SET` command on the range of block between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
 
 
-TICK, VTICK, STICK
+TICK
 ----
 
 Syntax: `TICK [count]`
@@ -61,12 +61,23 @@ Syntax: `TICK [count]`
 Runs a single redstone tick by default.
 If `count` is provided, it will run `count` ticks.
 
-`VTICK` will provider verbose output about what happened during the tick.
-`STICK` suppresses all output generated during the tick.
-
 The following are the possible outputs that can occur as the result of a tick:
 
 * `(x,y,z) POWER power` - Set the power of `(x,y,z)` to `power`
 * `(x,y,z) STATE state` - Set the state of `(x,y,z)` to `state`
 * `(x,y,z) MOVE direction` - Move the block at `(x1,y1,z1)` in `direction`
+
+TICKV
+-----
+
+Syntax: `TICKV [count]`
+
+Runs the `TICK` command with verbose output.
+
+TICKQ
+-----
+
+Syntax: `TICKQ [count]`
+
+Runs the `TICK` command but suppresses all output except errors.
 

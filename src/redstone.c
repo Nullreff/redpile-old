@@ -456,7 +456,7 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
 {
     FOR_QUEUE(set, sets)
     {
-        if (log_level != LOG_SILENT)
+        if (log_level != LOG_QUIET)
             queue_data_print(&set->data, message_type_print);
         world_run_data(world, &set->data);
     }

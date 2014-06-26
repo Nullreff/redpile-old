@@ -30,6 +30,14 @@ describe 'Commands' do
         run_case('TICK', upper).should == "\n"
       end
 
+      it 'parses the TICKV command' do
+        run_case('TICKV', upper).should =~ /^--- Tick 0 ---$/
+      end
+
+      it 'parses the TICKQ command' do
+        run_case('TICKQ', upper).should == "\n"
+      end
+
       it 'parses the STATUS command' do
         run_case('STATUS', upper).should =~ /^ticks: 0$/
       end
