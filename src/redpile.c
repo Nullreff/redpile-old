@@ -162,7 +162,7 @@ int read_input(char *buff, int buffsize)
     // Flex has a default buffer size of at least 8192 on 32 bit
     int size = strlen(line);
     if (size + 2 > buffsize)
-        fprintf(stderr, "Error: Line too long, truncating to %i\n", buffsize);
+        fprintf(stderr, "Line too long, truncating to %i\n", buffsize);
 
     // Flex won't generate output until we fill it's buffer
     // Since this is interactive mode, we just zero it out
