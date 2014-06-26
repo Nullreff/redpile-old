@@ -66,7 +66,7 @@ If `count` is provided, it will run `count` ticks.
 
 The following are the possible outputs that can occur as the result of a tick:
 
-* `POWER (x,y,z) power` - Set the power of `(x,y,z)` to `power`
-* `STATE (x,y,z) state` - Set the state of `(x,y,z)` to `state`
-* `SWAP (x1,y1,z1) (x2,y2,z2)` - Swap the blocks at `(x1,y1,z1)` and `(x2,y2,z2)`
+* `(x,y,z) POWER power` - Set the power of `(x,y,z)` to `power`
+* `(x,y,z) STATE state` - Set the state of `(x,y,z)` to `state`
+* `(x,y,z) MOVE direction` - Move the block at `(x1,y1,z1)` in `direction`
 
