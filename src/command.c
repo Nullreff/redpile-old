@@ -66,8 +66,3 @@ void command_error(const char* message)
     fprintf(stderr, "%s\n", message);
 }
 
-void command_unknown(const char* command)
-{
-    fprintf(stderr, "Unknown command '%s'\n", command);
-}
-

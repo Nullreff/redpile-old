@@ -37,6 +37,5 @@ void command_tick(int count, LogLevel log_level);
 void command_messages(void);
 
 void command_error(const char* message);
-void command_unknown(const char* command);
 
 #endif

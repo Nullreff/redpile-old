@@ -20,12 +20,13 @@
 #include <ctype.h>
 #include "parser.h"
 
+#define PARSE_ERROR(...) fprintf(stderr, __VA_ARGS__); YYABORT;
+#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { fprintf(stderr, __VA_ARGS__); YYABORT; }
+
 int yylex(void);
 void yyerror(const char* const message);
 bool type_parse(char* string, Type* type);
 bool direction_parse(char* string, Direction* dir);
-bool check_state(int state);
-bool check_tick(int tick);
 %}
 
 %code requires {
@@ -88,12 +89,14 @@ anything: | STRING anything { free($1); }
 
 set_args: /* empty */   { $$ = (SetArgs){0, 0};  }
         | direction     { $$ = (SetArgs){$1, 0}; }
-        | direction INT { if (!check_state($2)) YYABORT; $$ = (SetArgs){$1, $2}; }
+        | direction INT { PARSE_ERROR_IF($2 < 0, "State must be non-negative\n");
+                          PARSE_ERROR_IF($2 > 3, "State must be less than three\n");
+                          $$ = (SetArgs){$1, $2}; }
 ;
 
 tick_args: /* empty */ { $$ = 1; }
-         | INT         { if (!check_tick($1)) YYABORT; $$ = $1; }
-         | STRING      { fprintf(stderr, "Tick count must be numeric\n"); YYABORT; }
+         | INT         { PARSE_ERROR_IF($1 < 0, "Tick count must be greater than zero\n"); $$ = $1; }
+         | STRING      { PARSE_ERROR("Tick count must be numeric\n"); }
 ;
 
 command: PING                        { command_ping();                }
@@ -105,7 +108,7 @@ command: PING                        { command_ping();                }
        | STICK tick_args             { command_tick($2, LOG_SILENT);  }
        | MESSAGES                    { command_messages();            }
        | COMMENT anything
-       | STRING anything             { command_unknown($1);           }
+       | STRING anything             { PARSE_ERROR("Unknown command '%s'\n", $1); }
 ;
 %%
 
@@ -146,32 +149,5 @@ bool direction_parse(char* string, Direction* dir)
     fprintf(stderr, "Unknown direction: '%s'\n", string);
     free(string);
     return false;
-}
-
-bool check_state(int state)
-{
-    if (state < 0)
-    {
-        fprintf(stderr, "State must be non-negative\n");
-        return false;
-    }
-
-    if (state > 3)
-    {
-        fprintf(stderr, "State must be less than three\n");
-        return false;
-    }
-    return true;
-}
-
-bool check_tick(int tick)
-{
-    if (tick < 0)
-    {
-        fprintf(stderr, "Tick count must be greater than zero\n");
-        return false;
-    }
-
-    return true;
 }
 
