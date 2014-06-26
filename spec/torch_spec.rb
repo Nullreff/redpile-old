@@ -7,7 +7,7 @@ describe 'Torch' do
     it "propigates power #{range} blocks" do
       run(
         'SET 0 0 0 TORCH UP',
-        *(1..range).map {|r| "SET 0 0 #{r} WIRE"},
+        "SETR 0 0 1 0 0 #{range} WIRE",
         'TICK 2'
       ).should =~ /\(0,0,#{range}\) POWER #{16 - range}\n/
     end
@@ -17,7 +17,7 @@ describe 'Torch' do
     end_block = MAX_RANGE + 1
     run(
       'SET 0 0 0 TORCH UP',
-      *(1..end_block).map {|r| "SET 0 0 #{r} WIRE"},
+      "SETR 0 0 1 0 0 #{end_block} WIRE",
       'TICK 2',
       "GET 0 0 #{end_block}"
     ).should =~ /^\(0,0,#{end_block}\) WIRE 0$/

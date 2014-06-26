@@ -41,6 +41,36 @@ void command_set(Location location, Type type, SetArgs args)
     }
 }
 
+void command_setr(Location l1, Location l2, Type type, SetArgs args)
+{
+    int x_start = l1.x > l2.x ? l2.x : l1.x;
+    int x_end   = l1.x > l2.x ? l1.x : l2.x;
+    int y_start = l1.y > l2.y ? l2.y : l1.y;
+    int y_end   = l1.y > l2.y ? l1.y : l2.y;
+    int z_start = l1.z > l2.z ? l2.z : l1.z;
+    int z_end   = l1.z > l2.z ? l1.z : l2.z;
+
+    for (int x = x_start; x <= x_end; x++)
+    for (int y = y_start; y <= y_end; y++)
+    for (int z = z_start; z <= z_end; z++)
+        command_set(location_create(x, y, z), type, args);
+}
+
+void command_setrs(Location l1, Location l2, Location step, Type type, SetArgs args)
+{
+    int x_start = l1.x > l2.x ? l2.x : l1.x;
+    int x_end   = l1.x > l2.x ? l1.x : l2.x;
+    int y_start = l1.y > l2.y ? l2.y : l1.y;
+    int y_end   = l1.y > l2.y ? l1.y : l2.y;
+    int z_start = l1.z > l2.z ? l2.z : l1.z;
+    int z_end   = l1.z > l2.z ? l1.z : l2.z;
+
+    for (int x = x_start; x <= x_end; x += step.x)
+    for (int y = y_start; y <= y_end; y += step.y)
+    for (int z = z_start; z <= z_end; z += step.z)
+        command_set(location_create(x, y, z), type, args);
+}
+
 void command_get(Location location)
 {
     Node* node = world_get_node(current_world, location);

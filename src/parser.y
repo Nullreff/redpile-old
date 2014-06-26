@@ -60,6 +60,8 @@ bool direction_parse(char* string, Direction* dir);
 %token PING
 %token STATUS
 %token SET
+%token SETR
+%token SETRS
 %token GET
 %token TICK
 %token VTICK
@@ -101,16 +103,18 @@ tick_args: /* empty */ { $$ = 1; }
          | STRING      { PARSE_ERROR("Tick count must be numeric\n"); }
 ;
 
-command: PING                        { command_ping();                }
-       | STATUS                      { command_status();              }
-       | SET location type set_args  { command_set($2, $3, $4);       }
-       | GET location                { command_get($2);               }
-       | TICK tick_args              { command_tick($2, LOG_NORMAL);  }
-       | VTICK tick_args             { command_tick($2, LOG_VERBOSE); }
-       | STICK tick_args             { command_tick($2, LOG_SILENT);  }
-       | MESSAGES                    { command_messages();            }
+command: PING                                           { command_ping();                            }
+       | STATUS                                         { command_status();                          }
+       | SET location type set_args                     { command_set($2, $3, $4);                   }
+       | SETR location location type set_args           { command_setr($2, $3, $4, $5);              }
+       | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6);         }
+       | GET location                                   { command_get($2);                           }
+       | TICK tick_args                                 { command_tick($2, LOG_NORMAL);              }
+       | VTICK tick_args                                { command_tick($2, LOG_VERBOSE);             }
+       | STICK tick_args                                { command_tick($2, LOG_SILENT);              }
+       | MESSAGES                                       { command_messages();                        }
        | COMMENT anything
-       | STRING anything             { PARSE_ERROR("Unknown command '%s'\n", $1); }
+       | STRING anything                                { PARSE_ERROR("Unknown command '%s'\n", $1); }
 ;
 %%
 

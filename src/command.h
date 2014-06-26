@@ -32,6 +32,8 @@ typedef struct {
 void command_ping(void);
 void command_status(void);
 void command_set(Location location, Type type, SetArgs args);
+void command_setr(Location start, Location end, Type type, SetArgs args);
+void command_setrs(Location l1, Location l2, Location step, Type type, SetArgs args);
 void command_get(Location location);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);

@@ -14,6 +14,14 @@ describe 'Commands' do
         run_case('SET 0 0 0 TORCH UP', upper).should == "\n"
       end
 
+      it 'parses the SETR command' do
+        run_case('SETR -5 -5 -5 5 5 5 TORCH UP', upper).should == "\n"
+      end
+
+      it 'parses the SETRS command' do
+        run_case('SETRS -10 -10 -10 10 10 10 2 2 2 TORCH UP', upper).should == "\n"
+      end
+
       it 'parses the GET command' do
         run_case('GET 0 0 0', upper).should =~ /^\(0,0,0\) EMPTY$/
       end

@@ -38,6 +38,21 @@ Syntax: `SET x y z material [direction] [state]`
 Sets the block at `(x, y, z)` to have a material of `material`, a direction of `direction` and a state of `state`.
 See [Blocks](blocks.md) for more information.
 
+SETR
+----
+
+Syntax: `SETR x_start y_start z_start x_end y_end z_end material [direction] [state]`
+
+Runs a `SET` command on the range of block between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)`.
+
+SETRS
+----
+
+Syntax: `SETRS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [direction] [state]`
+
+Runs a `SET` command on the range of block between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
+
+
 TICK, VTICK, STICK
 ----
 

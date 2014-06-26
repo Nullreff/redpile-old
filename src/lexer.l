@@ -31,6 +31,8 @@ extern int read_input(char *buff, int buffsize);
 (?i:ping)       { return PING;       }
 (?i:status)     { return STATUS;     }
 (?i:set)        { return SET;        }
+(?i:setr)       { return SETR;       }
+(?i:setrs)      { return SETRS;      }
 (?i:get)        { return GET;        }
 (?i:tick)       { return TICK;       }
 (?i:vtick)      { return VTICK;      }
