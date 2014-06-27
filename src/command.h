@@ -19,7 +19,7 @@
 #define REDPILE_COMMAND_H
 
 #include "world.h"
-#include "redstone.h"
+#include "logic.h"
 #include "location.h"
 
 extern World* current_world;

@@ -1,4 +1,4 @@
-/* redstone.h - Redstone logic implementation
+/* logic.h - Redstone logic implementation
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_REDSTONE_H
-#define REDPILE_REDSTONE_H
+#ifndef REDPILE_LOGIC_H
+#define REDPILE_LOGIC_H
 
 #include "message.h"
 
@@ -27,6 +27,6 @@ typedef enum {
     LOG_VERBOSE
 } LogLevel;
 
-void redstone_tick(World* world, unsigned int count, LogLevel log_level);
+void logic_run_tick(World* world, unsigned int count, LogLevel log_level);
 
 #endif

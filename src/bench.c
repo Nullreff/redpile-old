@@ -17,7 +17,7 @@
  */
 
 #include "bench.h"
-#include "redstone.h"
+#include "logic.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>

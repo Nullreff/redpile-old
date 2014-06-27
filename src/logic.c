@@ -1,4 +1,4 @@
-/* redstone.c - Redstone logic implementation
+/* logic.c - Redstone logic implementation
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -19,7 +19,7 @@
 #include <string.h>
 #include <assert.h>
 #include "world.h"
-#include "redstone.h"
+#include "logic.h"
 
 #define MAX_POWER 15
 
@@ -43,7 +43,7 @@
     static void redstone_ ## TYPE ## _update(World* world, Node* node, Messages* in, Queue* messages, Queue* sets)
 
 #define TYPE_REGISTER(TYPE)\
-    case TYPE: redstone_ ## TYPE ## _update(world, node, in, &output, &sets); break
+    case TYPE: redstone_ ## TYPE ## _update(world, node, in, output, sets); break
 
 TYPE_METHOD(EMPTY) {}
 TYPE_METHOD(AIR) {}
@@ -397,22 +397,43 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
     return messages;
 }
 
-static void process_output(World* world, Node* node, Queue* output, Queue* messages_out, Queue* sets_out)
+static void process_node(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
+{
+    Messages* in = find_input(world, node, messages);
+
+    switch (MATERIAL(node))
+    {
+        TYPE_REGISTER(EMPTY);
+        TYPE_REGISTER(AIR);
+        TYPE_REGISTER(INSULATOR);
+        TYPE_REGISTER(WIRE);
+        TYPE_REGISTER(CONDUCTOR);
+        TYPE_REGISTER(TORCH);
+        TYPE_REGISTER(PISTON);
+        TYPE_REGISTER(REPEATER);
+        TYPE_REGISTER(COMPARATOR);
+        TYPE_REGISTER(SWITCH);
+        default: ERROR("Encountered unknown block material");
+    }
+    free(in);
+}
+
+static void process_output(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
 {
     FOR_QUEUE(queue_node, output)
     {
         QueueData* data = &queue_node->data;
 
-        if (data->tick == world->ticks && !queue_contains(messages_out, queue_node))
+        if (data->tick == world->ticks && !queue_contains(messages, queue_node))
         {
             assert(!LOCATION_EQUALS(data->target.location, data->source.location));
-            queue_remove_source(messages_out, data->target.location);
-            queue_remove_source(sets_out, data->target.location);
+            queue_remove_source(messages, data->target.location);
+            queue_remove_source(sets, data->target.location);
             node_list_move_after(world->nodes, node, data->target.node);
         }
     }
 
-    unsigned int count = queue_merge(messages_out, output);
+    unsigned int count = queue_merge(messages, output);
     if (world->max_outputs < count)
         world->max_outputs = count;
 }
@@ -462,11 +483,11 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
     }
 }
 
-void redstone_tick(World* world, unsigned int count, LogLevel log_level)
+void logic_run_tick(World* world, unsigned int count, LogLevel log_level)
 {
     world_set_node_missing_callback(world, redstone_node_missing);
 
-    for (unsigned int i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         if (log_level == LOG_VERBOSE)
             printf("--- Tick %llu ---\n", world->ticks);
@@ -483,25 +504,8 @@ void redstone_tick(World* world, unsigned int count, LogLevel log_level)
             if (log_level == LOG_VERBOSE)
                 node_print(node);
 
-            Messages* in = find_input(world, node, &messages);
             Queue output = queue_empty(false, false, 0);
-
-            switch (MATERIAL(node))
-            {
-                TYPE_REGISTER(EMPTY);
-                TYPE_REGISTER(AIR);
-                TYPE_REGISTER(INSULATOR);
-                TYPE_REGISTER(WIRE);
-                TYPE_REGISTER(CONDUCTOR);
-                TYPE_REGISTER(TORCH);
-                TYPE_REGISTER(PISTON);
-                TYPE_REGISTER(REPEATER);
-                TYPE_REGISTER(COMPARATOR);
-                TYPE_REGISTER(SWITCH);
-                default: ERROR("Encountered unknown block material");
-            }
-            free(in);
-
+            process_node(world, node, &output, &messages, &sets);
             process_output(world, node, &output, &messages, &sets);
 
             loops++;
