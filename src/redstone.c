@@ -475,8 +475,14 @@ void redstone_tick(World* world, unsigned int count, LogLevel log_level)
         Queue messages = queue_empty(true, true, world->hashmap->size);
         Queue sets = queue_empty(false, true, world->hashmap->size);
 
+        if (log_level == LOG_VERBOSE)
+            printf("Nodes:\n");
+
         FOR_NODE_LIST(world->nodes)
         {
+            if (log_level == LOG_VERBOSE)
+                node_print(node);
+
             Messages* in = find_input(world, node, &messages);
             Queue output = queue_empty(false, false, 0);
 
@@ -501,7 +507,7 @@ void redstone_tick(World* world, unsigned int count, LogLevel log_level)
             loops++;
             if (loops > world->nodes->size * 2)
             {
-                printf("Error: Logic loop detected while performing tick.\n");
+                fprintf(stderr, "Logic loop detected while performing tick\n");
                 break;
             }
         }
