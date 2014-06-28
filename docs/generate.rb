@@ -15,8 +15,6 @@ Dir.glob(File.join(File.dirname(__FILE__), '*.md')).each do |file|
   File.write(file.gsub('.md', '.html'), template.result)
 end
 
-puts 
-
 __END__
 <!doctype html>
 <html>
