@@ -76,7 +76,7 @@ This language will be compiled down to a series of commands.
 
 The following is using ruby syntax but a custom compiled language would probably be faster.
 
-```ruby
+~~~ruby
 # Syntax of: name, [values]
 message_field :command, [:power, :break]
 message_field :power, (0..15)
@@ -104,5 +104,5 @@ block :wire do
         self.power = 0
     end
 end
-```
+~~~
 
