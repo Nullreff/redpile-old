@@ -10,7 +10,7 @@ It's intended to be very simple: You can set blocks, get blocks and run redstone
 Installation
 ------------
 
-*Note: Redpile is currently only suppored on [Debian](https://www.debian.org/) as that's what my development machine runs.
+*Note: Redpile is currently only supported on [Debian](https://www.debian.org/) as that's what my development machine runs.
 Official support for other operating systems will come once it hits 1.0.0*
 
 ~~~bash
