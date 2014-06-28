@@ -1,11 +1,17 @@
 Redpile
 =======
 
-*Note: Redpile is currently only suppored on [Debian](https://www.debian.org/) as that's what my development machine runs.
-Official support for other operating systems will come once it hits 1.0.0*
+Redpile is a high performance implementation of redstone for Minecraft.
+It can be run from the command line or as a sub-process of a larger program.
+When started, it creates a simulation of a Minecraft world focused solely on redstone.
+Commands are sent on the standard input and block updates are received on the standard output.
+It's intended to be very simple: You can set blocks, get blocks and run redstone ticks.
 
 Installation
 ------------
+
+*Note: Redpile is currently only suppored on [Debian](https://www.debian.org/) as that's what my development machine runs.
+Official support for other operating systems will come once it hits 1.0.0*
 
 ~~~bash
 sudo apt-get install git gcc build-essential cmake bison flex
