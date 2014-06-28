@@ -13,6 +13,8 @@ Installation
 *Note: Redpile is currently only supported on [Debian](https://www.debian.org/) as that's what my development machine runs.
 Official support for other operating systems will come once it hits 1.0.0*
 
+To install Redpile, open a shell and run the following commands:
+
 ~~~bash
 sudo apt-get install git gcc build-essential cmake bison flex
 git clone https://github.com/Nullreff/redpile.git
@@ -38,7 +40,6 @@ $ redpile -i
 You can set blocks, get blocks and run ticks.
 
 ~~~bash
-$ redpile -i
 > set 0 0 0 torch up
 > get 0 0 0
 (0,0,0) TORCH 0 UP
@@ -53,6 +54,21 @@ $ redpile -i
 (0,0,2) POWER 14
 (0,0,1) POWER 15
 >
+~~~
+
+You can also print information about the current state of the world.
+
+~~~bash
+> status
+ticks: 2
+nodes: 21
+hashmap_allocated: 1024
+hashmap_overflow: 0
+hashmap_resizes: 0
+hashmap_max_depth: 0
+message_max_inputs: 1
+message_max_outputs: 4
+message_max_queued: 1
 ~~~
 
 For more commands, check out the [commands](commands.md) and [blocks](blocks.md) pages.
