@@ -5,7 +5,7 @@ VALGRIND := valgrind --error-exitcode=1 --leak-check=full --show-reachable=yes
 RSPEC := rspec
 COMPILE := make --no-print-directory
 
-.PHONY: all clean cmake_release cmake_debug test bench memcheck
+.PHONY: all clean cmake_release cmake_debug test bench memcheck docs publish_docs
 
 all: cmake_release
 
@@ -32,4 +32,10 @@ memcheck: cmake_debug
 
 bench: cmake_release
 	${BENCHMARK} 1000
+
+docs:
+	./docs/generate.rb
+
+publish: docs
+	scp docs/*.html redpile:~/webapps/redpile_org
 
