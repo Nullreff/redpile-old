@@ -113,7 +113,7 @@ describe 'Wire' do
       'set 2 0 1 wire',
       'set 2 0 0 wire',
       'set 1 0 0 wire',
-      'tick',
+      'tick'
     )
     result.should =~ /^\(0,0,1\) POWER 15$/
     result.should =~ /^\(0,0,2\) POWER 14$/
