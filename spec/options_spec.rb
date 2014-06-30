@@ -31,22 +31,22 @@ describe 'Options' do
 
       BAD_NUMBERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
-          redpile(short ? "-w #{size}" : "--world-size #{size}", false)
-          .run.should =~ /You must pass an integer as the world size\n/
+          redpile(short ? "-w #{size}" : "--world-size #{size}", false).
+          run.should =~ /You must pass an integer as the world size\n/
         end
       end
 
       BAD_NEGATIVES.each do |size|
         it "errors when run with a world size of '#{size}'" do
-          redpile(short ? "-w #{size}" : "--world-size #{size}", false)
-          .run.should =~ /You must provide a world size larger than zero\n/
+          redpile(short ? "-w #{size}" : "--world-size #{size}", false).
+          run.should =~ /You must provide a world size larger than zero\n/
         end
       end
 
       BAD_POWERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
-          redpile(short ? "-w #{size}" : "--world-size #{size}", false)
-          .run.should =~ /You must provide a world size that is a power of two\n/
+          redpile(short ? "-w #{size}" : "--world-size #{size}", false).
+          run.should =~ /You must provide a world size that is a power of two\n/
         end
       end
     end
@@ -62,15 +62,15 @@ describe 'Options' do
 
   BAD_NUMBERS.each do |count|
     it "errors when run with '#{count}' benchmarks" do
-      redpile("--benchmark #{count}", false)
-      .run.should =~ /You must pass an integer as the number of benchmarks to run\n/
+      redpile("--benchmark #{count}", false).
+      run.should =~ /You must pass an integer as the number of benchmarks to run\n/
     end
   end
 
   BAD_NEGATIVES.each do |count|
     it "errors when run with '#{count}' benchmarks" do
-      redpile("--benchmark #{count}", false)
-      .run.should =~ /You must provide a benchmark size greater than zero\n/
+      redpile("--benchmark #{count}", false).
+      run.should =~ /You must provide a benchmark size greater than zero\n/
     end
   end
 end
