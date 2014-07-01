@@ -33,7 +33,20 @@ static void queue_push(Queue* queue, QueueNode* node)
     {
         // Add the node to the list by it's target
         Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, true);
+        QueueNodeIndex* index;
         if (bucket->value == NULL)
+        {
+            index = malloc(sizeof(QueueNodeIndex));
+            index->size = 0;
+            index->node = NULL;
+            bucket->value = index;
+        }
+        else
+        {
+            index = bucket->value;
+        }
+
+        if (index->size == 0)
         {
             // No nodes with this source exist yet
             // Stick it in the front of the list
@@ -42,17 +55,21 @@ static void queue_push(Queue* queue, QueueNode* node)
             if (queue->nodes != NULL)
                 queue->nodes->prev = node;
             queue->nodes = node;
-            bucket->value = node;
+
+            index->node = node;
+            index->size++;
         }
         else
         {
             // Otherwise stick it after the existing one
-            QueueNode* existing = bucket->value;
+            QueueNodeIndex* index = bucket->value;
+            QueueNode* existing = index->node;
             node->next = existing->next;
             node->prev = existing;
             if (existing->next != NULL)
                 existing->next->prev = node;
             existing->next = node;
+            index->size++;
         }
     }
     else
@@ -98,14 +115,22 @@ static void queue_remove(Queue* queue, QueueNode* node)
         Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, false);
         assert(bucket != NULL);
 
-        if (bucket->value == node)
+        QueueNodeIndex* index = bucket->value;
+        index->size--;
+        if (index->node == node)
         {
-            if (node->next != NULL && node->data.target.node == node->next->data.target.node)
+            if (index->size > 0)
+            {
                 // Change the hashmap to target the next node
-                bucket->value = node->next;
+                assert(node->next != NULL && node->data.target.node == node->next->data.target.node);
+                index->node = node->next;
+            }
             else
+            {
                 // We ran out of nodes with this target
-                bucket->value = NULL;
+                assert(node->next == NULL || node->data.target.node != node->next->data.target.node);
+                index->node = NULL;
+            }
         }
     }
 
@@ -138,7 +163,7 @@ void queue_free(Queue* queue)
     }
 
     if (queue->targetmap != NULL)
-        hashmap_free(queue->targetmap, NULL);
+        hashmap_free(queue->targetmap, free);
     if (queue->sourcemap != NULL)
         hashmap_free(queue->sourcemap, free);
 }
@@ -164,17 +189,19 @@ bool queue_contains(Queue* queue, QueueNode* node)
     if (bucket == NULL)
         return false;
 
-    QueueNode* found = bucket->value;
+    QueueNodeIndex* index = bucket->value;
+    QueueNode* found = index->node;
     if (found == NULL)
         return false;
 
-    do
+    for (int i = 0; i < index->size; i++)
     {
+        assert(found != NULL && found->data.target.node == node->data.target.node);
         if (queue_data_equals(&found->data, &node->data))
             return true;
+
         found = found->next;
     }
-    while (found != NULL && found->data.target.node == node->data.target.node);
 
     return false;
 }
@@ -222,17 +249,17 @@ QueueNode* queue_find_nodes(Queue* messages, Node* target, unsigned long long ti
     if (bucket == NULL)
         return NULL;
 
-    QueueNode* found = bucket->value;
+    QueueNodeIndex* index = bucket->value;
+    QueueNode* found = index->node;
     if (found == NULL)
         return NULL;
 
-    do
+    for (int i = 0; i < index->size; i++)
     {
+        assert(found != NULL && found->data.target.node == target);
         if (found->data.tick == tick)
             return found;
-        found = found->next;
     }
-    while (found != NULL && found->data.target.node == target);
 
     return NULL;
 }

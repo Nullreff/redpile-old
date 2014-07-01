@@ -49,6 +49,11 @@ typedef struct {
 } QueueNodeList;
 
 typedef struct {
+    unsigned int size;
+    QueueNode* node;
+} QueueNodeIndex;
+
+typedef struct {
     QueueNode* nodes;
     Hashmap* targetmap;
     Hashmap* sourcemap;
