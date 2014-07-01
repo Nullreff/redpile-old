@@ -51,6 +51,7 @@ static Node* node_allocate(Location location, Type type)
 static void node_free(Node* node)
 {
     message_store_free(node->store);
+    free(node->last_input);
     free(node);
 }
 

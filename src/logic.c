@@ -419,12 +419,15 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
     if (node->last_input == NULL)
     {
         node->last_input = in;
+        node->last_input_tick = world->ticks;
         return true;
     }
-    else if (!messages_equal(node->last_input, in))
+    else if (node->last_input_tick != world->ticks ||
+            !messages_equal(node->last_input, in))
     {
         free(node->last_input);
         node->last_input = in;
+        node->last_input_tick = world->ticks;
         return true;
     }
     else

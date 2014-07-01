@@ -58,7 +58,9 @@ typedef struct Node {
     struct Node* prev;
 
     MessageStore* store;
+
     Messages* last_input;
+    unsigned long long last_input_tick;
 
     Fields fields;
 } Node;
