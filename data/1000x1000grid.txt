@@ -1,5 +1,5 @@
 setr -500 0 -500 500 0 500 wire
 setrs -500 0 -500 500 0 500 100 1 100 torch up
-tickq 2
+tickq 10
 status
 
