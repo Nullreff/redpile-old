@@ -107,7 +107,10 @@ command: PING                                           { command_ping();       
        | STATUS                                         { command_status();                          }
        | SET location type set_args                     { command_set($2, $3, $4);                   }
        | SETR location location type set_args           { command_setr($2, $3, $4, $5);              }
-       | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6);         }
+       | SETRS location location location type set_args { PARSE_ERROR_IF($4.x <= 0, "x_step must be greater than zero\n");
+                                                          PARSE_ERROR_IF($4.y <= 0, "y_step must be greater than zero\n");
+                                                          PARSE_ERROR_IF($4.z <= 0, "z_step must be greater than zero\n");
+                                                          command_setrs($2, $3, $4, $5, $6);         }
        | GET location                                   { command_get($2);                           }
        | TICK tick_args                                 { command_tick($2, LOG_NORMAL);              }
        | TICKV tick_args                                { command_tick($2, LOG_VERBOSE);             }

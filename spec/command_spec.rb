@@ -72,6 +72,18 @@ describe 'Commands' do
     run('SET 0 0 0 REPEATER NORTH 4').should =~ /^State must be less than three$/
   end
 
+  it 'errors with a zero x step' do
+    run('SETRS 0 0 0 10 10 10 0 2 2 WIRE').should =~ /^x_step must be greater than zero$/
+  end
+
+  it 'errors with a zero y step' do
+    run('SETRS 0 0 0 10 10 10 2 0 2 WIRE').should =~ /^y_step must be greater than zero$/
+  end
+
+  it 'errors with a zero z step' do
+    run('SETRS 0 0 0 10 10 10 2 2 0 WIRE').should =~ /^z_step must be greater than zero$/
+  end
+
   it 'runs multiple ticks' do
     run('TICK 4', 'STATUS').should =~ /^ticks: 4$/
   end
