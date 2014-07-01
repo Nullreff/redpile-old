@@ -21,7 +21,7 @@
 
 Messages* messages_allocate(unsigned int size)
 {
-    Messages* messages = calloc(1, MESSAGES_ALLOC_SIZE(size));
+    Messages* messages = malloc(MESSAGES_ALLOC_SIZE(size));
     messages->size = size;
     return messages;
 }
