@@ -21,7 +21,7 @@
 
 Messages* messages_allocate(unsigned int size)
 {
-    Messages* messages = malloc(MESSAGES_ALLOC_SIZE(size));
+    Messages* messages = calloc(1, MESSAGES_ALLOC_SIZE(size));
     messages->size = size;
     return messages;
 }
@@ -29,6 +29,23 @@ Messages* messages_allocate(unsigned int size)
 void messages_copy(Message* dest, Messages* source)
 {
     memcpy(dest, source->data, sizeof(Message) * source->size);
+}
+
+bool messages_equal(Messages* first, Messages* second)
+{
+    if (first->size != second->size)
+        return false;
+
+    for (int i = 0; i < first->size; i++)
+    {
+        if (LOCATION_EQUALS(first->data[i].source.location, second->data[i].source.location) &&
+            first->data[i].type == second->data[i].type &&
+            first->data[i].message == second->data[i].message)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 Messages* messages_resize(Messages* messages, unsigned int size)

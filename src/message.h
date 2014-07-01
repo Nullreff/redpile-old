@@ -51,6 +51,7 @@ typedef struct MessageStore {
 
 Messages* messages_allocate(unsigned int size);
 void messages_copy(Message* dest, Messages* source);
+bool messages_equal(Messages* first, Messages* second);
 Messages* messages_resize(Messages* insts, unsigned int size);
 unsigned int messages_max_power(Messages* inst);
 bool messages_power_check(Messages* insts, Location loc, unsigned int power);

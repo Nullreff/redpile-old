@@ -123,4 +123,12 @@ describe 'Wire' do
     result.should =~ /^\(2,0,0\) POWER 14$/
     result.should =~ /^\(1,0,0\) POWER 15$/
   end
+
+  it 'avoids looping when processing a grid of wire' do
+    run(
+      'setr -5 0 -5 5 0 5 wire',
+      'set 0 0 0 torch up',
+      'tick 2'
+    ).should_not =~ /^Logic loop detected while performing tick$/
+  end
 end

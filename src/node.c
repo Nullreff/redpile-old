@@ -43,6 +43,7 @@ static Node* node_allocate(Location location, Type type)
     node->location = location;
     node->type = type;
     node->store = NULL;
+    node->last_input = NULL;
     node->fields.count = count;
     return node;
 }

@@ -58,6 +58,8 @@ typedef struct Node {
     struct Node* prev;
 
     MessageStore* store;
+    Messages* last_input;
+
     Fields fields;
 } Node;
 

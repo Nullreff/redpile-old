@@ -397,7 +397,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
     return messages;
 }
 
-static void process_node(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
+static bool process_node(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
 {
     Messages* in = find_input(world, node, messages);
 
@@ -415,21 +415,40 @@ static void process_node(World* world, Node* node, Queue* output, Queue* message
         TYPE_REGISTER(SWITCH);
         default: ERROR("Encountered unknown block material");
     }
-    free(in);
+
+    if (node->last_input == NULL)
+    {
+        node->last_input = in;
+        return true;
+    }
+    else if (!messages_equal(node->last_input, in))
+    {
+        free(node->last_input);
+        node->last_input = in;
+        return true;
+    }
+    else
+    {
+        free(in);
+        return false;
+    }
 }
 
-static void process_output(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
+static void process_output(World* world, Node* node, bool changed, Queue* output, Queue* messages, Queue* sets)
 {
-    FOR_QUEUE(queue_node, output)
+    if (changed)
     {
-        QueueData* data = &queue_node->data;
-
-        if (data->tick == world->ticks && !queue_contains(messages, queue_node))
+        FOR_QUEUE(queue_node, output)
         {
-            assert(!LOCATION_EQUALS(data->target.location, data->source.location));
-            queue_remove_source(messages, data->target.location);
-            queue_remove_source(sets, data->target.location);
-            node_list_move_after(world->nodes, node, data->target.node);
+            QueueData* data = &queue_node->data;
+
+            if (data->tick == world->ticks && !queue_contains(messages, queue_node))
+            {
+                assert(!LOCATION_EQUALS(data->target.location, data->source.location));
+                queue_remove_source(messages, data->target.location);
+                queue_remove_source(sets, data->target.location);
+                node_list_move_after(world->nodes, node, data->target.node);
+            }
         }
     }
 
@@ -505,8 +524,8 @@ void logic_run_tick(World* world, unsigned int count, LogLevel log_level)
                 node_print(node);
 
             Queue output = queue_empty(false, false, 0);
-            process_node(world, node, &output, &messages, &sets);
-            process_output(world, node, &output, &messages, &sets);
+            bool changed = process_node(world, node, &output, &messages, &sets);
+            process_output(world, node, changed, &output, &messages, &sets);
 
             loops++;
             if (loops > world->nodes->size * 2)
