@@ -514,7 +514,7 @@ void logic_run_tick(World* world, unsigned int count, LogLevel log_level)
         if (log_level == LOG_VERBOSE)
             printf("--- Tick %llu ---\n", world->ticks);
 
-        unsigned int loops = 0;
+        unsigned long long loops = 0;
         Queue messages = queue_empty(true, true, world->hashmap->size);
         Queue sets = queue_empty(false, true, world->hashmap->size);
 
