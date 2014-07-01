@@ -531,7 +531,7 @@ void logic_run_tick(World* world, unsigned int count, LogLevel log_level)
             process_output(world, node, changed, &output, &messages, &sets);
 
             loops++;
-            if (loops > world->nodes->size * 2)
+            if (loops > world->nodes->size * 3)
             {
                 fprintf(stderr, "Logic loop detected while performing tick\n");
                 break;
