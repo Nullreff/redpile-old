@@ -1,0 +1,4 @@
+setr 0 0 0 100 0 100 wire
+setrs 0 0 0 100 0 100 10 1 10 torch up
+tickq 3
+status

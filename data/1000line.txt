@@ -1,0 +1,6 @@
+setr 0 0 0 1000 0 0 wire
+setrs 0 0 0 1000 0 0 15 1 1 repeater east 0
+set 0 0 0 torch up
+tickq 1000
+status
+
