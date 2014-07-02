@@ -67,11 +67,8 @@ Hashmap* hashmap_allocate(unsigned int size)
     hashmap->overflow = 0;
     hashmap->resizes = 0;
     hashmap->max_depth = 0;
-    hashmap->data = malloc(size * sizeof(Bucket));
+    hashmap->data = calloc(1, size * sizeof(Bucket));
     CHECK_OOM(hashmap->data);
-
-    for (int i = 0; i < size; i++)
-        hashmap->data[i] = bucket_empty();
 
     return hashmap;
 }
