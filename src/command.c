@@ -83,7 +83,7 @@ void command_get(Location location)
 void command_tick(int count, LogLevel log_level)
 {
     if (count > 0)
-        logic_run_tick(current_world, count, log_level);
+        tick_run(current_world, count, log_level);
 }
 
 void command_messages(void)

@@ -1,4 +1,4 @@
-/* logic.h - Redstone logic implementation
+/* tick.h - Implementation of the TICK command
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_LOGIC_H
-#define REDPILE_LOGIC_H
+#ifndef REDPILE_TICK_H
+#define REDPILE_TICK_H
 
 #include "message.h"
+#include "world.h"
 
 typedef enum {
     LOG_QUIET,
@@ -27,6 +28,6 @@ typedef enum {
     LOG_VERBOSE
 } LogLevel;
 
-void logic_run_tick(World* world, unsigned int count, LogLevel log_level);
+void tick_run(World* world, unsigned int count, LogLevel log_level);
 
 #endif
