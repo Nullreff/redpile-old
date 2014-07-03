@@ -33,15 +33,14 @@
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
-#define SEND_POWER(NODE,POWER,DELAY) queue_add(messages, MESSAGE_POWER,  world->ticks + (DELAY), node, NODE, POWER)
-#define SEND_MOVE(NODE,DIR,DELAY)    queue_add(messages, MESSAGE_MOVE,   world->ticks + (DELAY), node, NODE, DIR  )
+#define SEND(NODE,CMD,VALUE,DELAY) queue_add(messages, CMD,  world->ticks + (DELAY), node, NODE, VALUE)
 #define CMD_POWER(POWER)             queue_add(sets,     MESSAGE_POWER,  world->ticks,           node, node, POWER)
-#define CMD_MOVE(DIR)                queue_add(sets,     MESSAGE_MOVE,   world->ticks,           node, node, DIR  )
+#define CMD_MOVE(DIR)                queue_add(sets,     MESSAGE_PUSH,   world->ticks,           node, node, DIR  )
 #define CMD_REMOVE()                 queue_add(sets,     MESSAGE_REMOVE, world->ticks,           node, node, 0    )
 
 TYPE_BEHAVIOR(push_move)
 {
-    Message* move_inst = messages_find_move(in);
+    Message* move_inst = messages_find_first(in, MESSAGE_PUSH | MESSAGE_PULL);
     if (move_inst != NULL)
     {
         CMD_MOVE(move_inst->message);
@@ -52,7 +51,7 @@ TYPE_BEHAVIOR(push_move)
 
 TYPE_BEHAVIOR(push_break)
 {
-    Message* move_inst = messages_find_move(in);
+    Message* move_inst = messages_find_first(in, MESSAGE_PUSH);
     if (move_inst != NULL)
     {
         CMD_REMOVE();
@@ -88,7 +87,7 @@ TYPE_BEHAVIOR(CONDUCTOR)
             continue;
 
         if (LOWER_POWER(found_node, power))
-            SEND_POWER(found_node, power, 0);
+            SEND(found_node, MESSAGE_POWER, power, 0);
     }
 
     return true;
@@ -137,7 +136,7 @@ TYPE_BEHAVIOR(WIRE)
             if (MATERIAL(right) != WIRE && MATERIAL(left) != WIRE &&
                 LOWER_POWER(found_node, wire_power))
             {
-                SEND_POWER(found_node, wire_power, 0);
+                SEND(found_node, MESSAGE_POWER, wire_power, 0);
             }
 
             if (covered)
@@ -149,13 +148,13 @@ TYPE_BEHAVIOR(WIRE)
         }
 
         if (LOWER_POWER(found_node, wire_power))
-            SEND_POWER(found_node, wire_power, 0);
+            SEND(found_node, MESSAGE_POWER, wire_power, 0);
     }
 
     // Block below
     Node* down_node = NODE_ADJACENT(node, DOWN);
     if (MATERIAL(down_node) == CONDUCTOR && LOWER_POWER(down_node, new_power))
-        SEND_POWER(down_node, new_power, 0);
+        SEND(down_node, MESSAGE_POWER, new_power, 0);
 
     return true;
 }
@@ -193,9 +192,9 @@ TYPE_BEHAVIOR(PISTON)
     CMD_POWER(new_power);
 
     if (state == EXTENDING)
-        SEND_MOVE(first, DIRECTION(node), 1);
+        SEND(first, MESSAGE_PUSH, DIRECTION(node), 1);
     else if (state == RETRACTING)
-        SEND_MOVE(second, direction_invert(DIRECTION(node)), 1);
+        SEND(second, MESSAGE_PULL, direction_invert(DIRECTION(node)), 1);
 
     return true;
 }
@@ -246,7 +245,7 @@ TYPE_BEHAVIOR(COMPARATOR)
 
     // Pass charge to the wire or conductor in front
     Node* found_node = NODE_ADJACENT(node, DIRECTION(node));
-    SEND_POWER(found_node, new_power, 1);
+    SEND(found_node, MESSAGE_POWER, new_power, 1);
 
     return true;
 }
@@ -286,7 +285,7 @@ TYPE_BEHAVIOR(REPEATER)
 
     // Pass charge to the wire or conductor in front after a delay
     Node* found_node = NODE_ADJACENT(node, DIRECTION(node));
-    SEND_POWER(found_node, MAX_POWER, STATE(node) + 1);
+    SEND(found_node, MESSAGE_POWER, MAX_POWER, STATE(node) + 1);
 
     return true;
 }
@@ -322,13 +321,13 @@ TYPE_BEHAVIOR(TORCH)
             continue;
 
         Node* found_node = NODE_ADJACENT(node, dir);
-        SEND_POWER(found_node, MAX_POWER, 1);
+        SEND(found_node, MESSAGE_POWER, MAX_POWER, 1);
     }
 
     // Pass charge up to a conductor
     Node* up_node = NODE_ADJACENT(node, UP);
     if (MATERIAL(up_node) == CONDUCTOR)
-        SEND_POWER(up_node, MAX_POWER, 1);
+        SEND(up_node, MESSAGE_POWER, MAX_POWER, 1);
 
     return true;
 }
@@ -338,13 +337,6 @@ TYPE_BEHAVIOR(SWITCH)
     if (RUN_BEHAVIOR(push_break))
         return true;
 
-    Message* move_inst = messages_find_move(in);
-    if (move_inst != NULL)
-    {
-        CMD_REMOVE();
-        return true;
-    }
-
     if (STATE(node) == 0)
         return true;
 
@@ -353,7 +345,7 @@ TYPE_BEHAVIOR(SWITCH)
     {
         Node* found_node = NODE_ADJACENT(node, dir);
         if (MATERIAL(found_node) != CONDUCTOR || dir == behind)
-            SEND_POWER(found_node, MAX_POWER, 0);
+            SEND(found_node, MESSAGE_POWER, MAX_POWER, 0);
     }
 
     return true;

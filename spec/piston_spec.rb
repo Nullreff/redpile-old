@@ -44,5 +44,35 @@ describe 'Piston' do
     result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
     result.should =~ /^\(0,0,3\) AIR$/
   end
+
+  it 'breaks a repeater when pushing' do
+    result = run(
+      'SET 0 0 0 SWITCH UP 1',
+      'SET 0 0 1 PISTON SOUTH',
+      'SET 0 0 2 REPEATER WEST 0',
+      'SET 0 0 3 AIR',
+      'TICK 2',
+      'GET 0 0 2',
+      'GET 0 0 3'
+    )
+    result.should =~ /^\(0,0,2\) EMPTY$/
+    result.should =~ /^\(0,0,3\) AIR$/
+  end
+
+  it 'does nothing to a repeater when pulling' do
+    result = run(
+      'SET 0 0 0 SWITCH UP 1',
+      'SET 0 0 1 PISTON SOUTH',
+      'SET 0 0 2 AIR',
+      'SET 0 0 3 REPEATER WEST',
+      'TICK 2',
+      'SET 0 0 0 SWITCH UP 0',
+      'TICK 2',
+      'GET 0 0 2',
+      'GET 0 0 3'
+    )
+    result.should =~ /^\(0,0,2\) AIR$/
+    result.should =~ /^\(0,0,3\) REPEATER 0 WEST 0$/
+  end
 end
 

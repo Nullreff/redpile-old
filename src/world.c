@@ -197,7 +197,8 @@ bool world_run_data(World* world, QueueData* data)
             FIELD_SET(data->target.node, 0, data->message);
             break;
 
-        case MESSAGE_MOVE:
+        case MESSAGE_PUSH:
+        case MESSAGE_PULL:
             target_loc = data->source.location;
             world_node_move(world, data->target.node, data->message);
             world_fill_missing(world, target_loc);

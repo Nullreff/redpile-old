@@ -79,11 +79,11 @@ bool messages_power_check(Messages* messages, Location loc, unsigned int power)
     return true;
 }
 
-Message* messages_find_move(Messages* messages)
+Message* messages_find_first(Messages* messages, MessageType type)
 {
     for (int i = 0; i < messages->size; i++)
     {
-        if (messages->data[i].type == MESSAGE_MOVE)
+        if ((messages->data[i].type & type) != 0)
             return messages->data + i;
     }
     return NULL;
@@ -174,7 +174,8 @@ void message_type_print(MessageType type, unsigned int message)
     switch (type)
     {
         case MESSAGE_POWER:  printf("POWER %u\n", message); break;
-        case MESSAGE_MOVE:   printf("MOVE %s\n", Directions[message]); break;
+        case MESSAGE_PUSH:   printf("PUSH %s\n", Directions[message]); break;
+        case MESSAGE_PULL:   printf("PULL %s\n", Directions[message]); break;
         case MESSAGE_REMOVE: printf("REMOVE\n"); break;
     }
 }
