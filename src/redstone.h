@@ -21,21 +21,24 @@
 
 #include "message.h"
 
-#define TYPE_METHOD(TYPE)\
-    void redstone_ ## TYPE ## _update(World* world, Node* node, Messages* in, Queue* messages, Queue* sets)
+#define TYPE_BEHAVIOR(NAME)\
+    bool redstone_behavior_ ## NAME(World* world, Node* node, Messages* in, Queue* messages, Queue* sets)
 
-#define TYPE_REGISTER(TYPE)\
-    case TYPE: redstone_ ## TYPE ## _update(world, node, in, output, sets); break
+#define RUN_BEHAVIOR(NAME)\
+    redstone_behavior_ ## NAME(world, node, in, messages, sets)
 
-TYPE_METHOD(EMPTY);
-TYPE_METHOD(AIR);
-TYPE_METHOD(INSULATOR);
-TYPE_METHOD(CONDUCTOR);
-TYPE_METHOD(WIRE);
-TYPE_METHOD(PISTON);
-TYPE_METHOD(COMPARATOR);
-TYPE_METHOD(REPEATER);
-TYPE_METHOD(TORCH);
-TYPE_METHOD(SWITCH);
+#define TYPE_REGISTER(NAME)\
+    case NAME: redstone_behavior_ ## NAME(world, node, in, output, sets); break
+
+TYPE_BEHAVIOR(EMPTY);
+TYPE_BEHAVIOR(AIR);
+TYPE_BEHAVIOR(INSULATOR);
+TYPE_BEHAVIOR(CONDUCTOR);
+TYPE_BEHAVIOR(WIRE);
+TYPE_BEHAVIOR(PISTON);
+TYPE_BEHAVIOR(COMPARATOR);
+TYPE_BEHAVIOR(REPEATER);
+TYPE_BEHAVIOR(TORCH);
+TYPE_BEHAVIOR(SWITCH);
 
 #endif
