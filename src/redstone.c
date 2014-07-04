@@ -62,7 +62,11 @@ TYPE_BEHAVIOR(push_break)
 
 TYPE_BEHAVIOR(EMPTY) { return true; }
 TYPE_BEHAVIOR(AIR) { return true; }
-TYPE_BEHAVIOR(INSULATOR) { return true; }
+TYPE_BEHAVIOR(INSULATOR)
+{
+    RUN_BEHAVIOR(push_move);
+    return true;
+}
 
 TYPE_BEHAVIOR(CONDUCTOR)
 {

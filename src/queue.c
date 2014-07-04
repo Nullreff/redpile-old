@@ -259,7 +259,9 @@ QueueNode* queue_find_nodes(Queue* messages, Node* target, unsigned long long ti
         assert(found != NULL && found->data.target.node == target);
         if (found->data.tick == tick)
             return found;
+        found = found->next;
     }
+    assert(found == NULL || found->data.target.node != target);
 
     return NULL;
 }
