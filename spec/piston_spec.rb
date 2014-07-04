@@ -21,7 +21,7 @@ describe 'Piston' do
         result = run(
           'SET 0 0 0 SWITCH UP 1',
           'SET 0 0 1 PISTON SOUTH',
-          "SET 0 0 2 #{type}",
+          "SET 0 0 3 #{type}",
           'TICKQ 2',
           'SET 0 0 0 SWITCH UP 0',
           'TICKQ 2',
