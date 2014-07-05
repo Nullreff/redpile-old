@@ -2,7 +2,7 @@ require 'spec_helper'
 include Helpers
 
 describe 'Piston' do
-  %w(CONDUCTOR INSULATOR).each do |type|
+  %w(CONDUCTOR INSULATOR PISTON).each do |type|
     context type do
       it 'is pushed one block' do
         result = run(
@@ -65,6 +65,41 @@ describe 'Piston' do
         result.should =~ /^\(0,0,2\) AIR$/
         result.should =~ /^\(0,0,3\) #{type}/
       end
+    end
+  end
+
+  context 'PISTON extended' do
+    it 'does not move when pushed' do
+      result = run(
+        'SET 0 0 1 PISTON SOUTH',
+        'SET 0 0 2 PISTON EAST',
+        'SET 1 0 2 CONDUCTOR',
+        'SET -1 0 2 SWITCH UP 1',
+        'TICKQ 2',
+        'SET 0 0 0 SWITCH UP 1',
+        'TICKQ 2',
+        'GET 0 0 2',
+        'GET 0 0 3'
+      )
+      result.should =~ /^\(0,0,2\) PISTON 15 EAST$/
+      result.should =~ /^\(0,0,3\) AIR$/
+    end
+    it 'does not move when pulled' do
+      result = run(
+        'SET 0 0 1 PISTON SOUTH',
+        'SET 0 0 3 PISTON EAST',
+        'SET 1 0 3 CONDUCTOR',
+        'SET -1 0 3 SWITCH UP 1',
+        'TICKQ 2',
+        'SET 0 0 0 SWITCH UP 1',
+        'TICKQ 2',
+        'SET 0 0 0 SWITCH UP 0',
+        'TICKQ 2',
+        'GET 0 0 2',
+        'GET 0 0 3'
+      )
+      result.should =~ /^\(0,0,2\) AIR$/
+      result.should =~ /^\(0,0,3\) PISTON 15 EAST$/
     end
   end
 end

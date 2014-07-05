@@ -177,14 +177,14 @@ TYPE_BEHAVIOR(PISTON)
     unsigned int state;
     if (new_power == 0)
     {
-        if (MATERIAL(first) == AIR)
+        if (MATERIAL(first) == AIR && MATERIAL(second) != AIR && POWER(node) != 0)
             state = RETRACTING;
         else
             state = RETRACTED;
     }
     else
     {
-        if (MATERIAL(second) == AIR)
+        if (MATERIAL(second) == AIR && MATERIAL(first) != AIR && POWER(node) == 0)
             state = EXTENDING;
         else
             state = EXTENDED;
