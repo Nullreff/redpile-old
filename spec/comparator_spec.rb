@@ -2,6 +2,17 @@ require 'spec_helper'
 include Helpers
 
 describe 'Comparator' do
+  ['wire', 'conductor'].each do |material|
+    it "passes power to a #{material}" do
+      run(
+        'SET 0 0 0 SWITCH UP 1',
+        'SET 0 0 1 COMPARATOR SOUTH 0',
+        "SET 0 0 2 #{material}",
+        'TICK 2'
+      ).should =~ /\(0,0,2\) POWER 15/
+    end
+  end
+
   it 'allows power through if side power is less than the input' do
     run(
       'SET 0 0 0 SWITCH UP 1',
