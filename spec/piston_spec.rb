@@ -3,7 +3,7 @@ include Helpers
 
 describe 'Piston' do
   %w(CONDUCTOR INSULATOR PISTON).each do |type|
-    context type do
+    context "moving #{type}" do
       it 'is pushed one block' do
         result = run(
           'SET 0 0 0 SWITCH UP 1',
@@ -35,7 +35,7 @@ describe 'Piston' do
   end
 
   %w(WIRE TORCH REPEATER COMPARATOR SWITCH).each do |type|
-    context type do
+    context "moving #{type}" do
       it 'breaks when pushed' do
         result = run(
           'SET 0 0 0 SWITCH UP 1',
@@ -68,7 +68,7 @@ describe 'Piston' do
     end
   end
 
-  context 'PISTON extended' do
+  context 'moving extended PISTON' do
     it 'does not move when pushed' do
       result = run(
         'SET 0 0 1 PISTON SOUTH',
