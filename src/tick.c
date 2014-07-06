@@ -189,7 +189,7 @@ void tick_run(World* world, unsigned int count, LogLevel log_level)
         if (log_level == LOG_VERBOSE)
             printf("Nodes:\n");
 
-        FOR_NODE_LIST(world->nodes)
+        FOR_NODE_LIST(node, world->nodes)
         {
             if (log_level == LOG_VERBOSE)
                 node_print(node);

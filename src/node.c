@@ -197,7 +197,7 @@ void node_list_move_after(NodeList* blocks, Node* node, Node* target)
 
 void node_list_print(NodeList* blocks)
 {
-    FOR_NODE_LIST(blocks)
+    FOR_NODE_LIST(node, blocks)
     {
         node_print(node);
     }

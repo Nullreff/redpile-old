@@ -72,7 +72,7 @@ typedef struct {
 
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
 #define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
-#define FOR_NODE_LIST(LIST) for (Node* node = LIST->nodes; node != NULL; node = node->next)
+#define FOR_NODE_LIST(NODE,LIST) for (Node* NODE = LIST->nodes; NODE != NULL; NODE = NODE->next)
 
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
