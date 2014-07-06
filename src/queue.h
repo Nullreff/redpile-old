@@ -22,11 +22,12 @@
 #include "location.h"
 #include "hashmap.h"
 #include "node.h"
+#include "type.h"
 
 typedef struct {
     struct {
         Location location;
-        unsigned int type;
+        Type* type;
     } source;
     struct {
         Location location;

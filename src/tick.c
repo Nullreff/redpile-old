@@ -19,10 +19,9 @@
 #include "tick.h"
 #include "redstone.h"
 
-static bool redstone_node_missing(Location location, Type* type)
+static int redstone_node_missing(TypeList* types, Location location)
 {
-    *type = AIR;
-    return true;
+    return 0;
 }
 
 static Message message_create(QueueData* data)
@@ -69,18 +68,17 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
 {
     Messages* in = find_input(world, node, messages);
 
-    switch (node->type)
+    switch (node->type - world->types->data)
     {
-        TYPE_REGISTER(EMPTY);
-        TYPE_REGISTER(AIR);
-        TYPE_REGISTER(INSULATOR);
-        TYPE_REGISTER(WIRE);
-        TYPE_REGISTER(CONDUCTOR);
-        TYPE_REGISTER(TORCH);
-        TYPE_REGISTER(PISTON);
-        TYPE_REGISTER(REPEATER);
-        TYPE_REGISTER(COMPARATOR);
-        TYPE_REGISTER(SWITCH);
+        TYPE_REGISTER(0, AIR);
+        TYPE_REGISTER(1, INSULATOR);
+        TYPE_REGISTER(2, WIRE);
+        TYPE_REGISTER(3, CONDUCTOR);
+        TYPE_REGISTER(4, TORCH);
+        TYPE_REGISTER(5, PISTON);
+        TYPE_REGISTER(6, REPEATER);
+        TYPE_REGISTER(7, COMPARATOR);
+        TYPE_REGISTER(8, SWITCH);
         default: ERROR("Encountered unknown block material");
     }
 

@@ -25,8 +25,6 @@
 
 int yylex(void);
 void yyerror(const char* const message);
-bool type_parse(char* string, Type* type);
-bool direction_parse(char* string, Direction* dir);
 %}
 
 %code requires {
@@ -39,7 +37,7 @@ bool direction_parse(char* string, Direction* dir);
     int integer;
     char *string;
     Location location;
-    Type type;
+    Type* type;
     Direction direction;
     SetArgs set_args;
 }
@@ -80,7 +78,7 @@ line: LINE_BREAK
 location: INT INT INT { $$ = location_create($1, $2, $3); }
 ;
 
-type: STRING { Type type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
+type: STRING { Type* type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
 ;
 
 direction: STRING { Direction dir; if (!direction_parse($1, &dir)) YYABORT; $$ = dir; }
@@ -126,37 +124,4 @@ void yyerror(const char* const message)
     command_error(message);
 }
 
-bool type_parse(char* string, Type* type)
-{
-    for (int i = 0; i < MATERIALS_COUNT; i++)
-    {
-        if (strcasecmp(string, Materials[i]) == 0)
-        {
-            *type = i;
-            free(string);
-            return true;
-        }
-    }
-
-    fprintf(stderr, "Unknown type: '%s'\n", string);
-    free(string);
-    return false;
-}
-
-bool direction_parse(char* string, Direction* dir)
-{
-    for (int i = 0; i < DIRECTIONS_COUNT; i++)
-    {
-        if (strcasecmp(string, Directions[i]) == 0)
-        {
-            *dir = i;
-            free(string);
-            return true;
-        }
-    }
-
-    fprintf(stderr, "Unknown direction: '%s'\n", string);
-    free(string);
-    return false;
-}
 

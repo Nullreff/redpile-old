@@ -19,32 +19,15 @@
 #include "node.h"
 #include "redpile.h"
 
-char* Materials[MATERIALS_COUNT] = {
-    "EMPTY",
-    "AIR",
-    "INSULATOR",
-    "WIRE",
-    "CONDUCTOR",
-    "TORCH",
-    "PISTON",
-    "REPEATER",
-    "COMPARATOR",
-    "SWITCH"
-};
-
-unsigned int FieldCounts[MATERIALS_COUNT] = {0, 0, 0, 1, 1, 2, 2, 3, 3, 3};
-
-static Node* node_allocate(Location location, Type type)
+static Node* node_allocate(Location location, Type* type)
 {
-    unsigned int count = FieldCounts[type];
-
-    Node* node = calloc(1, sizeof(Node) + (count * sizeof(Field)));
+    Node* node = calloc(1, sizeof(Node) + (type->field_count * sizeof(Field)));
     CHECK_OOM(node);
     node->location = location;
     node->type = type;
     node->store = NULL;
     node->last_input = NULL;
-    node->fields.count = count;
+    node->fields.count = type->field_count;
     return node;
 }
 
@@ -97,7 +80,7 @@ void node_print(Node* node)
            node->location.x,
            node->location.y,
            node->location.z,
-           Materials[node->type]);
+           node->type->name);
 
     // Power
     if (node->fields.count > 0)
@@ -142,7 +125,7 @@ void node_list_free(NodeList* blocks)
     free(blocks);
 }
 
-Node* node_list_append(NodeList* blocks, Location location, Type type)
+Node* node_list_append(NodeList* blocks, Location location, Type* type)
 {
     Node* node = node_allocate(location, type);
 

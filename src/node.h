@@ -22,25 +22,13 @@
 #include "location.h"
 #include "redpile.h"
 #include "message.h"
+#include "type.h"
 
 #define MATERIALS_COUNT 10
 extern char* Materials[MATERIALS_COUNT];
 extern unsigned int FieldCounts[MATERIALS_COUNT];
 
-// The ordering of these matter
-typedef enum {
-    EMPTY,
-    AIR,
-    INSULATOR,
-    WIRE,
-    CONDUCTOR,
-    TORCH,
-    PISTON,
-    REPEATER,
-    COMPARATOR,
-    SWITCH
-} Material;
-
+typedef int Field;
 typedef struct {
     unsigned int count;
     Field data[];
@@ -48,7 +36,7 @@ typedef struct {
 
 typedef struct Node {
     Location location;
-    Type type;
+    Type* type;
 
     // We keep references to the 6 blocks adjacent to this one for faster
     // access during redstone ticks.  This adds a bit of extra time to
@@ -81,7 +69,7 @@ void node_print_power(Node* node);
 
 NodeList* node_list_allocate(void);
 void node_list_free(NodeList* blocks);
-Node* node_list_append(NodeList* blocks, Location location, Type type);
+Node* node_list_append(NodeList* blocks, Location location, Type* type);
 void node_list_remove(NodeList* blocks, Node* node);
 void node_list_move_after(NodeList* blocks, Node* node, Node* target);
 void node_list_print(NodeList* blocks);

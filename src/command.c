@@ -31,7 +31,7 @@ void command_status(void)
     world_stats_print(world_get_stats(current_world));
 }
 
-void command_set(Location location, Type type, SetArgs args)
+void command_set(Location location, Type* type, SetArgs args)
 {
     Node* node = world_set_node(current_world, location, type);
     if (node != NULL)
@@ -41,7 +41,7 @@ void command_set(Location location, Type type, SetArgs args)
     }
 }
 
-void command_setr(Location l1, Location l2, Type type, SetArgs args)
+void command_setr(Location l1, Location l2, Type* type, SetArgs args)
 {
     int x_start = l1.x > l2.x ? l2.x : l1.x;
     int x_end   = l1.x > l2.x ? l1.x : l2.x;
@@ -56,7 +56,7 @@ void command_setr(Location l1, Location l2, Type type, SetArgs args)
         command_set(location_create(x, y, z), type, args);
 }
 
-void command_setrs(Location l1, Location l2, Location step, Type type, SetArgs args)
+void command_setrs(Location l1, Location l2, Location step, Type* type, SetArgs args)
 {
     int x_start = l1.x > l2.x ? l2.x : l1.x;
     int x_end   = l1.x > l2.x ? l1.x : l2.x;
@@ -96,3 +96,43 @@ void command_error(const char* message)
     fprintf(stderr, "%s\n", message);
 }
 
+bool type_parse(char* string, Type** type)
+{
+    if (strcasecmp(string, "EMPTY") == 0)
+    {
+        *type = NULL;
+        free(string);
+        return true;
+    }
+
+    for (int i = 0; i < current_world->types->count; i++)
+    {
+        if (strcasecmp(string, current_world->types->data[i].name) == 0)
+        {
+            *type = current_world->types->data + i;
+            free(string);
+            return true;
+        }
+    }
+
+    fprintf(stderr, "Unknown type: '%s'\n", string);
+    free(string);
+    return false;
+}
+
+bool direction_parse(char* string, Direction* dir)
+{
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
+    {
+        if (strcasecmp(string, Directions[i]) == 0)
+        {
+            *dir = i;
+            free(string);
+            return true;
+        }
+    }
+
+    fprintf(stderr, "Unknown direction: '%s'\n", string);
+    free(string);
+    return false;
+}

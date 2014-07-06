@@ -52,17 +52,18 @@ static void world_reset_adjacent_nodes(World* world, Node* node)
     }
 }
 
-static bool node_missing_noop(Location location, Type* type)
+static int node_missing_noop(TypeList* types, Location location)
 {
-    return false;
+    return -1;
 }
 
 static bool world_fill_missing(World* world, Location location)
 {
-    Type type;
-    if (world->node_missing(location, &type))
+    int type_index = world->node_missing(world->types, location);
+    if (type_index >= 0)
     {
-        world_set_node(world, location, type);
+        assert(type_index < world->types->count);
+        world_set_node(world, location, world->types->data + type_index);
         return true;
     }
     return false;
@@ -70,20 +71,21 @@ static bool world_fill_missing(World* world, Location location)
 
 static void world_node_move(World* world, Node* node, Direction direction)
 {
-    Type type = node->type;
+    Type* type = node->type;
     Location new_location = location_move(node->location, direction, 1);
 
     world_remove_node(world, node->location);
     world_set_node(world, new_location, type);
 }
 
-World* world_allocate(unsigned int size)
+World* world_allocate(unsigned int size, TypeList* types)
 {
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
 
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
+    world->types = types;
     world->node_missing = node_missing_noop;
 
     // Stats
@@ -102,7 +104,7 @@ void world_free(World* world)
     free(world);
 }
 
-Node* world_set_node(World* world, Location location, Type type)
+Node* world_set_node(World* world, Location location, Type* type)
 {
     if (type == EMPTY)
     {
@@ -176,9 +178,9 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, message_max_queued, u);
 }
 
-void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type))
+void world_set_node_missing_callback(World* world, int (*node_missing)(TypeList* types, Location location))
 {
-    world->node_missing = callback;
+    world->node_missing = node_missing;
 }
 
 void world_clear_node_missing_callback(World* world)

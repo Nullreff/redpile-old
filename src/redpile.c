@@ -22,6 +22,7 @@
 #include "world.h"
 #include "bench.h"
 #include "linenoise.h"
+#include "type.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
@@ -129,6 +130,22 @@ static void load_config(int argc, char* argv[])
     }
 }
 
+#define TYPE_COUNT 9
+static TypeList* load_types(void)
+{
+    TypeList* types = type_list_allocate(TYPE_COUNT);
+    types->data[0] = (Type){"AIR",        0};
+    types->data[1] = (Type){"INSULATOR",  0};
+    types->data[2] = (Type){"WIRE",       1};
+    types->data[3] = (Type){"CONDUCTOR",  1};
+    types->data[4] = (Type){"TORCH",      2};
+    types->data[5] = (Type){"PISTON",     2};
+    types->data[6] = (Type){"REPEATER",   3};
+    types->data[7] = (Type){"COMPARATOR", 3};
+    types->data[8] = (Type){"SWITCH",     3};
+    return types;
+}
+
 static void redpile_cleanup(void)
 {
     if (current_world != NULL)
@@ -181,7 +198,7 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    current_world = world_allocate(config.world_size);
+    current_world = world_allocate(config.world_size, load_types());
 
     if (config.benchmark)
     {

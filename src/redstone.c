@@ -38,6 +38,17 @@
 #define CMD_MOVE(DIR)                queue_add(sets,     MESSAGE_PUSH,   world->ticks,           node, node, DIR  )
 #define CMD_REMOVE()                 queue_add(sets,     MESSAGE_REMOVE, world->ticks,           node, node, 0    )
 
+#define AIR        (world->types->data + 0)
+#define INSULATOR  (world->types->data + 1)
+#define WIRE       (world->types->data + 2)
+#define CONDUCTOR  (world->types->data + 3)
+#define TORCH      (world->types->data + 4)
+#define PISTON     (world->types->data + 5)
+#define REPEATER   (world->types->data + 6)
+#define COMPARATOR (world->types->data + 7)
+#define SWITCH     (world->types->data + 8)
+
+
 TYPE_BEHAVIOR(push_move)
 {
     Message* move_inst = messages_find_first(in, MESSAGE_PUSH | MESSAGE_PULL);
@@ -60,7 +71,6 @@ TYPE_BEHAVIOR(push_break)
     return false;
 }
 
-TYPE_BEHAVIOR(EMPTY) { return true; }
 TYPE_BEHAVIOR(AIR) { return true; }
 TYPE_BEHAVIOR(INSULATOR)
 {

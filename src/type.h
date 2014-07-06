@@ -1,4 +1,4 @@
-/* redstone.h - Redstone logic implementation
+/* type.c - Type information and behavior dispatch
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,28 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_REDSTONE_H
-#define REDPILE_REDSTONE_H
+#ifndef REDPILE_TYPE_H
+#define REDPILE_TYPE_H
 
-#include "message.h"
+#define EMPTY ((Type*)NULL)
 
-#define TYPE_BEHAVIOR(NAME)\
-    bool redstone_behavior_ ## NAME(World* world, Node* node, Messages* in, Queue* messages, Queue* sets)
+typedef struct {
+    char* name;
+    unsigned int field_count;
+} Type;
 
-#define RUN_BEHAVIOR(NAME)\
-    redstone_behavior_ ## NAME(world, node, in, messages, sets)
+typedef struct {
+    unsigned int count;
+    Type data[];
+} TypeList;
 
-#define TYPE_REGISTER(INDEX,NAME)\
-    case INDEX: redstone_behavior_ ## NAME(world, node, in, output, sets); break
-
-TYPE_BEHAVIOR(AIR);
-TYPE_BEHAVIOR(INSULATOR);
-TYPE_BEHAVIOR(CONDUCTOR);
-TYPE_BEHAVIOR(WIRE);
-TYPE_BEHAVIOR(PISTON);
-TYPE_BEHAVIOR(COMPARATOR);
-TYPE_BEHAVIOR(REPEATER);
-TYPE_BEHAVIOR(TORCH);
-TYPE_BEHAVIOR(SWITCH);
+TypeList* type_list_allocate(unsigned int count);
 
 #endif

@@ -20,6 +20,7 @@
 #define REDPILE_MESSAGE_H
 
 #include "hashmap.h"
+#include "type.h"
 
 typedef enum {
     MESSAGE_POWER  = 0,
@@ -31,7 +32,7 @@ typedef enum {
 typedef struct {
     struct {
         Location location;
-        Type type;
+        Type* type;
     } source;
     MessageType type;
     unsigned int message;

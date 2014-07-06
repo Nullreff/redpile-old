@@ -30,13 +30,17 @@ typedef struct {
     // See node.c for more information.
     NodeList* nodes;
 
+    // All types are a staticly sized array.
+    // see type.c for more information.
+    TypeList* types;
+
     // Fast block lookup is done using a hashmap.
     // See hashmap.c for more information.
     Hashmap* hashmap;
 
     // Used for calculating and storing missing
     // nodes during a redstone tick.
-    bool (*node_missing)(Location location, Type* type);
+    int (*node_missing)(TypeList* types, Location location);
 
     // Additional stats
     unsigned long long ticks; // Redstone ticks
@@ -59,15 +63,15 @@ typedef struct {
 
 #define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)
 
-World* world_allocate(unsigned int size);
+World* world_allocate(unsigned int size, TypeList* types);
 void world_free(World* world);
-Node* world_set_node(World* world, Location location, Type type);
+Node* world_set_node(World* world, Location location, Type* type);
 Node* world_get_node(World* world, Location location);
 void world_remove_node(World* world, Location location);
 Node* world_get_adjacent_node(World* world, Node* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
-void world_set_node_missing_callback(World* world, bool (*callback)(Location location, Type* type));
+void world_set_node_missing_callback(World* world, int (*node_missing)(TypeList* types, Location location));
 void world_clear_node_missing_callback(World* world);
 bool world_run_data(World* world, QueueData* data);
 void world_print_messages(World* world);
