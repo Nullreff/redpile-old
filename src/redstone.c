@@ -19,6 +19,7 @@
 #include "redstone.h"
 #include "redpile.h"
 
+#define TYPE_COUNT 9
 #define MAX_POWER 15
 
 #define LOCATION(NODE)  ((NODE)->location)
@@ -27,7 +28,7 @@
 #define DIRECTION(NODE) FIELD_GET(NODE, 1)
 #define STATE(NODE)     FIELD_GET(NODE, 2)
 
-#define LOWER_POWER(NODE,POWER) messages_power_check(data->in, LOCATION(NODE), POWER)
+#define LOWER_POWER(NODE,POWER) (messages_find_source(data->input, LOCATION(NODE)) < POWER)
 #define NODE_ADJACENT(NODE,DIR) world_get_adjacent_node(data->world, NODE, DIR)
 #define MOVE_TO_NODE(NODE,DIR) NODE = NODE_ADJACENT(NODE, DIR)
 
@@ -46,34 +47,39 @@
 #define COMPARATOR (data->world->types->data + 7)
 #define SWITCH     (data->world->types->data + 8)
 
-TYPE_BEHAVIOR(PUSH_MOVE)
+#define BEHAVIOR_DEFINE(METHOD,MASK)\
+    unsigned int redstone_behavoir_ ## METHOD ## _mask = MASK;\
+    bool redstone_behavior_ ## METHOD(struct BehaviorData* data)
+
+#define BEHAVIOR_ADD(NAME, INDEX, METHOD)\
+    NAME ## _behaviors->data[INDEX].mask = redstone_behavoir_ ## METHOD ## _mask;\
+    NAME ## _behaviors->data[INDEX].process = redstone_behavior_ ## METHOD
+
+BEHAVIOR_DEFINE(push_move, MESSAGE_PUSH | MESSAGE_PULL)
 {
-    Message* move_inst = messages_find_first(data->in, MESSAGE_PUSH | MESSAGE_PULL);
-    if (move_inst != NULL)
-    {
-        CMD_MOVE(move_inst->message);
-        return true;
-    }
-    return false;
+    if (data->input->size == 0)
+        return false;
+
+    Direction dir = messages_find_first(data->input);
+    CMD_MOVE(dir);
+    return true;
 }
 
-TYPE_BEHAVIOR(PUSH_BREAK)
+BEHAVIOR_DEFINE(push_break, MESSAGE_PUSH)
 {
-    Message* move_inst = messages_find_first(data->in, MESSAGE_PUSH);
-    if (move_inst != NULL)
-    {
-        CMD_REMOVE();
-        return true;
-    }
-    return false;
+    if (data->input->size == 0)
+        return false;
+
+    CMD_REMOVE();
+    return true;
 }
 
-TYPE_BEHAVIOR(WIRE)
+BEHAVIOR_DEFINE(power_wire, MESSAGE_POWER)
 {
     Node* above = NODE_ADJACENT(data->node, UP);
     bool covered = above != NULL && MATERIAL(above) != AIR && MATERIAL(above) != EMPTY;
 
-    int new_power = messages_max_power(data->in);
+    int new_power = messages_find_max(data->input);
     CMD_POWER(new_power);
 
     if (new_power == 0)
@@ -131,9 +137,9 @@ TYPE_BEHAVIOR(WIRE)
     return true;
 }
 
-TYPE_BEHAVIOR(CONDUCTOR)
+BEHAVIOR_DEFINE(power_conductor, MESSAGE_POWER)
 {
-    unsigned int power = messages_max_power(data->in);
+    unsigned int power = messages_find_max(data->input);
     CMD_POWER(power);
     if (power == 0)
         return true;
@@ -157,19 +163,10 @@ TYPE_BEHAVIOR(CONDUCTOR)
     return true;
 }
 
-TYPE_BEHAVIOR(TORCH)
+BEHAVIOR_DEFINE(power_torch, MESSAGE_POWER)
 {
-    unsigned int new_power = 0;
     Location loc_behind = location_move(LOCATION(data->node), direction_invert(DIRECTION(data->node)), 1);
-    for (int i = 0; i < data->in->size; i++)
-    {
-        Message* inst = data->in->data + i;
-
-        // Power coming from behind
-        if (LOCATION_EQUALS(inst->source.location, loc_behind))
-            new_power = inst->message;
-    }
-
+    unsigned int new_power = messages_find_source(data->input, loc_behind);
     CMD_POWER(new_power);
 
     if (new_power > 0)
@@ -200,12 +197,12 @@ TYPE_BEHAVIOR(TORCH)
 #define RETRACTING 1
 #define EXTENDED 2
 #define EXTENDING 3
-TYPE_BEHAVIOR(PISTON)
+BEHAVIOR_DEFINE(power_piston, MESSAGE_POWER)
 {
     Node* first = NODE_ADJACENT(data->node, DIRECTION(data->node));
     Node* second = NODE_ADJACENT(first, DIRECTION(data->node));
 
-    unsigned int new_power = messages_max_power(data->in);
+    unsigned int new_power = messages_find_max(data->input);
 
     unsigned int state;
     if (new_power == 0)
@@ -236,34 +233,22 @@ TYPE_BEHAVIOR(PISTON)
     return true;
 }
 
-TYPE_BEHAVIOR(REPEATER)
+BEHAVIOR_DEFINE(power_repeater, MESSAGE_POWER)
 {
-    bool side_powered = false;
-    int new_power = 0;
-    Location right  = location_move(LOCATION(data->node), direction_right(DIRECTION(data->node)), 1);
-    Location left   = location_move(LOCATION(data->node), direction_left(DIRECTION(data->node)), 1);
     Location behind = location_move(LOCATION(data->node), direction_invert(DIRECTION(data->node)), 1);
     
-    for (int i = 0; i < data->in->size; i++)
-    {
-        Message* inst = data->in->data + i;
-
-        // Power coming from the side
-        if (inst->source.type == REPEATER &&
-            (LOCATION_EQUALS(inst->source.location, right) ||
-            LOCATION_EQUALS(inst->source.location, left)))
-        {
-            side_powered = (inst->message > 0) || side_powered;
-        }
-
-        // Power coming from behind
-        if (LOCATION_EQUALS(inst->source.location, behind))
-            new_power = inst->message;
-    }
-
+    int new_power = messages_find_source(data->input, behind);
     CMD_POWER(new_power);
 
-    if (new_power == 0 || side_powered)
+    if (new_power == 0)
+        return true;
+
+    Location right  = location_move(LOCATION(data->node), direction_right(DIRECTION(data->node)), 1);
+    Location left   = location_move(LOCATION(data->node), direction_left(DIRECTION(data->node)), 1);
+    bool side_powered = messages_find_source(data->input, left) > 0 ||
+                        messages_find_source(data->input, right) > 0;
+
+    if (side_powered)
         return true;
 
     // Pass charge to the wire or conductor in front after a delay
@@ -273,30 +258,13 @@ TYPE_BEHAVIOR(REPEATER)
     return true;
 }
 
-TYPE_BEHAVIOR(COMPARATOR)
+BEHAVIOR_DEFINE(power_comparator, MESSAGE_POWER)
 {
-    unsigned int side_power = 0;
-    int new_power = 0;
     Location right  = location_move(LOCATION(data->node), direction_right(DIRECTION(data->node)), 1);
     Location left   = location_move(LOCATION(data->node), direction_left(DIRECTION(data->node)), 1);
     Location behind = location_move(LOCATION(data->node), direction_invert(DIRECTION(data->node)), 1);
     
-    for (int i = 0; i < data->in->size; i++)
-    {
-        Message* inst = data->in->data + i;
-
-        // Power coming from the side
-        if ((LOCATION_EQUALS(inst->source.location, right) ||
-             LOCATION_EQUALS(inst->source.location, left)) &&
-            side_power < inst->message)
-        {
-            side_power = inst->message;
-        }
-
-        // Power coming from behind
-        if (LOCATION_EQUALS(inst->source.location, behind))
-            new_power = inst->message;
-    }
+    unsigned int new_power = messages_find_source(data->input, behind);
 
     CMD_POWER(new_power);
 
@@ -304,6 +272,9 @@ TYPE_BEHAVIOR(COMPARATOR)
         return true;
 
     int change = new_power;
+    unsigned int left_power = messages_find_source(data->input, left);
+    unsigned int right_power = messages_find_source(data->input, right);
+    unsigned int side_power = left_power > right_power ? left_power : right_power;
 
     // Subtraction mode
     if (STATE(data->node) > 0)
@@ -321,7 +292,7 @@ TYPE_BEHAVIOR(COMPARATOR)
     return true;
 }
 
-TYPE_BEHAVIOR(SWITCH)
+BEHAVIOR_DEFINE(power_switch, MESSAGE_POWER)
 {
     if (STATE(data->node) == 0)
         return true;
@@ -337,7 +308,6 @@ TYPE_BEHAVIOR(SWITCH)
     return true;
 }
 
-#define TYPE_COUNT 9
 TypeList* redstone_load_types(void)
 {
     TypeList* types = type_list_allocate(TYPE_COUNT);
@@ -346,42 +316,42 @@ TypeList* redstone_load_types(void)
     types->data[0] = (Type){"AIR", 0, air_behaviors};
 
     BehaviorList* insulator_behaviors = behavior_list_allocate(1);
-    insulator_behaviors->data[0].process = BEHAVIOR(PUSH_MOVE);
+    BEHAVIOR_ADD(insulator, 0, push_move);
     types->data[1] = (Type){"INSULATOR", 0, insulator_behaviors};
 
     BehaviorList* wire_behaviors = behavior_list_allocate(2);
-    wire_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    wire_behaviors->data[1].process = BEHAVIOR(WIRE);
+    BEHAVIOR_ADD(wire, 0, push_break);
+    BEHAVIOR_ADD(wire, 1, power_wire);
     types->data[2] = (Type){"WIRE", 1, wire_behaviors};
 
     BehaviorList* conductor_behaviors = behavior_list_allocate(2);
-    conductor_behaviors->data[0].process = BEHAVIOR(PUSH_MOVE);
-    conductor_behaviors->data[1].process = BEHAVIOR(CONDUCTOR);
+    BEHAVIOR_ADD(conductor, 0, push_move);
+    BEHAVIOR_ADD(conductor, 1, power_conductor);
     types->data[3] = (Type){"CONDUCTOR", 1, conductor_behaviors};
 
     BehaviorList* torch_behaviors = behavior_list_allocate(2);
-    torch_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    torch_behaviors->data[1].process = BEHAVIOR(TORCH);
+    BEHAVIOR_ADD(torch, 0, push_break);
+    BEHAVIOR_ADD(torch, 1, power_torch);
     types->data[4] = (Type){"TORCH", 2, torch_behaviors};
 
     BehaviorList* piston_behaviors = behavior_list_allocate(2);
-    piston_behaviors->data[0].process = BEHAVIOR(PISTON);
-    piston_behaviors->data[1].process = BEHAVIOR(PUSH_MOVE);
+    BEHAVIOR_ADD(piston, 0, power_piston);
+    BEHAVIOR_ADD(piston, 1, push_move);
     types->data[5] = (Type){"PISTON", 2, piston_behaviors};
 
     BehaviorList* repeater_behaviors = behavior_list_allocate(2);
-    repeater_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    repeater_behaviors->data[1].process = BEHAVIOR(REPEATER);
+    BEHAVIOR_ADD(repeater, 0, push_break);
+    BEHAVIOR_ADD(repeater, 1, power_repeater);
     types->data[6] = (Type){"REPEATER", 3, repeater_behaviors};
 
     BehaviorList* comparator_behaviors = behavior_list_allocate(2);
-    comparator_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    comparator_behaviors->data[1].process = BEHAVIOR(COMPARATOR);
+    BEHAVIOR_ADD(comparator, 0, push_break);
+    BEHAVIOR_ADD(comparator, 1, power_comparator);
     types->data[7] = (Type){"COMPARATOR", 3, comparator_behaviors};
 
     BehaviorList* switch_behaviors = behavior_list_allocate(2);
-    switch_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    switch_behaviors->data[1].process = BEHAVIOR(SWITCH);
+    BEHAVIOR_ADD(switch, 0, push_break);
+    BEHAVIOR_ADD(switch, 1, power_switch);
     types->data[8] = (Type){"SWITCH", 3, switch_behaviors};
 
     return types;

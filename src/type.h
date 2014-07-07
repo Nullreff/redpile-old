@@ -27,6 +27,7 @@
 struct BehaviorData;
 
 typedef struct {
+    unsigned int mask;
     bool (*process)(struct BehaviorData* data);
 } Behavior;
 

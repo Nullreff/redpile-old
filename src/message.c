@@ -31,6 +31,19 @@ void messages_copy(Message* dest, Messages* source)
     memcpy(dest, source->data, sizeof(Message) * source->size);
 }
 
+Messages* messages_filter_copy(Messages* messages, unsigned int mask)
+{
+    Messages* new = messages_allocate(messages->size);
+    unsigned int new_index = 0;
+    for (int i = 0; i < messages->size; i++)
+    {
+        if ((messages->data[i].type & mask) != 0)
+            memcpy(new->data + new_index++, messages->data + i, sizeof(Message));
+    }
+    new->size = new_index;
+    return new;
+}
+
 bool messages_equal(Messages* first, Messages* second)
 {
     if (first->size != second->size)
@@ -56,37 +69,30 @@ Messages* messages_resize(Messages* messages, unsigned int size)
     return messages;
 }
 
-unsigned int messages_max_power(Messages* messages)
+unsigned int messages_find_first(Messages* messages)
+{
+    return messages->size != 0 ? messages->data[0].message : 0;
+}
+
+unsigned int messages_find_max(Messages* messages)
 {
     unsigned int max = 0;
     for (int i = 0; i < messages->size; i++)
     {
-        if (messages->data[i].type == MESSAGE_POWER && messages->data[i].message > max)
+        if (messages->data[i].message > max)
             max = messages->data[i].message;
     }
     return max;
 }
 
-bool messages_power_check(Messages* messages, Location loc, unsigned int power)
+unsigned int messages_find_source(Messages* messages, Location source)
 {
     for (int i = 0; i < messages->size; i++)
     {
-        if (LOCATION_EQUALS(messages->data[i].source.location, loc) &&
-            messages->data[i].type == MESSAGE_POWER &&
-            messages->data[i].message >= power)
-            return false;
+        if (LOCATION_EQUALS(messages->data[i].source.location, source))
+            return messages->data[i].message;
     }
-    return true;
-}
-
-Message* messages_find_first(Messages* messages, MessageType type)
-{
-    for (int i = 0; i < messages->size; i++)
-    {
-        if ((messages->data[i].type & type) != 0)
-            return messages->data + i;
-    }
-    return NULL;
+    return 0;
 }
 
 MessageStore* message_store_allocate(unsigned long long tick)

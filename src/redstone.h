@@ -22,22 +22,6 @@
 #include "message.h"
 #include "world.h"
 
-#define TYPE_BEHAVIOR(NAME)\
-    bool redstone_behavior_ ## NAME(struct BehaviorData* data)
-
-#define BEHAVIOR(NAME)\
-    redstone_behavior_ ## NAME
-
-TYPE_BEHAVIOR(PUSH_MOVE);
-TYPE_BEHAVIOR(PUSH_BREAK);
-TYPE_BEHAVIOR(INSULATOR);
-TYPE_BEHAVIOR(WIRE);
-TYPE_BEHAVIOR(CONDUCTOR);
-TYPE_BEHAVIOR(TORCH);
-TYPE_BEHAVIOR(PISTON);
-TYPE_BEHAVIOR(REPEATER);
-TYPE_BEHAVIOR(COMPARATOR);
-TYPE_BEHAVIOR(SWITCH);
 TypeList* redstone_load_types(void);
 
 #endif

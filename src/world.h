@@ -64,7 +64,7 @@ typedef struct {
 struct BehaviorData {
     World* world;
     Node* node;
-    Messages* in;
+    Messages* input;
     Queue* messages;
     Queue* sets;
 };

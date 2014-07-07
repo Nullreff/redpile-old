@@ -30,69 +30,74 @@ static Message message_create(QueueData* data)
 
 static Messages* find_input(World* world, Node* node, Queue* queue)
 {
-    QueueNode* found = queue_find_nodes(queue, node, world->ticks);
-    unsigned int new_messages = 0;
-    QueueNode* iter = found;
-    while (iter != NULL &&
-           iter->data.tick == world->ticks &&
-           iter->data.target.node == node)
-    {
-        new_messages++;
-        iter = iter->next;
-    }
+    QueueNode* new_messages;
+    unsigned int new_size = 0;
+    queue_find_nodes(queue, node, world->ticks, &new_messages, &new_size);
 
-    Messages* found_messages = node_find_messages(node, world->ticks);
-    unsigned int total = (found_messages != NULL ? found_messages->size : 0) + new_messages;
+    Messages* existing_messages = node_find_messages(node, world->ticks);
+    unsigned int existing_size = existing_messages != NULL ? existing_messages->size : 0;
+    unsigned int total = new_size + existing_size;
 
     Messages* messages = messages_allocate(total);
     if (total == 0)
         return messages;
 
-    for (int i = 0; i < new_messages; i++)
+    if (existing_size != 0)
+        messages_copy(messages->data, existing_messages);
+
+    if (new_size != 0)
     {
-        messages->data[i] = message_create(&found->data);
-        found = found->next;
+        QueueNode* found = new_messages;
+        for (int i = existing_size; i < total; i++)
+        {
+            messages->data[i] = message_create(&found->data);
+            found = found->next;
+            if (found == NULL || found->data.tick != world->ticks || found->data.target.node != node)
+            {
+                messages->size = i + 1;
+                break;
+            }
+        }
     }
 
-    if (found_messages != NULL)
-        messages_copy(messages->data + new_messages, found_messages);
-
-    if (world->max_inputs < total)
-        world->max_inputs = total;
+    if (world->max_inputs < messages->size)
+        world->max_inputs = messages->size;
 
     return messages;
 }
 
 static bool process_node(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
 {
-    Messages* in = find_input(world, node, messages);
+    Messages* input = find_input(world, node, messages);
 
     for (int i = 0; i < node->type->behaviors->count; i++)
     {
         Behavior* behavior = node->type->behaviors->data + i;
-        struct BehaviorData data = (struct BehaviorData) {world, node, in, output, sets};
+        Messages* found = messages_filter_copy(input, behavior->mask);
+        struct BehaviorData data = (struct BehaviorData) {world, node, found, output, sets};
         bool processed = behavior->process(&data);
+        free(found);
         if (processed)
             break;
     }
 
     if (node->last_input == NULL)
     {
-        node->last_input = in;
+        node->last_input = input;
         node->last_input_tick = world->ticks;
         return true;
     }
     else if (node->last_input_tick != world->ticks ||
-            !messages_equal(node->last_input, in))
+            !messages_equal(node->last_input, input))
     {
         free(node->last_input);
-        node->last_input = in;
+        node->last_input = input;
         node->last_input_tick = world->ticks;
         return true;
     }
     else
     {
-        free(in);
+        free(input);
         return false;
     }
 }

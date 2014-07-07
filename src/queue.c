@@ -243,27 +243,34 @@ void queue_remove_source(Queue* queue, Location source)
     node_list->size = 0;
 }
 
-QueueNode* queue_find_nodes(Queue* messages, Node* target, unsigned long long tick)
+void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, QueueNode** found_node, unsigned int* max_size)
 {
     Bucket* bucket = hashmap_get(messages->targetmap, target->location, false);
     if (bucket == NULL)
-        return NULL;
+        goto end;
 
     QueueNodeIndex* index = bucket->value;
     QueueNode* found = index->node;
     if (found == NULL)
-        return NULL;
+        goto end;
 
     for (int i = 0; i < index->size; i++)
     {
         assert(found != NULL && found->data.target.node == target);
         if (found->data.tick == tick)
-            return found;
+        {
+            *found_node = found;
+            *max_size = index->size - i;
+            return;
+        }
         found = found->next;
     }
     assert(found == NULL || found->data.target.node != target);
 
-    return NULL;
+end:
+    *found_node = NULL;
+    *max_size = 0;
+    return;
 }
 
 void queue_data_print(

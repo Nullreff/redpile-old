@@ -23,10 +23,10 @@
 #include "type.h"
 
 typedef enum {
-    MESSAGE_POWER  = 0,
-    MESSAGE_PUSH   = 1 << 0,
-    MESSAGE_PULL   = 1 << 1,
-    MESSAGE_REMOVE = 1 << 2
+    MESSAGE_POWER  = 1 << 0,
+    MESSAGE_PUSH   = 1 << 1,
+    MESSAGE_PULL   = 1 << 2,
+    MESSAGE_REMOVE = 1 << 3
 } MessageType;
 
 typedef struct {
@@ -53,11 +53,13 @@ typedef struct MessageStore {
 
 Messages* messages_allocate(unsigned int size);
 void messages_copy(Message* dest, Messages* source);
+Messages* messages_filter_copy(Messages* messages, unsigned int mask);
+Messages* messages_filter_copy(Messages* messages, unsigned int mask);
 bool messages_equal(Messages* first, Messages* second);
 Messages* messages_resize(Messages* insts, unsigned int size);
-unsigned int messages_max_power(Messages* inst);
-bool messages_power_check(Messages* insts, Location loc, unsigned int power);
-Message* messages_find_first(Messages* messages, MessageType type);
+unsigned int messages_find_first(Messages* messages);
+unsigned int messages_find_max(Messages* messages);
+unsigned int messages_find_source(Messages* messages, Location source);
 
 MessageStore* message_store_allocate(unsigned long long tick);
 void message_store_free(MessageStore* store);
