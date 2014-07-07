@@ -131,56 +131,6 @@ static void load_config(int argc, char* argv[])
     }
 }
 
-#define TYPE_COUNT 9
-static TypeList* load_types(void)
-{
-    TypeList* types = type_list_allocate(TYPE_COUNT);
-
-    BehaviorList* air_behaviors = behavior_list_allocate(0);
-    types->data[0] = (Type){"AIR", 0, air_behaviors};
-
-    BehaviorList* insulator_behaviors = behavior_list_allocate(1);
-    insulator_behaviors->data[0].process = BEHAVIOR(PUSH_MOVE);
-    types->data[1] = (Type){"INSULATOR", 0, insulator_behaviors};
-
-    BehaviorList* wire_behaviors = behavior_list_allocate(2);
-    wire_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    wire_behaviors->data[1].process = BEHAVIOR(WIRE);
-    types->data[2] = (Type){"WIRE", 1, wire_behaviors};
-
-    BehaviorList* conductor_behaviors = behavior_list_allocate(2);
-    conductor_behaviors->data[0].process = BEHAVIOR(PUSH_MOVE);
-    conductor_behaviors->data[1].process = BEHAVIOR(CONDUCTOR);
-    types->data[3] = (Type){"CONDUCTOR", 1, conductor_behaviors};
-
-    BehaviorList* torch_behaviors = behavior_list_allocate(2);
-    torch_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    torch_behaviors->data[1].process = BEHAVIOR(TORCH);
-    types->data[4] = (Type){"TORCH", 2, torch_behaviors};
-
-    BehaviorList* piston_behaviors = behavior_list_allocate(2);
-    piston_behaviors->data[0].process = BEHAVIOR(PISTON);
-    piston_behaviors->data[1].process = BEHAVIOR(PUSH_MOVE);
-    types->data[5] = (Type){"PISTON", 2, piston_behaviors};
-
-    BehaviorList* repeater_behaviors = behavior_list_allocate(2);
-    repeater_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    repeater_behaviors->data[1].process = BEHAVIOR(REPEATER);
-    types->data[6] = (Type){"REPEATER", 3, repeater_behaviors};
-
-    BehaviorList* comparator_behaviors = behavior_list_allocate(2);
-    comparator_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    comparator_behaviors->data[1].process = BEHAVIOR(COMPARATOR);
-    types->data[7] = (Type){"COMPARATOR", 3, comparator_behaviors};
-
-    BehaviorList* switch_behaviors = behavior_list_allocate(2);
-    switch_behaviors->data[0].process = BEHAVIOR(PUSH_BREAK);
-    switch_behaviors->data[1].process = BEHAVIOR(SWITCH);
-    types->data[8] = (Type){"SWITCH", 3, switch_behaviors};
-
-    return types;
-}
-
 static void redpile_cleanup(void)
 {
     if (current_world != NULL)
@@ -233,7 +183,7 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    current_world = world_allocate(config.world_size, load_types());
+    current_world = world_allocate(config.world_size, redstone_load_types());
 
     if (config.benchmark)
     {
