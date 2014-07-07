@@ -19,9 +19,23 @@
 #include "type.h"
 #include "redpile.h"
 
+BehaviorList* behavior_list_allocate(unsigned int count)
+{
+    BehaviorList* behaviors = malloc(sizeof(TypeList) + (sizeof(Type) * count));
+    behaviors->count = count;
+    return behaviors;
+}
+
 TypeList* type_list_allocate(unsigned int count)
 {
     TypeList* types = malloc(sizeof(TypeList) + (sizeof(Type) * count));
     types->count = count;
     return types;
+}
+
+void type_list_free(TypeList* types)
+{
+    for (int i = 0; i < types->count; i++)
+        free(types->data[i].behaviors);
+    free(types);
 }

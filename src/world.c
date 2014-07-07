@@ -101,6 +101,7 @@ void world_free(World* world)
 {
     hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
+    type_list_free(world->types);
     free(world);
 }
 

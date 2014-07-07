@@ -19,11 +19,26 @@
 #ifndef REDPILE_TYPE_H
 #define REDPILE_TYPE_H
 
+#include <stdbool.h>
+
 #define EMPTY ((Type*)NULL)
+
+// TODO: Remove or hide circular dependancies
+struct BehaviorData;
+
+typedef struct {
+    bool (*process)(struct BehaviorData* data);
+} Behavior;
+
+typedef struct BehaviorList {
+    unsigned int count;
+    Behavior data[];
+} BehaviorList;
 
 typedef struct {
     char* name;
     unsigned int field_count;
+    BehaviorList* behaviors;
 } Type;
 
 typedef struct {
@@ -31,6 +46,8 @@ typedef struct {
     Type data[];
 } TypeList;
 
+BehaviorList* behavior_list_allocate(unsigned int count);
 TypeList* type_list_allocate(unsigned int count);
+void type_list_free(TypeList* types);
 
 #endif

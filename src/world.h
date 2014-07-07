@@ -61,6 +61,14 @@ typedef struct {
     unsigned int message_max_queued;
 } WorldStats;
 
+struct BehaviorData {
+    World* world;
+    Node* node;
+    Messages* in;
+    Queue* messages;
+    Queue* sets;
+};
+
 #define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)
 
 World* world_allocate(unsigned int size, TypeList* types);

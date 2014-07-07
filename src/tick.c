@@ -17,7 +17,6 @@
  */
 
 #include "tick.h"
-#include "redstone.h"
 
 static int redstone_node_missing(TypeList* types, Location location)
 {
@@ -68,18 +67,13 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
 {
     Messages* in = find_input(world, node, messages);
 
-    switch (node->type - world->types->data)
+    for (int i = 0; i < node->type->behaviors->count; i++)
     {
-        TYPE_REGISTER(0, AIR);
-        TYPE_REGISTER(1, INSULATOR);
-        TYPE_REGISTER(2, WIRE);
-        TYPE_REGISTER(3, CONDUCTOR);
-        TYPE_REGISTER(4, TORCH);
-        TYPE_REGISTER(5, PISTON);
-        TYPE_REGISTER(6, REPEATER);
-        TYPE_REGISTER(7, COMPARATOR);
-        TYPE_REGISTER(8, SWITCH);
-        default: ERROR("Encountered unknown block material");
+        Behavior* behavior = node->type->behaviors->data + i;
+        struct BehaviorData data = (struct BehaviorData) {world, node, in, output, sets};
+        bool processed = behavior->process(&data);
+        if (processed)
+            break;
     }
 
     if (node->last_input == NULL)

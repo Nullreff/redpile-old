@@ -20,24 +20,23 @@
 #define REDPILE_REDSTONE_H
 
 #include "message.h"
+#include "world.h"
 
 #define TYPE_BEHAVIOR(NAME)\
-    bool redstone_behavior_ ## NAME(World* world, Node* node, Messages* in, Queue* messages, Queue* sets)
+    bool redstone_behavior_ ## NAME(struct BehaviorData* data)
 
-#define RUN_BEHAVIOR(NAME)\
-    redstone_behavior_ ## NAME(world, node, in, messages, sets)
+#define BEHAVIOR(NAME)\
+    redstone_behavior_ ## NAME
 
-#define TYPE_REGISTER(INDEX,NAME)\
-    case INDEX: redstone_behavior_ ## NAME(world, node, in, output, sets); break
-
-TYPE_BEHAVIOR(AIR);
+TYPE_BEHAVIOR(PUSH_MOVE);
+TYPE_BEHAVIOR(PUSH_BREAK);
 TYPE_BEHAVIOR(INSULATOR);
-TYPE_BEHAVIOR(CONDUCTOR);
 TYPE_BEHAVIOR(WIRE);
-TYPE_BEHAVIOR(PISTON);
-TYPE_BEHAVIOR(COMPARATOR);
-TYPE_BEHAVIOR(REPEATER);
+TYPE_BEHAVIOR(CONDUCTOR);
 TYPE_BEHAVIOR(TORCH);
+TYPE_BEHAVIOR(PISTON);
+TYPE_BEHAVIOR(REPEATER);
+TYPE_BEHAVIOR(COMPARATOR);
 TYPE_BEHAVIOR(SWITCH);
 
 #endif
