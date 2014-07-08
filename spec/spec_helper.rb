@@ -1,5 +1,5 @@
 module Helpers
-  REDPILE_CMD = './build/redpile'
+  REDPILE_CMD = './build/src/redpile'
   VALGRIND_CMD = 'valgrind -q --error-exitcode=1 --leak-check=full --show-reachable=yes'
 
   class Redpile
