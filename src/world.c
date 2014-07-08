@@ -86,6 +86,7 @@ World* world_allocate(unsigned int size, TypeList* types)
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
     world->types = types;
+    world->state = script_state_allocate();
     world->node_missing = node_missing_noop;
 
     // Stats
@@ -102,6 +103,7 @@ void world_free(World* world)
     hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
     type_list_free(world->types);
+    script_state_free(world->state);
     free(world);
 }
 

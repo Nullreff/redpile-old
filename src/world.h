@@ -24,6 +24,7 @@
 #include "redpile.h"
 #include "message.h"
 #include "queue.h"
+#include "script.h"
 
 typedef struct {
     // All nodes are stored in a linked list.
@@ -33,6 +34,11 @@ typedef struct {
     // All types are a staticly sized array.
     // see type.c for more information.
     TypeList* types;
+
+    // Scripting is done in lua, we keep a
+    // seperate interpereter per world
+    // see script.c for more information
+    ScriptState* state;
 
     // Fast block lookup is done using a hashmap.
     // See hashmap.c for more information.
