@@ -17,10 +17,29 @@
  */
 
 #include "script.h"
+#include "type.h"
+
+#define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
+
+static int script_define_behavior(lua_State* state)
+{
+    LUA_ERROR_IF(!lua_isstring(state, -1), "You must pass a behavior name\n");
+    const char* name = lua_tostring(state, -1);
+    printf("Defining behavior: %s\n", name);
+    return 0;
+}
+
+static int script_define_type(lua_State* state)
+{
+    LUA_ERROR_IF(!lua_isstring(state, -1), "You must pass a type name\n");
+    const char* name = lua_tostring(state, -1);
+    printf("Defining type: %s\n", name);
+    return 0;
+}
 
 ScriptState* script_state_allocate(void)
 {
-    ScriptState* state = luaL_newstate();
+    lua_State* state = luaL_newstate();
 
     static const luaL_Reg lualibs[] =
     {
@@ -34,6 +53,11 @@ ScriptState* script_state_allocate(void)
         lua_settop(state, 0);
     }
 
+    lua_pushcfunction(state, script_define_behavior);
+    lua_setglobal(state, "define_behavior");
+    lua_pushcfunction(state, script_define_type);
+    lua_setglobal(state, "define_type");
+
     return state;
 }
 
@@ -42,8 +66,15 @@ void script_state_free(ScriptState* state)
     lua_close(state);
 }
 
-void script_state_eval(ScriptState* state, const char* code)
+TypeList* script_state_load_types(ScriptState* state, const char* config_file)
 {
-    luaL_dostring(state, code);
+    int error = luaL_dofile(state, config_file);
+    if (error)
+    {
+        printf("%s\n", lua_tostring(state, -1));
+        return NULL;
+    }
+
+    return type_list_allocate(0);
 }
 

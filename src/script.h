@@ -22,10 +22,11 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "type.h"
 
 typedef lua_State ScriptState;
 ScriptState* script_state_allocate(void);
 void script_state_free(ScriptState* state);
-void script_state_eval(ScriptState* state, const char* code);
+TypeList* script_state_load_types(ScriptState* state, const char* config_file);
 
 #endif

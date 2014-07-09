@@ -1,0 +1,22 @@
+print('Loading Redstone...')
+
+define_behavior('push_move')
+define_behavior('push_break')
+define_behavior('power_wire')
+define_behavior('power_conductor')
+define_behavior('power_torch')
+define_behavior('power_piston')
+define_behavior('power_repeater')
+define_behavior('power_comparator')
+define_behavior('power_switch')
+
+define_type('air')
+define_type('insulator')
+define_type('wire')
+define_type('conductor')
+define_type('torch')
+define_type('piston')
+define_type('repeater')
+define_type('comparator')
+define_type('switch')
+
