@@ -58,14 +58,18 @@ print('Loading Redstone types...')
 --
 
 define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(self, messages)
-    if messages.count == 0 then return false end
-    message = messages.first()
-    self.move(message.value)
-    return true
+    if messages.count > 0 then
+        message = messages.first()
+        self.move(message.value)
+        return true
+    end
+    return false
 end)
 
 define_behavior('push_break', MESSAGE_PUSH, function(self, messages)
-    print('Running push_break')
+    if messages.count > 0 then
+        self.remove()
+    end
     return false
 end)
 

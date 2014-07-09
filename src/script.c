@@ -106,6 +106,22 @@ static int script_self_move(ScriptState* state)
     return 0;
 }
 
+static int script_self_remove(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    queue_add(
+        script_data->sets,
+        MESSAGE_REMOVE,
+        script_data->world->ticks,
+        script_data->node,
+        script_data->node,
+        0
+    );
+
+    return 0;
+}
+
 static int script_messages_first(ScriptState* state)
 {
     assert(script_data != NULL);
@@ -120,9 +136,9 @@ static void script_setup_data(ScriptState* state, ScriptData* data)
     //self
     lua_createtable(state, 0, 1);
 
-    // self.move()
     static const luaL_Reg self_funcs[] = {
         {"move", script_self_move},
+        {"remove", script_self_remove},
         {NULL, NULL}
     };
     luaL_setfuncs(state, self_funcs, 0);
@@ -130,12 +146,10 @@ static void script_setup_data(ScriptState* state, ScriptData* data)
     // messages
     lua_createtable(state, 0, 2);
 
-    // messages.count
     lua_pushstring(state, "count");
     lua_pushnumber(state, data->input->size);
     lua_settable(state, -3);
 
-    // messages.first()
     static const luaL_Reg message_funcs[] = {
         {"first", script_messages_first},
         {NULL, NULL}
