@@ -1,4 +1,4 @@
-/* redpile.h - High performance redstone
+/* common.h - Common includes and macros
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,22 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_H
-#define REDPILE_H
+#ifndef REDPILE_COMMON_H
+#define REDPILE_COMMON_H
 
-#include "script.h"
-#include "world.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <stdbool.h>
 
-#define REDPILE_VERSION "0.5.0"
-
-extern World* world;
-extern ScriptState* state;
-
-typedef struct {
-    int world_size;
-    unsigned int interactive:1;
-    unsigned int benchmark;
-    char* file;
-} RedpileConfig;
+#define ERROR(MESSAGE) do { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); } while(0)
+#define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { ERROR(MESSAGE); }
+#define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
+#define IS_POWER_OF_TWO(x) ((x & (x - 1)) == 0)
 
 #endif

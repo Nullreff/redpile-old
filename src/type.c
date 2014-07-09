@@ -17,7 +17,6 @@
  */
 
 #include "type.h"
-#include "redpile.h"
 
 BehaviorList* behavior_list_allocate(unsigned int count)
 {

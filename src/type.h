@@ -19,7 +19,7 @@
 #ifndef REDPILE_TYPE_H
 #define REDPILE_TYPE_H
 
-#include <stdbool.h>
+#include "common.h"
 
 #define EMPTY ((Type*)NULL)
 

@@ -22,8 +22,6 @@
 #include "tick.h"
 #include "location.h"
 
-extern World* current_world;
-
 typedef struct {
     Direction direction;
     unsigned int state;

@@ -20,7 +20,7 @@
 #define REDPILE_NODE_H
 
 #include "location.h"
-#include "redpile.h"
+#include "common.h"
 #include "message.h"
 #include "type.h"
 

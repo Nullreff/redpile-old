@@ -21,7 +21,7 @@
 
 #include "node.h"
 #include "hashmap.h"
-#include "redpile.h"
+#include "common.h"
 #include "message.h"
 #include "queue.h"
 

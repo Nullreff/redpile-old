@@ -16,7 +16,7 @@
  */
 
 #include "location.h"
-#include "redpile.h"
+#include "common.h"
 
 char* Directions[6] = {
     "NORTH",

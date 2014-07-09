@@ -18,7 +18,7 @@
 
 #include "script.h"
 #include "type.h"
-#include "redpile.h"
+#include "common.h"
 
 #define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
 #define IS_UINT(NUM) ((NUM - ((double)(int)NUM) == 0) && (NUM >= 0))

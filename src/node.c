@@ -17,7 +17,6 @@
  */
 
 #include "node.h"
-#include "redpile.h"
 
 static Node* node_allocate(Location location, Type* type)
 {

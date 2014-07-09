@@ -19,17 +19,17 @@
 #include "redpile.h"
 #include "parser.h"
 #include "command.h"
-#include "world.h"
 #include "bench.h"
 #include "linenoise.h"
 #include "type.h"
-#include "script.h"
+#include "common.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
 #include <unistd.h>
 
 RedpileConfig config;
+World* world = NULL;
 ScriptState* state = NULL;
 
 int yyparse(void);
@@ -137,8 +137,8 @@ static void load_config(int argc, char* argv[])
 
 static void redpile_cleanup(void)
 {
-    if (current_world != NULL)
-        world_free(current_world);
+    if (world != NULL)
+        world_free(world);
 
     if (state != NULL)
         script_state_free(state);
@@ -199,11 +199,11 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    current_world = world_allocate(config.world_size, types);
+    world = world_allocate(config.world_size, types);
 
     if (config.benchmark)
     {
-        run_benchmarks(current_world, config.benchmark);
+        run_benchmarks(world, config.benchmark);
     }
     else
     {

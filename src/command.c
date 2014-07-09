@@ -16,10 +16,8 @@
  */
 
 #include "command.h"
-#include <stdlib.h>
-#include <stdio.h>
-
-World* current_world;
+#include "common.h"
+#include "redpile.h"
 
 void command_ping(void)
 {
@@ -28,12 +26,12 @@ void command_ping(void)
 
 void command_status(void)
 {
-    world_stats_print(world_get_stats(current_world));
+    world_stats_print(world_get_stats(world));
 }
 
 void command_set(Location location, Type* type, SetArgs args)
 {
-    Node* node = world_set_node(current_world, location, type);
+    Node* node = world_set_node(world, location, type);
     if (node != NULL)
     {
         FIELD_SET(node, 1, args.direction);
@@ -73,7 +71,7 @@ void command_setrs(Location l1, Location l2, Location step, Type* type, SetArgs 
 
 void command_get(Location location)
 {
-    Node* node = world_get_node(current_world, location);
+    Node* node = world_get_node(world, location);
     if (node == NULL)
         printf("(%d,%d,%d) EMPTY\n", location.x, location.y, location.z);
     else
@@ -83,12 +81,12 @@ void command_get(Location location)
 void command_tick(int count, LogLevel log_level)
 {
     if (count > 0)
-        tick_run(current_world, count, log_level);
+        tick_run(world, count, log_level);
 }
 
 void command_messages(void)
 {
-    world_print_messages(current_world);
+    world_print_messages(world);
 }
 
 void command_error(const char* message)
@@ -105,11 +103,11 @@ bool type_parse(char* string, Type** type)
         return true;
     }
 
-    for (int i = 0; i < current_world->types->count; i++)
+    for (int i = 0; i < world->types->count; i++)
     {
-        if (strcasecmp(string, current_world->types->data[i].name) == 0)
+        if (strcasecmp(string, world->types->data[i].name) == 0)
         {
-            *type = current_world->types->data + i;
+            *type = world->types->data + i;
             free(string);
             return true;
         }
