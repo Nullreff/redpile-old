@@ -27,8 +27,9 @@
 struct BehaviorData;
 
 typedef struct {
+    const char* name;
     unsigned int mask;
-    bool (*process)(struct BehaviorData* data);
+    int function_ref;
 } Behavior;
 
 typedef struct BehaviorList {
@@ -37,9 +38,10 @@ typedef struct BehaviorList {
 } BehaviorList;
 
 typedef struct {
-    char* name;
+    const char* name;
     unsigned int field_count;
-    BehaviorList* behaviors;
+    unsigned int behavior_count;
+    Behavior* behaviors;
 } Type;
 
 typedef struct {

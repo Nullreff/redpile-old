@@ -17,6 +17,7 @@
  */
 
 #include "tick.h"
+#include "script.h"
 
 static int redstone_node_missing(TypeList* types, Location location)
 {
@@ -70,12 +71,12 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
 {
     Messages* input = find_input(world, node, messages);
 
-    for (int i = 0; i < node->type->behaviors->count; i++)
+    for (int i = 0; i < node->type->behavior_count; i++)
     {
-        Behavior* behavior = node->type->behaviors->data + i;
+        Behavior* behavior = node->type->behaviors + i;
         Messages* found = messages_filter_copy(input, behavior->mask);
-        struct BehaviorData data = (struct BehaviorData) {world, node, found, output, sets};
-        bool processed = behavior->process(&data);
+        BehaviorData data = (BehaviorData){world, node, found, output, sets};
+        bool processed = script_state_run_behavior(behavior->function_ref, &data);
         free(found);
         if (processed)
             break;

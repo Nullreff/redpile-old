@@ -20,7 +20,6 @@
 #include "parser.h"
 #include "command.h"
 #include "world.h"
-#include "redstone.h"
 #include "bench.h"
 #include "linenoise.h"
 #include "type.h"

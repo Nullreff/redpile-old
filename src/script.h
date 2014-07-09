@@ -19,14 +19,27 @@
 #ifndef REDPILE_SCRIPT_H
 #define REDPILE_SCRIPT_H
 
+#include "type.h"
+#include "world.h"
+#include "queue.h"
+#include "node.h"
+#include "message.h"
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "type.h"
+
+typedef struct {
+    World* world;
+    Node* node;
+    Messages* input;
+    Queue* messages;
+    Queue* sets;
+} BehaviorData;
 
 typedef lua_State ScriptState;
 ScriptState* script_state_allocate(void);
 void script_state_free(ScriptState* state);
 TypeList* script_state_load_types(ScriptState* state, const char* config_file);
+bool script_state_run_behavior(int function_ref, BehaviorData* data);
 
 #endif
