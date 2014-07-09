@@ -193,16 +193,14 @@ int main(int argc, char* argv[])
 
     state = script_state_allocate();
 
-    TypeList* types;
-    BehaviorList* behaviors;
-    script_state_load_config(state, config.file, &types, &behaviors);
-    if (types == NULL || behaviors == NULL)
+    TypeData* type_data = script_state_load_config(state, config.file);
+    if (type_data == NULL)
     {
         redpile_cleanup();
         return EXIT_FAILURE;
     }
 
-    world = world_allocate(config.world_size, types, behaviors);
+    world = world_allocate(config.world_size, type_data);
 
     if (config.benchmark)
     {

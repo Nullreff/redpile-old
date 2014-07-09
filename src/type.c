@@ -18,45 +18,75 @@
 
 #include "type.h"
 
-BehaviorList* behavior_list_allocate(unsigned int count)
+TypeData* type_data_allocate(void)
 {
-    BehaviorList* behaviors = malloc(sizeof(TypeList) + (sizeof(Type) * count));
-    behaviors->count = count;
-    return behaviors;
+    TypeData* type_data = malloc(sizeof(TypeData));
+    type_data->type_count = 0;
+    type_data->behavior_count = 0;
+    type_data->types = NULL;
+    type_data->behaviors = NULL;
+    return type_data;
 }
 
-BehaviorList* behavior_list_realloc(BehaviorList* behaviors, unsigned int count)
+void type_data_free(TypeData* type_data)
 {
-    behaviors = realloc(behaviors, sizeof(BehaviorList) + (sizeof(Behavior) * count));
-    behaviors->count = count;
-    return behaviors;
+    Type* type = type_data->types;
+    while (type != NULL)
+    {
+        Type* temp = type->next;
+        free(type);
+        type = temp;
+    }
+
+    Behavior* behavior = type_data->behaviors;
+    while (behavior != NULL)
+    {
+        Behavior* temp = behavior->next;
+        free(behavior);
+        behavior = temp;
+    }
+
+    free(type_data);
 }
 
-void behavior_list_free(BehaviorList* behaviors)
+Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count)
 {
-    for (int i = 0; i < behaviors->count; i++)
-        free(behaviors->data[i].name);
-    free(behaviors);
+    Type* type = malloc(sizeof(Type) + (sizeof(Behavior*) * behavior_count));
+    type->name = name;
+    type->field_count = field_count;
+    type->behavior_count = behavior_count;
+
+    type->next = type_data->types;
+    type_data->types = type;
+    type_data->type_count++;
+    return type;
 }
 
-TypeList* type_list_allocate(unsigned int count)
+Behavior* type_data_append_behavior(TypeData* type_data, char* name, unsigned int mask, int function_ref)
 {
-    TypeList* types = malloc(sizeof(TypeList) + (sizeof(Type) * count));
-    types->count = count;
-    return types;
+    Behavior* behavior = malloc(sizeof(Behavior));
+    behavior->name = name;
+    behavior->mask = mask;
+    behavior->function_ref = function_ref;
+
+    behavior->next = type_data->behaviors;
+    type_data->behaviors = behavior;
+    type_data->behavior_count++;
+    return behavior;
 }
 
-TypeList* type_list_realloc(TypeList* types, unsigned int count)
+Type** type_data_type_indexes_allocate(TypeData* type_data)
 {
-    types = realloc(types, sizeof(TypeList) + (sizeof(Type) * count));
-    types->count = count;
-    return types;
-}
+    Type** indexes = malloc(sizeof(Type*) * type_data->type_count);
 
-void type_list_free(TypeList* types)
-{
-    for (int i = 0; i < types->count; i++)
-        free(types->data[i].name);
-    free(types);
+    Type* type = type_data->types;
+    for (int i = 0; i < type_data->type_count; i++)
+    {
+        assert(type != NULL);
+        indexes[i] = type;
+        type = type->next;
+    }
+
+    return indexes;
 }
 

@@ -94,20 +94,20 @@ void command_error(const char* message)
     fprintf(stderr, "%s\n", message);
 }
 
-bool type_parse(char* string, Type** type)
+bool type_parse(char* string, Type** found_type)
 {
     if (strcasecmp(string, "EMPTY") == 0)
     {
-        *type = NULL;
+        *found_type = NULL;
         free(string);
         return true;
     }
 
-    for (int i = 0; i < world->types->count; i++)
+    FOR_TYPE(type, world->type_data)
     {
-        if (strcasecmp(string, world->types->data[i].name) == 0)
+        if (strcasecmp(string, type->name) == 0)
         {
-            *type = world->types->data + i;
+            *found_type = type;
             free(string);
             return true;
         }
@@ -118,13 +118,13 @@ bool type_parse(char* string, Type** type)
     return false;
 }
 
-bool direction_parse(char* string, Direction* dir)
+bool direction_parse(char* string, Direction* found_dir)
 {
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         if (strcasecmp(string, Directions[i]) == 0)
         {
-            *dir = i;
+            *found_dir = i;
             free(string);
             return true;
         }

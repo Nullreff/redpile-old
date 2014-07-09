@@ -23,13 +23,7 @@
 #define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
 #define IS_UINT(NUM) ((NUM - ((double)(int)NUM) == 0) && (NUM >= 0))
 
-#define MAX_TYPES 100
-TypeList* types;
-unsigned int type_count;
-
-#define MAX_BEHAVIORS 100
-BehaviorList* behaviors;
-unsigned int behavior_count;
+TypeData* type_data;
 
 static int script_define_behavior(lua_State* state)
 {
@@ -43,9 +37,7 @@ static int script_define_behavior(lua_State* state)
     char* name = strdup(lua_tostring(state, 1));
     unsigned int mask = raw_mask;
 
-    behaviors->data[behavior_count] = (Behavior){name, mask, function_ref};
-    behavior_count++;
-
+    type_data_append_behavior(type_data, name, mask, function_ref);
     return 0;
 }
 
@@ -59,9 +51,7 @@ static int script_define_type(lua_State* state)
     char* name = strdup(lua_tostring(state, 1));
     unsigned int field_count = raw_field_count;
 
-    types->data[type_count] = (Type){name, field_count, 0, NULL};
-    type_count++;
-
+    type_data_append_type(type_data, name, field_count, 0);
     return 0;
 }
 
@@ -104,25 +94,18 @@ void script_state_free(ScriptState* state)
     lua_close(state);
 }
 
-void script_state_load_config(ScriptState* state, const char* config_file, TypeList** types_out, BehaviorList** behaviors_out)
+TypeData* script_state_load_config(ScriptState* state, const char* config_file)
 {
-    types = type_list_allocate(MAX_TYPES);
-    type_count = 0;
-
-    behaviors = behavior_list_allocate(MAX_BEHAVIORS);
-    behavior_count = 0;
+    type_data = type_data_allocate();
 
     int error = luaL_dofile(state, config_file);
     if (error)
     {
         printf("%s\n", lua_tostring(state, -1));
-        *types_out = NULL;
-        *behaviors_out = NULL;
-        return;
+        return NULL;
     }
 
-    *types_out = type_list_realloc(types, type_count);
-    *behaviors_out = behavior_list_realloc(behaviors, behavior_count);
+    return type_data;
 }
 
 bool script_state_run_behavior(int function_ref, BehaviorData* data)

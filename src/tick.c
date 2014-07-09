@@ -19,9 +19,16 @@
 #include "tick.h"
 #include "script.h"
 
-static int redstone_node_missing(TypeList* types, Location location)
+// TODO: Convert to LUA
+static Type* redstone_node_missing(TypeData* types, Location location)
 {
-    return 0;
+    FOR_TYPE(type, types)
+    {
+        if (strcasecmp("air", type->name))
+            return type;
+    }
+
+    ERROR("No 'air' type declared");
 }
 
 static Message message_create(QueueData* data)
@@ -73,7 +80,7 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
 
     for (int i = 0; i < node->type->behavior_count; i++)
     {
-        Behavior* behavior = node->type->behaviors + i;
+        Behavior* behavior = node->type->behaviors[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
         BehaviorData data = (BehaviorData){world, node, found, output, sets};
         bool processed = script_state_run_behavior(behavior->function_ref, &data);

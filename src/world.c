@@ -52,18 +52,17 @@ static void world_reset_adjacent_nodes(World* world, Node* node)
     }
 }
 
-static int node_missing_noop(TypeList* types, Location location)
+static Type* node_missing_noop(TypeData* type_data, Location location)
 {
-    return -1;
+    return NULL;
 }
 
 static bool world_fill_missing(World* world, Location location)
 {
-    int type_index = world->node_missing(world->types, location);
-    if (type_index >= 0)
+    Type* type = world->node_missing(world->type_data, location);
+    if (type != NULL)
     {
-        assert(type_index < world->types->count);
-        world_set_node(world, location, world->types->data + type_index);
+        world_set_node(world, location, type);
         return true;
     }
     return false;
@@ -78,15 +77,14 @@ static void world_node_move(World* world, Node* node, Direction direction)
     world_set_node(world, new_location, type);
 }
 
-World* world_allocate(unsigned int size, TypeList* types, BehaviorList* behaviors)
+World* world_allocate(unsigned int size, TypeData* type_data)
 {
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
 
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
-    world->types = types;
-    world->behaviors = behaviors;
+    world->type_data = type_data;
     world->node_missing = node_missing_noop;
 
     // Stats
@@ -102,8 +100,7 @@ void world_free(World* world)
 {
     hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
-    type_list_free(world->types);
-    behavior_list_free(world->behaviors);
+    type_data_free(world->type_data);
     free(world);
 }
 
@@ -181,7 +178,7 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, message_max_queued, u);
 }
 
-void world_set_node_missing_callback(World* world, int (*node_missing)(TypeList* types, Location location))
+void world_set_node_missing_callback(World* world, Type* (*node_missing)(TypeData* type_data, Location location))
 {
     world->node_missing = node_missing;
 }

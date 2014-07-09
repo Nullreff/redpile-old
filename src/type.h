@@ -21,39 +21,35 @@
 
 #include "common.h"
 
-#define EMPTY ((Type*)NULL)
-
-// TODO: Remove or hide circular dependancies
-struct BehaviorData;
-
-typedef struct {
+typedef struct Behavior {
+    struct Behavior* next;
     char* name;
     unsigned int mask;
     int function_ref;
 } Behavior;
 
-typedef struct BehaviorList {
-    unsigned int count;
-    Behavior data[];
-} BehaviorList;
-
-typedef struct {
+typedef struct Type {
+    struct Type* next;
     char* name;
     unsigned int field_count;
     unsigned int behavior_count;
-    Behavior* behaviors;
+    Behavior* behaviors[];
 } Type;
 
 typedef struct {
-    unsigned int count;
-    Type data[];
-} TypeList;
+    unsigned int type_count;
+    unsigned int behavior_count;
+    Type* types;
+    Behavior* behaviors;
+} TypeData;
 
-BehaviorList* behavior_list_allocate(unsigned int count);
-BehaviorList* behavior_list_realloc(BehaviorList* behaviors, unsigned int count);
-void behavior_list_free(BehaviorList* behaviors);
-TypeList* type_list_allocate(unsigned int count);
-TypeList* type_list_realloc(TypeList* types, unsigned int count);
-void type_list_free(TypeList* types);
+#define EMPTY ((Type*)NULL)
+#define FOR_TYPE(TYPE,DATA) for (Type* TYPE = (DATA)->types; TYPE != NULL; TYPE = TYPE->next)
+
+TypeData* type_data_allocate(void);
+void type_data_free(TypeData* type_data);
+Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count);
+Behavior* type_data_append_behavior(TypeData* type_data, char* name, unsigned int mask, int function_ref);
+Type** type_data_type_indexes_allocate(TypeData* type_data);
 
 #endif

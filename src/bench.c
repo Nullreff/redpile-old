@@ -60,9 +60,10 @@ static long long get_time(void)
     return time;
 }
 
+Type** indexes;
 static void benchmark_insert(World* world)
 {
-    Type* type = world->types->data + (rand() % world->types->count);
+    Type* type = indexes[rand() % world->type_data->type_count];
     world_set_node(world, location_random(), type);
 }
 
@@ -78,6 +79,7 @@ static void benchmark_delete(World* world)
 
 void run_benchmarks(World* world, unsigned int count)
 {
+    indexes = type_data_type_indexes_allocate(world->type_data);
     srand(get_time());
 
     unsigned int limit = MILISECONDS(count);
@@ -87,5 +89,7 @@ void run_benchmarks(World* world, unsigned int count)
     BENCHMARK(insert, 200, limit);
     BENCHMARK(get,    200, limit);
     BENCHMARK(delete, 200, limit);
+
+    free(indexes);
 }
 
