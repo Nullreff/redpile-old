@@ -53,7 +53,7 @@ bool messages_equal(Messages* first, Messages* second)
     {
         if (LOCATION_EQUALS(first->data[i].source.location, second->data[i].source.location) &&
             first->data[i].type == second->data[i].type &&
-            first->data[i].message == second->data[i].message)
+            first->data[i].value == second->data[i].value)
         {
             return true;
         }
@@ -69,30 +69,34 @@ Messages* messages_resize(Messages* messages, unsigned int size)
     return messages;
 }
 
-unsigned int messages_find_first(Messages* messages)
+Message* messages_find_first(Messages* messages)
 {
-    return messages->size != 0 ? messages->data[0].message : 0;
+    return messages->size != 0 ? messages->data : NULL;
 }
 
-unsigned int messages_find_max(Messages* messages)
+Message* messages_find_max(Messages* messages)
 {
     unsigned int max = 0;
+    Message* found = NULL;
     for (int i = 0; i < messages->size; i++)
     {
-        if (messages->data[i].message > max)
-            max = messages->data[i].message;
+        if (messages->data[i].value > max)
+        {
+            max = messages->data[i].value;
+            found = messages->data + i;
+        }
     }
-    return max;
+    return found;
 }
 
-unsigned int messages_find_source(Messages* messages, Location source)
+Message* messages_find_source(Messages* messages, Location source)
 {
     for (int i = 0; i < messages->size; i++)
     {
         if (LOCATION_EQUALS(messages->data[i].source.location, source))
-            return messages->data[i].message;
+            return messages->data + i;
     }
-    return 0;
+    return NULL;
 }
 
 MessageStore* message_store_allocate(unsigned long long tick)

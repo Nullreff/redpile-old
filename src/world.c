@@ -232,7 +232,7 @@ void world_print_messages(World* world)
                         .target.location = node->location,
                         .tick = store->tick,
                         .type = inst->type,
-                        .message = inst->message
+                        .message = inst->value
                     };
                     queue_data_print_verbose(&data, message_type_print, world->ticks);
                 }

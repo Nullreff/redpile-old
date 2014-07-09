@@ -81,8 +81,8 @@ static Result process_node(ScriptState* state, World* world, Node* node, Queue* 
     {
         Behavior* behavior = node->type->behaviors[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
-        BehaviorData data = (BehaviorData){world, node, found, output, sets};
-        Result result = script_state_run_behavior(state, behavior->function_ref, &data);
+        ScriptData data = (ScriptData){world, node, found, output, sets};
+        Result result = script_state_run_behavior(state, behavior, &data);
         free(found);
         if (result == COMPLETE)
             break;

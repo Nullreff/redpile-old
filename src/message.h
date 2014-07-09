@@ -35,7 +35,7 @@ typedef struct {
         Type* type;
     } source;
     MessageType type;
-    unsigned int message;
+    unsigned int value;
 } Message;
 
 typedef struct {
@@ -57,9 +57,9 @@ Messages* messages_filter_copy(Messages* messages, unsigned int mask);
 Messages* messages_filter_copy(Messages* messages, unsigned int mask);
 bool messages_equal(Messages* first, Messages* second);
 Messages* messages_resize(Messages* insts, unsigned int size);
-unsigned int messages_find_first(Messages* messages);
-unsigned int messages_find_max(Messages* messages);
-unsigned int messages_find_source(Messages* messages, Location source);
+Message* messages_find_first(Messages* messages);
+Message* messages_find_max(Messages* messages);
+Message* messages_find_source(Messages* messages, Location source);
 
 MessageStore* message_store_allocate(unsigned long long tick);
 void message_store_free(MessageStore* store);

@@ -23,10 +23,15 @@
 #define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
 #define IS_UINT(NUM) ((NUM - ((double)(int)NUM) == 0) && (NUM >= 0))
 
-TypeData* type_data;
+// Used during script_state_load_config and script_state_run_behavior
+// during callbacks into C from Lua code
+TypeData* type_data = NULL;
+ScriptData* script_data = NULL;
 
-static int script_define_behavior(lua_State* state)
+static int script_define_behavior(ScriptState* state)
 {
+    assert(type_data != NULL);
+
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a behavior name");
     LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a behavior mask");
     double raw_mask = lua_tonumber(state, 2);
@@ -41,8 +46,10 @@ static int script_define_behavior(lua_State* state)
     return 0;
 }
 
-static int script_define_type(lua_State* state)
+static int script_define_type(ScriptState* state)
 {
+    assert(type_data != NULL);
+
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
     LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass the number of fields");
     double raw_field_count = lua_tonumber(state, 2);
@@ -64,22 +71,84 @@ static int script_define_type(lua_State* state)
     return 0;
 }
 
+static void script_push_message(ScriptState* state, Message* message)
+{
+    // message
+    lua_createtable(state, 0, 1);
+
+    // message.value
+    lua_pushstring(state, "value");
+    lua_pushnumber(state, message->value);
+    lua_settable(state, -3);
+
+    // message
+    // left on stack
+}
+
+static int script_self_move(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    LUA_ERROR_IF(!lua_isnumber(state, 1), "You must pass a direction to move");
+    double raw_direction = lua_tonumber(state, 1);
+    LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
+
+    Direction direction = raw_direction;
+    queue_add(
+        script_data->sets,
+        MESSAGE_PUSH,
+        script_data->world->ticks,
+        script_data->node,
+        script_data->node,
+        direction
+    );
+
+    return 0;
+}
+
+static int script_messages_first(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    Message* message = messages_find_first(script_data->input);
+    script_push_message(state, message);
+    return 1;
+}
+
+static void script_setup_data(ScriptState* state, ScriptData* data)
+{
+    //self
+    lua_createtable(state, 0, 1);
+
+    // self.move()
+    static const luaL_Reg self_funcs[] = {
+        {"move", script_self_move},
+        {NULL, NULL}
+    };
+    luaL_setfuncs(state, self_funcs, 0);
+
+    // messages
+    lua_createtable(state, 0, 2);
+
+    // messages.count
+    lua_pushstring(state, "count");
+    lua_pushnumber(state, data->input->size);
+    lua_settable(state, -3);
+
+    // messages.first()
+    static const luaL_Reg message_funcs[] = {
+        {"first", script_messages_first},
+        {NULL, NULL}
+    };
+    luaL_setfuncs(state, message_funcs, 0);
+}
+
 ScriptState* script_state_allocate(void)
 {
     lua_State* state = luaL_newstate();
 
-    static const luaL_Reg lualibs[] =
-    {
-        { "base", luaopen_base },
-        { "bit32", luaopen_bit32 },
-        { NULL, NULL}
-    };
-    const luaL_Reg *lib = lualibs;
-    for(; lib->func != NULL; lib++)
-    {
-        lib->func(state);
-        lua_settop(state, 0);
-    }
+    luaopen_base(state);
+    luaopen_bit32(state);
 
     lua_pushnumber(state, MESSAGE_POWER);
     lua_setglobal(state, "MESSAGE_POWER");
@@ -95,6 +164,8 @@ ScriptState* script_state_allocate(void)
     lua_pushcfunction(state, script_define_type);
     lua_setglobal(state, "define_type");
 
+    lua_settop(state, 0);
+
     return state;
 }
 
@@ -105,28 +176,42 @@ void script_state_free(ScriptState* state)
 
 TypeData* script_state_load_config(ScriptState* state, const char* config_file)
 {
-    type_data = type_data_allocate();
+    TypeData* data = type_data_allocate();
 
+    type_data = data;
     int error = luaL_dofile(state, config_file);
+    type_data = NULL;
+
     if (error)
     {
         printf("%s\n", lua_tostring(state, -1));
         return NULL;
     }
 
-    return type_data;
+    return data;
 }
 
-Result script_state_run_behavior(ScriptState* state, int function_ref, BehaviorData* data)
+Result script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptData* data)
 {
-    lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-    int error = lua_pcall(state, 0, 0, 0);
+    lua_rawgeti(state, LUA_REGISTRYINDEX, behavior->function_ref);
+    script_setup_data(state, data);
+
+    script_data = data;
+    int error = lua_pcall(state, 2, 1, 0);
+    script_data = NULL;
+
     if (error)
     {
         printf("%s\n", lua_tostring(state, -1));
         return ERROR;
     }
 
-    return INCOMPLETE;
+    if (!lua_isboolean(state, -1))
+    {
+        printf("Call to behavior '%s' did not return a boolan\n", behavior->name);
+        return ERROR;
+    }
+
+    return lua_toboolean(state, -1) ? COMPLETE : INCOMPLETE;
 }
 
