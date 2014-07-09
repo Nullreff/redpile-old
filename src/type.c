@@ -33,6 +33,13 @@ TypeList* type_list_allocate(unsigned int count)
     return types;
 }
 
+TypeList* type_list_realloc(TypeList* types, unsigned int count)
+{
+    types = realloc(types, sizeof(TypeList) + (sizeof(Type) * count));
+    types->count = count;
+    return types;
+}
+
 void type_list_free(TypeList* types)
 {
     for (int i = 0; i < types->count; i++)

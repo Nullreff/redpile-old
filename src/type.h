@@ -49,6 +49,7 @@ typedef struct {
 
 BehaviorList* behavior_list_allocate(unsigned int count);
 TypeList* type_list_allocate(unsigned int count);
+TypeList* type_list_realloc(TypeList* types, unsigned int count);
 void type_list_free(TypeList* types);
 
 #endif

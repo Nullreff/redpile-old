@@ -18,22 +18,38 @@
 
 #include "script.h"
 #include "type.h"
+#include "redpile.h"
 
 #define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
+#define IS_UINT(NUM) ((NUM - ((double)(int)NUM) == 0) && (NUM >= 0))
+
+#define MAX_TYPES 100
+TypeList* types;
+unsigned int type_count;
 
 static int script_define_behavior(lua_State* state)
 {
-    LUA_ERROR_IF(!lua_isstring(state, -1), "You must pass a behavior name\n");
-    const char* name = lua_tostring(state, -1);
+    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a behavior name\n");
+    const char* name = lua_tostring(state, 1);
     printf("Defining behavior: %s\n", name);
     return 0;
 }
 
 static int script_define_type(lua_State* state)
 {
-    LUA_ERROR_IF(!lua_isstring(state, -1), "You must pass a type name\n");
-    const char* name = lua_tostring(state, -1);
-    printf("Defining type: %s\n", name);
+    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name\n");
+
+    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass the number of fields\n");
+    double raw_field_count = lua_tonumber(state, 2);
+    LUA_ERROR_IF(!IS_UINT(raw_field_count), "Number of fields must be a positive integer\n");
+
+    char* name = strdup(lua_tostring(state, 1));
+    unsigned int field_count = raw_field_count;
+    BehaviorList* behaviors = behavior_list_allocate(0);
+
+    types->data[type_count] = (Type){name, field_count, behaviors};
+    type_count++;
+
     return 0;
 }
 
@@ -68,6 +84,9 @@ void script_state_free(ScriptState* state)
 
 TypeList* script_state_load_types(ScriptState* state, const char* config_file)
 {
+    types = type_list_allocate(MAX_TYPES);
+    type_count = 0;
+
     int error = luaL_dofile(state, config_file);
     if (error)
     {
@@ -75,6 +94,6 @@ TypeList* script_state_load_types(ScriptState* state, const char* config_file)
         return NULL;
     }
 
-    return type_list_allocate(0);
+    return type_list_realloc(types, type_count);
 }
 
