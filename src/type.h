@@ -45,11 +45,14 @@ typedef struct {
 
 #define EMPTY ((Type*)NULL)
 #define FOR_TYPE(TYPE,DATA) for (Type* TYPE = (DATA)->types; TYPE != NULL; TYPE = TYPE->next)
+#define FOR_BEHAVIOR(BEHAVIOR,DATA) for (Behavior* BEHAVIOR = (DATA)->behaviors; BEHAVIOR != NULL; BEHAVIOR = BEHAVIOR->next)
 
 TypeData* type_data_allocate(void);
 void type_data_free(TypeData* type_data);
 Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count);
 Behavior* type_data_append_behavior(TypeData* type_data, char* name, unsigned int mask, int function_ref);
 Type** type_data_type_indexes_allocate(TypeData* type_data);
+Type* type_data_find_type(TypeData* type_data, const char* name);
+Behavior* type_data_find_behavior(TypeData* type_data, const char* name);
 
 #endif

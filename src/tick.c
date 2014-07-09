@@ -17,7 +17,6 @@
  */
 
 #include "tick.h"
-#include "script.h"
 
 // TODO: Convert to LUA
 static Type* redstone_node_missing(TypeData* types, Location location)
@@ -74,7 +73,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
     return messages;
 }
 
-static bool process_node(World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
+static Result process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
 {
     Messages* input = find_input(world, node, messages);
 
@@ -83,17 +82,19 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
         Behavior* behavior = node->type->behaviors[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
         BehaviorData data = (BehaviorData){world, node, found, output, sets};
-        bool processed = script_state_run_behavior(behavior->function_ref, &data);
+        Result result = script_state_run_behavior(state, behavior->function_ref, &data);
         free(found);
-        if (processed)
+        if (result == COMPLETE)
             break;
+        else if (result == ERROR)
+            return ERROR;
     }
 
     if (node->last_input == NULL)
     {
         node->last_input = input;
         node->last_input_tick = world->ticks;
-        return true;
+        return COMPLETE;
     }
     else if (node->last_input_tick != world->ticks ||
             !messages_equal(node->last_input, input))
@@ -101,12 +102,12 @@ static bool process_node(World* world, Node* node, Queue* output, Queue* message
         free(node->last_input);
         node->last_input = input;
         node->last_input_tick = world->ticks;
-        return true;
+        return COMPLETE;
     }
     else
     {
         free(input);
-        return false;
+        return INCOMPLETE;
     }
 }
 
@@ -178,7 +179,7 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
     }
 }
 
-void tick_run(World* world, unsigned int count, LogLevel log_level)
+void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log_level)
 {
     world_set_node_missing_callback(world, redstone_node_missing);
 
@@ -200,8 +201,11 @@ void tick_run(World* world, unsigned int count, LogLevel log_level)
                 node_print(node);
 
             Queue output = queue_empty(false, false, 0);
-            bool changed = process_node(world, node, &output, &messages, &sets);
-            process_output(world, node, changed, &output, &messages, &sets);
+            Result result = process_node(state, world, node, &output, &messages, &sets);
+            if (result == ERROR)
+                return;
+
+            process_output(world, node, result == COMPLETE, &output, &messages, &sets);
 
             loops++;
             if (loops > world->nodes->size * 3)

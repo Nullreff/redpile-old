@@ -36,10 +36,16 @@ typedef struct {
     Queue* sets;
 } BehaviorData;
 
+typedef enum {
+    COMPLETE,
+    INCOMPLETE,
+    ERROR
+} Result;
+
 typedef lua_State ScriptState;
 ScriptState* script_state_allocate(void);
 void script_state_free(ScriptState* state);
 TypeData* script_state_load_config(ScriptState* state, const char* config_file);
-bool script_state_run_behavior(int function_ref, BehaviorData* data);
+Result script_state_run_behavior(ScriptState* state, int function_ref, BehaviorData* data);
 
 #endif

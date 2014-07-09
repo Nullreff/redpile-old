@@ -81,7 +81,7 @@ void command_get(Location location)
 void command_tick(int count, LogLevel log_level)
 {
     if (count > 0)
-        tick_run(world, count, log_level);
+        tick_run(state, world, count, log_level);
 }
 
 void command_messages(void)
@@ -103,14 +103,12 @@ bool type_parse(char* string, Type** found_type)
         return true;
     }
 
-    FOR_TYPE(type, world->type_data)
+    Type* type = type_data_find_type(world->type_data, string);
+    if (type != NULL)
     {
-        if (strcasecmp(string, type->name) == 0)
-        {
-            *found_type = type;
-            free(string);
-            return true;
-        }
+        *found_type = type;
+        free(string);
+        return true;
     }
 
     fprintf(stderr, "Unknown type: '%s'\n", string);

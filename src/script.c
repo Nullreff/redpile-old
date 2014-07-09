@@ -50,8 +50,17 @@ static int script_define_type(lua_State* state)
 
     char* name = strdup(lua_tostring(state, 1));
     unsigned int field_count = raw_field_count;
+    unsigned int behavior_count = lua_gettop(state) - 2;
 
-    type_data_append_type(type_data, name, field_count, 0);
+    Type* type = type_data_append_type(type_data, name, field_count, behavior_count);
+    for (int i = 0; i < behavior_count; i++)
+    {
+        const char* name = luaL_checkstring(state, 3 + i);
+        Behavior* behavior = type_data_find_behavior(type_data, name);
+        ERROR_IF(behavior == NULL, "Could not find behavior");
+        type->behaviors[i] = behavior;
+    }
+
     return 0;
 }
 
@@ -108,9 +117,16 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
     return type_data;
 }
 
-bool script_state_run_behavior(int function_ref, BehaviorData* data)
+Result script_state_run_behavior(ScriptState* state, int function_ref, BehaviorData* data)
 {
-    // TODO: Run behavior
-    return false;
+    lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+    int error = lua_pcall(state, 0, 0, 0);
+    if (error)
+    {
+        printf("%s\n", lua_tostring(state, -1));
+        return ERROR;
+    }
+
+    return INCOMPLETE;
 }
 
