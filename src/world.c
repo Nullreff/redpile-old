@@ -78,7 +78,7 @@ static void world_node_move(World* world, Node* node, Direction direction)
     world_set_node(world, new_location, type);
 }
 
-World* world_allocate(unsigned int size, TypeList* types)
+World* world_allocate(unsigned int size, TypeList* types, BehaviorList* behaviors)
 {
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
@@ -86,6 +86,7 @@ World* world_allocate(unsigned int size, TypeList* types)
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
     world->types = types;
+    world->behaviors = behaviors;
     world->node_missing = node_missing_noop;
 
     // Stats
@@ -102,6 +103,7 @@ void world_free(World* world)
     hashmap_free(world->hashmap, NULL);
     node_list_free(world->nodes);
     type_list_free(world->types);
+    behavior_list_free(world->behaviors);
     free(world);
 }
 

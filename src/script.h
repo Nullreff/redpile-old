@@ -39,7 +39,7 @@ typedef struct {
 typedef lua_State ScriptState;
 ScriptState* script_state_allocate(void);
 void script_state_free(ScriptState* state);
-TypeList* script_state_load_types(ScriptState* state, const char* config_file);
+void script_state_load_config(ScriptState* state, const char* config_file, TypeList** types, BehaviorList** behaviors);
 bool script_state_run_behavior(int function_ref, BehaviorData* data);
 
 #endif

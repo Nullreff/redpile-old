@@ -25,6 +25,20 @@ BehaviorList* behavior_list_allocate(unsigned int count)
     return behaviors;
 }
 
+BehaviorList* behavior_list_realloc(BehaviorList* behaviors, unsigned int count)
+{
+    behaviors = realloc(behaviors, sizeof(BehaviorList) + (sizeof(Behavior) * count));
+    behaviors->count = count;
+    return behaviors;
+}
+
+void behavior_list_free(BehaviorList* behaviors)
+{
+    for (int i = 0; i < behaviors->count; i++)
+        free(behaviors->data[i].name);
+    free(behaviors);
+}
+
 TypeList* type_list_allocate(unsigned int count)
 {
     TypeList* types = malloc(sizeof(TypeList) + (sizeof(Type) * count));
@@ -42,6 +56,7 @@ TypeList* type_list_realloc(TypeList* types, unsigned int count)
 void type_list_free(TypeList* types)
 {
     for (int i = 0; i < types->count; i++)
-        free(types->data[i].behaviors);
+        free(types->data[i].name);
     free(types);
 }
+

@@ -33,6 +33,7 @@ typedef struct {
     // All types are a staticly sized array.
     // see type.c for more information.
     TypeList* types;
+    BehaviorList* behaviors;
 
     // Fast block lookup is done using a hashmap.
     // See hashmap.c for more information.
@@ -63,7 +64,7 @@ typedef struct {
 
 #define STAT_PRINT(stats,stat,format) printf(#stat ": %" #format "\n", stats.stat)
 
-World* world_allocate(unsigned int size, TypeList* types);
+World* world_allocate(unsigned int size, TypeList* types, BehaviorList* behaviors);
 void world_free(World* world);
 Node* world_set_node(World* world, Location location, Type* type);
 Node* world_get_node(World* world, Location location);

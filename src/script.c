@@ -40,7 +40,7 @@ static int script_define_behavior(lua_State* state)
     LUA_ERROR_IF(!lua_isfunction(state, 3), "You must pass a behavior function");
 
     int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
-    const char* name = lua_tostring(state, 1);
+    char* name = strdup(lua_tostring(state, 1));
     unsigned int mask = raw_mask;
 
     behaviors->data[behavior_count] = (Behavior){name, mask, function_ref};
@@ -104,7 +104,7 @@ void script_state_free(ScriptState* state)
     lua_close(state);
 }
 
-TypeList* script_state_load_types(ScriptState* state, const char* config_file)
+void script_state_load_config(ScriptState* state, const char* config_file, TypeList** types_out, BehaviorList** behaviors_out)
 {
     types = type_list_allocate(MAX_TYPES);
     type_count = 0;
@@ -116,10 +116,13 @@ TypeList* script_state_load_types(ScriptState* state, const char* config_file)
     if (error)
     {
         printf("%s\n", lua_tostring(state, -1));
-        return NULL;
+        *types_out = NULL;
+        *behaviors_out = NULL;
+        return;
     }
 
-    return type_list_realloc(types, type_count);
+    *types_out = type_list_realloc(types, type_count);
+    *behaviors_out = behavior_list_realloc(behaviors, behavior_count);
 }
 
 bool script_state_run_behavior(int function_ref, BehaviorData* data)

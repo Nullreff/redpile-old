@@ -27,7 +27,7 @@
 struct BehaviorData;
 
 typedef struct {
-    const char* name;
+    char* name;
     unsigned int mask;
     int function_ref;
 } Behavior;
@@ -38,7 +38,7 @@ typedef struct BehaviorList {
 } BehaviorList;
 
 typedef struct {
-    const char* name;
+    char* name;
     unsigned int field_count;
     unsigned int behavior_count;
     Behavior* behaviors;
@@ -50,6 +50,8 @@ typedef struct {
 } TypeList;
 
 BehaviorList* behavior_list_allocate(unsigned int count);
+BehaviorList* behavior_list_realloc(BehaviorList* behaviors, unsigned int count);
+void behavior_list_free(BehaviorList* behaviors);
 TypeList* type_list_allocate(unsigned int count);
 TypeList* type_list_realloc(TypeList* types, unsigned int count);
 void type_list_free(TypeList* types);
