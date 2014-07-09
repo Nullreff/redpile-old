@@ -58,6 +58,12 @@ typedef struct {
     unsigned int size;
 } NodeList;
 
+typedef struct {
+    int index;
+    unsigned int count;
+    Node* nodes[];
+} NodeStack;
+
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
 #define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
 #define FOR_NODE_LIST(NODE,LIST) for (Node* NODE = LIST->nodes; NODE != NULL; NODE = NODE->next)
@@ -73,5 +79,12 @@ Node* node_list_append(NodeList* blocks, Location location, Type* type);
 void node_list_remove(NodeList* blocks, Node* node);
 void node_list_move_after(NodeList* blocks, Node* node, Node* target);
 void node_list_print(NodeList* blocks);
+
+NodeStack* node_stack_allocate(unsigned int count);
+void node_stack_free(NodeStack* stack);
+int node_stack_push(NodeStack* stack, Node* node);
+bool node_stack_pop(NodeStack* stack);
+Node* node_stack_index(NodeStack* stack, unsigned int index);
+Node* node_stack_first(NodeStack* stack);
 
 #endif

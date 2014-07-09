@@ -26,6 +26,7 @@
 --
 
 print('Loading Redstone types...')
+MAX_POWER = 15
 
 -- Behaviors are created using the `define_behavior` function which takes:
 --
@@ -60,7 +61,7 @@ print('Loading Redstone types...')
 define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(self, messages)
     if messages.count > 0 then
         message = messages.first()
-        self.move(message.value)
+        self:move(message.value)
         return true
     end
     return false
@@ -104,14 +105,24 @@ define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_switch', MESSAGE_POWER, function(self, messages)
-    print('Running power_switch')
-    return false
+    if self.state == 0 then
+        return true
+    end
+
+    behind = direction_invert(self.direction)
+    self:adjacent(function(node)
+        if node.material ~= 'CONDUCTOR' or node.direction == behind then
+            node:send(0, MESSAGE_POWER, MAX_POWER)
+        end
+    end)
+
+    return true
 end)
 
 -- Types are created using the `define_type` function which takes:
 --
 -- NAME <String>
--- The name used to reference this type.
+-- The name used to reference this type.  Should be upper case.
 --
 -- FIELD_COUNT <Number> (must be positive integer)
 -- Number of fields to store on this node.  Current convention is:
@@ -125,43 +136,43 @@ end)
 -- Names of behaviors for this type that will be run in the order listed.
 --
 
-define_type('air', 0)
+define_type('AIR', 0)
 
-define_type('insulator', 0,
+define_type('INSULATOR', 0,
     'push_move'
 )
 
-define_type('wire', 1,
+define_type('WIRE', 1,
     'push_break',
     'power_wire'
 )
 
-define_type('conductor', 1,
+define_type('CONDUCTOR', 1,
     'push_move',
     'power_conductor'
 )
 
-define_type('torch', 2,
+define_type('TORCH', 2,
     'push_break',
     'power_torch'
 )
 
-define_type('piston', 2,
+define_type('PISTON', 2,
     'push_break',
     'power_piston'
 )
 
-define_type('repeater', 3,
+define_type('REPEATER', 3,
     'push_break',
     'power_repeater'
 )
 
-define_type('comparator', 3,
+define_type('COMPARATOR', 3,
     'push_break',
     'power_comparator'
 )
 
-define_type('switch', 3,
+define_type('SWITCH', 3,
     'push_break',
     'power_switch'
 )
