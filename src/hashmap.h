@@ -19,9 +19,8 @@
 #ifndef REDPILE_BUCKET_H
 #define REDPILE_BUCKET_H
 
-#include "redpile.h"
 #include "location.h"
-#include <stdbool.h>
+#include "common.h"
 
 typedef struct Bucket {
     Location key;

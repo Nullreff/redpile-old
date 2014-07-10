@@ -16,7 +16,7 @@
  */
 
 #include "location.h"
-#include "redpile.h"
+#include "common.h"
 
 char* Directions[6] = {
     "NORTH",
@@ -68,6 +68,18 @@ Direction direction_left(Direction dir)
         case EAST:  return NORTH;
         case WEST:  return SOUTH;
         default:    ERROR("Invalid direction provided to direction_left\n");
+    }
+}
+
+Direction direction_move(Direction direction, Movement move)
+{
+    switch (move)
+    {
+        case FORWARDS: return direction;
+        case BEHIND:   return direction_invert(direction);
+        case LEFT:     return direction_left(direction);
+        case RIGHT:    return direction_right(direction);
+        default:       ERROR("Invalid movement provided to direction_move\n");
     }
 }
 

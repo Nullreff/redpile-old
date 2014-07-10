@@ -17,7 +17,6 @@
  */
 
 #include "node.h"
-#include "redpile.h"
 
 static Node* node_allocate(Location location, Type* type)
 {
@@ -186,5 +185,46 @@ void node_list_print(NodeList* blocks)
     }
 
     printf("Total: %u\n", blocks->size);
+}
+
+NodeStack* node_stack_allocate(unsigned int count)
+{
+    NodeStack* stack = malloc(sizeof(NodeStack) + (sizeof(Node*) * count));
+    stack->index = -1;
+    stack->count = count;
+    return stack;
+}
+
+void node_stack_free(NodeStack* stack)
+{
+    free(stack);
+}
+
+int node_stack_push(NodeStack* stack, Node* node)
+{
+    if (stack->index + 1 >= stack->count)
+        return -1;
+
+    stack->nodes[++stack->index] = node;
+    return stack->index;
+}
+
+bool node_stack_pop(NodeStack* stack)
+{
+    assert(stack->index > 0);
+    stack->index--;
+    return true;
+}
+
+Node* node_stack_index(NodeStack* stack, unsigned int index)
+{
+    return index < stack->count ? stack->nodes[index] : NULL;
+}
+
+Node* node_stack_first(NodeStack* stack)
+{
+    Node* node = node_stack_index(stack, 0);
+    assert(node != NULL);
+    return node;
 }
 

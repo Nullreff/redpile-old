@@ -19,23 +19,19 @@
 #ifndef REDPILE_H
 #define REDPILE_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <stdbool.h>
+#include "script.h"
+#include "world.h"
 
 #define REDPILE_VERSION "0.5.0"
 
-#define ERROR(MESSAGE) do { fprintf(stderr, MESSAGE); exit(EXIT_FAILURE); } while(0)
-#define ERROR_IF(CONDITION, MESSAGE) if (CONDITION) { ERROR(MESSAGE); }
-#define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
-#define IS_POWER_OF_TWO(x) ((x & (x - 1)) == 0)
+extern World* world;
+extern ScriptState* state;
 
 typedef struct {
     int world_size;
     unsigned int interactive:1;
     unsigned int benchmark;
+    char* file;
 } RedpileConfig;
 
 #endif

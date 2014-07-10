@@ -1,5 +1,5 @@
 BUILD_DIR := build
-REDPILE := ./build/redpile
+REDPILE := ./build/src/redpile conf/redstone.lua
 BENCHMARK := ${REDPILE} --benchmark
 VALGRIND := valgrind --error-exitcode=1 --leak-check=full --show-reachable=yes
 RSPEC := rspec

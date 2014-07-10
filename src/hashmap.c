@@ -17,7 +17,6 @@
  */
 
 #include "hashmap.h"
-#include "redpile.h"
 
 static Bucket bucket_empty(void)
 {

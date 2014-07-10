@@ -21,6 +21,7 @@
 
 #include "message.h"
 #include "world.h"
+#include "script.h"
 
 typedef enum {
     LOG_QUIET,
@@ -28,6 +29,6 @@ typedef enum {
     LOG_VERBOSE
 } LogLevel;
 
-void tick_run(World* world, unsigned int count, LogLevel log_level);
+void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log_level);
 
 #endif

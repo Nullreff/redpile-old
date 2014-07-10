@@ -19,18 +19,18 @@
 #include "redpile.h"
 #include "parser.h"
 #include "command.h"
-#include "world.h"
-#include "redstone.h"
 #include "bench.h"
 #include "linenoise.h"
 #include "type.h"
+#include "common.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
 #include <unistd.h>
 
 RedpileConfig config;
-char* prompt;
+World* world = NULL;
+ScriptState* state = NULL;
 
 int yyparse(void);
 int yylex_destroy(void);
@@ -43,7 +43,7 @@ static void print_version()
 static void print_help()
 {
     printf("Redpile - High Performance Redstone\n\n"
-           "Usage: redpile [options] [map directory]\n"
+           "Usage: redpile [options] <config>\n"
            "Options:\n"
            "    -i, --interactive\n"
            "        Run in interactive mode with a prompt for reading commands\n\n"
@@ -103,6 +103,10 @@ static void load_config(int argc, char* argv[])
         switch (opt)
         {
             case -1:
+                if (optind >= argc)
+                    ERROR("You must provide a configuration file\n");
+
+                config.file = argv[optind];
                 return;
 
             case 'w':
@@ -133,8 +137,11 @@ static void load_config(int argc, char* argv[])
 
 static void redpile_cleanup(void)
 {
-    if (current_world != NULL)
-        world_free(current_world);
+    if (world != NULL)
+        world_free(world);
+
+    if (state != NULL)
+        script_state_free(state);
 
     if (!config.benchmark)
         yylex_destroy();
@@ -183,11 +190,21 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    current_world = world_allocate(config.world_size, redstone_load_types());
+
+    state = script_state_allocate();
+
+    TypeData* type_data = script_state_load_config(state, config.file);
+    if (type_data == NULL)
+    {
+        redpile_cleanup();
+        return EXIT_FAILURE;
+    }
+
+    world = world_allocate(config.world_size, type_data);
 
     if (config.benchmark)
     {
-        run_benchmarks(current_world, config.benchmark);
+        run_benchmarks(world, config.benchmark);
     }
     else
     {
