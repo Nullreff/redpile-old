@@ -23,7 +23,7 @@ static Type* redstone_node_missing(TypeData* types, Location location)
 {
     FOR_TYPE(type, types)
     {
-        if (strcasecmp("air", type->name))
+        if (strcasecmp("AIR", type->name) == 0)
             return type;
     }
 

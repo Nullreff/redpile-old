@@ -71,6 +71,18 @@ Direction direction_left(Direction dir)
     }
 }
 
+Direction direction_move(Direction direction, Movement move)
+{
+    switch (move)
+    {
+        case FORWARDS: return direction;
+        case BEHIND:   return direction_invert(direction);
+        case LEFT:     return direction_left(direction);
+        case RIGHT:    return direction_right(direction);
+        default:       ERROR("Invalid movement provided to direction_move\n");
+    }
+}
+
 Location location_empty(void)
 {
     return location_create(0, 0, 0);

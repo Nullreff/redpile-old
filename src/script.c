@@ -99,6 +99,26 @@ static void script_create_message(ScriptState* state, Message* message)
     lua_settable(state, -3);
 }
 
+static int script_location_eq(ScriptState* state)
+{
+    luaL_checktype(state, 1, LUA_TTABLE);
+    lua_getfield(state, 1, "x");
+    double x1 = lua_tonumber(state, -1);
+    lua_getfield(state, 2, "x");
+    double x2 = lua_tonumber(state, -1);
+    lua_getfield(state, 1, "y");
+    double y1 = lua_tonumber(state, -1);
+    lua_getfield(state, 2, "y");
+    double y2 = lua_tonumber(state, -1);
+    lua_getfield(state, 1, "z");
+    double z1 = lua_tonumber(state, -1);
+    lua_getfield(state, 2, "z");
+    double z2 = lua_tonumber(state, -1);
+
+    lua_pushboolean(state, x1 == x2 && y1 == y2 && z1 == z2);
+    return 1;
+}
+
 static void script_create_location(ScriptState* state, Location location)
 {
     lua_createtable(state, 0, 3);
@@ -114,6 +134,11 @@ static void script_create_location(ScriptState* state, Location location)
     lua_pushstring(state, "z");
     lua_pushnumber(state, location.z);
     lua_settable(state, -3);
+
+    lua_createtable(state, 0, 1);
+    lua_pushcfunction(state, script_location_eq);
+    lua_setfield(state, -2, "__eq");
+    lua_setmetatable(state, -2);
 }
 
 static Node* script_node_pop_current(ScriptState* state)
@@ -137,41 +162,77 @@ static int script_node_adjacent(ScriptState* state)
     Node* current = script_node_pop_current(state);
 
     int top = lua_gettop(state);
-    LUA_ERROR_IF(top == 1 || !lua_isfunction(state, top), "You must pass a function to adjacent")
 
-    int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
-
-    if (top == 2)
+    if (lua_isfunction(state, top))
     {
-        // Function only, loop through all directions
-        for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
+        int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
+
+        if (top == 2)
         {
-            Node* node = world_get_adjacent_node(script_data->world, current, dir);
-            lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-            script_create_node(state, node);
-            lua_call(state, 1, 0);
-            node_stack_pop(node_stack);
+            // Function only, loop through all directions
+            for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
+            {
+                Node* node = world_get_adjacent_node(script_data->world, current, dir);
+                lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+                script_create_node(state, node);
+                lua_call(state, 1, 0);
+            }
         }
+        else
+        {
+            // Loop through all the directions passed
+            for (int i = 2; i < top; i++)
+            {
+                LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
+                double raw_direction = lua_tonumber(state, i);
+                LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
+
+                Direction direction = raw_direction;
+                if (direction > DIRECTIONS_COUNT)
+                    direction = direction_move(FIELD_GET(current, 1), direction);
+
+                Node* node = world_get_adjacent_node(script_data->world, current, direction);
+                lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+                script_create_node(state, node);
+                lua_call(state, 1, 0);
+            }
+
+        }
+        return 0;
     }
     else
     {
-        // Loop through all the directions passed
-        for (int i = 2; i < top; i++)
+        if (top == 1)
         {
-            LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
-            double raw_direction = lua_tonumber(state, i);
-            LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
-            Direction dir = raw_direction;
-
-            Node* node = world_get_adjacent_node(script_data->world, current, dir);
-            lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-            script_create_node(state, node);
-            lua_call(state, 1, 0);
-            node_stack_pop(node_stack);
+            // Loop through all directions
+            for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
+            {
+                Node* node = world_get_adjacent_node(script_data->world, current, dir);
+                script_create_node(state, node);
+            }
+            return DIRECTIONS_COUNT;
         }
+        else
+        {
+            // Loop through directions passed
+            for (int i = 2; i <= top; i++)
+            {
+                LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
+                double raw_direction = lua_tonumber(state, i);
+                LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
 
+                Direction direction = raw_direction;
+                if (direction > DIRECTIONS_COUNT)
+                    direction = direction_move(FIELD_GET(current, 1), direction);
+
+                Node* node = world_get_adjacent_node(script_data->world, current, direction);
+                printf("Found node: %s\n", node->type->name);
+                script_create_node(state, node);
+            }
+
+            return top - 1;
+        }
     }
-    return 0;
 }
 
 static int script_node_send(ScriptState* state)
@@ -339,6 +400,15 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "UP");
     lua_pushnumber(state, DOWN);
     lua_setglobal(state, "DOWN");
+
+    lua_pushnumber(state, FORWARDS);
+    lua_setglobal(state, "FORWARDS");
+    lua_pushnumber(state, BEHIND);
+    lua_setglobal(state, "BEHIND");
+    lua_pushnumber(state, LEFT);
+    lua_setglobal(state, "LEFT");
+    lua_pushnumber(state, RIGHT);
+    lua_setglobal(state, "RIGHT");
 
     lua_pushnumber(state, MESSAGE_POWER);
     lua_setglobal(state, "MESSAGE_POWER");

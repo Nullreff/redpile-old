@@ -109,9 +109,9 @@ define_behavior('power_switch', MESSAGE_POWER, function(self, messages)
         return true
     end
 
-    behind = direction_invert(self.direction)
+    local behind = self:adjacent(BEHIND)
     self:adjacent(function(node)
-        if node.material ~= 'CONDUCTOR' or node.direction == behind then
+        if node.type ~= 'CONDUCTOR' or node.location == behind.location then
             node:send(0, MESSAGE_POWER, MAX_POWER)
         end
     end)

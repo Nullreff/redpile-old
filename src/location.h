@@ -28,13 +28,21 @@
 #define DIRECTIONS_COUNT 6
 char* Directions[DIRECTIONS_COUNT];
 typedef enum {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST,
-    UP,
-    DOWN
+    NORTH = 0,
+    SOUTH = 1,
+    EAST  = 2,
+    WEST  = 3,
+    UP    = 4,
+    DOWN  = 5
 } Direction;
+
+#define MOVEMENTS_COUNT 4
+typedef enum {
+    FORWARDS = 6,
+    BEHIND   = 7,
+    LEFT     = 8,
+    RIGHT    = 9
+} Movement;
 
 typedef int Coord;
 typedef struct {
@@ -48,6 +56,7 @@ typedef struct {
 Direction direction_invert(Direction dir);
 Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
+Direction direction_move(Direction direction, Movement move);
 
 Location location_empty(void);
 Location location_from_values(int values[]);
