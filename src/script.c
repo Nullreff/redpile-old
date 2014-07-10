@@ -82,7 +82,7 @@ static int script_default_type(ScriptState* state)
     assert(type_data != NULL);
 
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
-    const char* name = lua_tostring(state, 1);
+    char* name = strdup(lua_tostring(state, 1));
 
     Type* type = type_data_append_type(type_data, name, 0, 0);
     type_data_set_default_type(type_data, type);

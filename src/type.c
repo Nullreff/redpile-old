@@ -35,6 +35,7 @@ void type_data_free(TypeData* type_data)
     while (type != NULL)
     {
         Type* temp = type->next;
+        free(type->name);
         free(type);
         type = temp;
     }
@@ -43,6 +44,7 @@ void type_data_free(TypeData* type_data)
     while (behavior != NULL)
     {
         Behavior* temp = behavior->next;
+        free(behavior->name);
         free(behavior);
         behavior = temp;
     }
