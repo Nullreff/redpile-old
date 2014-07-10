@@ -32,6 +32,10 @@ function has_lower_power(node, messages, power)
     return received_power == nil or received_power.value < power
 end
 
+function msg_power(message)
+    return message and message.value or 0
+end
+
 -- Behaviors are created using the `define_behavior` function which takes:
 --
 -- NAME (String)
@@ -132,8 +136,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
-    local power_msg = messages.max()
-    local new_power = power_msg and power_msg.value or 0
+    local new_power = msg_power(messages.max())
 
     self:set_power(new_power)
 
@@ -150,8 +153,7 @@ define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
-    local behind_msg = messages.source(self:adjacent(BEHIND).location)
-    local new_power = behind_msg and behind_msg.value or 0
+    local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
     self:set_power(new_power)
     if new_power > 0 then
         return true
@@ -181,8 +183,7 @@ define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
     local first = self:adjacent(FORWARDS)
     local second = first:adjacent(self.direction)
 
-    local power_msg = messages.max()
-    local new_power = power_msg and power_msg.value or 0
+    local new_power = msg_power(messages.max())
 
     local state
     if new_power == 0 then
@@ -215,8 +216,7 @@ define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
-    local behind_msg = messages.source(self:adjacent(BEHIND).location)
-    local new_power = behind_msg and behind_msg.value or 0
+    local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
     self:set_power(new_power)
     if new_power == 0 then
         return true
@@ -232,18 +232,15 @@ define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
-    local behind_msg = messages.source(self:adjacent(BEHIND).location)
-    local new_power = behind_msg and behind_msg.value or 0
+    local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
     self:set_power(new_power)
     if new_power == 0 then
         return true
     end
 
-    local left_msg = messages.source(self:adjacent(LEFT).location)
-    local right_msg = messages.source(self:adjacent(RIGHT).location)
     local side_power = math.max(
-        left_msg and left_msg.value or 0,
-        right_msg and right_msg.value or 0
+        msg_power(messages.source(self:adjacent(LEFT).location)),
+        msg_power(messages.source(self:adjacent(RIGHT).location))
     )
 
     local change = new_power
