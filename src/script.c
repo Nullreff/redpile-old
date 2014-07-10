@@ -86,6 +86,8 @@ static int script_default_type(ScriptState* state)
 
     Type* type = type_data_append_type(type_data, name, 0, 0);
     type_data_set_default_type(type_data, type);
+
+    return 0;
 }
 
 static int script_direction_right(ScriptState* state)
