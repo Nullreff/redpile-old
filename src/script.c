@@ -413,6 +413,19 @@ static int script_messages_first(ScriptState* state)
     return 1;
 }
 
+static int script_messages_max(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    Message* message = messages_find_max(script_data->input);
+    if (message != NULL)
+        script_create_message(state, message);
+    else
+        lua_pushnil(state);
+
+    return 1;
+}
+
 static int script_messages_source(ScriptState* state)
 {
     assert(script_data != NULL);
@@ -441,6 +454,7 @@ static void script_setup_data(ScriptState* state, ScriptData* data)
 
     static const luaL_Reg message_funcs[] = {
         {"first", script_messages_first},
+        {"max", script_messages_max},
         {"source", script_messages_source},
         {NULL, NULL}
     };

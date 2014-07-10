@@ -89,9 +89,45 @@ define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
     return false
 end)
 
+RETRACTED  = 0
+RETRACTING = 1
+EXTENDED   = 2
+EXTENDING  = 3
 define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
-    print('Running power_piston')
-    return false
+    local first = self:adjacent(FORWARDS)
+    local second = first:adjacent(first.direction)
+
+    local power_msg = messages.max()
+    local new_power = power_msg and power_msg.value or 0
+
+    local state
+    if new_power == 0 then
+        if first.material == 'AIR' and second.material ~= 'AIR' and self.power > 0 then
+            state = RETRACTING
+        else
+            state = RETRACTED
+        end
+    else
+        if second.material == 'AIR' and first.material ~= 'AIR' and self.power == 0 then
+            state = EXTENDING
+        else
+            state = EXTENDED
+        end
+    end
+
+    if state == RETRACTED then
+        return false
+    end
+
+    self:power(new_power)
+
+    if state == EXTENDING then
+        first:send(1, MESSAGE_PUSH, self.direction)
+    else
+        first:send(1, MESSAGE_PULL, direction_invert(self.direction))
+    end
+
+    return true
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
