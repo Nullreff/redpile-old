@@ -260,7 +260,7 @@ define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
     return true
 end)
 
-define_behavior('power_switch', MESSAGE_POWER, function(self, messages)
+define_behavior('power_switch', 0, function(self, messages)
     if self.state == 0 then
         self:set_power(0)
         return true
