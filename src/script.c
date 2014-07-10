@@ -77,6 +77,17 @@ static int script_define_type(ScriptState* state)
     return 0;
 }
 
+static int script_default_type(ScriptState* state)
+{
+    assert(type_data != NULL);
+
+    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
+    const char* name = lua_tostring(state, 1);
+
+    Type* type = type_data_append_type(type_data, name, 0, 0);
+    type_data_set_default_type(type_data, type);
+}
+
 static int script_direction_right(ScriptState* state)
 {
     LUA_ERROR_IF(!lua_isnumber(state, 1), "You must pass a direction to direction_right");
@@ -530,6 +541,8 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "define_behavior");
     lua_pushcfunction(state, script_define_type);
     lua_setglobal(state, "define_type");
+    lua_pushcfunction(state, script_default_type);
+    lua_setglobal(state, "default_type");
     lua_pushcfunction(state, script_direction_left);
     lua_setglobal(state, "direction_left");
     lua_pushcfunction(state, script_direction_right);

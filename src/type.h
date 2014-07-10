@@ -41,6 +41,7 @@ typedef struct {
     unsigned int behavior_count;
     Type* types;
     Behavior* behaviors;
+    Type* default_type;
 } TypeData;
 
 #define EMPTY ((Type*)NULL)
@@ -53,6 +54,8 @@ Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_
 Behavior* type_data_append_behavior(TypeData* type_data, char* name, unsigned int mask, int function_ref);
 Type** type_data_type_indexes_allocate(TypeData* type_data);
 Type* type_data_find_type(TypeData* type_data, const char* name);
+void type_data_set_default_type(TypeData* type_data, Type* type);
+Type* type_data_get_default_type(TypeData* type_data);
 Behavior* type_data_find_behavior(TypeData* type_data, const char* name);
 
 #endif

@@ -57,6 +57,11 @@ static Type* node_missing_noop(TypeData* type_data, Location location)
     return NULL;
 }
 
+static Type* node_missing_default_type(TypeData* type_data, Location location)
+{
+    return type_data_get_default_type(type_data);
+}
+
 static bool world_fill_missing(World* world, Location location)
 {
     Type* type = world->node_missing(world->type_data, location);
@@ -178,14 +183,12 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, message_max_queued, u);
 }
 
-void world_set_node_missing_callback(World* world, Type* (*node_missing)(TypeData* type_data, Location location))
+void world_set_node_missing_callback(World* world, bool enable)
 {
-    world->node_missing = node_missing;
-}
-
-void world_clear_node_missing_callback(World* world)
-{
-    world->node_missing = node_missing_noop;
+    if (enable)
+        world->node_missing = node_missing_default_type;
+    else
+        world->node_missing = node_missing_noop;
 }
 
 bool world_run_data(World* world, QueueData* data)

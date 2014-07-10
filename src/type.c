@@ -25,6 +25,7 @@ TypeData* type_data_allocate(void)
     type_data->behavior_count = 0;
     type_data->types = NULL;
     type_data->behaviors = NULL;
+    type_data->default_type = NULL;
     return type_data;
 }
 
@@ -98,6 +99,16 @@ Type* type_data_find_type(TypeData* type_data, const char* name)
             return type;
     }
     return NULL;
+}
+
+void type_data_set_default_type(TypeData* type_data, Type* type)
+{
+    type_data->default_type = type;
+}
+
+Type* type_data_get_default_type(TypeData* type_data)
+{
+    return type_data->default_type;
 }
 
 Behavior* type_data_find_behavior(TypeData* type_data, const char* name)

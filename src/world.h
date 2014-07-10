@@ -71,8 +71,7 @@ void world_remove_node(World* world, Location location);
 Node* world_get_adjacent_node(World* world, Node* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
-void world_set_node_missing_callback(World* world, Type* (*node_missing)(TypeData* type_data, Location location));
-void world_clear_node_missing_callback(World* world);
+void world_set_node_missing_callback(World* world, bool enable);
 bool world_run_data(World* world, QueueData* data);
 void world_print_messages(World* world);
 

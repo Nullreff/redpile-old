@@ -18,18 +18,6 @@
 
 #include "tick.h"
 
-// TODO: Convert to LUA
-static Type* redstone_node_missing(TypeData* types, Location location)
-{
-    FOR_TYPE(type, types)
-    {
-        if (strcasecmp("AIR", type->name) == 0)
-            return type;
-    }
-
-    ERROR("No 'air' type declared");
-}
-
 static Message message_create(QueueData* data)
 {
     return (Message){{data->source.location, data->source.type}, data->type, data->message};
@@ -181,7 +169,7 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
 
 void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log_level)
 {
-    world_set_node_missing_callback(world, redstone_node_missing);
+    world_set_node_missing_callback(world, true);
 
     for (int i = 0; i < count; i++)
     {
@@ -241,6 +229,6 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
         world->ticks++;
     }
 
-    world_clear_node_missing_callback(world);
+    world_set_node_missing_callback(world, false);
 }
 

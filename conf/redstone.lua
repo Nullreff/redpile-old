@@ -294,7 +294,7 @@ end)
 -- Names of behaviors for this type that will be run in the order listed.
 --
 
-define_type('AIR', 0)
+default_type('AIR')
 define_type('INSULATOR', 0, 'push_move')
 define_type('WIRE', 1, 'push_break', 'power_wire')
 define_type('CONDUCTOR', 1, 'push_move', 'power_conductor')
@@ -303,4 +303,5 @@ define_type('PISTON', 2, 'power_piston', 'push_move')
 define_type('REPEATER', 3, 'push_break', 'power_repeater')
 define_type('COMPARATOR', 3, 'push_break', 'power_comparator')
 define_type('SWITCH', 3, 'push_break', 'power_switch')
+
 
