@@ -99,7 +99,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
         if node.type == 'AIR' then
             node = node:adjacent(DOWN)
             if node.type ~= 'WIRE' then
-                return
+                return true
             end
         elseif node.type == 'CONDUCTOR' then
             if self:adjacent(direction_left(dir)).type ~= 'WIRE' and
@@ -110,12 +110,12 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
            end
 
            if covered then
-               return
+               return true
            end
 
            node = node:adjacent(UP)
            if node.type ~= 'WIRE' then
-               return
+               return true
            end
         end
 
