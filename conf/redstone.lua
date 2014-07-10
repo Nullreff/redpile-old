@@ -73,7 +73,8 @@ end)
 
 define_behavior('push_break', MESSAGE_PUSH, function(self, messages)
     if messages.count > 0 then
-        self.remove()
+        self:remove()
+        return true
     end
     return false
 end)
@@ -83,7 +84,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
 
     local power_msg = messages.max()
     local new_power = power_msg and power_msg.value or 0
-    self:power(new_power)
+    self:set_power(new_power)
 
     local wire_power = new_power
     if wire_power > 0 then
@@ -134,7 +135,7 @@ define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
     local power_msg = messages.max()
     local new_power = power_msg and power_msg.value or 0
 
-    self:power(new_power)
+    self:set_power(new_power)
 
     local max_powerd = new_power == MAX_POWER
     self:adjacent(function(node)
@@ -151,7 +152,7 @@ end)
 define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
     local behind_msg = messages.source(self:adjacent(BEHIND).location)
     local new_power = behind_msg and behind_msg.value or 0
-    self:power(new_power)
+    self:set_power(new_power)
     if new_power > 0 then
         return true
     end
@@ -178,20 +179,20 @@ EXTENDED   = 2
 EXTENDING  = 3
 define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
     local first = self:adjacent(FORWARDS)
-    local second = first:adjacent(first.direction)
+    local second = first:adjacent(self.direction)
 
     local power_msg = messages.max()
     local new_power = power_msg and power_msg.value or 0
 
     local state
     if new_power == 0 then
-        if first.material == 'AIR' and second.material ~= 'AIR' and self.power > 0 then
+        if first.type == 'AIR' and second.type ~= 'AIR' and self.power > 0 then
             state = RETRACTING
         else
             state = RETRACTED
         end
     else
-        if second.material == 'AIR' and first.material ~= 'AIR' and self.power == 0 then
+        if second.type == 'AIR' and first.type ~= 'AIR' and self.power == 0 then
             state = EXTENDING
         else
             state = EXTENDED
@@ -202,12 +203,12 @@ define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
         return false
     end
 
-    self:power(new_power)
+    self:set_power(new_power)
 
     if state == EXTENDING then
         first:send(1, MESSAGE_PUSH, self.direction)
-    else
-        first:send(1, MESSAGE_PULL, direction_invert(self.direction))
+    elseif state == RETRACTING then
+        second:send(1, MESSAGE_PULL, direction_invert(self.direction))
     end
 
     return true
@@ -216,7 +217,7 @@ end)
 define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
     local behind_msg = messages.source(self:adjacent(BEHIND).location)
     local new_power = behind_msg and behind_msg.value or 0
-    self:power(new_power)
+    self:set_power(new_power)
     if new_power == 0 then
         return true
     end
@@ -233,7 +234,7 @@ end)
 define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
     local behind_msg = messages.source(self:adjacent(BEHIND).location)
     local new_power = behind_msg and behind_msg.value or 0
-    self:power(new_power)
+    self:set_power(new_power)
     if new_power == 0 then
         return true
     end
@@ -261,11 +262,11 @@ end)
 
 define_behavior('power_switch', MESSAGE_POWER, function(self, messages)
     if self.state == 0 then
-        self:power(0)
+        self:set_power(0)
         return true
     end
 
-    self:power(15)
+    self:set_power(15)
     local behind = self:adjacent(BEHIND)
     self:adjacent(function(node)
         if node.type ~= 'CONDUCTOR' or node.location == behind.location then
@@ -315,8 +316,8 @@ define_type('TORCH', 2,
 )
 
 define_type('PISTON', 2,
-    'push_break',
-    'power_piston'
+    'power_piston',
+    'push_move'
 )
 
 define_type('REPEATER', 3,

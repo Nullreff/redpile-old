@@ -322,7 +322,7 @@ static int script_node_send(ScriptState* state)
     return 0;
 }
 
-static int script_node_power(ScriptState* state)
+static int script_node_set_power(ScriptState* state)
 {
     assert(script_data != NULL);
 
@@ -420,7 +420,7 @@ static void script_create_node(ScriptState* state, Node* node)
     static const luaL_Reg node_funcs[] = {
         {"adjacent", script_node_adjacent},
         {"send", script_node_send},
-        {"power", script_node_power},
+        {"set_power", script_node_set_power},
         {"move", script_node_move},
         {"remove", script_node_remove},
         {NULL, NULL}
