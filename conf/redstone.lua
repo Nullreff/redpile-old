@@ -90,15 +90,15 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
         wire_power = wire_power - 1
     end
 
-    self:adjacent(NORTH, SOUTH, EAST, WEST, function(node)
+    self:adjacent(NORTH, SOUTH, EAST, WEST, function(node, dir)
         if node.type == 'AIR' then
             node = node:adjacent(DOWN)
             if node.type ~= 'WIRE' then
                 return
             end
         elseif node.type == 'CONDUCTOR' then
-            if node:adjacent(LEFT).type ~= 'WIRE' and
-               node:adjacent(RIGHT).type ~= 'WIRE' and
+            if self:adjacent(direction_left(dir)).type ~= 'WIRE' and
+               self:adjacent(direction_right(dir)).type ~= 'WIRE' and
                has_lower_power(node, messages, wire_power)
            then
                node:send(0, MESSAGE_POWER, wire_power)

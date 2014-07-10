@@ -77,9 +77,35 @@ static int script_define_type(ScriptState* state)
     return 0;
 }
 
+static int script_direction_right(ScriptState* state)
+{
+    LUA_ERROR_IF(!lua_isnumber(state, 1), "You must pass a direction to direction_right");
+    double raw_direction = lua_tonumber(state, 1);
+    LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
+
+    Direction direction = raw_direction;
+    Direction inverse = direction_right(direction);
+    lua_pushnumber(state, inverse);
+
+    return 1;
+}
+
+static int script_direction_left(ScriptState* state)
+{
+    LUA_ERROR_IF(!lua_isnumber(state, 1), "You must pass a direction to direction_left");
+    double raw_direction = lua_tonumber(state, 1);
+    LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
+
+    Direction direction = raw_direction;
+    Direction inverse = direction_left(direction);
+    lua_pushnumber(state, inverse);
+
+    return 1;
+}
+
 static int script_direction_invert(ScriptState* state)
 {
-    LUA_ERROR_IF(!lua_isnumber(state, 1), "You must pass a direction to invert");
+    LUA_ERROR_IF(!lua_isnumber(state, 1), "You must pass a direction to direction_invert");
     double raw_direction = lua_tonumber(state, 1);
     LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
 
@@ -199,7 +225,8 @@ static int script_node_adjacent(ScriptState* state)
                 Node* node = world_get_adjacent_node(script_data->world, current, dir);
                 lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
                 script_create_node(state, node);
-                lua_call(state, 1, 0);
+                lua_pushnumber(state, dir);
+                lua_call(state, 2, 0);
             }
         }
         else
@@ -218,7 +245,8 @@ static int script_node_adjacent(ScriptState* state)
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
                 lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
                 script_create_node(state, node);
-                lua_call(state, 1, 0);
+                lua_pushnumber(state, direction);
+                lua_call(state, 2, 0);
             }
 
         }
@@ -502,6 +530,10 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "define_behavior");
     lua_pushcfunction(state, script_define_type);
     lua_setglobal(state, "define_type");
+    lua_pushcfunction(state, script_direction_left);
+    lua_setglobal(state, "direction_left");
+    lua_pushcfunction(state, script_direction_right);
+    lua_setglobal(state, "direction_right");
     lua_pushcfunction(state, script_direction_invert);
     lua_setglobal(state, "direction_invert");
 
