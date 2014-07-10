@@ -80,8 +80,22 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
-    print('Running power_conductor')
-    return false
+    local power_msg = messages.max()
+    local new_power = power_msg and power_msg.value or 0
+
+    self:power(new_power)
+
+    local max_powerd = new_power == MAX_POWER
+    self:adjacent(function(node)
+        if node.type ~= 'CONDUCTOR' and (max_powerd or node.type ~= 'WIRE') then
+            local received_power = messages.source(node.location)
+            if received_power == nil or received_power.value < new_power then
+                node:send(0, MESSAGE_POWER, new_power)
+            end
+        end
+    end)
+
+    return true
 end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
