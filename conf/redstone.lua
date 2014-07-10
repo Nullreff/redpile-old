@@ -28,6 +28,11 @@
 print('Loading Redstone types...')
 MAX_POWER = 15
 
+function has_lower_power(node, messages, power)
+    local received_power = messages.source(node.location)
+    return received_power == nil or received_power.value < power
+end
+
 -- Behaviors are created using the `define_behavior` function which takes:
 --
 -- NAME (String)
@@ -75,8 +80,55 @@ define_behavior('push_break', MESSAGE_PUSH, function(self, messages)
 end)
 
 define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
-    print('Running power_wire')
-    return false
+    local covered = self:adjacent(UP).type ~= 'AIR'
+
+    local power_msg = messages.max()
+    local new_power = power_msg and power_msg.value or 0
+    self:power(new_power)
+
+    local wire_power = new_power
+    if wire_power > 0 then
+        wire_power = wire_power - 1
+    end
+
+    self:adjacent(NORTH, SOUTH, EAST, WEST, function(node)
+        if node.type == 'AIR' then
+            node = node:adjacent(DOWN)
+            if node.type ~= 'WIRE' then
+                return
+            end
+        elseif node.type == 'CONDUCTOR' then
+            if node:adjacent(LEFT).type ~= 'WIRE' and
+               node:adjacent(RIGHT).type ~= 'WIRE' and
+               has_lower_power(node, messages, wire_power)
+           then
+               node:send(0, MESSAGE_POWER, wire_power)
+           end
+
+           if covered then
+               return
+           end
+
+           node = node:adjacent(UP)
+           if node.type ~= 'WIRE' then
+               return
+           end
+        end
+
+        if has_lower_power(node, messages, wire_power) then
+            node:send(0, MESSAGE_POWER, wire_power)
+        end
+    end)
+
+    self:adjacent(DOWN, function(node)
+        if node.type == 'CONDUCTOR' and
+           has_lower_power(node, messages, new_power)
+       then
+           node:send(0, MESSAGE_POWER, new_power)
+       end
+    end)
+
+    return true
 end)
 
 define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
@@ -88,8 +140,7 @@ define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
     local max_powerd = new_power == MAX_POWER
     self:adjacent(function(node)
         if node.type ~= 'CONDUCTOR' and (max_powerd or node.type ~= 'WIRE') then
-            local received_power = messages.source(node.location)
-            if received_power == nil or received_power.value < new_power then
+            if has_lower_power(node, messages, new_power) then
                 node:send(0, MESSAGE_POWER, new_power)
             end
         end
