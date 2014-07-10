@@ -99,9 +99,33 @@ static void script_create_message(ScriptState* state, Message* message)
     lua_settable(state, -3);
 }
 
+static Location script_location_from_stack(ScriptState* state, unsigned int stack_index)
+{
+    luaL_checktype(state, stack_index, LUA_TTABLE);
+
+    lua_getfield(state, stack_index, "x");
+    ERROR_IF(lua_isnil(state, -1), "Missing field X");
+    ERROR_IF(!lua_isnumber(state, -1), "The field X must be a number");
+    int x = lua_tointeger(state, -1);
+
+    lua_getfield(state, stack_index, "y");
+    ERROR_IF(lua_isnil(state, -1), "Missing field Y");
+    ERROR_IF(!lua_isnumber(state, -1), "The field Y must be a number");
+    int y = lua_tointeger(state, -1);
+
+    lua_getfield(state, stack_index, "z");
+    ERROR_IF(lua_isnil(state, -1), "Missing field Z");
+    ERROR_IF(!lua_isnumber(state, -1), "The field Z must be a number");
+    int z = lua_tointeger(state, -1);
+
+    lua_pop(state, 3);
+    return location_create(x, y, z);
+}
+
 static int script_location_eq(ScriptState* state)
 {
     luaL_checktype(state, 1, LUA_TTABLE);
+    luaL_checktype(state, 2, LUA_TTABLE);
     lua_getfield(state, 1, "x");
     double x1 = lua_tonumber(state, -1);
     lua_getfield(state, 2, "x");
@@ -141,10 +165,10 @@ static void script_create_location(ScriptState* state, Location location)
     lua_setmetatable(state, -2);
 }
 
-static Node* script_node_pop_current(ScriptState* state)
+static Node* script_node_from_stack(ScriptState* state, unsigned int stack_index)
 {
-    luaL_checktype(state, 1, LUA_TTABLE);
-    lua_getfield(state, 1, "index");
+    luaL_checktype(state, stack_index, LUA_TTABLE);
+    lua_getfield(state, stack_index, "index");
     double raw_index = lua_tonumber(state, -1);
     assert(IS_UINT(raw_index));
 
@@ -159,7 +183,7 @@ static int script_node_adjacent(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Node* current = script_node_pop_current(state);
+    Node* current = script_node_from_stack(state, 1);
 
     int top = lua_gettop(state);
 
@@ -222,11 +246,10 @@ static int script_node_adjacent(ScriptState* state)
                 LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
 
                 Direction direction = raw_direction;
-                if (direction > DIRECTIONS_COUNT)
-                    direction = direction_move(FIELD_GET(current, 1), direction);
+                if (raw_direction >= DIRECTIONS_COUNT)
+                    direction = direction_move(FIELD_GET(current, 1), (Movement)raw_direction);
 
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
-                printf("Found node: %s\n", node->type->name);
                 script_create_node(state, node);
             }
 
@@ -240,7 +263,7 @@ static int script_node_send(ScriptState* state)
     assert(script_data != NULL);
 
     Node* source = node_stack_first(node_stack);
-    Node* target = script_node_pop_current(state);
+    Node* target = script_node_from_stack(state, 1);
     assert(source != target);
 
     LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a delay to send");
@@ -271,11 +294,34 @@ static int script_node_send(ScriptState* state)
     return 0;
 }
 
+static int script_node_power(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    Node* current = script_node_from_stack(state, 1);
+
+    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a power value");
+    double raw_power = lua_tonumber(state, 2);
+    LUA_ERROR_IF(!IS_UINT(raw_power), "Power must be an integer greater than or equal to zero");
+
+    unsigned int power = raw_power;
+    queue_add(
+        script_data->sets,
+        MESSAGE_POWER,
+        script_data->world->ticks,
+        current,
+        current,
+        power
+    );
+
+    return 0;
+}
+
 static int script_node_move(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Node* current = script_node_pop_current(state);
+    Node* current = script_node_from_stack(state, 1);
 
     LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a direction to move");
     double raw_direction = lua_tonumber(state, 2);
@@ -298,7 +344,7 @@ static int script_node_remove(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Node* current = script_node_pop_current(state);
+    Node* current = script_node_from_stack(state, 1);
 
     queue_add(
         script_data->sets,
@@ -346,6 +392,7 @@ static void script_create_node(ScriptState* state, Node* node)
     static const luaL_Reg node_funcs[] = {
         {"adjacent", script_node_adjacent},
         {"send", script_node_send},
+        {"power", script_node_power},
         {"move", script_node_move},
         {"remove", script_node_remove},
         {NULL, NULL}
@@ -358,7 +405,25 @@ static int script_messages_first(ScriptState* state)
     assert(script_data != NULL);
 
     Message* message = messages_find_first(script_data->input);
-    script_create_message(state, message);
+    if (message != NULL)
+        script_create_message(state, message);
+    else
+        lua_pushnil(state);
+
+    return 1;
+}
+
+static int script_messages_source(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    Location location = script_location_from_stack(state, 1);
+    Message* message = messages_find_source(script_data->input, location);
+    if (message != NULL)
+        script_create_message(state, message);
+    else
+        lua_pushnil(state);
+
     return 1;
 }
 
@@ -368,7 +433,7 @@ static void script_setup_data(ScriptState* state, ScriptData* data)
     script_create_node(state, data->node);
 
     // messages
-    lua_createtable(state, 0, 2);
+    lua_createtable(state, 0, 3);
 
     lua_pushstring(state, "count");
     lua_pushnumber(state, data->input->size);
@@ -376,6 +441,7 @@ static void script_setup_data(ScriptState* state, ScriptData* data)
 
     static const luaL_Reg message_funcs[] = {
         {"first", script_messages_first},
+        {"source", script_messages_source},
         {NULL, NULL}
     };
     luaL_setfuncs(state, message_funcs, 0);
@@ -385,8 +451,7 @@ ScriptState* script_state_allocate(void)
 {
     lua_State* state = luaL_newstate();
 
-    luaopen_base(state);
-    luaopen_bit32(state);
+    luaL_openlibs(state);
 
     lua_pushnumber(state, NORTH);
     lua_setglobal(state, "NORTH");

@@ -100,15 +100,41 @@ define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
-    print('Running power_comparator')
-    return false
+    local behind_msg = messages.source(self:adjacent(BEHIND).location)
+    local new_power = behind_msg and behind_msg.value or 0
+    self:power(new_power)
+    if new_power == 0 then
+        return true
+    end
+
+    local left_msg = messages.source(self:adjacent(LEFT).location)
+    local right_msg = messages.source(self:adjacent(RIGHT).location)
+    local side_power = math.max(
+        left_msg and left_msg.value or 0,
+        right_msg and right_msg.value or 0
+    )
+
+    local change = new_power
+    if self.state > 0 then
+        change = change - side_power
+    end
+
+    new_power = (new_power > side_power) and change or 0
+    if new_power == 0 then
+        return true
+    end
+
+    self:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
+    return true
 end)
 
 define_behavior('power_switch', MESSAGE_POWER, function(self, messages)
     if self.state == 0 then
+        self:power(0)
         return true
     end
 
+    self:power(15)
     local behind = self:adjacent(BEHIND)
     self:adjacent(function(node)
         if node.type ~= 'CONDUCTOR' or node.location == behind.location then
