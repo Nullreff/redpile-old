@@ -25,7 +25,6 @@
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-print('Loading Redstone types...')
 MAX_POWER = 15
 
 function has_lower_power(node, messages, power)
