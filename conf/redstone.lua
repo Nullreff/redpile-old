@@ -85,8 +85,27 @@ define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
-    print('Running power_torch')
-    return false
+    local behind_msg = messages.source(self:adjacent(BEHIND).location)
+    local new_power = behind_msg and behind_msg.value or 0
+    self:power(new_power)
+    if new_power > 0 then
+        return true
+    end
+
+    local behind = self:adjacent(BEHIND)
+    self:adjacent(NORTH, SOUTH, EAST, WEST, DOWN, function(node)
+        if node.location ~= behind.location then
+            node:send(1, MESSAGE_POWER, MAX_POWER)
+        end
+    end)
+
+    self:adjacent(UP, function(node)
+        if node.type == 'CONDUCTOR' then
+            node:send(1, MESSAGE_POWER, MAX_POWER)
+        end
+    end)
+
+    return true
 end)
 
 RETRACTED  = 0

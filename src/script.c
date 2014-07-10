@@ -212,8 +212,8 @@ static int script_node_adjacent(ScriptState* state)
                 LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
 
                 Direction direction = raw_direction;
-                if (direction > DIRECTIONS_COUNT)
-                    direction = direction_move(FIELD_GET(current, 1), direction);
+                if (raw_direction >= DIRECTIONS_COUNT)
+                    direction = direction_move(FIELD_GET(current, 1), (Movement)raw_direction);
 
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
                 lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
