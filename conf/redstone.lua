@@ -72,6 +72,7 @@ define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(self, message
         self:move(message.value)
         return true
     end
+
     return false
 end)
 
@@ -80,6 +81,7 @@ define_behavior('push_break', MESSAGE_PUSH, function(self, messages)
         self:remove()
         return true
     end
+
     return false
 end)
 
@@ -182,10 +184,9 @@ EXTENDING  = 3
 define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
     local first = self:adjacent(FORWARDS)
     local second = first:adjacent(self.direction)
-
     local new_power = msg_power(messages.max())
-
     local state
+
     if new_power == 0 then
         if first.type == 'AIR' and second.type ~= 'AIR' and self.power > 0 then
             state = RETRACTING
@@ -228,6 +229,7 @@ define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
    end
 
    self:adjacent(FORWARDS):send(self.state + 1, MESSAGE_POWER, MAX_POWER)
+
    return true
 end)
 
@@ -254,6 +256,7 @@ define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
     end
 
     self:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
+
     return true
 end)
 
