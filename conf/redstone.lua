@@ -226,7 +226,7 @@ define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
        return true
    end
 
-   self:adjacent(FORWARDS):send(1, MESSAGE_POWER, MAX_POWER)
+   self:adjacent(FORWARDS):send(self.state + 1, MESSAGE_POWER, MAX_POWER)
    return true
 end)
 
