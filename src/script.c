@@ -581,6 +581,8 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
 
 Result script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptData* data)
 {
+    lua_settop(state, 0);
+
     lua_rawgeti(state, LUA_REGISTRYINDEX, behavior->function_ref);
 
     node_stack = node_stack_allocate(NODE_STACK_SIZE);
