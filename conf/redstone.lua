@@ -95,8 +95,20 @@ define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
-    print('Running power_repeater')
-    return false
+    local behind_msg = messages.source(self:adjacent(BEHIND).location)
+    local new_power = behind_msg and behind_msg.value or 0
+    self:power(new_power)
+    if new_power == 0 then
+        return true
+    end
+
+    if messages.source(self:adjacent(RIGHT).location) ~= nil or
+       messages.source(self:adjacent(LEFT).location) ~= nil then
+       return true
+   end
+
+   self:adjacent(FORWARDS):send(1, MESSAGE_POWER, MAX_POWER)
+   return true
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
