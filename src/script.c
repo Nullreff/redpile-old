@@ -401,6 +401,12 @@ static int script_node_remove(ScriptState* state)
 
 static void script_create_node(ScriptState* state, Node* node)
 {
+    if (node == NULL)
+    {
+        lua_pushnil(state);
+        return;
+    }
+
     lua_createtable(state, 0, 10);
 
     lua_pushstring(state, "location");
