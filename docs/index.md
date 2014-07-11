@@ -22,7 +22,7 @@ cd redpile
 make
 ~~~
 
-There should now be a `redpile` executable in the `build` directory.
+There should now be a `redpile` executable in the `build/src` directory.
 The `master` branch should always build and pass all tests.
 If it doesn't, please open an issue.
 
