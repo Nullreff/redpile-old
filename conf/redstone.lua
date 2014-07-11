@@ -267,7 +267,7 @@ define_behavior('power_switch', 0, function(self, messages)
         return true
     end
 
-    self:set_power(15)
+    self:set_power(MAX_POWER)
     local behind = self:adjacent(BEHIND)
     self:adjacent(function(node)
         if node.type ~= 'CONDUCTOR' or node.location == behind.location then
