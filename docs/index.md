@@ -46,11 +46,11 @@ You can set blocks, get blocks and run ticks.
 > set 0 0 1 wire
 > set 0 0 2 wire
 > tick
-(0,0,0) POWER 0
+(0,0,0) POWER 15
 (0,0,1) POWER 0
 (0,0,2) POWER 0
 > tick
-(0,0,0) POWER 0
+(0,0,0) POWER 15
 (0,0,2) POWER 14
 (0,0,1) POWER 15
 >

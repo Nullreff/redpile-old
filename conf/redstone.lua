@@ -156,10 +156,11 @@ end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
     local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
-    self:set_power(new_power)
     if new_power > 0 then
+        self:set_power(0)
         return true
     end
+    self:set_power(MAX_POWER)
 
     local behind = self:adjacent(BEHIND)
     self:adjacent(NORTH, SOUTH, EAST, WEST, DOWN, function(node)
