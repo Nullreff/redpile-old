@@ -33,7 +33,7 @@ For playing around, you can run redpile in `--interactive` (`-i`) mode.
 See `--help` for a list of all options.
 
 ~~~bash
-$ redpile -i
+$ redpile -i conf/redstone.lua
 >
 ~~~
 
