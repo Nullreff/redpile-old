@@ -22,6 +22,10 @@ describe 'Commands' do
         run_case('SETRS -10 -10 -10 10 10 10 2 2 2 TORCH UP', upper).should == "\n"
       end
 
+      it 'parses the DELETE command' do
+        run_case('DELETE 0 0 0', upper).should == "\n"
+      end
+
       it 'parses the GET command' do
         run_case('GET 0 0 0', upper).should =~ /^\(0,0,0\) AIR$/
       end
@@ -108,6 +112,15 @@ describe 'Commands' do
     run(
       'SET 0 0 0 AIR',
       'SET 0 0 0 WIRE',
+      'STATUS'
+    ).should =~ /^nodes: 1$/
+  end
+
+  it 'removes a block' do
+    run(
+      'SET 0 0 0 WIRE',
+      'SET 0 0 1 WIRE',
+      'DELETE 0 0 0',
       'STATUS'
     ).should =~ /^nodes: 1$/
   end

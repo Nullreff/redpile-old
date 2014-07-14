@@ -59,6 +59,11 @@ void command_setrs(Location l1, Location l2, Location step, Type* type, SetArgs 
         command_set(location_create(x, y, z), type, args);
 }
 
+void command_delete(Location location)
+{
+    world_remove_node(world, location);
+}
+
 void command_get(Location location)
 {
     Node* node = world_get_node(world, location);

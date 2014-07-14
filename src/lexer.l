@@ -33,6 +33,7 @@ extern int read_input(char *buff, int buffsize);
 (?i:set)        { return SET;        }
 (?i:setr)       { return SETR;       }
 (?i:setrs)      { return SETRS;      }
+(?i:delete)     { return DELETE;     }
 (?i:get)        { return GET;        }
 (?i:tick)       { return TICK;       }
 (?i:tickv)      { return TICKV;      }

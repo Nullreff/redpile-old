@@ -60,6 +60,7 @@ void yyerror(const char* const message);
 %token SET
 %token SETR
 %token SETRS
+%token DELETE
 %token GET
 %token TICK
 %token TICKV
@@ -109,6 +110,7 @@ command: PING                                           { command_ping();       
                                                           PARSE_ERROR_IF($4.y <= 0, "y_step must be greater than zero\n");
                                                           PARSE_ERROR_IF($4.z <= 0, "z_step must be greater than zero\n");
                                                           command_setrs($2, $3, $4, $5, $6);         }
+       | DELETE location                                { command_delete($2);                        }
        | GET location                                   { command_get($2);                           }
        | TICK tick_args                                 { command_tick($2, LOG_NORMAL);              }
        | TICKV tick_args                                { command_tick($2, LOG_VERBOSE);             }

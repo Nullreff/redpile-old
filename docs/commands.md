@@ -53,6 +53,13 @@ Syntax: `SETRS x_start y_start z_start x_end y_end z_end x_step y_step z_step ma
 Runs a `SET` command on the range of block between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
 
 
+DELETE
+------
+
+Syntax: `DELETE x y z`
+
+Removes the node at `(x, y, z)`.
+
 TICK
 ----
 
