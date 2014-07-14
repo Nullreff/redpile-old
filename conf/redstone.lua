@@ -295,7 +295,7 @@ end)
 -- Names of behaviors for this type that will be run in the order listed.
 --
 
-default_type('AIR')
+define_type('AIR')
 define_type('INSULATOR', 0, 'push_move')
 define_type('WIRE', 1, 'push_break', 'power_wire')
 define_type('CONDUCTOR', 1, 'push_move', 'power_conductor')

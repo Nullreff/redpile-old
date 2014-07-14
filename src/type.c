@@ -62,6 +62,7 @@ Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_
     type->next = type_data->types;
     type_data->types = type;
     type_data->type_count++;
+
     return type;
 }
 

@@ -63,9 +63,14 @@ void command_get(Location location)
 {
     Node* node = world_get_node(world, location);
     if (node == NULL)
-        printf("(%d,%d,%d) EMPTY\n", location.x, location.y, location.z);
+    {
+        Type* type = type_data_get_default_type(world->type_data);
+        printf("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
+    }
     else
+    {
         node_print(node);
+    }
 }
 
 void command_tick(int count, LogLevel log_level)
@@ -86,13 +91,6 @@ void command_error(const char* message)
 
 bool type_parse(char* string, Type** found_type)
 {
-    if (strcasecmp(string, "EMPTY") == 0)
-    {
-        *found_type = NULL;
-        free(string);
-        return true;
-    }
-
     Type* type = type_data_find_type(world->type_data, string);
     if (type != NULL)
     {

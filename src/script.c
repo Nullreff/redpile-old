@@ -55,17 +55,46 @@ static int script_define_behavior(ScriptState* state)
 static int script_define_type(ScriptState* state)
 {
     assert(type_data != NULL);
+    int top = lua_gettop(state);
+
+    char* name;
+    unsigned int field_count;
+    unsigned int behavior_count;
 
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
-    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass the number of fields");
-    double raw_field_count = lua_tonumber(state, 2);
-    LUA_ERROR_IF(!IS_UINT(raw_field_count), "Number of fields must be a positive integer");
+    name = strdup(lua_tostring(state, 1));
 
-    char* name = strdup(lua_tostring(state, 1));
-    unsigned int field_count = raw_field_count;
-    unsigned int behavior_count = lua_gettop(state) - 2;
+    if (top > 1)
+    {
+        LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass the number of fields");
+        double raw_field_count = lua_tonumber(state, 2);
+        LUA_ERROR_IF(!IS_UINT(raw_field_count), "Number of fields must be a positive integer");
+        field_count = raw_field_count;
+    }
+    else
+    {
+        field_count = 0;
+    }
+
+    if (top > 2)
+    {
+        behavior_count = top - 2;
+    }
+    else
+    {
+        behavior_count = 0;
+    }
 
     Type* type = type_data_append_type(type_data, name, field_count, behavior_count);
+
+    // Set the first passed in as the default type
+    if (type_data->type_count == 1)
+    {
+        LUA_ERROR_IF(field_count > 0, "The default type cannot have any fields");
+        LUA_ERROR_IF(behavior_count > 0, "The default type cannot have any behaviors");
+        type_data_set_default_type(type_data, type);
+    }
+
     for (int i = 0; i < behavior_count; i++)
     {
         const char* name = luaL_checkstring(state, 3 + i);
@@ -73,19 +102,6 @@ static int script_define_type(ScriptState* state)
         ERROR_IF(behavior == NULL, "Could not find behavior");
         type->behaviors[i] = behavior;
     }
-
-    return 0;
-}
-
-static int script_default_type(ScriptState* state)
-{
-    assert(type_data != NULL);
-
-    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
-    char* name = strdup(lua_tostring(state, 1));
-
-    Type* type = type_data_append_type(type_data, name, 0, 0);
-    type_data_set_default_type(type_data, type);
 
     return 0;
 }
@@ -401,11 +417,7 @@ static int script_node_remove(ScriptState* state)
 
 static void script_create_node(ScriptState* state, Node* node)
 {
-    if (node == NULL)
-    {
-        lua_pushnil(state);
-        return;
-    }
+    assert(node != NULL);
 
     lua_createtable(state, 0, 10);
 
@@ -414,7 +426,7 @@ static void script_create_node(ScriptState* state, Node* node)
     lua_settable(state, -3);
 
     lua_pushstring(state, "type");
-    lua_pushstring(state, node->type != EMPTY ? node->type->name : "EMPTY");
+    lua_pushstring(state, node->type->name);
     lua_settable(state, -3);
 
     lua_pushstring(state, "power");
@@ -549,8 +561,6 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "define_behavior");
     lua_pushcfunction(state, script_define_type);
     lua_setglobal(state, "define_type");
-    lua_pushcfunction(state, script_default_type);
-    lua_setglobal(state, "default_type");
     lua_pushcfunction(state, script_direction_left);
     lua_setglobal(state, "direction_left");
     lua_pushcfunction(state, script_direction_right);
@@ -578,7 +588,13 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
 
     if (error)
     {
-        printf("%s\n", lua_tostring(state, -1));
+        fprintf(stderr, "%s\n", lua_tostring(state, -1));
+        return NULL;
+    }
+
+    if (data->type_count == 0)
+    {
+        fprintf(stderr, "No types defined in configuration file %s\n", config_file);
         return NULL;
     }
 

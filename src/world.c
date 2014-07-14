@@ -111,12 +111,6 @@ void world_free(World* world)
 
 Node* world_set_node(World* world, Location location, Type* type)
 {
-    if (type == EMPTY)
-    {
-        world_remove_node(world, location);
-        return NULL;
-    }
-
     Bucket* bucket = hashmap_get(world->hashmap, location, true);
 
     if (bucket->value != NULL)

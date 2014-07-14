@@ -23,7 +23,7 @@ describe 'Commands' do
       end
 
       it 'parses the GET command' do
-        run_case('GET 0 0 0', upper).should =~ /^\(0,0,0\) EMPTY$/
+        run_case('GET 0 0 0', upper).should =~ /^\(0,0,0\) AIR$/
       end
 
       it 'parses the TICK command' do
@@ -110,22 +110,6 @@ describe 'Commands' do
       'SET 0 0 0 WIRE',
       'STATUS'
     ).should =~ /^nodes: 1$/
-  end
-
-  it 'removes a block' do
-    run(
-      'SET 0 0 0 AIR',
-      'SET 0 0 1 WIRE',
-      'SET 0 0 0 EMPTY',
-      'STATUS'
-    ).should =~ /^nodes: 1$/
-  end
-
-  it "doesn't add an empty block" do
-    run(
-      'SET 0 0 0 EMPTY',
-      'STATUS'
-    ).should =~ /^nodes: 0$/
   end
 
   %w(AIR INSULATOR).each do |block|

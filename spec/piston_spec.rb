@@ -46,7 +46,7 @@ describe 'Piston' do
           'GET 0 0 2',
           'GET 0 0 3'
         )
-        result.should =~ /^\(0,0,2\) EMPTY$/
+        result.should =~ /^\(0,0,2\) AIR$/
         result.should =~ /^\(0,0,3\) AIR$/
       end
 

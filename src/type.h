@@ -44,7 +44,6 @@ typedef struct {
     Type* default_type;
 } TypeData;
 
-#define EMPTY ((Type*)NULL)
 #define FOR_TYPE(TYPE,DATA) for (Type* TYPE = (DATA)->types; TYPE != NULL; TYPE = TYPE->next)
 #define FOR_BEHAVIOR(BEHAVIOR,DATA) for (Behavior* BEHAVIOR = (DATA)->behaviors; BEHAVIOR != NULL; BEHAVIOR = BEHAVIOR->next)
 
