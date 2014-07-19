@@ -51,6 +51,6 @@ License
 -------
 
 Redpile is GPL, see LICENSE for more information.  
-Linenoise is BSD, see [github.com/antirez/linenoise](https://github.com/antirez/linenoise)
+Linenoise is BSD, see [github.com/antirez/linenoise](https://github.com/antirez/linenoise)  
 Lua is MIT, see [lua.org/license.html](http://www.lua.org/license.html)
 
