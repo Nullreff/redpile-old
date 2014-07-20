@@ -24,10 +24,6 @@
 #include "message.h"
 #include "type.h"
 
-#define MATERIALS_COUNT 10
-extern char* Materials[MATERIALS_COUNT];
-extern unsigned int FieldCounts[MATERIALS_COUNT];
-
 typedef int Field;
 typedef struct {
     unsigned int count;
