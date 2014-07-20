@@ -20,13 +20,13 @@
 
 static Node* node_allocate(Location location, Type* type)
 {
-    Node* node = calloc(1, sizeof(Node) + (type->field_count * sizeof(Field)));
+    Node* node = calloc(1, sizeof(Node) + (type->field_types->count * sizeof(Field)));
     CHECK_OOM(node);
     node->location = location;
     node->type = type;
     node->store = NULL;
     node->last_input = NULL;
-    node->fields.count = type->field_count;
+    node->fields.count = type->field_types->count;
     return node;
 }
 

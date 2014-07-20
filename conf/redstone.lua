@@ -283,26 +283,69 @@ end)
 -- NAME <String>
 -- The name used to reference this type.  Should be upper case.
 --
--- FIELD_COUNT <Number> (must be positive integer)
--- Number of fields to store on this node.  Current convention is:
---   0: POWER
---   1: DIRECTION
---   2: STATE
--- Other indexes may be used internally but will not be returned when
--- information about a node is queried.
+-- FIELDS <Table>
+-- Table of fields to store on this node.  Declare in the format:
+--   {FIELD_NAME} = {FIELD_TYPE}
+-- Available field types are:
+--   FIELD_INT
+--   FIELD_DIRECTION
 --
--- BEHAVIOR <String> (multiple)
--- Names of behaviors for this type that will be run in the order listed.
+-- BEHAVIORS <Table>
+-- Table containing names of behaviors for this type that will be run in the
+-- order listed.
 --
 
-define_type('AIR')
-define_type('INSULATOR', 0, 'push_move')
-define_type('WIRE', 1, 'push_break', 'power_wire')
-define_type('CONDUCTOR', 1, 'push_move', 'power_conductor')
-define_type('TORCH', 2, 'push_break', 'power_torch')
-define_type('PISTON', 2, 'power_piston', 'push_move')
-define_type('REPEATER', 3, 'push_break', 'power_repeater')
-define_type('COMPARATOR', 3, 'push_break', 'power_comparator')
-define_type('SWITCH', 3, 'push_break', 'power_switch')
+define_type(
+    'AIR',
+    {},
+    {}
+)
 
+define_type(
+    'INSULATOR',
+    {},
+    {'push_move'}
+)
+
+define_type(
+    'WIRE',
+    {power = FIELD_INT},
+    {'push_break', 'power_wire'}
+)
+
+define_type(
+    'CONDUCTOR',
+    {power = FIELD_INT},
+    {'push_move', 'power_conductor'}
+)
+
+define_type(
+    'TORCH',
+    {power = FIELD_INT, direction = FIELD_DIRECTION},
+    {'push_break', 'power_torch'}
+)
+
+define_type(
+    'PISTON',
+    {power = FIELD_INT, direction = FIELD_DIRECTION},
+    {'power_piston', 'push_move'}
+)
+
+define_type(
+    'REPEATER',
+    {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
+    {'push_break', 'power_repeater'}
+)
+
+define_type(
+    'COMPARATOR',
+    {power = FIELD_INT, direction =  FIELD_DIRECTION, state = FIELD_INT},
+    {'push_break', 'power_comparator'}
+)
+
+define_type(
+    'SWITCH',
+    {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
+    {'push_break', 'power_switch'}
+)
 

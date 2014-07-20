@@ -21,6 +21,16 @@
 
 #include "common.h"
 
+typedef enum {
+    FIELD_INT,
+    FIELD_DIRECTION
+} FieldType;
+
+typedef struct {
+    unsigned int count;
+    FieldType data[];
+} FieldTypes;
+
 typedef struct Behavior {
     struct Behavior* next;
     char* name;
@@ -28,12 +38,16 @@ typedef struct Behavior {
     int function_ref;
 } Behavior;
 
+typedef struct {
+    unsigned int count;
+    Behavior* data[];
+} Behaviors;
+
 typedef struct Type {
     struct Type* next;
     char* name;
-    unsigned int field_count;
-    unsigned int behavior_count;
-    Behavior* behaviors[];
+    FieldTypes* field_types;
+    Behaviors* behaviors;
 } Type;
 
 typedef struct {

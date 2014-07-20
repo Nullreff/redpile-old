@@ -18,6 +18,20 @@
 
 #include "type.h"
 
+static FieldTypes* field_types_allocate(unsigned int count)
+{
+    FieldTypes* field_types = malloc(sizeof(FieldTypes) + (sizeof(FieldType) * count));
+    field_types->count = count;
+    return field_types;
+}
+
+static Behaviors* behaviors_allocate(unsigned int count)
+{
+    Behaviors* behaviors = malloc(sizeof(Behaviors) + (sizeof(Behavior*) * count));
+    behaviors->count = count;
+    return behaviors;
+}
+
 TypeData* type_data_allocate(void)
 {
     TypeData* type_data = malloc(sizeof(TypeData));
@@ -36,6 +50,8 @@ void type_data_free(TypeData* type_data)
     {
         Type* temp = type->next;
         free(type->name);
+        free(type->behaviors);
+        free(type->field_types);
         free(type);
         type = temp;
     }
@@ -54,10 +70,10 @@ void type_data_free(TypeData* type_data)
 
 Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count)
 {
-    Type* type = malloc(sizeof(Type) + (sizeof(Behavior*) * behavior_count));
+    Type* type = malloc(sizeof(Type));
     type->name = name;
-    type->field_count = field_count;
-    type->behavior_count = behavior_count;
+    type->field_types = field_types_allocate(field_count);
+    type->behaviors = behaviors_allocate(behavior_count);
 
     type->next = type_data->types;
     type_data->types = type;

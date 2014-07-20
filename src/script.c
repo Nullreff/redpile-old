@@ -56,36 +56,41 @@ static int script_define_type(ScriptState* state)
 {
     assert(type_data != NULL);
     int top = lua_gettop(state);
+    LUA_ERROR_IF(top != 3, "define_type requires 3 arguments");
+    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
+    LUA_ERROR_IF(!lua_istable(state, 2), "You must pass a table of fields");
+    LUA_ERROR_IF(!lua_istable(state, 3), "You must pass a list of behaviors");
 
-    char* name;
+    char* name = strdup(lua_tostring(state, 1));
     unsigned int field_count;
     unsigned int behavior_count;
 
-    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
-    name = strdup(lua_tostring(state, 1));
+    // By default, we allocate room for 100 fields and behaviors
+    // You can trim this number down or realloc after filling.
+    const unsigned int max_fields = 100;
+    Type* type = type_data_append_type(type_data, name, max_fields, max_fields);
 
-    if (top > 1)
+    // Behaviors
+    lua_pushnil(state);
+    for (behavior_count = 0; lua_next(state, 3) != 0; behavior_count++)
     {
-        LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass the number of fields");
-        double raw_field_count = lua_tonumber(state, 2);
-        LUA_ERROR_IF(!IS_UINT(raw_field_count), "Number of fields must be a positive integer");
-        field_count = raw_field_count;
+        LUA_ERROR_IF(behavior_count >= max_fields, "Maximum number of behaviors exceeded");
+        const char* name = luaL_checkstring(state, -1);
+        Behavior* behavior = type_data_find_behavior(type_data, name);
+        ERROR_IF(behavior == NULL, "Could not find behavior");
+        type->behaviors->data[behavior_count] = behavior;
+        lua_pop(state, 1);
     }
-    else
-    {
-        field_count = 0;
-    }
+    type->behaviors->count = behavior_count;
 
-    if (top > 2)
+    // Fields
+    lua_pushnil(state);
+    for (field_count = 0; lua_next(state, 2) != 0; field_count++)
     {
-        behavior_count = top - 2;
+        // TODO: Set fields
+        lua_pop(state, 1);
     }
-    else
-    {
-        behavior_count = 0;
-    }
-
-    Type* type = type_data_append_type(type_data, name, field_count, behavior_count);
+    type->field_types->count = field_count;
 
     // Set the first passed in as the default type
     if (type_data->type_count == 1)
@@ -93,14 +98,6 @@ static int script_define_type(ScriptState* state)
         LUA_ERROR_IF(field_count > 0, "The default type cannot have any fields");
         LUA_ERROR_IF(behavior_count > 0, "The default type cannot have any behaviors");
         type_data_set_default_type(type_data, type);
-    }
-
-    for (int i = 0; i < behavior_count; i++)
-    {
-        const char* name = luaL_checkstring(state, 3 + i);
-        Behavior* behavior = type_data_find_behavior(type_data, name);
-        ERROR_IF(behavior == NULL, "Could not find behavior");
-        type->behaviors[i] = behavior;
     }
 
     return 0;
@@ -556,6 +553,11 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "MESSAGE_PULL");
     lua_pushnumber(state, MESSAGE_REMOVE);
     lua_setglobal(state, "MESSAGE_REMOVE");
+
+    lua_pushnumber(state, FIELD_INT);
+    lua_setglobal(state, "FIELD_INT");
+    lua_pushnumber(state, FIELD_DIRECTION);
+    lua_setglobal(state, "FIELD_DIRECTION");
 
     lua_pushcfunction(state, script_define_behavior);
     lua_setglobal(state, "define_behavior");

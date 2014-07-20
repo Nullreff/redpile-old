@@ -65,9 +65,9 @@ static Result process_node(ScriptState* state, World* world, Node* node, Queue* 
 {
     Messages* input = find_input(world, node, messages);
 
-    for (int i = 0; i < node->type->behavior_count; i++)
+    for (int i = 0; i < node->type->behaviors->count; i++)
     {
-        Behavior* behavior = node->type->behaviors[i];
+        Behavior* behavior = node->type->behaviors->data[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
         ScriptData data = (ScriptData){world, node, found, output, sets};
         Result result = script_state_run_behavior(state, behavior, &data);
