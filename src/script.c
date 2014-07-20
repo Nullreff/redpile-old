@@ -87,10 +87,13 @@ static int script_define_type(ScriptState* state)
     lua_pushnil(state);
     for (field_count = 0; lua_next(state, 2) != 0; field_count++)
     {
-        // TODO: Set fields
+        char* name = strdup(luaL_checkstring(state, -2));
+        double raw_field_type = lua_tonumber(state, -1);
+        LUA_ERROR_IF(!IS_UINT(raw_field_type), "Field type");
+        type->fields->data[field_count] = field_type_create(name, raw_field_type);
         lua_pop(state, 1);
     }
-    type->field_types->count = field_count;
+    type->fields->count = field_count;
 
     // Set the first passed in as the default type
     if (type_data->type_count == 1)

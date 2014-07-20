@@ -21,15 +21,21 @@
 
 #include "common.h"
 
+#define FIELD_DATA_COUNT 2
 typedef enum {
     FIELD_INT,
     FIELD_DIRECTION
 } FieldType;
 
 typedef struct {
+    char* name;
+    FieldType type;
+} Field;
+
+typedef struct {
     unsigned int count;
-    FieldType data[];
-} FieldTypes;
+    Field data[];
+} Fields;
 
 typedef struct Behavior {
     struct Behavior* next;
@@ -46,7 +52,7 @@ typedef struct {
 typedef struct Type {
     struct Type* next;
     char* name;
-    FieldTypes* field_types;
+    Fields* fields;
     Behaviors* behaviors;
 } Type;
 
@@ -61,6 +67,7 @@ typedef struct {
 #define FOR_TYPE(TYPE,DATA) for (Type* TYPE = (DATA)->types; TYPE != NULL; TYPE = TYPE->next)
 #define FOR_BEHAVIOR(BEHAVIOR,DATA) for (Behavior* BEHAVIOR = (DATA)->behaviors; BEHAVIOR != NULL; BEHAVIOR = BEHAVIOR->next)
 
+Field field_type_create(char* name, FieldType type);
 TypeData* type_data_allocate(void);
 void type_data_free(TypeData* type_data);
 Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count);

@@ -24,11 +24,11 @@
 #include "message.h"
 #include "type.h"
 
-typedef int Field;
+typedef int FieldValue;
 typedef struct {
     unsigned int count;
-    Field data[];
-} Fields;
+    FieldValue data[];
+} FieldData;
 
 typedef struct Node {
     Location location;
@@ -46,7 +46,7 @@ typedef struct Node {
     Messages* last_input;
     unsigned long long last_input_tick;
 
-    Fields fields;
+    FieldData fields;
 } Node;
 
 typedef struct {
