@@ -68,7 +68,6 @@ typedef struct {
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print(Node* node);
-void node_print_power(Node* node);
 
 NodeList* node_list_allocate(void);
 void node_list_free(NodeList* blocks);

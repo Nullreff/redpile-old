@@ -76,7 +76,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                 }
                 else
                 {
-                    fprintf(stderr, "'%s' is not an integer (%s)\n", arg->value, arg->name);
+                    fprintf(stderr, "'%s' is not an integer\n", arg->value);
                     return;
                 }
             }
@@ -90,7 +90,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                 }
                 else
                 {
-                    fprintf(stderr, "'%s' is not a direction (%s)\n", arg->value, arg->name);
+                    fprintf(stderr, "'%s' is not a direction\n", arg->value);
                     return;
                 }
             }

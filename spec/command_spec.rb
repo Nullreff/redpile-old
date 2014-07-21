@@ -65,7 +65,7 @@ describe 'Commands' do
   end
 
   it 'errors if given an incorrect direction' do
-    run('SET 0 0 0 TORCH direction:INVALID').should =~ /^Unknown direction: 'INVALID'$/
+    run('SET 0 0 0 TORCH direction:INVALID').should =~ /^'INVALID' is not a direction$/
   end
 
   it 'errors with a zero x step' do
@@ -128,20 +128,22 @@ describe 'Commands' do
 
   %w(WIRE CONDUCTOR).each do |block|
     it "inserts an #{block} block" do
-      run(
+      result = run(
         "SET 0 0 0 #{block}",
         "GET 0 0 0"
-      ).should =~ /^\(0,0,0\) #{block} 0$/
+      )
+      contains_node?(result, 0, 0, 0, block, power: 0)
     end
   end
 
   %w(TORCH PISTON).each do |block|
     DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
-        run(
+        result = run(
           "SET 0 0 0 #{block} direction:#{dir}",
           "GET 0 0 0"
-        ).should =~ /^\(0,0,0\) #{block} 0 #{dir}$/
+        )
+        contains_node?(result, 0, 0, 0, block, power: 0, direction: dir)
       end
     end
   end
@@ -149,10 +151,11 @@ describe 'Commands' do
   %w(REPEATER COMPARATOR SWITCH).each do |block|
     DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
-        run(
-          "SET 0 0 0 #{block} direction:#{dir} 0",
+        result = run(
+          "SET 0 0 0 #{block} direction:#{dir} state:1",
           "GET 0 0 0"
-        ).should =~ /^\(0,0,0\) #{block} 0 #{dir} 0$/
+        )
+        contains_node?(result, 0, 0, 0, block, power: 0, direction: dir, state: 1)
       end
     end
   end
