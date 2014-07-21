@@ -19,6 +19,109 @@
 #include "common.h"
 #include "redpile.h"
 
+static bool direction_parse(char* string, Direction* found_dir)
+{
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
+    {
+        if (strcasecmp(string, Directions[i]) == 0)
+        {
+            *found_dir = i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool integer_parse(char* string, int* found_int)
+{
+    char* parse_error = NULL;
+    int value = strtol(string, &parse_error, 10);
+
+    if (!*parse_error)
+    {
+        *found_int = value;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void run_command_set(Location location, Type* type, CommandArgs* args)
+{
+    Node* node = world_set_node(world, location, type);
+    assert(node != NULL);
+
+    for (int i = 0; i < args->index; i++)
+    {
+        CommandArg* arg = args->data + i;
+
+        int index;
+        FieldType field_type;
+        if (!type_find_field(node->type, arg->name, &index, &field_type))
+        {
+            fprintf(stderr, "The type '%s' doesn't have the field '%s'\n", node->type->name, arg->name);
+            return;
+        }
+
+        switch (field_type)
+        {
+            case FIELD_INT: {
+                int found_int;
+                if (integer_parse(arg->value, &found_int))
+                {
+                    FIELD_SET(node, index, found_int);
+                }
+                else
+                {
+                    fprintf(stderr, "'%s' is not an integer (%s)\n", arg->value, arg->name);
+                    return;
+                }
+            }
+            break;
+
+            case FIELD_DIRECTION: {
+                Direction found_dir;
+                if (direction_parse(arg->value, &found_dir))
+                {
+                    FIELD_SET(node, index, found_dir);
+                }
+                else
+                {
+                    fprintf(stderr, "'%s' is not a direction (%s)\n", arg->value, arg->name);
+                    return;
+                }
+            }
+            break;
+        }
+    }
+}
+
+CommandArgs* command_args_allocate(unsigned int count)
+{
+    CommandArgs* args = malloc(sizeof(CommandArgs) + (sizeof(CommandArg) * count));
+    args->count = count;
+    args->index = 0;
+    return args;
+}
+
+void command_args_free(CommandArgs* args)
+{
+    for (int i = 0; i < args->index; i++)
+    {
+        free(args->data[i].name);
+        free(args->data[i].value);
+    }
+    free(args);
+}
+
+void command_args_append(CommandArgs* args, char* name, char* value)
+{
+    args->data[args->index++] = (CommandArg){name, value};
+}
+
 void command_ping(void)
 {
     printf("PONG\n");
@@ -29,22 +132,18 @@ void command_status(void)
     world_stats_print(world_get_stats(world));
 }
 
-void command_set(Location location, Type* type, SetArgs args)
+void command_set(Location location, Type* type, CommandArgs* args)
 {
-    Node* node = world_set_node(world, location, type);
-    if (node != NULL)
-    {
-        FIELD_SET(node, 1, args.direction);
-        FIELD_SET(node, 2, args.state);
-    }
+    run_command_set(location, type, args);
+    command_args_free(args);
 }
 
-void command_setr(Location l1, Location l2, Type* type, SetArgs args)
+void command_setr(Location l1, Location l2, Type* type, CommandArgs* args)
 {
     command_setrs(l1, l2, location_create(1, 1, 1), type, args);
 }
 
-void command_setrs(Location l1, Location l2, Location step, Type* type, SetArgs args)
+void command_setrs(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
 {
     int x_start = l1.x > l2.x ? l2.x : l1.x;
     int x_end   = l1.x > l2.x ? l1.x : l2.x;
@@ -56,7 +155,9 @@ void command_setrs(Location l1, Location l2, Location step, Type* type, SetArgs 
     for (int x = x_start; x <= x_end; x += step.x)
     for (int y = y_start; y <= y_end; y += step.y)
     for (int z = z_start; z <= z_end; z += step.z)
-        command_set(location_create(x, y, z), type, args);
+        run_command_set(location_create(x, y, z), type, args);
+
+    command_args_free(args);
 }
 
 void command_delete(Location location)
@@ -109,19 +210,3 @@ bool type_parse(char* string, Type** found_type)
     return false;
 }
 
-bool direction_parse(char* string, Direction* found_dir)
-{
-    for (int i = 0; i < DIRECTIONS_COUNT; i++)
-    {
-        if (strcasecmp(string, Directions[i]) == 0)
-        {
-            *found_dir = i;
-            free(string);
-            return true;
-        }
-    }
-
-    fprintf(stderr, "Unknown direction: '%s'\n", string);
-    free(string);
-    return false;
-}

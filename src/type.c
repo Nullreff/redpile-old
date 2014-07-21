@@ -147,3 +147,18 @@ Behavior* type_data_find_behavior(TypeData* type_data, const char* name)
     return NULL;
 }
 
+bool type_find_field(Type* type, char* name, int* index, FieldType* field_type)
+{
+    for (int i = 0; i < type->fields->count; i++)
+    {
+        Field* field = type->fields->data + i;
+        if (strcasecmp(field->name, name) == 0)
+        {
+            *index = i;
+            *field_type = field->type;
+            return true;
+        }
+    }
+
+    return false;
+}

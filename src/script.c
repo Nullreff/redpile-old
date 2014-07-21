@@ -67,14 +67,13 @@ static int script_define_type(ScriptState* state)
 
     // By default, we allocate room for 100 fields and behaviors
     // You can trim this number down or realloc after filling.
-    const unsigned int max_fields = 100;
-    Type* type = type_data_append_type(type_data, name, max_fields, max_fields);
+    Type* type = type_data_append_type(type_data, name, MAX_FIELDS, MAX_FIELDS);
 
     // Behaviors
     lua_pushnil(state);
     for (behavior_count = 0; lua_next(state, 3) != 0; behavior_count++)
     {
-        LUA_ERROR_IF(behavior_count >= max_fields, "Maximum number of behaviors exceeded");
+        LUA_ERROR_IF(behavior_count >= MAX_FIELDS, "Maximum number of behaviors exceeded");
         const char* name = luaL_checkstring(state, -1);
         Behavior* behavior = type_data_find_behavior(type_data, name);
         ERROR_IF(behavior == NULL, "Could not find behavior");
@@ -87,6 +86,7 @@ static int script_define_type(ScriptState* state)
     lua_pushnil(state);
     for (field_count = 0; lua_next(state, 2) != 0; field_count++)
     {
+        LUA_ERROR_IF(field_count >= MAX_FIELDS, "Maximum number of fields exceeded");
         char* name = strdup(luaL_checkstring(state, -2));
         double raw_field_type = lua_tonumber(state, -1);
         LUA_ERROR_IF(!IS_UINT(raw_field_type), "Field type");
@@ -429,17 +429,19 @@ static void script_create_node(ScriptState* state, Node* node)
     lua_pushstring(state, node->type->name);
     lua_settable(state, -3);
 
-    lua_pushstring(state, "power");
-    lua_pushnumber(state, FIELD_GET(node, 0));
-    lua_settable(state, -3);
-
-    lua_pushstring(state, "direction");
-    lua_pushnumber(state, FIELD_GET(node, 1));
-    lua_settable(state, -3);
-
-    lua_pushstring(state, "state");
-    lua_pushnumber(state, FIELD_GET(node, 2));
-    lua_settable(state, -3);
+    for (int i = 0; i < node->type->fields->count; i++)
+    {
+        Field* field = node->type->fields->data + i;
+        lua_pushstring(state, field->name);
+        switch (field->type)
+        {
+            case FIELD_INT:
+            case FIELD_DIRECTION:
+                lua_pushnumber(state, FIELD_GET(node, i));
+                break;
+        }
+        lua_settable(state, -3);
+    }
 
     int index = node_stack_push(node_stack, node);
     LUA_ERROR_IF(index == -1, "Node stack overflow!");
