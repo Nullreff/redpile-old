@@ -269,7 +269,13 @@ static int script_node_adjacent(ScriptState* state)
 
                 Direction direction = raw_direction;
                 if (raw_direction >= DIRECTIONS_COUNT)
-                    direction = direction_move(FIELD_GET(current, 1), (Movement)raw_direction);
+                {
+                    int index;
+                    FieldType field_type;
+                    bool found = type_find_field(current->type, "direction", &index, &field_type);
+                    LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                    direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+                }
 
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
                 lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
@@ -304,7 +310,13 @@ static int script_node_adjacent(ScriptState* state)
 
                 Direction direction = raw_direction;
                 if (raw_direction >= DIRECTIONS_COUNT)
-                    direction = direction_move(FIELD_GET(current, 1), (Movement)raw_direction);
+                {
+                    int index;
+                    FieldType field_type;
+                    bool found = type_find_field(current->type, "direction", &index, &field_type);
+                    LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                    direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+                }
 
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
                 script_create_node(state, node);
