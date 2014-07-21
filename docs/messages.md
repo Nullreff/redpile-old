@@ -53,7 +53,7 @@ Should ideally contain minimal information or reference large immutable informat
 
 ### pattern
 
-A boolean statement that inspects the passed message, its source and the state of the current block.
+A boolean statement that inspects the passed message, its source and the state of the current node.
 
 ### key
 
@@ -63,46 +63,4 @@ Internally it is tracked as a unique integer but could be mapped to a string.
 ### value
 
 The value stored in a key.  Internally is tracked as an integer but could be adapted to store just about anything.  This can be done either via conversion to integer or having the integer act as a pointer to another area of memory.
-
-Language
---------
-
-In order to make Redpile easier to program, a higher level language should be implemented.
-This language will be compiled down to a series of commands.
-
-* Use pattern matching on messages sent.
-* Patterns are processed in order and the first matching one is run.
-* Should (ideally) be a non-turning complete language.
-
-The following is using ruby syntax but a custom compiled language would probably be faster.
-
-~~~ruby
-# Syntax of: name, [values]
-message_field :command, [:power, :break]
-message_field :power, (0..15)
-
-block :wire do
-    # Fields stored directly on this block
-    field :power
-
-    # If any message matching the condition are found,
-    # calls the block with them.  All others are discared.
-    match('message.command == :break') do |cmds|
-        self.delete
-    end
-
-    # Possibly include duplicate functionality via mixins?
-    match('message.command == :power && message.power > self.power') do |cmds|
-        self.power = cmds.map(&:power).max
-        for_blocks(:north, :south, :east, :west) do |block|
-            block.send(:power, self.power - 1)
-        end
-    end
-
-    # If nothing is matched, the default method is run.
-    default do
-        self.power = 0
-    end
-end
-~~~
 

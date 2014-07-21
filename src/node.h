@@ -24,15 +24,11 @@
 #include "message.h"
 #include "type.h"
 
-#define MATERIALS_COUNT 10
-extern char* Materials[MATERIALS_COUNT];
-extern unsigned int FieldCounts[MATERIALS_COUNT];
-
-typedef int Field;
+typedef int FieldValue;
 typedef struct {
     unsigned int count;
-    Field data[];
-} Fields;
+    FieldValue data[];
+} FieldData;
 
 typedef struct Node {
     Location location;
@@ -50,7 +46,7 @@ typedef struct Node {
     Messages* last_input;
     unsigned long long last_input_tick;
 
-    Fields fields;
+    FieldData fields;
 } Node;
 
 typedef struct {
@@ -64,6 +60,7 @@ typedef struct {
     Node* nodes[];
 } NodeStack;
 
+#define MAX_FIELDS 100
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
 #define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
 #define FOR_NODE_LIST(NODE,LIST) for (Node* NODE = LIST->nodes; NODE != NULL; NODE = NODE->next)
@@ -71,7 +68,6 @@ typedef struct {
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print(Node* node);
-void node_print_power(Node* node);
 
 NodeList* node_list_allocate(void);
 void node_list_free(NodeList* blocks);

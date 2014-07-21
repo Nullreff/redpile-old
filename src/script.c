@@ -56,36 +56,44 @@ static int script_define_type(ScriptState* state)
 {
     assert(type_data != NULL);
     int top = lua_gettop(state);
+    LUA_ERROR_IF(top != 3, "define_type requires 3 arguments");
+    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
+    LUA_ERROR_IF(!lua_istable(state, 2), "You must pass a table of fields");
+    LUA_ERROR_IF(!lua_istable(state, 3), "You must pass a list of behaviors");
 
-    char* name;
+    char* name = strdup(lua_tostring(state, 1));
     unsigned int field_count;
     unsigned int behavior_count;
 
-    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
-    name = strdup(lua_tostring(state, 1));
+    // By default, we allocate room for 100 fields and behaviors
+    // You can trim this number down or realloc after filling.
+    Type* type = type_data_append_type(type_data, name, MAX_FIELDS, MAX_FIELDS);
 
-    if (top > 1)
+    // Behaviors
+    lua_pushnil(state);
+    for (behavior_count = 0; lua_next(state, 3) != 0; behavior_count++)
     {
-        LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass the number of fields");
-        double raw_field_count = lua_tonumber(state, 2);
-        LUA_ERROR_IF(!IS_UINT(raw_field_count), "Number of fields must be a positive integer");
-        field_count = raw_field_count;
+        LUA_ERROR_IF(behavior_count >= MAX_FIELDS, "Maximum number of behaviors exceeded");
+        const char* name = luaL_checkstring(state, -1);
+        Behavior* behavior = type_data_find_behavior(type_data, name);
+        ERROR_IF(behavior == NULL, "Could not find behavior");
+        type->behaviors->data[behavior_count] = behavior;
+        lua_pop(state, 1);
     }
-    else
-    {
-        field_count = 0;
-    }
+    type->behaviors->count = behavior_count;
 
-    if (top > 2)
+    // Fields
+    lua_pushnil(state);
+    for (field_count = 0; lua_next(state, 2) != 0; field_count++)
     {
-        behavior_count = top - 2;
+        LUA_ERROR_IF(field_count >= MAX_FIELDS, "Maximum number of fields exceeded");
+        char* name = strdup(luaL_checkstring(state, -2));
+        double raw_field_type = lua_tonumber(state, -1);
+        LUA_ERROR_IF(!IS_UINT(raw_field_type), "Field type");
+        type->fields->data[field_count] = field_type_create(name, raw_field_type);
+        lua_pop(state, 1);
     }
-    else
-    {
-        behavior_count = 0;
-    }
-
-    Type* type = type_data_append_type(type_data, name, field_count, behavior_count);
+    type->fields->count = field_count;
 
     // Set the first passed in as the default type
     if (type_data->type_count == 1)
@@ -93,14 +101,6 @@ static int script_define_type(ScriptState* state)
         LUA_ERROR_IF(field_count > 0, "The default type cannot have any fields");
         LUA_ERROR_IF(behavior_count > 0, "The default type cannot have any behaviors");
         type_data_set_default_type(type_data, type);
-    }
-
-    for (int i = 0; i < behavior_count; i++)
-    {
-        const char* name = luaL_checkstring(state, 3 + i);
-        Behavior* behavior = type_data_find_behavior(type_data, name);
-        ERROR_IF(behavior == NULL, "Could not find behavior");
-        type->behaviors[i] = behavior;
     }
 
     return 0;
@@ -269,7 +269,13 @@ static int script_node_adjacent(ScriptState* state)
 
                 Direction direction = raw_direction;
                 if (raw_direction >= DIRECTIONS_COUNT)
-                    direction = direction_move(FIELD_GET(current, 1), (Movement)raw_direction);
+                {
+                    int index;
+                    FieldType field_type;
+                    bool found = type_find_field(current->type, "direction", &index, &field_type);
+                    LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                    direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+                }
 
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
                 lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
@@ -304,7 +310,13 @@ static int script_node_adjacent(ScriptState* state)
 
                 Direction direction = raw_direction;
                 if (raw_direction >= DIRECTIONS_COUNT)
-                    direction = direction_move(FIELD_GET(current, 1), (Movement)raw_direction);
+                {
+                    int index;
+                    FieldType field_type;
+                    bool found = type_find_field(current->type, "direction", &index, &field_type);
+                    LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                    direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+                }
 
                 Node* node = world_get_adjacent_node(script_data->world, current, direction);
                 script_create_node(state, node);
@@ -429,17 +441,19 @@ static void script_create_node(ScriptState* state, Node* node)
     lua_pushstring(state, node->type->name);
     lua_settable(state, -3);
 
-    lua_pushstring(state, "power");
-    lua_pushnumber(state, FIELD_GET(node, 0));
-    lua_settable(state, -3);
-
-    lua_pushstring(state, "direction");
-    lua_pushnumber(state, FIELD_GET(node, 1));
-    lua_settable(state, -3);
-
-    lua_pushstring(state, "state");
-    lua_pushnumber(state, FIELD_GET(node, 2));
-    lua_settable(state, -3);
+    for (int i = 0; i < node->type->fields->count; i++)
+    {
+        Field* field = node->type->fields->data + i;
+        lua_pushstring(state, field->name);
+        switch (field->type)
+        {
+            case FIELD_INT:
+            case FIELD_DIRECTION:
+                lua_pushnumber(state, FIELD_GET(node, i));
+                break;
+        }
+        lua_settable(state, -3);
+    }
 
     int index = node_stack_push(node_stack, node);
     LUA_ERROR_IF(index == -1, "Node stack overflow!");
@@ -556,6 +570,11 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "MESSAGE_PULL");
     lua_pushnumber(state, MESSAGE_REMOVE);
     lua_setglobal(state, "MESSAGE_REMOVE");
+
+    lua_pushnumber(state, FIELD_INT);
+    lua_setglobal(state, "FIELD_INT");
+    lua_pushnumber(state, FIELD_DIRECTION);
+    lua_setglobal(state, "FIELD_DIRECTION");
 
     lua_pushcfunction(state, script_define_behavior);
     lua_setglobal(state, "define_behavior");

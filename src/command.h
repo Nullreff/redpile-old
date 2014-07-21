@@ -23,15 +23,25 @@
 #include "location.h"
 
 typedef struct {
-    Direction direction;
-    unsigned int state;
-} SetArgs;
+    char* name;
+    char* value;
+} CommandArg;
+
+typedef struct {
+    unsigned int count;
+    unsigned int index;
+    CommandArg data[];
+} CommandArgs;
+
+CommandArgs* command_args_allocate(unsigned int count);
+void command_args_free(CommandArgs* args);
+void command_args_append(CommandArgs* args, char* name, char* value);
 
 void command_ping(void);
 void command_status(void);
-void command_set(Location location, Type* type, SetArgs args);
-void command_setr(Location start, Location end, Type* type, SetArgs args);
-void command_setrs(Location l1, Location l2, Location step, Type* type, SetArgs args);
+void command_set(Location location, Type* type, CommandArgs* args);
+void command_setr(Location start, Location end, Type* type, CommandArgs* args);
+void command_setrs(Location l1, Location l2, Location step, Type* type, CommandArgs* args);
 void command_delete(Location location);
 void command_get(Location location);
 void command_tick(int count, LogLevel log_level);
@@ -39,6 +49,5 @@ void command_messages(void);
 
 void command_error(const char* message);
 bool type_parse(char* string, Type** type);
-bool direction_parse(char* string, Direction* dir);
 
 #endif

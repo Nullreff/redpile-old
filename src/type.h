@@ -21,6 +21,22 @@
 
 #include "common.h"
 
+#define FIELD_DATA_COUNT 2
+typedef enum {
+    FIELD_INT,
+    FIELD_DIRECTION
+} FieldType;
+
+typedef struct {
+    char* name;
+    FieldType type;
+} Field;
+
+typedef struct {
+    unsigned int count;
+    Field data[];
+} Fields;
+
 typedef struct Behavior {
     struct Behavior* next;
     char* name;
@@ -28,12 +44,16 @@ typedef struct Behavior {
     int function_ref;
 } Behavior;
 
+typedef struct {
+    unsigned int count;
+    Behavior* data[];
+} Behaviors;
+
 typedef struct Type {
     struct Type* next;
     char* name;
-    unsigned int field_count;
-    unsigned int behavior_count;
-    Behavior* behaviors[];
+    Fields* fields;
+    Behaviors* behaviors;
 } Type;
 
 typedef struct {
@@ -47,6 +67,7 @@ typedef struct {
 #define FOR_TYPE(TYPE,DATA) for (Type* TYPE = (DATA)->types; TYPE != NULL; TYPE = TYPE->next)
 #define FOR_BEHAVIOR(BEHAVIOR,DATA) for (Behavior* BEHAVIOR = (DATA)->behaviors; BEHAVIOR != NULL; BEHAVIOR = BEHAVIOR->next)
 
+Field field_type_create(char* name, FieldType type);
 TypeData* type_data_allocate(void);
 void type_data_free(TypeData* type_data);
 Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count);
@@ -56,5 +77,7 @@ Type* type_data_find_type(TypeData* type_data, const char* name);
 void type_data_set_default_type(TypeData* type_data, Type* type);
 Type* type_data_get_default_type(TypeData* type_data);
 Behavior* type_data_find_behavior(TypeData* type_data, const char* name);
+
+bool type_find_field(Type* type, char* name, int* index, FieldType* field_type);
 
 #endif

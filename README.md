@@ -36,7 +36,7 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * ~~Basic Redstone~~
 * ~~Block message passing~~
 * ~~Scripting via [Lua](http://www.lua.org/)~~
-* Field storage
+* ~~Field storage~~
 * More tests!
 * Tick caching
 * Map loading/saving

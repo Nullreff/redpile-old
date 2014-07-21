@@ -27,8 +27,8 @@ __END__
     <div class="container">
       <ul class="nav nav-pills">
         <li><a href="/">Home</a></li>
-        <li><a href="/blocks.html">Blocks</a></li>
         <li><a href="/commands.html">Commands</a></li>
+        <li><a href="/types.html">Types</a></li>
         <li><a href="https://github.com/nullreff/redpile">Code</a></li>
       </ul>
       <div class="content">

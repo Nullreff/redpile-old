@@ -20,13 +20,13 @@
 
 static Node* node_allocate(Location location, Type* type)
 {
-    Node* node = calloc(1, sizeof(Node) + (type->field_count * sizeof(Field)));
+    Node* node = calloc(1, sizeof(Node) + (type->fields->count * sizeof(FieldValue)));
     CHECK_OOM(node);
     node->location = location;
     node->type = type;
     node->store = NULL;
     node->last_input = NULL;
-    node->fields.count = type->field_count;
+    node->fields.count = type->fields->count;
     return node;
 }
 
@@ -81,28 +81,22 @@ void node_print(Node* node)
            node->location.z,
            node->type->name);
 
-    // Power
-    if (node->fields.count > 0)
-        printf(" %u", node->fields.data[0]);
+    for (int i = 0; i < node->type->fields->count; i++)
+    {
+        Field* field = node->type->fields->data + i;
+        switch (field->type)
+        {
+            case FIELD_INT:
+                printf(" %s:%d", field->name, node->fields.data[i]);
+                break;
 
-    // Direction
-    if (node->fields.count > 1)
-        printf(" %s", Directions[node->fields.data[1]]);
-
-    // State
-    if (node->fields.count > 2)
-        printf(" %u", node->fields.data[2]);
+            case FIELD_DIRECTION:
+                printf(" %s:%s", field->name, Directions[node->fields.data[i]]);
+                break;
+        }
+    }
 
     printf("\n");
-}
-
-void node_print_power(Node* node)
-{
-    printf("(%d,%d,%d) %u\n",
-           node->location.x,
-           node->location.y,
-           node->location.z,
-           FIELD_GET(node, 0));
 }
 
 NodeList* node_list_allocate(void)

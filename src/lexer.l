@@ -39,6 +39,7 @@ extern int read_input(char *buff, int buffsize);
 (?i:tickv)      { return TICKV;      }
 (?i:tickq)      { return TICKQ;      }
 (?i:messages)   { return MESSAGES;   }
+:[a-zA-Z0-9]+   { yylval.string  = strdup(yytext + 1);       return VALUE;  }
 -?[0-9]+        { yylval.integer = strtol(yytext, NULL, 10); return INT;    }
 [a-zA-Z0-9]+    { yylval.string  = strdup(yytext);           return STRING; }
 %%

@@ -4,7 +4,7 @@ include Helpers
 describe 'Wire' do
   it 'propigates power to the side and down' do
     run(
-      'SET 0 0 0 SWITCH UP 1',
+      'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 0 0 1 WIRE',
       'SET 0 0 2 AIR',
       'SET 0 -1 2 WIRE',
@@ -13,8 +13,8 @@ describe 'Wire' do
   end
 
   it 'propigates power to the side and up' do
-    run(
-      'SET 0 0 0 SWITCH UP 1',
+    result = run(
+      'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 0 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'SET 0 1 2 WIRE',
@@ -23,20 +23,21 @@ describe 'Wire' do
   end
 
   it 'does not propigate to the side and up when a block is on top' do
-    run(
-      'SET 0 0 0 SWITCH UP 1',
+    result = run(
+      'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 0 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'SET 0 1 2 WIRE',
       'SET 0 1 1 CONDUCTOR',
       'TICK',
       'GET 0 1 2'
-    ).should =~ /^\(0,1,2\) WIRE 0$/
+    )
+    contains_node?(result, 0, 1, 2, 'WIRE', power: 0)
   end
 
   it 'powers an adjacent conductor' do
     run(
-      'SET 0 0 0 SWITCH UP 1',
+      'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 0 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'TICK'
@@ -45,31 +46,31 @@ describe 'Wire' do
 
   it 'diverts power from a condutor when a wire is on the left' do
     result = run(
-      'SET 0 0 0 SWITCH UP 1',
+      'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 0 0 1 WIRE',
       'SET 1 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'TICK',
       'GET 0 0 2'
     )
-    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
+    contains_node?(result, 0, 0, 2, 'CONDUCTOR', power: 0)
   end
 
   it 'diverts power from a condutor when a wire is on the right' do
     result = run(
-      'SET 0 0 0 SWITCH UP 1',
+      'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 0 0 1 WIRE',
       'SET -1 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'TICK',
       'GET 0 0 2'
     )
-    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
+    contains_node?(result, 0, 0, 2, 'CONDUCTOR', power: 0)
   end
 
   it 'diverts power from a condutor when a wire is on both sides' do
     result = run(
-       'SET 0 0 0 SWITCH UP 1',
+       'SET 0 0 0 SWITCH direction:UP state:1',
        'SET 0 0 1 WIRE',
        'SET 1 0 1 WIRE',
        'SET -1 0 1 WIRE',
@@ -77,12 +78,12 @@ describe 'Wire' do
        'TICK',
       'GET 0 0 2'
     )
-    result.should =~ /^\(0,0,2\) CONDUCTOR 0$/
+    contains_node?(result, 0, 0, 2, 'CONDUCTOR', power: 0)
   end
 
   it 'does not divert power from a conductor if there is a wire on top' do
     result = run(
-       'SET 0 0 0 SWITCH UP 1',
+       'SET 0 0 0 SWITCH direction:UP state:1',
        'SET 0 0 1 WIRE',
        'SET 1 0 1 WIRE',
        'SET -1 0 1 WIRE',
@@ -91,12 +92,12 @@ describe 'Wire' do
        'TICK',
        'GET 0 0 2'
     )
-    result.should =~ /^\(0,0,2\) CONDUCTOR 14$/
+    contains_node?(result, 0, 0, 2, 'CONDUCTOR', power: 14)
   end
 
   it 'propigates power to a conductor underneath wire' do
     run(
-       'SET 0 0 0 SWITCH UP 1',
+       'SET 0 0 0 SWITCH direction:UP state:1',
        'SET 0 0 1 WIRE',
        'SET 0 -1 1 CONDUCTOR',
        'TICK'
@@ -105,15 +106,15 @@ describe 'Wire' do
 
   it 'propigates power in a loop' do
     result = run(
-      'set 0 0 0 SWITCH UP 1',
-      'set 0 0 1 wire',
-      'set 0 0 2 wire',
-      'set 1 0 2 wire',
-      'set 2 0 2 wire',
-      'set 2 0 1 wire',
-      'set 2 0 0 wire',
-      'set 1 0 0 wire',
-      'tick'
+      'SET 0 0 0 SWITCH direction:UP state:1',
+      'SET 0 0 1 WIRE',
+      'SET 0 0 2 WIRE',
+      'SET 1 0 2 WIRE',
+      'SET 2 0 2 WIRE',
+      'SET 2 0 1 WIRE',
+      'SET 2 0 0 WIRE',
+      'SET 1 0 0 WIRE',
+      'TICK'
     )
     result.should =~ /^\(0,0,1\) POWER 15$/
     result.should =~ /^\(0,0,2\) POWER 14$/
@@ -126,9 +127,9 @@ describe 'Wire' do
 
   it 'avoids looping when processing a grid of wire' do
     run(
-      'setr -5 0 -5 5 0 5 wire',
-      'set 0 0 0 torch up',
-      'tick 2'
+      'SETR -5 0 -5 5 0 5 WIRE',
+      'SET 0 0 0 TORCH direction:UP',
+      'TICK 2'
     ).should_not =~ /^Logic loop detected while performing tick$/
   end
 end

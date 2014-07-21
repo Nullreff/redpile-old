@@ -38,8 +38,7 @@ void yyerror(const char* const message);
     char *string;
     Location location;
     Type* type;
-    Direction direction;
-    SetArgs set_args;
+    CommandArgs* args;
 }
 
 %token LINE_BREAK
@@ -48,10 +47,10 @@ void yyerror(const char* const message);
 /* Data */
 %token <integer> INT
 %token <string> STRING
+%token <string> VALUE
 %type  <location> location
 %type  <type> type
-%type  <direction> direction
-%type  <set_args> set_args
+%type  <args> set_args
 %type  <integer> tick_args
 
 /* Commands */
@@ -82,20 +81,13 @@ location: INT INT INT { $$ = location_create($1, $2, $3); }
 type: STRING { Type* type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
 ;
 
-direction: STRING { Direction dir; if (!direction_parse($1, &dir)) YYABORT; $$ = dir; }
-;
-
 anything: /* empty */
         | STRING anything { free($1); }
         | INT anything
 ;
 
-set_args: /* empty */   { $$ = (SetArgs){0, 0};  }
-        | direction     { $$ = (SetArgs){$1, 0}; }
-        | direction INT { PARSE_ERROR_IF($2 < 0, "State must be non-negative\n");
-                          PARSE_ERROR_IF($2 > 3, "State must be less than three\n");
-                          $$ = (SetArgs){$1, $2}; }
-;
+set_args: /* empty */           { $$ = command_args_allocate(MAX_FIELDS); }
+        | set_args STRING VALUE { command_args_append($1, $2, $3); $$ = $1; }
 
 tick_args: /* empty */ { $$ = 1; }
          | INT         { PARSE_ERROR_IF($1 < 0, "Tick count must be greater than zero\n"); $$ = $1; }
@@ -106,10 +98,7 @@ command: PING                                           { command_ping();       
        | STATUS                                         { command_status();                          }
        | SET location type set_args                     { command_set($2, $3, $4);                   }
        | SETR location location type set_args           { command_setr($2, $3, $4, $5);              }
-       | SETRS location location location type set_args { PARSE_ERROR_IF($4.x <= 0, "x_step must be greater than zero\n");
-                                                          PARSE_ERROR_IF($4.y <= 0, "y_step must be greater than zero\n");
-                                                          PARSE_ERROR_IF($4.z <= 0, "z_step must be greater than zero\n");
-                                                          command_setrs($2, $3, $4, $5, $6);         }
+       | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6);         }
        | DELETE location                                { command_delete($2);                        }
        | GET location                                   { command_get($2);                           }
        | TICK tick_args                                 { command_tick($2, LOG_NORMAL);              }

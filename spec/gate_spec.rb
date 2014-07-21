@@ -8,7 +8,7 @@ describe 'Logic' do
   context 'NOP' do
     def nop_gate(in1)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
         'SET 0 0 1 CONDUCTOR',
         'SET 0 0 2 WIRE',
         'TICK',
@@ -22,9 +22,9 @@ describe 'Logic' do
   context 'NOT' do
     def not_gate(in1)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
         'SET 0 0 1 CONDUCTOR',
-        'SET 0 0 2 TORCH SOUTH',
+        'SET 0 0 2 TORCH direction:SOUTH',
         'SET 0 0 3 WIRE',
         'TICK 2',
         'GET 0 0 3')
@@ -37,15 +37,15 @@ describe 'Logic' do
   context 'AND' do
     def and_gate(in1, in2)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
-        "SET 2 0 0 SWITCH NORTH #{in2}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
+        "SET 2 0 0 SWITCH direction:NORTH state:#{in2}",
         'SET 0 0 1 CONDUCTOR',
         'SET 1 0 1 CONDUCTOR',
         'SET 2 0 1 CONDUCTOR',
-        'SET 0 1 1 TORCH UP',
+        'SET 0 1 1 TORCH direction:UP',
         'SET 1 1 1 WIRE',
-        'SET 2 1 1 TORCH UP',
-        'SET 1 0 2 TORCH SOUTH',
+        'SET 2 1 1 TORCH direction:UP',
+        'SET 1 0 2 TORCH direction:SOUTH',
         'SET 1 0 3 WIRE',
         'TICK 3',
         'GET 1 0 3')
@@ -60,14 +60,14 @@ describe 'Logic' do
   context 'NAND' do
     def nand_gate(in1, in2)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
-        "SET 2 0 0 SWITCH NORTH #{in2}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
+        "SET 2 0 0 SWITCH direction:NORTH state:#{in2}",
         'SET 0 0 1 CONDUCTOR',
         'SET 1 0 1 CONDUCTOR',
         'SET 2 0 1 CONDUCTOR',
-        'SET 0 1 1 TORCH UP',
+        'SET 0 1 1 TORCH direction:UP',
         'SET 1 1 1 WIRE',
-        'SET 2 1 1 TORCH UP',
+        'SET 2 1 1 TORCH direction:UP',
         'SET 1 0 2 WIRE',
         'TICK 2',
         'GET 1 0 2')
@@ -82,12 +82,12 @@ describe 'Logic' do
   context 'OR' do
     def or_gate(in1, in2)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
-        "SET 2 0 0 SWITCH NORTH #{in2}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
+        "SET 2 0 0 SWITCH direction:NORTH state:#{in2}",
         'SET 0 0 1 CONDUCTOR',
         'SET 2 0 1 CONDUCTOR',
-        'SET 0 0 2 REPEATER SOUTH 0',
-        'SET 2 0 2 REPEATER SOUTH 0',
+        'SET 0 0 2 REPEATER direction:SOUTH state:0',
+        'SET 2 0 2 REPEATER direction:SOUTH state:0',
         'SET 0 0 3 WIRE',
         'SET 1 0 3 WIRE',
         'SET 2 0 3 WIRE',
@@ -105,10 +105,10 @@ describe 'Logic' do
   context 'NOR' do
     def nor_gate(in1, in2)
       run(
-        "SET 0 0 0 SWITCH WEST #{in1}",
+        "SET 0 0 0 SWITCH direction:WEST state:#{in1}",
         'SET 1 0 0 CONDUCTOR',
-        "SET 2 0 0 SWITCH EAST #{in2}",
-        'SET 1 0 1 TORCH SOUTH',
+        "SET 2 0 0 SWITCH direction:EAST state:#{in2}",
+        'SET 1 0 1 TORCH direction:SOUTH',
         'SET 1 0 2 WIRE',
         'TICK 2',
         'GET 1 0 2')
@@ -123,23 +123,23 @@ describe 'Logic' do
   context 'XOR' do
     def xor_gate(in1, in2)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
-        "SET 2 0 0 SWITCH NORTH #{in2}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
+        "SET 2 0 0 SWITCH direction:NORTH state:#{in2}",
 
         'SET 0 0 1 CONDUCTOR',
         'SET 1 0 1 CONDUCTOR',
         'SET 2 0 1 CONDUCTOR',
-        'SET 0 1 1 TORCH UP',
+        'SET 0 1 1 TORCH direction:UP',
         'SET 1 1 1 WIRE',
-        'SET 2 1 1 TORCH UP',
+        'SET 2 1 1 TORCH direction:UP',
 
-        'SET 0 0 2 TORCH SOUTH',
+        'SET 0 0 2 TORCH direction:SOUTH',
         'SET 1 0 2 CONDUCTOR',
-        'SET 2 0 2 TORCH SOUTH',
+        'SET 2 0 2 TORCH direction:SOUTH',
         'SET 1 1 2 WIRE',
 
         'SET 0 0 3 WIRE',
-        'SET 1 0 3 TORCH SOUTH',
+        'SET 1 0 3 TORCH direction:SOUTH',
         'SET 2 0 3 WIRE',
 
         'SET 0 0 4 CONDUCTOR',
@@ -147,9 +147,9 @@ describe 'Logic' do
         'SET 0 1 4 WIRE',
         'SET 2 1 4 WIRE',
 
-        'SET 0 0 5 TORCH SOUTH',
+        'SET 0 0 5 TORCH direction:SOUTH',
         'SET 1 0 5 WIRE',
-        'SET 2 0 5 TORCH SOUTH',
+        'SET 2 0 5 TORCH direction:SOUTH',
 
         'TICK 4',
         'GET 1 0 5')
@@ -164,23 +164,23 @@ describe 'Logic' do
   context 'XNOR' do
     def xnor_gate(in1, in2)
       run(
-        "SET 0 0 0 SWITCH NORTH #{in1}",
-        "SET 2 0 0 SWITCH NORTH #{in2}",
+        "SET 0 0 0 SWITCH direction:NORTH state:#{in1}",
+        "SET 2 0 0 SWITCH direction:NORTH state:#{in2}",
 
         'SET 0 0 1 CONDUCTOR',
         'SET 1 0 1 CONDUCTOR',
         'SET 2 0 1 CONDUCTOR',
-        'SET 0 1 1 TORCH UP',
+        'SET 0 1 1 TORCH direction:UP',
         'SET 1 1 1 WIRE',
-        'SET 2 1 1 TORCH UP',
+        'SET 2 1 1 TORCH direction:UP',
 
-        'SET 0 0 2 TORCH SOUTH',
+        'SET 0 0 2 TORCH direction:SOUTH',
         'SET 1 0 2 CONDUCTOR',
-        'SET 2 0 2 TORCH SOUTH',
+        'SET 2 0 2 TORCH direction:SOUTH',
         'SET 1 1 2 WIRE',
 
         'SET 0 0 3 WIRE',
-        'SET 1 0 3 TORCH SOUTH',
+        'SET 1 0 3 TORCH direction:SOUTH',
         'SET 2 0 3 WIRE',
 
         'SET 0 0 4 CONDUCTOR',
@@ -188,13 +188,13 @@ describe 'Logic' do
         'SET 0 1 4 WIRE',
         'SET 2 1 4 WIRE',
 
-        'SET 0 0 5 TORCH SOUTH',
+        'SET 0 0 5 TORCH direction:SOUTH',
         'SET 1 0 5 WIRE',
-        'SET 2 0 5 TORCH SOUTH',
+        'SET 2 0 5 TORCH direction:SOUTH',
 
         'SET 1 0 6 CONDUCTOR',
         'SET 1 1 6 WIRE',
-        'SET 2 0 6 TORCH EAST',
+        'SET 2 0 6 TORCH direction:EAST',
 
         'SET 2 0 7 WIRE',
 

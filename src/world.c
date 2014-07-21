@@ -21,7 +21,7 @@
 
 static void world_update_adjacent_nodes(World* world, Node* node)
 {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         if (node->adjacent[i] == NULL)
         {
@@ -42,7 +42,7 @@ static void world_update_adjacent_nodes(World* world, Node* node)
 
 static void world_reset_adjacent_nodes(World* world, Node* node)
 {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
         if (node->adjacent[i] != NULL)
         {
@@ -190,10 +190,17 @@ bool world_run_data(World* world, QueueData* data)
     Location target_loc;
     switch (data->type)
     {
-        case MESSAGE_POWER:
-            if (FIELD_GET(data->target.node, 0) == data->message)
+        case MESSAGE_POWER: {
+            int power_index;
+            FieldType field_type;
+            if (!type_find_field(data->target.node->type, "power", &power_index, &field_type) ||
+                field_type != FIELD_INT ||
+                FIELD_GET(data->target.node, power_index) == data->message)
+            {
                 return false;
-            FIELD_SET(data->target.node, 0, data->message);
+            }
+            FIELD_SET(data->target.node, power_index, data->message);
+            }
             break;
 
         case MESSAGE_PUSH:
