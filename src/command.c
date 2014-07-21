@@ -143,8 +143,13 @@ void command_setr(Location l1, Location l2, Type* type, CommandArgs* args)
     command_setrs(l1, l2, location_create(1, 1, 1), type, args);
 }
 
+#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { fprintf(stderr, __VA_ARGS__); goto end; }
 void command_setrs(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
 {
+    PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");
+    PARSE_ERROR_IF(step.y <= 0, "y_step must be greater than zero\n");
+    PARSE_ERROR_IF(step.z <= 0, "z_step must be greater than zero\n");
+
     int x_start = l1.x > l2.x ? l2.x : l1.x;
     int x_end   = l1.x > l2.x ? l1.x : l2.x;
     int y_start = l1.y > l2.y ? l2.y : l1.y;
@@ -157,6 +162,7 @@ void command_setrs(Location l1, Location l2, Location step, Type* type, CommandA
     for (int z = z_start; z <= z_end; z += step.z)
         run_command_set(location_create(x, y, z), type, args);
 
+end:
     command_args_free(args);
 }
 
