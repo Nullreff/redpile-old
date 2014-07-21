@@ -42,14 +42,14 @@ See [Types](types.md) for more information on types.
 SETR
 ----
 
-Syntax: `SETR x_start y_start z_start x_end y_end z_end material [direction] [state]`
+Syntax: `SETR x_start y_start z_start x_end y_end z_end type [fields]`
 
 Runs a `SET` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)`.
 
 SETRS
 ----
 
-Syntax: `SETRS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [direction] [state]`
+Syntax: `SETRS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [fields]`
 
 Runs a `SET` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
 
