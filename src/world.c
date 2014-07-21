@@ -188,16 +188,19 @@ void world_set_node_missing_callback(World* world, bool enable)
 bool world_run_data(World* world, QueueData* data)
 {
     Location target_loc;
-    int power_index;
-    FieldType field_type;
-    assert(type_find_field(data->target.node->type, "power", &power_index, &field_type));
-    assert(field_type == FIELD_INT);
     switch (data->type)
     {
-        case MESSAGE_POWER:
-            if (FIELD_GET(data->target.node, power_index) == data->message)
+        case MESSAGE_POWER: {
+            int power_index;
+            FieldType field_type;
+            if (!type_find_field(data->target.node->type, "power", &power_index, &field_type) ||
+                field_type != FIELD_INT ||
+                FIELD_GET(data->target.node, power_index) == data->message)
+            {
                 return false;
+            }
             FIELD_SET(data->target.node, power_index, data->message);
+            }
             break;
 
         case MESSAGE_PUSH:

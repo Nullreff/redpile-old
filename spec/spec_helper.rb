@@ -35,8 +35,11 @@ module Helpers
     /^\(#{x},#{y},#{z}\) \S+ power:0\s/
   end
 
-  def contains_node?(result, x, y, z, type, fields)
-    result.should =~ /^\(#{x},#{y},#{z}\) #{type}$/ if fields.empty?
+  def contains_node?(result, x, y, z, type, fields = {})
+    if fields.empty?
+       result.should =~ /^\(#{x},#{y},#{z}\) #{type}$/
+       return
+    end
     result.should =~ /^(\(#{x},#{y},#{z}\) #{type} .*)$/
     found_fields = result[/^\(#{x},#{y},#{z}\) #{type} .*$/]
     fields.each{|key,value| found_fields.should =~ /#{key}:#{value}/}

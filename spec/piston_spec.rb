@@ -13,7 +13,7 @@ describe 'Piston' do
           'GET 0 0 2',
           'GET 0 0 3'
         )
-        result.should =~ /^\(0,0,2\) AIR$/
+        contains_node?(result, 0, 0, 2, 'AIR')
         result.should =~ /^\(0,0,3\) #{type}/
       end
 
@@ -29,7 +29,7 @@ describe 'Piston' do
           'GET 0 0 3'
         )
         result.should =~ /^\(0,0,2\) #{type}/
-        result.should =~ /^\(0,0,3\) AIR$/
+        contains_node?(result, 0, 0, 3, 'AIR')
       end
     end
   end
@@ -46,8 +46,8 @@ describe 'Piston' do
           'GET 0 0 2',
           'GET 0 0 3'
         )
-        result.should =~ /^\(0,0,2\) AIR$/
-        result.should =~ /^\(0,0,3\) AIR$/
+        contains_node?(result, 0, 0, 2, 'AIR')
+        contains_node?(result, 0, 0, 3, 'AIR')
       end
 
       it 'does nothing when pulled' do
@@ -62,7 +62,7 @@ describe 'Piston' do
           'GET 0 0 2',
           'GET 0 0 3'
         )
-        result.should =~ /^\(0,0,2\) AIR$/
+        contains_node?(result, 0, 0, 2, 'AIR')
         result.should =~ /^\(0,0,3\) #{type}/
       end
     end
@@ -81,9 +81,10 @@ describe 'Piston' do
         'GET 0 0 2',
         'GET 0 0 3'
       )
-      result.should =~ /^\(0,0,2\) PISTON 15 EAST$/
-      result.should =~ /^\(0,0,3\) AIR$/
+      contains_node?(result, 0, 0, 2, 'PISTON', power: 15, direction: 'EAST')
+      contains_node?(result, 0, 0, 3, 'AIR')
     end
+
     it 'does not move when pulled' do
       result = run(
         'SET 0 0 1 PISTON direction:SOUTH',
@@ -98,8 +99,8 @@ describe 'Piston' do
         'GET 0 0 2',
         'GET 0 0 3'
       )
-      result.should =~ /^\(0,0,2\) AIR$/
-      result.should =~ /^\(0,0,3\) PISTON 15 EAST$/
+      contains_node?(result, 0, 0, 2, 'AIR')
+      contains_node?(result, 0, 0, 3, 'PISTON', power: 15, direction: 'EAST')
     end
   end
 end
