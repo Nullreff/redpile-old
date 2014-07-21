@@ -11,15 +11,15 @@ describe 'Commands' do
   [true, false].each do |upper|
     context "Using #{upper ? 'upper' : 'lower'} case" do
       it 'parses the SET command' do
-        run_case('SET 0 0 0 TORCH UP', upper).should == "\n"
+        run_case('SET 0 0 0 TORCH direction:UP', upper).should == "\n"
       end
 
       it 'parses the SETR command' do
-        run_case('SETR -5 -5 -5 5 5 5 TORCH UP', upper).should == "\n"
+        run_case('SETR -5 -5 -5 5 5 5 TORCH direction:UP', upper).should == "\n"
       end
 
       it 'parses the SETRS command' do
-        run_case('SETRS -10 -10 -10 10 10 10 2 2 2 TORCH UP', upper).should == "\n"
+        run_case('SETRS -10 -10 -10 10 10 10 2 2 2 TORCH direction:UP', upper).should == "\n"
       end
 
       it 'parses the DELETE command' do
@@ -65,15 +65,7 @@ describe 'Commands' do
   end
 
   it 'errors if given an incorrect direction' do
-    run('SET 0 0 0 TORCH INVALID').should =~ /^Unknown direction: 'INVALID'$/
-  end
-
-  it 'errors with a negative state' do
-    run('SET 0 0 0 REPEATER NORTH -1').should =~ /^State must be non-negative$/
-  end
-
-  it 'errors with a state greater than 3' do
-    run('SET 0 0 0 REPEATER NORTH 4').should =~ /^State must be less than three$/
+    run('SET 0 0 0 TORCH direction:INVALID').should =~ /^Unknown direction: 'INVALID'$/
   end
 
   it 'errors with a zero x step' do
@@ -147,7 +139,7 @@ describe 'Commands' do
     DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
         run(
-          "SET 0 0 0 #{block} #{dir}",
+          "SET 0 0 0 #{block} direction:#{dir}",
           "GET 0 0 0"
         ).should =~ /^\(0,0,0\) #{block} 0 #{dir}$/
       end
@@ -158,7 +150,7 @@ describe 'Commands' do
     DIRECTIONS.each do |dir|
       it "inserts an #{block} block pointing #{dir}" do
         run(
-          "SET 0 0 0 #{block} #{dir} 0",
+          "SET 0 0 0 #{block} direction:#{dir} 0",
           "GET 0 0 0"
         ).should =~ /^\(0,0,0\) #{block} 0 #{dir} 0$/
       end

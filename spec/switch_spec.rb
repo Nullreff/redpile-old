@@ -5,7 +5,7 @@ describe 'Switch' do
   context 'turned on' do
     it 'powers a conductor behind it' do
       run(
-        'SET 0 0 0 SWITCH UP 1',
+        'SET 0 0 0 SWITCH direction:UP state:1',
         'SET 0 -1 0 CONDUCTOR',
         'TICK',
         'GET 0 -1 0'
@@ -14,7 +14,7 @@ describe 'Switch' do
 
     it 'does not power a conductor to the side' do
       run(
-        'SET 0 0 0 SWITCH UP 1',
+        'SET 0 0 0 SWITCH direction:UP state:1',
         'SET 1 0 0 CONDUCTOR',
         'TICK',
         'GET 1 0 0'
@@ -23,7 +23,7 @@ describe 'Switch' do
 
     it 'powers a wire to the side of it' do
       run(
-        'SET 0 0 0 SWITCH UP 1',
+        'SET 0 0 0 SWITCH direction:UP state:1',
         'SET 1 0 0 WIRE',
         'TICK',
         'GET 1 0 0'
@@ -34,7 +34,7 @@ describe 'Switch' do
   context 'turned off' do
     it 'does not power a conductor behind it' do
       run(
-        'SET 0 0 0 SWITCH UP 0',
+        'SET 0 0 0 SWITCH direction:UP state:0',
         'SET 0 -1 0 CONDUCTOR',
         'TICK',
         'GET 0 -1 0'
@@ -43,7 +43,7 @@ describe 'Switch' do
 
     it 'does not power a conductor to the side' do
       run(
-        'SET 0 0 0 SWITCH UP 0',
+        'SET 0 0 0 SWITCH direction:UP state:0',
         'SET 1 0 0 CONDUCTOR',
         'TICK',
         'GET 1 0 0'
@@ -52,7 +52,7 @@ describe 'Switch' do
 
     it 'does not power a wire to the side of it' do
       run(
-        'SET 0 0 0 SWITCH UP 0',
+        'SET 0 0 0 SWITCH direction:UP state:0',
         'SET 1 0 0 WIRE',
         'TICK',
         'GET 1 0 0'

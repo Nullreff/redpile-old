@@ -6,8 +6,8 @@ describe 'Piston' do
     context "moving #{type}" do
       it 'is pushed one block' do
         result = run(
-          'SET 0 0 0 SWITCH UP 1',
-          'SET 0 0 1 PISTON SOUTH',
+          'SET 0 0 0 SWITCH direction:UP state:1',
+          'SET 0 0 1 PISTON direction:SOUTH',
           "SET 0 0 2 #{type}",
           'TICKQ 2',
           'GET 0 0 2',
@@ -19,11 +19,11 @@ describe 'Piston' do
 
       it 'is pulled one block' do
         result = run(
-          'SET 0 0 0 SWITCH UP 1',
-          'SET 0 0 1 PISTON SOUTH',
+          'SET 0 0 0 SWITCH direction:UP state:1',
+          'SET 0 0 1 PISTON direction:SOUTH',
           "SET 0 0 3 #{type}",
           'TICKQ 2',
-          'SET 0 0 0 SWITCH UP 0',
+          'SET 0 0 0 SWITCH direction:UP state:0',
           'TICKQ 2',
           'GET 0 0 2',
           'GET 0 0 3'
@@ -38,8 +38,8 @@ describe 'Piston' do
     context "moving #{type}" do
       it 'breaks when pushed' do
         result = run(
-          'SET 0 0 0 SWITCH UP 1',
-          'SET 0 0 1 PISTON SOUTH',
+          'SET 0 0 0 SWITCH direction:UP state:1',
+          'SET 0 0 1 PISTON direction:SOUTH',
           "SET 0 0 2 #{type}",
           'SET 0 0 3 AIR',
           'TICKQ 2',
@@ -52,12 +52,12 @@ describe 'Piston' do
 
       it 'does nothing when pulled' do
         result = run(
-          'SET 0 0 0 SWITCH UP 1',
-          'SET 0 0 1 PISTON SOUTH',
+          'SET 0 0 0 SWITCH direction:UP state:1',
+          'SET 0 0 1 PISTON direction:SOUTH',
           'SET 0 0 2 AIR',
           "SET 0 0 3 #{type}",
           'TICKQ 2',
-          'SET 0 0 0 SWITCH UP 0',
+          'SET 0 0 0 SWITCH direction:UP state:0',
           'TICKQ 2',
           'GET 0 0 2',
           'GET 0 0 3'
@@ -71,12 +71,12 @@ describe 'Piston' do
   context 'moving extended PISTON' do
     it 'does not move when pushed' do
       result = run(
-        'SET 0 0 1 PISTON SOUTH',
-        'SET 0 0 2 PISTON EAST',
+        'SET 0 0 1 PISTON direction:SOUTH',
+        'SET 0 0 2 PISTON direction:EAST',
         'SET 1 0 2 CONDUCTOR',
-        'SET -1 0 2 SWITCH UP 1',
+        'SET -1 0 2 SWITCH direction:UP state:1',
         'TICKQ 2',
-        'SET 0 0 0 SWITCH UP 1',
+        'SET 0 0 0 SWITCH direction:UP state:1',
         'TICKQ 2',
         'GET 0 0 2',
         'GET 0 0 3'
@@ -86,14 +86,14 @@ describe 'Piston' do
     end
     it 'does not move when pulled' do
       result = run(
-        'SET 0 0 1 PISTON SOUTH',
-        'SET 0 0 3 PISTON EAST',
+        'SET 0 0 1 PISTON direction:SOUTH',
+        'SET 0 0 3 PISTON direction:EAST',
         'SET 1 0 3 CONDUCTOR',
-        'SET -1 0 3 SWITCH UP 1',
+        'SET -1 0 3 SWITCH direction:UP state:1',
         'TICKQ 2',
-        'SET 0 0 0 SWITCH UP 1',
+        'SET 0 0 0 SWITCH direction:UP state:1',
         'TICKQ 2',
-        'SET 0 0 0 SWITCH UP 0',
+        'SET 0 0 0 SWITCH direction:UP state:0',
         'TICKQ 2',
         'GET 0 0 2',
         'GET 0 0 3'
