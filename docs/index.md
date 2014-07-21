@@ -4,8 +4,7 @@ Redpile
 Redpile is a high performance implementation of redstone for Minecraft.
 It can be run from the command line or as a sub-process of a larger program.
 When started, it creates a simulation of a Minecraft world focused solely on redstone.
-Commands are sent on the standard input and block updates are received on the standard output.
-It's intended to be very simple: You can set blocks, get blocks and run redstone ticks.
+Commands are sent on the standard input and updates are received on the standard output.
 
 Installation
 ------------
@@ -33,13 +32,7 @@ For playing around, you can run redpile in `--interactive` (`-i`) mode.
 See `--help` for a list of all options.
 
 ~~~bash
-$ redpile -i conf/redstone.lua
->
-~~~
-
-You can set blocks, get blocks and run ticks.
-
-~~~bash
+$ ./build/src/redpile -i conf/redstone.lua
 > set 0 0 0 torch up
 > get 0 0 0
 (0,0,0) TORCH 0 UP
@@ -53,12 +46,6 @@ You can set blocks, get blocks and run ticks.
 (0,0,0) POWER 15
 (0,0,2) POWER 14
 (0,0,1) POWER 15
->
-~~~
-
-You can also print information about the current state of the world.
-
-~~~bash
 > status
 ticks: 2
 nodes: 21
@@ -71,5 +58,5 @@ message_max_outputs: 4
 message_max_queued: 1
 ~~~
 
-For more commands, check out the [commands](commands.md) and [blocks](blocks.md) pages.
+For more commands, check out the [commands](commands.md) and [types](types.md) pages.
 
