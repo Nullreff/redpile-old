@@ -15,20 +15,29 @@ describe 'Repeater' do
 
   (1..4).each do |delay|
     it "delays the propigation of power by #{delay} tick(s)" do
-      run(
+      result1 = run(
         'SET 0 0 0 SWITCH direction:UP state:1',
         "SET 0 0 1 REPEATER direction:SOUTH state:#{delay - 1}",
         'SET 0 0 2 WIRE',
         "TICK #{delay}",
-        'GET 0 0 2',
+        'GET 0 0 2'
+      )
+      contains_node?(result1, 0, 0, 2, 'WIRE', power: 0)
+
+      result2 = run(
+        'SET 0 0 0 SWITCH direction:UP state:1',
+        "SET 0 0 1 REPEATER direction:SOUTH state:#{delay - 1}",
+        'SET 0 0 2 WIRE',
+        "TICK #{delay}",
         'TICK',
         'GET 0 0 2'
-      ).should =~ /^\(0,0,2\) WIRE 0$.*^\(0,0,2\) WIRE 15$/m
+      )
+      contains_node?(result2, 0, 0, 2, 'WIRE', power: 15)
     end
   end
 
   it 'is blocked from being powered by a repeater on the left' do
-    run(
+    result = run(
       'SET 0 0 0 SWITCH direction:UP state:1',
       'SET -1 0 2 SWITCH direction:UP state:1',
       'SET 0 0 1 REPEATER direction:SOUTH state:0',
@@ -36,11 +45,12 @@ describe 'Repeater' do
       'SET 1 0 2 WIRE',
       'TICK 3',
       'GET 1 0 2'
-    ).should =~ /^\(1,0,2\) WIRE 0$/
+    )
+    contains_node?(result, 1, 0, 2, 'WIRE', power: 0)
   end
 
   it 'is blocked from being powered by a repeater on the right' do
-    run(
+    result = run(
       'SET 0 0 0 SWITCH direction:UP state:1',
       'SET 1 0 2 SWITCH direction:UP state:1',
       'SET 0 0 1 REPEATER direction:SOUTH state:0',
@@ -48,6 +58,7 @@ describe 'Repeater' do
       'SET -1 0 2 WIRE',
       'TICK 3',
       'GET -1 0 2'
-    ).should =~ /^\(-1,0,2\) WIRE 0$/
+    )
+    contains_node?(result, -1, 0, 2, 'WIRE', power: 0)
   end
 end
