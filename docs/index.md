@@ -33,9 +33,9 @@ See `--help` for a list of all options.
 
 ~~~bash
 $ ./build/src/redpile -i conf/redstone.lua
-> set 0 0 0 torch up
+> set 0 0 0 torch direction:up
 > get 0 0 0
-(0,0,0) TORCH 0 UP
+(0,0,0) TORCH 0 direction:UP
 > set 0 0 1 wire
 > set 0 0 2 wire
 > tick
