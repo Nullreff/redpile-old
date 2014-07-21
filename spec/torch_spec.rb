@@ -15,12 +15,13 @@ describe 'Torch' do
 
   it "stops propigating power after #{MAX_RANGE} blocks" do
     end_block = MAX_RANGE + 1
-    run(
+    result = run(
       'SET 0 0 0 TORCH direction:UP',
       "SETR 0 0 1 0 0 #{end_block} WIRE",
       'TICK 2',
       "GET 0 0 #{end_block}"
-    ).should =~ /^\(0,0,#{end_block}\) WIRE 0$/
+    )
+    contains_node?(result, 0, 0, end_block, 'WIRE', power: 0)
   end
 
   it 'takes power from the closer torch' do
@@ -30,7 +31,7 @@ describe 'Torch' do
       'SET 0 0 -1 WIRE',
       'SET 0 0 0 WIRE',
       'SET 0 0 1 WIRE',
-      'SET 0 0 2 TORCH NORTH',
+      'SET 0 0 2 TORCH direction:NORTH',
       'TICK 2'
     ).should =~ /\(0,0,0\) POWER 14\n/
   end
