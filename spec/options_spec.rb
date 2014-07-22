@@ -53,7 +53,7 @@ describe 'Options' do
 
       [4567, 2254, 65535].each do |port|
         it "runs on the port #{port}" do
-          redpile("#{short ? '-p' : '--port'} #{port}").run.should == "\n"
+          redpile("#{short ? '-p' : '--port'} #{port}").run_net(port).should == "\n"
         end
       end
 

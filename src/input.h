@@ -19,6 +19,7 @@
 #ifndef REDPILE_INPUT_H
 #define REDPILE_INPUT_H
 
+void input_setup(void);
 int read_input(char *buff, int buffsize);
 
 #endif
