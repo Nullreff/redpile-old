@@ -42,7 +42,10 @@ static int input_read_linenoise(char* buff, int buffsize)
     // Flex has a default buffer size of at least 8192 on 32 bit
     int size = strlen(line);
     if (size + 2 > buffsize)
+    {
         fprintf(stderr, "Line too long, truncating to %i\n", buffsize);
+        size = buffsize - 2;
+    }
 
     // Flex won't generate output until we fill it's buffer
     // Since this is interactive mode, we just zero it out
@@ -51,7 +54,7 @@ static int input_read_linenoise(char* buff, int buffsize)
     memcpy(buff, line, size);
 
     // Linenoise strips out the line return
-    buff[size]     = '\n';
+    buff[size] = '\n';
 
     free(line);
     return buffsize;
