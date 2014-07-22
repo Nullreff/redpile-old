@@ -56,7 +56,7 @@ end
 --   1. Any modifications to the world will not occur until after the current
 --   tick has completely finished processing all nodes.  If you need to
 --   communicate a change with another node, send it a message.
---   2. All data passed in via `self` and `messages` will change between
+--   2. All data passed in via `node` and `messages` will change between
 --   calls.  Do not store copies as it is liable to change.
 --   3. This function may be called multiple times before, during, and after
 --   the tick or may be cached and never run again.  Therefore it needs be
@@ -66,87 +66,87 @@ end
 -- or if it didn't find what it needed and processing should continue (false).
 --
 
-define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(self, messages)
+define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(node, messages)
     if messages.count > 0 then
         message = messages:first()
-        self:move(message.value)
+        node:move(message.value)
         return true
     end
 
     return false
 end)
 
-define_behavior('push_break', MESSAGE_PUSH, function(self, messages)
+define_behavior('push_break', MESSAGE_PUSH, function(node, messages)
     if messages.count > 0 then
-        self:remove()
+        node:remove()
         return true
     end
 
     return false
 end)
 
-define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
-    local covered = self:adjacent(UP).type ~= 'AIR'
+define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
+    local covered = node:adjacent(UP).type ~= 'AIR'
 
     local power_msg = messages:max()
     local new_power = power_msg and power_msg.value or 0
-    self:set_power(new_power)
+    node:set_power(new_power)
 
     local wire_power = new_power
     if wire_power > 0 then
         wire_power = wire_power - 1
     end
 
-    self:adjacent(NORTH, SOUTH, EAST, WEST, function(node, dir)
-        if node.type == 'AIR' then
-            node = node:adjacent(DOWN)
-            if node.type ~= 'WIRE' then
+    node:adjacent(NORTH, SOUTH, EAST, WEST, function(found, dir)
+        if found.type == 'AIR' then
+            found = found:adjacent(DOWN)
+            if found.type ~= 'WIRE' then
                 return true
             end
-        elseif node.type == 'CONDUCTOR' then
-            if self:adjacent(direction_left(dir)).type ~= 'WIRE' and
-               self:adjacent(direction_right(dir)).type ~= 'WIRE' and
-               has_lower_power(node, messages, wire_power)
+        elseif found.type == 'CONDUCTOR' then
+            if node:adjacent(direction_left(dir)).type ~= 'WIRE' and
+               node:adjacent(direction_right(dir)).type ~= 'WIRE' and
+               has_lower_power(found, messages, wire_power)
            then
-               node:send(0, MESSAGE_POWER, wire_power)
+               found:send(0, MESSAGE_POWER, wire_power)
            end
 
            if covered then
                return true
            end
 
-           node = node:adjacent(UP)
-           if node.type ~= 'WIRE' then
+           found = found:adjacent(UP)
+           if found.type ~= 'WIRE' then
                return true
            end
         end
 
-        if has_lower_power(node, messages, wire_power) then
-            node:send(0, MESSAGE_POWER, wire_power)
+        if has_lower_power(found, messages, wire_power) then
+            found:send(0, MESSAGE_POWER, wire_power)
         end
     end)
 
-    self:adjacent(DOWN, function(node)
-        if node.type == 'CONDUCTOR' and
-           has_lower_power(node, messages, new_power)
+    node:adjacent(DOWN, function(found)
+        if found.type == 'CONDUCTOR' and
+           has_lower_power(found, messages, new_power)
        then
-           node:send(0, MESSAGE_POWER, new_power)
+           found:send(0, MESSAGE_POWER, new_power)
        end
     end)
 
     return true
 end)
 
-define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
+define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
     local new_power = msg_power(messages:max())
 
-    self:set_power(new_power)
+    node:set_power(new_power)
 
     local max_powerd = new_power == MAX_POWER
-    self:adjacent(function(node)
-        if node.type ~= 'CONDUCTOR' and (max_powerd or node.type ~= 'WIRE') then
-            if has_lower_power(node, messages, new_power) then
-                node:send(0, MESSAGE_POWER, new_power)
+    node:adjacent(function(found)
+        if found.type ~= 'CONDUCTOR' and (max_powerd or found.type ~= 'WIRE') then
+            if has_lower_power(found, messages, new_power) then
+                found:send(0, MESSAGE_POWER, new_power)
             end
         end
     end)
@@ -154,24 +154,24 @@ define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
     return true
 end)
 
-define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages:source(self:adjacent(BEHIND).location))
+define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
+    local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
     if new_power > 0 then
-        self:set_power(0)
+        node:set_power(0)
         return true
     end
-    self:set_power(MAX_POWER)
+    node:set_power(MAX_POWER)
 
-    local behind = self:adjacent(BEHIND)
-    self:adjacent(NORTH, SOUTH, EAST, WEST, DOWN, function(node)
-        if node.location ~= behind.location then
-            node:send(1, MESSAGE_POWER, MAX_POWER)
+    local behind = node:adjacent(BEHIND)
+    node:adjacent(NORTH, SOUTH, EAST, WEST, DOWN, function(found)
+        if found.location ~= behind.location then
+            found:send(1, MESSAGE_POWER, MAX_POWER)
         end
     end)
 
-    self:adjacent(UP, function(node)
-        if node.type == 'CONDUCTOR' then
-            node:send(1, MESSAGE_POWER, MAX_POWER)
+    node:adjacent(UP, function(found)
+        if found.type == 'CONDUCTOR' then
+            found:send(1, MESSAGE_POWER, MAX_POWER)
         end
     end)
 
@@ -182,20 +182,20 @@ RETRACTED  = 0
 RETRACTING = 1
 EXTENDED   = 2
 EXTENDING  = 3
-define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
-    local first = self:adjacent(FORWARDS)
-    local second = first:adjacent(self.direction)
+define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
+    local first = node:adjacent(FORWARDS)
+    local second = first:adjacent(node.direction)
     local new_power = msg_power(messages:max())
     local state
 
     if new_power == 0 then
-        if first.type == 'AIR' and second.type ~= 'AIR' and self.power > 0 then
+        if first.type == 'AIR' and second.type ~= 'AIR' and node.power > 0 then
             state = RETRACTING
         else
             state = RETRACTED
         end
     else
-        if second.type == 'AIR' and first.type ~= 'AIR' and self.power == 0 then
+        if second.type == 'AIR' and first.type ~= 'AIR' and node.power == 0 then
             state = EXTENDING
         else
             state = EXTENDED
@@ -206,48 +206,48 @@ define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
         return false
     end
 
-    self:set_power(new_power)
+    node:set_power(new_power)
 
     if state == EXTENDING then
-        first:send(1, MESSAGE_PUSH, self.direction)
+        first:send(1, MESSAGE_PUSH, node.direction)
     elseif state == RETRACTING then
-        second:send(1, MESSAGE_PULL, direction_invert(self.direction))
+        second:send(1, MESSAGE_PULL, direction_invert(node.direction))
     end
 
     return true
 end)
 
-define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages:source(self:adjacent(BEHIND).location))
-    self:set_power(new_power)
+define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
+    local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    node:set_power(new_power)
     if new_power == 0 then
         return true
     end
 
-    if messages:source(self:adjacent(RIGHT).location) ~= nil or
-       messages:source(self:adjacent(LEFT).location) ~= nil then
+    if messages:source(node:adjacent(RIGHT).location) ~= nil or
+       messages:source(node:adjacent(LEFT).location) ~= nil then
        return true
    end
 
-   self:adjacent(FORWARDS):send(self.state + 1, MESSAGE_POWER, MAX_POWER)
+   node:adjacent(FORWARDS):send(node.state + 1, MESSAGE_POWER, MAX_POWER)
 
    return true
 end)
 
-define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages:source(self:adjacent(BEHIND).location))
-    self:set_power(new_power)
+define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
+    local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    node:set_power(new_power)
     if new_power == 0 then
         return true
     end
 
     local side_power = math.max(
-        msg_power(messages:source(self:adjacent(LEFT).location)),
-        msg_power(messages:source(self:adjacent(RIGHT).location))
+        msg_power(messages:source(node:adjacent(LEFT).location)),
+        msg_power(messages:source(node:adjacent(RIGHT).location))
     )
 
     local change = new_power
-    if self.state > 0 then
+    if node.state > 0 then
         change = change - side_power
     end
 
@@ -256,22 +256,22 @@ define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
         return true
     end
 
-    self:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
+    node:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
 
     return true
 end)
 
-define_behavior('power_switch', 0, function(self, messages)
-    if self.state == 0 then
-        self:set_power(0)
+define_behavior('power_switch', 0, function(node, messages)
+    if node.state == 0 then
+        node:set_power(0)
         return true
     end
 
-    self:set_power(MAX_POWER)
-    local behind = self:adjacent(BEHIND)
-    self:adjacent(function(node)
-        if node.type ~= 'CONDUCTOR' or node.location == behind.location then
-            node:send(0, MESSAGE_POWER, MAX_POWER)
+    node:set_power(MAX_POWER)
+    local behind = node:adjacent(BEHIND)
+    node:adjacent(function(found)
+        if found.type ~= 'CONDUCTOR' or found.location == behind.location then
+            found:send(0, MESSAGE_POWER, MAX_POWER)
         end
     end)
 
