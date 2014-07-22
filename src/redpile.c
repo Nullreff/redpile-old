@@ -159,6 +159,9 @@ static void load_config(int argc, char* argv[])
 
 static void redpile_cleanup(void)
 {
+    if (!config->benchmark)
+        yylex_destroy();
+
     if (world != NULL)
         world_free(world);
 
@@ -167,9 +170,6 @@ static void redpile_cleanup(void)
 
     if (config != NULL)
         free(config);
-
-    if (!config->benchmark)
-        yylex_destroy();
 
     printf("\n");
 }
