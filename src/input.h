@@ -1,4 +1,4 @@
-/* redpile.h - High performance redstone
+/* input.h - Input and networking
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,23 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_H
-#define REDPILE_H
+#ifndef REDPILE_INPUT_H
+#define REDPILE_INPUT_H
 
-#include "script.h"
-#include "world.h"
-
-#define REDPILE_VERSION "0.5.0"
-
-typedef struct {
-    int world_size;
-    unsigned int interactive:1;
-    unsigned int benchmark;
-    char* file;
-} RedpileConfig;
-
-extern World* world;
-extern ScriptState* state;
-extern RedpileConfig* config;
+int read_input(char *buff, int buffsize);
 
 #endif

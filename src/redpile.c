@@ -20,17 +20,16 @@
 #include "parser.h"
 #include "command.h"
 #include "bench.h"
-#include "linenoise.h"
 #include "type.h"
 #include "common.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
-#include <unistd.h>
 
-RedpileConfig config;
+// All global state lives in these variables
 World* world = NULL;
 ScriptState* state = NULL;
+RedpileConfig* config = NULL;
 
 int yyparse(void);
 int yylex_destroy(void);
@@ -82,10 +81,12 @@ static unsigned int parse_benchmark_size(char* string)
 
 static void load_config(int argc, char* argv[])
 {
+    config = malloc(sizeof(RedpileConfig));
+
     // Default options
-    config.world_size = 1024;
-    config.interactive = 0;
-    config.benchmark = 0;
+    config->world_size = 1024;
+    config->interactive = 0;
+    config->benchmark = 0;
 
     static struct option long_options[] =
     {
@@ -104,21 +105,24 @@ static void load_config(int argc, char* argv[])
         {
             case -1:
                 if (optind >= argc)
-                    ERROR("You must provide a configuration file\n");
+                {
+                    fprintf(stderr, "You must provide a configuration file\n");
+                    exit(EXIT_FAILURE);
+                }
 
-                config.file = argv[optind];
+                config->file = argv[optind];
                 return;
 
             case 'w':
-                config.world_size = parse_world_size(optarg);
+                config->world_size = parse_world_size(optarg);
                 break;
 
             case 'i':
-                config.interactive = 1;
+                config->interactive = 1;
                 break;
 
             case 'b':
-                config.benchmark = parse_benchmark_size(optarg);
+                config->benchmark = parse_benchmark_size(optarg);
                 break;
 
             case 'v':
@@ -143,7 +147,10 @@ static void redpile_cleanup(void)
     if (state != NULL)
         script_state_free(state);
 
-    if (!config.benchmark)
+    if (config != NULL)
+        free(config);
+
+    if (!config->benchmark)
         yylex_destroy();
 
     printf("\n");
@@ -158,34 +165,6 @@ static void signal_callback(int signal)
     }
 }
 
-int read_input(char *buff, int buffsize)
-{
-    if (!config.interactive)
-        return read(STDIN_FILENO, buff, buffsize);
-
-    char* line = linenoise("> ");
-    if (line == NULL)
-        return 0;
-
-    // Linenoise has a buffer size of 4096
-    // Flex has a default buffer size of at least 8192 on 32 bit
-    int size = strlen(line);
-    if (size + 2 > buffsize)
-        fprintf(stderr, "Line too long, truncating to %i\n", buffsize);
-
-    // Flex won't generate output until we fill it's buffer
-    // Since this is interactive mode, we just zero it out
-    // and fill it with whatever we read in.
-    memset(buff, '\0', buffsize);
-    memcpy(buff, line, size);
-
-    // Linenoise strips out the line return
-    buff[size]     = '\n';
-
-    free(line);
-    return buffsize;
-}
-
 int main(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
@@ -193,18 +172,18 @@ int main(int argc, char* argv[])
 
     state = script_state_allocate();
 
-    TypeData* type_data = script_state_load_config(state, config.file);
+    TypeData* type_data = script_state_load_config(state, config->file);
     if (type_data == NULL)
     {
         redpile_cleanup();
         return EXIT_FAILURE;
     }
 
-    world = world_allocate(config.world_size, type_data);
+    world = world_allocate(config->world_size, type_data);
 
-    if (config.benchmark)
+    if (config->benchmark)
     {
-        run_benchmarks(world, config.benchmark);
+        run_benchmarks(world, config->benchmark);
     }
     else
     {

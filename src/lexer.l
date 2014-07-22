@@ -18,7 +18,7 @@
 %{
 #include <stdio.h>
 #include "parser.h"
-extern int read_input(char *buff, int buffsize);
+#include "input.h"
 #define YY_INPUT(buff, res, buffsize) (res = read_input(buff, buffsize))
 %}
 %option noyywrap
