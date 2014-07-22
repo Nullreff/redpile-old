@@ -145,13 +145,16 @@ static void load_config(int argc, char* argv[])
 
             case 'v':
                 print_version();
+                free(config);
                 exit(EXIT_SUCCESS);
 
             case 'h':
                 print_help();
+                free(config);
                 exit(EXIT_SUCCESS);
 
             default:
+                free(config);
                 exit(EXIT_FAILURE);
         }
     }
