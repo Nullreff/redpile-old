@@ -28,7 +28,7 @@
 MAX_POWER = 15
 
 function has_lower_power(node, messages, power)
-    local received_power = messages.source(node.location)
+    local received_power = messages:source(node.location)
     return received_power == nil or received_power.value < power
 end
 
@@ -68,7 +68,7 @@ end
 
 define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(self, messages)
     if messages.count > 0 then
-        message = messages.first()
+        message = messages:first()
         self:move(message.value)
         return true
     end
@@ -88,7 +88,7 @@ end)
 define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
     local covered = self:adjacent(UP).type ~= 'AIR'
 
-    local power_msg = messages.max()
+    local power_msg = messages:max()
     local new_power = power_msg and power_msg.value or 0
     self:set_power(new_power)
 
@@ -138,7 +138,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages.max())
+    local new_power = msg_power(messages:max())
 
     self:set_power(new_power)
 
@@ -155,7 +155,7 @@ define_behavior('power_conductor', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
+    local new_power = msg_power(messages:source(self:adjacent(BEHIND).location))
     if new_power > 0 then
         self:set_power(0)
         return true
@@ -185,7 +185,7 @@ EXTENDING  = 3
 define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
     local first = self:adjacent(FORWARDS)
     local second = first:adjacent(self.direction)
-    local new_power = msg_power(messages.max())
+    local new_power = msg_power(messages:max())
     local state
 
     if new_power == 0 then
@@ -218,14 +218,14 @@ define_behavior('power_piston', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
+    local new_power = msg_power(messages:source(self:adjacent(BEHIND).location))
     self:set_power(new_power)
     if new_power == 0 then
         return true
     end
 
-    if messages.source(self:adjacent(RIGHT).location) ~= nil or
-       messages.source(self:adjacent(LEFT).location) ~= nil then
+    if messages:source(self:adjacent(RIGHT).location) ~= nil or
+       messages:source(self:adjacent(LEFT).location) ~= nil then
        return true
    end
 
@@ -235,15 +235,15 @@ define_behavior('power_repeater', MESSAGE_POWER, function(self, messages)
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(self, messages)
-    local new_power = msg_power(messages.source(self:adjacent(BEHIND).location))
+    local new_power = msg_power(messages:source(self:adjacent(BEHIND).location))
     self:set_power(new_power)
     if new_power == 0 then
         return true
     end
 
     local side_power = math.max(
-        msg_power(messages.source(self:adjacent(LEFT).location)),
-        msg_power(messages.source(self:adjacent(RIGHT).location))
+        msg_power(messages:source(self:adjacent(LEFT).location)),
+        msg_power(messages:source(self:adjacent(RIGHT).location))
     )
 
     local change = new_power

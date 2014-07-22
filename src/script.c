@@ -503,7 +503,7 @@ static int script_messages_source(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Location location = script_location_from_stack(state, 1);
+    Location location = script_location_from_stack(state, 2);
     Message* message = messages_find_source(script_data->input, location);
     if (message != NULL)
         script_create_message(state, message);
