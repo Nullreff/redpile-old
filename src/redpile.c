@@ -85,7 +85,7 @@ static void load_config(int argc, char* argv[])
 
     // Default options
     config->world_size = 1024;
-    config->interactive = 0;
+    config->interactive = false;
     config->benchmark = 0;
 
     static struct option long_options[] =
@@ -118,7 +118,7 @@ static void load_config(int argc, char* argv[])
                 break;
 
             case 'i':
-                config->interactive = 1;
+                config->interactive = true;
                 break;
 
             case 'b':
