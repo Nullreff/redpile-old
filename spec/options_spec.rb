@@ -6,6 +6,7 @@ REDPILE_VERSION = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/
 BAD_NEGATIVES = [0, -1, -20]
 BAD_NUMBERS = ['abc', 'a12', '12c']
 BAD_POWERS = [3, 13, 28]
+BAD_PORTS = [65536, 100000000]
 
 describe 'Options' do
   [true, false].each do |short|
@@ -47,6 +48,33 @@ describe 'Options' do
         it "errors when run with a world size of '#{size}'" do
           redpile(short ? "-w #{size}" : "--world-size #{size}", false).
           run.should =~ /You must provide a world size that is a power of two\n/
+        end
+      end
+
+      [4567, 2254, 65535].each do |port|
+        it "runs on the port #{port}" do
+          redpile("#{short ? '-p' : '--port'} #{port}").run.should == "\n"
+        end
+      end
+
+      BAD_NUMBERS.each do |port|
+        it "errors when run on the port #{port}" do
+          redpile(short ? "-p #{port}" : "--port #{port}", false).
+          run.should =~ /You must pass an integer as the port number\n/
+        end
+      end
+
+      BAD_NEGATIVES.each do |port|
+        it "errors when run on the port #{port}" do
+          redpile(short ? "-p #{port}" : "--port #{port}", false).
+          run.should =~ /You must provide a port number greater than zero\n/
+        end
+      end
+
+      BAD_PORTS.each do |port|
+        it "errors when run on the port #{port}" do
+          redpile(short ? "-p #{port}" : "--port #{port}", false).
+          run.should =~ /You must provide a port number less than or equal to 65535\n/
         end
       end
     end

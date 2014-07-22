@@ -27,6 +27,7 @@
 typedef struct {
     int world_size;
     bool interactive;
+    unsigned short port;
     unsigned int benchmark;
     char* file;
 } RedpileConfig;

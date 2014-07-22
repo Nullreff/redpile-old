@@ -44,10 +44,12 @@ static void print_help()
     printf("Redpile - High Performance Redstone\n\n"
            "Usage: redpile [options] <config>\n"
            "Options:\n"
+           "    -p <port>, --port <port>\n"
+           "        Listen on the specified port for commands\n\n"
            "    -i, --interactive\n"
            "        Run in interactive mode with a prompt for reading commands\n\n"
-           "    -w, --world-size\n"
-           "        The number of blocks to allocate initially\n\n"
+           "    -w <size>, --world-size <size>\n"
+           "        The number of nodes to allocate initially\n\n"
            "    -v, --version\n"
            "        Print the current version\n\n"
            "    -h, --help\n"
@@ -79,6 +81,18 @@ static unsigned int parse_benchmark_size(char* string)
     return (unsigned int)value;
 }
 
+static unsigned short parse_port_number(char* string)
+{
+    char* parse_error = NULL;
+    int value = strtol(string, &parse_error, 10);
+
+    ERROR_IF(*parse_error, "You must pass an integer as the port number\n");
+    ERROR_IF(value <= 0, "You must provide a port number greater than zero\n");
+    ERROR_IF(value > USHRT_MAX, "You must provide a port number less than or equal to %d\n", USHRT_MAX);
+
+    return (unsigned short)value;
+}
+
 static void load_config(int argc, char* argv[])
 {
     config = malloc(sizeof(RedpileConfig));
@@ -86,12 +100,14 @@ static void load_config(int argc, char* argv[])
     // Default options
     config->world_size = 1024;
     config->interactive = false;
+    config->port = 0;
     config->benchmark = 0;
 
     static struct option long_options[] =
     {
         {"world-size",  required_argument, NULL, 'w'},
         {"interactive", no_argument,       NULL, 'i'},
+        {"port",        required_argument, NULL, 'p'},
         {"version",     no_argument,       NULL, 'v'},
         {"help",        no_argument,       NULL, 'h'},
         {"benchmark",   required_argument, NULL, 'b'},
@@ -100,15 +116,12 @@ static void load_config(int argc, char* argv[])
 
     while (1)
     {
-        int opt = getopt_long(argc, argv, "w:ivh", long_options, NULL);
+        int opt = getopt_long(argc, argv, "w:ip:vh", long_options, NULL);
         switch (opt)
         {
             case -1:
                 if (optind >= argc)
-                {
-                    fprintf(stderr, "You must provide a configuration file\n");
-                    exit(EXIT_FAILURE);
-                }
+                    ERROR("You must provide a configuration file\n");
 
                 config->file = argv[optind];
                 return;
@@ -119,6 +132,10 @@ static void load_config(int argc, char* argv[])
 
             case 'i':
                 config->interactive = true;
+                break;
+
+            case 'p':
+                config->port = parse_port_number(optarg);
                 break;
 
             case 'b':
