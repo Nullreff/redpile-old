@@ -21,5 +21,7 @@
 
 void io_setup(void);
 int io_read(char *buff, int buffsize);
+void io_write(const char* format, ...);
+void io_write_error(const char* format, ...);
 
 #endif

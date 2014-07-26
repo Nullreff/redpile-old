@@ -17,6 +17,7 @@
  */
 
 #include "node.h"
+#include "io.h"
 
 static Node* node_allocate(Location location, Type* type)
 {
@@ -75,7 +76,7 @@ MessageStore* node_find_store(Node* node, unsigned long long tick)
 
 void node_print(Node* node)
 {
-    printf("(%d,%d,%d) %s",
+    io_write("(%d,%d,%d) %s",
            node->location.x,
            node->location.y,
            node->location.z,
@@ -87,16 +88,16 @@ void node_print(Node* node)
         switch (field->type)
         {
             case FIELD_INT:
-                printf(" %s:%d", field->name, node->fields.data[i]);
+                io_write(" %s:%d", field->name, node->fields.data[i]);
                 break;
 
             case FIELD_DIRECTION:
-                printf(" %s:%s", field->name, Directions[node->fields.data[i]]);
+                io_write(" %s:%s", field->name, Directions[node->fields.data[i]]);
                 break;
         }
     }
 
-    printf("\n");
+    io_write("\n");
 }
 
 NodeList* node_list_allocate(void)
@@ -178,7 +179,7 @@ void node_list_print(NodeList* blocks)
         node_print(node);
     }
 
-    printf("Total: %u\n", blocks->size);
+    io_write("Total: %u\n", blocks->size);
 }
 
 NodeStack* node_stack_allocate(unsigned int count)

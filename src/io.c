@@ -94,3 +94,19 @@ int io_read(char *buff, int buffsize)
         return io_read_stdin(buff, buffsize);
 }
 
+void io_write(const char* format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    vprintf(format, ap);
+    va_end(ap);
+}
+
+void io_write_error(const char* format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    vfprintf(stderr, format, ap);
+    va_end(ap);
+}
+

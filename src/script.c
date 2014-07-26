@@ -19,6 +19,7 @@
 #include "script.h"
 #include "type.h"
 #include "common.h"
+#include "io.h"
 
 #define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
 #define IS_UINT(NUM) ((NUM - ((double)(int)NUM) == 0) && (NUM >= 0))
@@ -607,13 +608,13 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
 
     if (error)
     {
-        fprintf(stderr, "%s\n", lua_tostring(state, -1));
+        io_write_error("%s\n", lua_tostring(state, -1));
         return NULL;
     }
 
     if (data->type_count == 0)
     {
-        fprintf(stderr, "No types defined in configuration file %s\n", config_file);
+        io_write_error("No types defined in configuration file %s\n", config_file);
         return NULL;
     }
 
@@ -636,13 +637,13 @@ Result script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptD
 
     if (error)
     {
-        printf("%s\n", lua_tostring(state, -1));
+        io_write_error("%s\n", lua_tostring(state, -1));
         return ERROR;
     }
 
     if (!lua_isboolean(state, -1))
     {
-        printf("Call to behavior '%s' did not return a boolan\n", behavior->name);
+        io_write_error("Call to behavior '%s' did not return a boolan\n", behavior->name);
         return ERROR;
     }
 
