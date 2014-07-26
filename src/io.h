@@ -1,4 +1,4 @@
-/* input.h - Input and networking
+/* io.h - Input, output and networking
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_INPUT_H
-#define REDPILE_INPUT_H
+#ifndef REDPILE_IO_H
+#define REDPILE_IO_H
 
-void input_setup(void);
-int read_input(char *buff, int buffsize);
+void io_setup(void);
+int io_read(char *buff, int buffsize);
 
 #endif

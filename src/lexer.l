@@ -18,8 +18,9 @@
 %{
 #include <stdio.h>
 #include "parser.h"
-#include "input.h"
+#include "io.h"
 #define YY_INPUT(buff, res, buffsize) (res = read_input(buff, buffsize))
+#define read_input(buff,buffsize) io_read(buff,buffsize)
 %}
 %option noyywrap
 %option nounput

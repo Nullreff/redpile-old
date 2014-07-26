@@ -22,7 +22,7 @@
 #include "bench.h"
 #include "type.h"
 #include "common.h"
-#include "input.h"
+#include "io.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    input_setup();
+    io_setup();
 
     state = script_state_allocate();
 

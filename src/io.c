@@ -1,4 +1,4 @@
-/* input.c - Input and networking
+/* io.c - Input, output and networking
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -17,22 +17,23 @@
  */
 
 #include "redpile.h"
-#include "input.h"
+#include "io.h"
 #include "linenoise.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <stdarg.h>
 
 int listen_fd, comm_fd;
 struct sockaddr_in servaddr;
 
-static int input_read_network(char* buff, int buffsize)
+static int io_read_network(char* buff, int buffsize)
 {
     return read(comm_fd, buff, buffsize);
 }
 
-static int input_read_linenoise(char* buff, int buffsize)
+static int io_read_linenoise(char* buff, int buffsize)
 {
     char* line = linenoise("> ");
     if (line == NULL)
@@ -60,12 +61,12 @@ static int input_read_linenoise(char* buff, int buffsize)
     return buffsize;
 }
 
-static int input_read_stdin(char* buff, int buffsize)
+static int io_read_stdin(char* buff, int buffsize)
 {
     return read(STDIN_FILENO, buff, buffsize);
 }
 
-void input_setup(void)
+void io_setup(void)
 {
     // Configuration is only required for sockets
     if (config->port == 0)
@@ -83,13 +84,13 @@ void input_setup(void)
     comm_fd = accept(listen_fd, (struct sockaddr*) NULL, NULL);
 }
 
-int read_input(char *buff, int buffsize)
+int io_read(char *buff, int buffsize)
 {
     if (config->port > 0)
-        return input_read_network(buff, buffsize);
+        return io_read_network(buff, buffsize);
     else if (config->interactive)
-        return input_read_linenoise(buff, buffsize);
+        return io_read_linenoise(buff, buffsize);
     else
-        return input_read_stdin(buff, buffsize);
+        return io_read_stdin(buff, buffsize);
 }
 
