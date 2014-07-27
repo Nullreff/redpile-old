@@ -49,6 +49,10 @@ describe 'Commands' do
       it 'parses the PING command' do
         run_case('PING', upper).should =~ /^PONG$/
       end
+
+      it 'parses the MESSAGES command' do
+        run_case('MESSAGES', upper).should == "\n"
+      end
     end
   end
 
@@ -90,6 +94,14 @@ describe 'Commands' do
 
   it 'errors for non numerical ticks' do
     run('TICK abc').should =~ /^Tick count must be numeric$/
+  end
+
+  it 'prints a list of messages' do
+    run(
+      'SET 0 0 0 TORCH direction:UP',
+      'TICK',
+      'MESSAGES'
+    ).should =~ /^\d \(0,0,0\) => \(\d,\d,\d\) POWER \d+$/
   end
 
   it 'adds a block' do

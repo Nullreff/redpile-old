@@ -225,7 +225,7 @@ void world_print_messages(World* world)
     FOR_NODE_LIST(node, world->nodes)
     {
         MessageStore* store = node->store;
-        while (store != NULL);
+        while (store != NULL)
         {
             if (store->tick >= world->ticks)
             {
