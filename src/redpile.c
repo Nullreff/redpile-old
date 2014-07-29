@@ -174,6 +174,8 @@ static void redpile_cleanup(void)
     if (config != NULL)
         free(config);
 
+    io_cleanup();
+
     printf("\n");
 }
 

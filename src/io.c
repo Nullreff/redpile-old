@@ -28,6 +28,9 @@
 int listen_fd, comm_fd;
 struct sockaddr_in servaddr;
 
+#define FORMAT_BUFF_SIZE 1000
+char* format_buff;
+
 static int io_read_network(char* buff, int buffsize)
 {
     return read(comm_fd, buff, buffsize);
@@ -66,6 +69,22 @@ static int io_read_stdin(char* buff, int buffsize)
     return read(STDIN_FILENO, buff, buffsize);
 }
 
+static void io_write_network(const char* format, va_list ap)
+{
+    size_t count = vsnprintf(format_buff, FORMAT_BUFF_SIZE, format, ap);
+    write(comm_fd, format_buff, count);
+}
+
+static void io_write_stdout(const char* format, va_list ap)
+{
+    vprintf(format, ap);
+}
+
+static void io_write_stderr(const char* format, va_list ap)
+{
+    vfprintf(stderr, format, ap);
+}
+
 void io_setup(void)
 {
     // Configuration is only required for sockets
@@ -82,6 +101,13 @@ void io_setup(void)
     bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
     listen(listen_fd, 10);
     comm_fd = accept(listen_fd, (struct sockaddr*) NULL, NULL);
+
+    format_buff = malloc(sizeof(char) * FORMAT_BUFF_SIZE);
+}
+
+void io_cleanup(void)
+{
+    free(format_buff);
 }
 
 int io_read(char *buff, int buffsize)
@@ -98,7 +124,10 @@ void io_write(const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    vprintf(format, ap);
+    if (config->port > 0)
+        io_write_network(format, ap);
+    else
+        io_write_stdout(format, ap);
     va_end(ap);
 }
 
@@ -106,7 +135,10 @@ void io_write_error(const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    vfprintf(stderr, format, ap);
+    if (config->port > 0)
+        io_write_network(format, ap);
+    else
+        io_write_stderr(format, ap);
     va_end(ap);
 }
 
