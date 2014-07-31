@@ -20,8 +20,8 @@
 #include <ctype.h>
 #include "parser.h"
 
-#define PARSE_ERROR(...) fprintf(stderr, __VA_ARGS__); YYABORT;
-#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { fprintf(stderr, __VA_ARGS__); YYABORT; }
+#define PARSE_ERROR(...) io_write_error(__VA_ARGS__); YYABORT;
+#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { io_write_error(__VA_ARGS__); YYABORT; }
 
 int yylex(void);
 void yyerror(const char* const message);
@@ -31,6 +31,7 @@ void yyerror(const char* const message);
     #include "command.h"
     #include "location.h"
     #include "node.h"
+    #include "io.h"
 }
 
 %union {
