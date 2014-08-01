@@ -92,10 +92,23 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
     local new_power = power_msg and power_msg.value or 0
     node:set_power(new_power)
 
-    local wire_power = new_power
-    if wire_power > 0 then
-        wire_power = wire_power - 1
+    if new_power == 0 then
+        return true
     end
+
+    node:adjacent(DOWN, function(found)
+        if found.type == 'CONDUCTOR' and
+           has_lower_power(found, messages, new_power)
+       then
+           found:send(0, MESSAGE_POWER, new_power)
+       end
+    end)
+
+    if new_power == 1 then
+        return true
+    end
+
+    local wire_power = new_power - 1
 
     node:adjacent(NORTH, SOUTH, EAST, WEST, function(found, dir)
         if found.type == 'AIR' then
@@ -124,14 +137,6 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
         if has_lower_power(found, messages, wire_power) then
             found:send(0, MESSAGE_POWER, wire_power)
         end
-    end)
-
-    node:adjacent(DOWN, function(found)
-        if found.type == 'CONDUCTOR' and
-           has_lower_power(found, messages, new_power)
-       then
-           found:send(0, MESSAGE_POWER, new_power)
-       end
     end)
 
     return true
