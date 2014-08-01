@@ -22,7 +22,7 @@
 #include "bench.h"
 #include "type.h"
 #include "common.h"
-#include "io.h"
+#include "repl.h"
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
@@ -168,7 +168,7 @@ static void redpile_cleanup(void)
     if (config != NULL)
         free(config);
 
-    io_cleanup();
+    repl_cleanup();
 
     printf("\n");
 }
@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        io_run();
+        repl_run();
     }
 
     redpile_cleanup();

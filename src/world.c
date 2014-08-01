@@ -18,7 +18,7 @@
 
 #include "world.h"
 #include "hashmap.h"
-#include "io.h"
+#include "repl.h"
 
 static void world_update_adjacent_nodes(World* world, Node* node)
 {
@@ -165,7 +165,7 @@ WorldStats world_get_stats(World* world)
     };
 }
 
-#define STAT_PRINT(stats,stat,format) io_write(#stat ": %" #format "\n", stats.stat)
+#define STAT_PRINT(stats,stat,format) repl_print(#stat ": %" #format "\n", stats.stat)
 void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks, llu);

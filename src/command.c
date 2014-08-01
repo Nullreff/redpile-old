@@ -18,7 +18,7 @@
 #include "command.h"
 #include "common.h"
 #include "redpile.h"
-#include "io.h"
+#include "repl.h"
 
 static bool direction_parse(char* string, Direction* found_dir)
 {
@@ -63,7 +63,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
         FieldType field_type;
         if (!type_find_field(node->type, arg->name, &index, &field_type))
         {
-            io_write_error("The type '%s' doesn't have the field '%s'\n", node->type->name, arg->name);
+            repl_print_error("The type '%s' doesn't have the field '%s'\n", node->type->name, arg->name);
             return;
         }
 
@@ -77,7 +77,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                 }
                 else
                 {
-                    io_write_error("'%s' is not an integer\n", arg->value);
+                    repl_print_error("'%s' is not an integer\n", arg->value);
                     return;
                 }
             }
@@ -91,7 +91,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                 }
                 else
                 {
-                    io_write_error("'%s' is not a direction\n", arg->value);
+                    repl_print_error("'%s' is not a direction\n", arg->value);
                     return;
                 }
             }
@@ -125,7 +125,7 @@ void command_args_append(CommandArgs* args, char* name, char* value)
 
 void command_ping(void)
 {
-    io_write("PONG\n");
+    repl_print("PONG\n");
 }
 
 void command_status(void)
@@ -144,7 +144,7 @@ void command_setr(Location l1, Location l2, Type* type, CommandArgs* args)
     command_setrs(l1, l2, location_create(1, 1, 1), type, args);
 }
 
-#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { io_write_error(__VA_ARGS__); goto end; }
+#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
 void command_setrs(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
 {
     PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");
@@ -178,7 +178,7 @@ void command_get(Location location)
     if (node == NULL)
     {
         Type* type = type_data_get_default_type(world->type_data);
-        io_write("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
+        repl_print("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
     }
     else
     {
@@ -199,7 +199,7 @@ void command_messages(void)
 
 void command_error(const char* message)
 {
-    io_write_error("%s\n", message);
+    repl_print_error("%s\n", message);
 }
 
 bool type_parse(char* string, Type** found_type)
@@ -212,7 +212,7 @@ bool type_parse(char* string, Type** found_type)
         return true;
     }
 
-    io_write_error("Unknown type: '%s'\n", string);
+    repl_print_error("Unknown type: '%s'\n", string);
     free(string);
     return false;
 }

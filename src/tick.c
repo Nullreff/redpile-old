@@ -17,7 +17,7 @@
  */
 
 #include "tick.h"
-#include "io.h"
+#include "repl.h"
 
 static Message message_create(QueueData* data)
 {
@@ -175,14 +175,14 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
     for (int i = 0; i < count; i++)
     {
         if (log_level == LOG_VERBOSE)
-            io_write("--- Tick %llu ---\n", world->ticks);
+            repl_print("--- Tick %llu ---\n", world->ticks);
 
         unsigned long long loops = 0;
         Queue messages = queue_empty(true, true, world->hashmap->size);
         Queue sets = queue_empty(false, true, world->hashmap->size);
 
         if (log_level == LOG_VERBOSE)
-            io_write("Nodes:\n");
+            repl_print("Nodes:\n");
 
         FOR_NODES(node, world->nodes->active)
         {
@@ -199,27 +199,27 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             loops++;
             if (loops > world->nodes->size * 3)
             {
-                io_write_error("Logic loop detected while performing tick\n");
+                repl_print_error("Logic loop detected while performing tick\n");
                 break;
             }
         }
 
         if (log_level == LOG_VERBOSE)
         {
-            io_write("Messages:\n");
+            repl_print("Messages:\n");
             FOR_QUEUE(message, &messages)
             {
                 if (message->data.tick == world->ticks)
                     queue_data_print_verbose(&message->data, message_type_print, world->ticks);
             }
 
-            io_write("Queued:\n");
+            repl_print("Queued:\n");
             FOR_QUEUE(message, &messages)
             {
                 if (message->data.tick > world->ticks)
                     queue_data_print_verbose(&message->data, message_type_print, world->ticks);
             }
-            io_write("Output:\n");
+            repl_print("Output:\n");
         }
 
         run_messages(world, &messages);

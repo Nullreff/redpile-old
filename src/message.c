@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 #include "message.h"
-#include "io.h"
+#include "repl.h"
 
 Messages* messages_allocate(unsigned int size)
 {
@@ -184,10 +184,10 @@ void message_type_print(MessageType type, unsigned int message)
 {
     switch (type)
     {
-        case MESSAGE_POWER:  io_write("POWER %u\n", message); break;
-        case MESSAGE_PUSH:   io_write("PUSH %s\n", Directions[message]); break;
-        case MESSAGE_PULL:   io_write("PULL %s\n", Directions[message]); break;
-        case MESSAGE_REMOVE: io_write("REMOVE\n"); break;
+        case MESSAGE_POWER:  repl_print("POWER %u\n", message); break;
+        case MESSAGE_PUSH:   repl_print("PUSH %s\n", Directions[message]); break;
+        case MESSAGE_PULL:   repl_print("PULL %s\n", Directions[message]); break;
+        case MESSAGE_REMOVE: repl_print("REMOVE\n"); break;
     }
 }
 

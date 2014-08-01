@@ -1,4 +1,4 @@
-/* io.h - Input, output and networking
+/* repl.h - Main read/eval/print loop
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_IO_H
-#define REDPILE_IO_H
+#ifndef REDPILE_REPL_H
+#define REDPILE_REPL_H
 
-void io_run(void);
-void io_cleanup(void);
-int io_read(char *buff, int buffsize);
-void io_write(const char* format, ...);
-void io_write_error(const char* format, ...);
+void repl_run(void);
+void repl_cleanup(void);
+int repl_read(char *buff, int buffsize);
+void repl_print(const char* format, ...);
+void repl_print_error(const char* format, ...);
 
 #endif
