@@ -29,6 +29,7 @@ Usage
 -----
 
 For playing around, you can run redpile in `--interactive` (`-i`) mode.
+You can also have it listen on a specific port `-p <port>`.
 See `--help` for a list of all options.
 
 ~~~bash
