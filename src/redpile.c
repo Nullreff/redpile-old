@@ -32,9 +32,6 @@ World* world = NULL;
 ScriptState* state = NULL;
 RedpileConfig* config = NULL;
 
-int yyparse(void);
-int yylex_destroy(void);
-
 static void print_version()
 {
     printf("Redpile %s\n", REDPILE_VERSION);
@@ -162,9 +159,6 @@ static void load_config(int argc, char* argv[])
 
 static void redpile_cleanup(void)
 {
-    if (!config->benchmark)
-        yylex_destroy();
-
     if (world != NULL)
         world_free(world);
 
@@ -192,7 +186,6 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
-    io_setup();
 
     state = script_state_allocate();
 
@@ -211,8 +204,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        int result;
-        do { result = yyparse(); } while (result != 0);
+        io_run();
     }
 
     redpile_cleanup();

@@ -51,12 +51,6 @@ describe 'Options' do
         end
       end
 
-      [4567, 2254, 65535].each do |port|
-        it "runs on the port #{port}" do
-          redpile("#{short ? '-p' : '--port'} #{port}").run_net(port).should == "\n"
-        end
-      end
-
       BAD_NUMBERS.each do |port|
         it "errors when run on the port #{port}" do
           redpile(short ? "-p #{port}" : "--port #{port}", false).

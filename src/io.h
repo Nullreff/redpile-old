@@ -19,7 +19,7 @@
 #ifndef REDPILE_IO_H
 #define REDPILE_IO_H
 
-void io_setup(void);
+void io_run(void);
 void io_cleanup(void);
 int io_read(char *buff, int buffsize);
 void io_write(const char* format, ...);

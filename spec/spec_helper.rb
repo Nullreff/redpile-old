@@ -24,20 +24,8 @@ module Helpers
 
     def run(*commands)
       commands.each {|cmd| @process.puts cmd}
-      close
-    end
-
-    def run_net(port, *commands)
-      socket = socket_with_timeout('localhost', port)
-      commands.each {|cmd| socket.puts cmd}
-      socket.close
-      close
-    end
-
-    def close
       @process.close_write
       result = @process.read
-      @process.close
       raise "Exited with status code #{$?.to_i}" if @test_exit && $?.to_i > 0
       result
     end

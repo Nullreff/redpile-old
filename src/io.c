@@ -28,6 +28,9 @@
 int listen_fd, comm_fd;
 struct sockaddr_in servaddr;
 
+int yyparse(void);
+int yylex_destroy(void);
+
 #define FORMAT_BUFF_SIZE 1000
 char* format_buff;
 
@@ -85,29 +88,42 @@ static void io_write_stderr(const char* format, va_list ap)
     vfprintf(stderr, format, ap);
 }
 
-void io_setup(void)
+void io_run(void)
 {
-    // Configuration is only required for sockets
-    if (config->port == 0)
-        return;
-
-    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htons(INADDR_ANY);
-    servaddr.sin_port = htons(config->port);
-
-    bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
-    listen(listen_fd, 10);
-    comm_fd = accept(listen_fd, (struct sockaddr*) NULL, NULL);
-
     format_buff = malloc(sizeof(char) * FORMAT_BUFF_SIZE);
+
+    // Configuration is only required for sockets
+    if (config->port > 0)
+    {
+        listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+        memset(&servaddr, 0, sizeof(servaddr));
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_addr.s_addr = htons(INADDR_ANY);
+        servaddr.sin_port = htons(config->port);
+
+        bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+        listen(listen_fd, 10);
+        printf("Listening on 0.0.0.0:%d\n", config->port);
+
+        int result;
+        while (1)
+        {
+            comm_fd = accept(listen_fd, (struct sockaddr*) NULL, NULL);
+            do { result = yyparse(); } while (result != 0);
+        };
+    }
+    else
+    {
+        int result;
+        do { result = yyparse(); } while (result != 0);
+    }
 }
 
 void io_cleanup(void)
 {
     free(format_buff);
+    yylex_destroy();
 }
 
 int io_read(char *buff, int buffsize)
