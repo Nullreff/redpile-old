@@ -17,6 +17,7 @@
  */
 
 #include "queue.h"
+#include "io.h"
 
 static bool queue_data_equals(QueueData* n1, QueueData* n2)
 {
@@ -277,7 +278,7 @@ void queue_data_print(
     QueueData* data,
     void (*print_message)(unsigned int type, unsigned int message))
 {
-    printf("(%d,%d,%d) ",
+    io_write("(%d,%d,%d) ",
         data->target.location.x,
         data->target.location.y,
         data->target.location.z);
@@ -291,7 +292,7 @@ void queue_data_print_verbose(
     void (*print_message)(unsigned int type, unsigned int message),
     unsigned long long current_tick)
 {
-    printf("%llu (%d,%d,%d) => (%d,%d,%d) ",
+    io_write("%llu (%d,%d,%d) => (%d,%d,%d) ",
         data->tick - current_tick,
         data->source.location.x,
         data->source.location.y,

@@ -18,6 +18,7 @@
 
 #include "world.h"
 #include "hashmap.h"
+#include "io.h"
 
 static void world_update_adjacent_nodes(World* world, Node* node)
 {
@@ -164,6 +165,7 @@ WorldStats world_get_stats(World* world)
     };
 }
 
+#define STAT_PRINT(stats,stat,format) io_write(#stat ": %" #format "\n", stats.stat)
 void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks, llu);
@@ -223,7 +225,7 @@ void world_print_messages(World* world)
     FOR_NODE_LIST(node, world->nodes)
     {
         MessageStore* store = node->store;
-        while (store != NULL);
+        while (store != NULL)
         {
             if (store->tick >= world->ticks)
             {

@@ -1,4 +1,4 @@
-/* redpile.h - High performance redstone
+/* io.h - Input, output and networking
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * 
@@ -16,24 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REDPILE_H
-#define REDPILE_H
+#ifndef REDPILE_IO_H
+#define REDPILE_IO_H
 
-#include "script.h"
-#include "world.h"
-
-#define REDPILE_VERSION "0.5.0"
-
-typedef struct {
-    int world_size;
-    bool interactive;
-    unsigned short port;
-    unsigned int benchmark;
-    char* file;
-} RedpileConfig;
-
-extern World* world;
-extern ScriptState* state;
-extern RedpileConfig* config;
+void io_run(void);
+void io_cleanup(void);
+int io_read(char *buff, int buffsize);
+void io_write(const char* format, ...);
+void io_write_error(const char* format, ...);
 
 #endif

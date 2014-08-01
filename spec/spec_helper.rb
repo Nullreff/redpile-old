@@ -1,3 +1,17 @@
+require 'socket'
+require 'timeout'
+
+def socket_with_timeout(ip, port)
+  Timeout::timeout(1) do
+    while true
+      begin
+        return TCPSocket.new(ip, port)
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+      end
+    end
+  end
+end
+
 module Helpers
   REDPILE_CMD = './build/src/redpile conf/redstone.lua'
   VALGRIND_CMD = 'valgrind -q --error-exitcode=1 --leak-check=full --show-reachable=yes'
@@ -12,7 +26,6 @@ module Helpers
       commands.each {|cmd| @process.puts cmd}
       @process.close_write
       result = @process.read
-      @process.close
       raise "Exited with status code #{$?.to_i}" if @test_exit && $?.to_i > 0
       result
     end
