@@ -99,6 +99,7 @@ describe 'Commands' do
   it 'prints a list of messages' do
     run(
       'SET 0 0 0 TORCH direction:UP',
+      'SETR 0 0 1 0 0 5 WIRE',
       'TICK',
       'MESSAGES'
     ).should =~ /^\d \(0,0,0\) => \(\d,\d,\d\) POWER \d+$/

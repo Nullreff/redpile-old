@@ -81,6 +81,7 @@ Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_
     type->name = name;
     type->fields = fields_allocate(field_count);
     type->behaviors = behaviors_allocate(behavior_count);
+    type->behavior_mask = 0;
 
     type->next = type_data->types;
     type_data->types = type;

@@ -52,6 +52,7 @@ typedef struct {
 typedef struct Type {
     struct Type* next;
     char* name;
+    unsigned int behavior_mask;
     Fields* fields;
     Behaviors* behaviors;
 } Type;

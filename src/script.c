@@ -79,6 +79,7 @@ static int script_define_type(ScriptState* state)
         Behavior* behavior = type_data_find_behavior(type_data, name);
         ERROR_IF(behavior == NULL, "Could not find behavior");
         type->behaviors->data[behavior_count] = behavior;
+        type->behavior_mask |= behavior->mask;
         lua_pop(state, 1);
     }
     type->behaviors->count = behavior_count;
@@ -352,14 +353,18 @@ static int script_node_send(ScriptState* state)
     MessageType message_type = raw_message_type;
     unsigned int value = raw_value;
 
-    queue_add(
-        script_data->messages,
-        message_type,
-        script_data->world->ticks + delay,
-        source,
-        target,
-        value
-    );
+    // Only send messages the target node listens for
+    if ((target->type->behavior_mask & message_type) != 0)
+    {
+        queue_add(
+            script_data->messages,
+            message_type,
+            script_data->world->ticks + delay,
+            source,
+            target,
+            value
+        );
+    }
 
     return 0;
 }
