@@ -77,7 +77,7 @@ static void benchmark_delete(World* world)
     world_remove_node(world, location_random());
 }
 
-void run_benchmarks(World* world, unsigned int count)
+void bench_run(World* world, unsigned int count)
 {
     indexes = type_data_type_indexes_allocate(world->type_data);
     srand(get_time());

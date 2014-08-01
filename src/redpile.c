@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 
     if (config->benchmark)
     {
-        run_benchmarks(world, config->benchmark);
+        bench_run(world, config->benchmark);
     }
     else
     {

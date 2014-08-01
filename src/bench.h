@@ -21,7 +21,7 @@
 
 #include "world.h"
 
-void run_benchmarks(World* world, unsigned int count);
+void bench_run(World* world, unsigned int count);
 
 #endif
 
