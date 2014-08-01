@@ -102,53 +102,53 @@ void node_print(Node* node)
 
 NodeList* node_list_allocate(void)
 {
-    NodeList* blocks = calloc(1, sizeof(NodeList));
-    CHECK_OOM(blocks);
-    return blocks;
+    NodeList* nodes = calloc(1, sizeof(NodeList));
+    CHECK_OOM(nodes);
+    return nodes;
 }
 
-void node_list_free(NodeList* blocks)
+void node_list_free(NodeList* nodes)
 {
-    Node* node = blocks->nodes;
+    Node* node = nodes->nodes;
     while (node != NULL)
     {
         Node* temp = node->next;
         node_free(node);
         node = temp;
     }
-    free(blocks);
+    free(nodes);
 }
 
-Node* node_list_append(NodeList* blocks, Location location, Type* type)
+Node* node_list_append(NodeList* nodes, Location location, Type* type)
 {
     Node* node = node_allocate(location, type);
 
-    if (blocks->nodes != NULL)
+    if (nodes->nodes != NULL)
     {
-        node->next = blocks->nodes;
-        blocks->nodes->prev = node;
+        node->next = nodes->nodes;
+        nodes->nodes->prev = node;
     }
-    blocks->nodes = node;
+    nodes->nodes = node;
 
-    blocks->size++;
+    nodes->size++;
     return node;
 }
 
-void node_list_remove(NodeList* blocks, Node* node)
+void node_list_remove(NodeList* nodes, Node* node)
 {
     if (node->prev != NULL)
         node->prev->next = node->next;
     else
-        blocks->nodes = node->next;
+        nodes->nodes = node->next;
 
     if (node->next != NULL)
         node->next->prev = node->prev;
 
-    blocks->size--;
+    nodes->size--;
     node_free(node);
 }
 
-void node_list_move_after(NodeList* blocks, Node* node, Node* target)
+void node_list_move_after(NodeList* nodes, Node* node, Node* target)
 {
     // Already in the right place
     if (node->next == target)
@@ -158,7 +158,7 @@ void node_list_move_after(NodeList* blocks, Node* node, Node* target)
     if (target->prev != NULL)
         target->prev->next = target->next;
     else
-        blocks->nodes = target->next;
+        nodes->nodes = target->next;
 
     if (target->next != NULL)
         target->next->prev = target->prev;
@@ -172,14 +172,14 @@ void node_list_move_after(NodeList* blocks, Node* node, Node* target)
     target->prev = node;
 }
 
-void node_list_print(NodeList* blocks)
+void node_list_print(NodeList* nodes)
 {
-    FOR_NODE_LIST(node, blocks)
+    FOR_NODE_LIST(node, nodes)
     {
         node_print(node);
     }
 
-    io_write("Total: %u\n", blocks->size);
+    io_write("Total: %u\n", nodes->size);
 }
 
 NodeStack* node_stack_allocate(unsigned int count)

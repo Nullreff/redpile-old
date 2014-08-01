@@ -34,7 +34,7 @@ typedef struct Node {
     Location location;
     Type* type;
 
-    // We keep references to the 6 blocks adjacent to this one for faster
+    // We keep references to the 6 nodes adjacent to this one for faster
     // access during redstone ticks.  This adds a bit of extra time to
     // insertions but more than makes up for it when running ticks
     struct Node* adjacent[6];
@@ -70,11 +70,11 @@ MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print(Node* node);
 
 NodeList* node_list_allocate(void);
-void node_list_free(NodeList* blocks);
-Node* node_list_append(NodeList* blocks, Location location, Type* type);
-void node_list_remove(NodeList* blocks, Node* node);
-void node_list_move_after(NodeList* blocks, Node* node, Node* target);
-void node_list_print(NodeList* blocks);
+void node_list_free(NodeList* nodes);
+Node* node_list_append(NodeList* nodes, Location location, Type* type);
+void node_list_remove(NodeList* nodes, Node* node);
+void node_list_move_after(NodeList* nodes, Node* node, Node* target);
+void node_list_print(NodeList* nodes);
 
 NodeStack* node_stack_allocate(unsigned int count);
 void node_stack_free(NodeStack* stack);
