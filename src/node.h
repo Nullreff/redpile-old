@@ -50,7 +50,8 @@ typedef struct Node {
 } Node;
 
 typedef struct {
-    Node* nodes;
+    Node* active;
+    Node* inactive;
     unsigned int size;
 } NodeList;
 
@@ -63,7 +64,7 @@ typedef struct {
 #define MAX_FIELDS 100
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
 #define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
-#define FOR_NODE_LIST(NODE,LIST) for (Node* NODE = LIST->nodes; NODE != NULL; NODE = NODE->next)
+#define FOR_NODES(NODE,START) for (Node* NODE = START; NODE != NULL; NODE = NODE->next)
 
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);

@@ -184,7 +184,7 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
         if (log_level == LOG_VERBOSE)
             io_write("Nodes:\n");
 
-        FOR_NODE_LIST(node, world->nodes)
+        FOR_NODES(node, world->nodes->active)
         {
             if (log_level == LOG_VERBOSE)
                 node_print(node);

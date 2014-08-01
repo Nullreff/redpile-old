@@ -109,13 +109,24 @@ NodeList* node_list_allocate(void)
 
 void node_list_free(NodeList* nodes)
 {
-    Node* node = nodes->nodes;
+    Node* node;
+
+    node = nodes->active;
     while (node != NULL)
     {
         Node* temp = node->next;
         node_free(node);
         node = temp;
     }
+
+    node = nodes->inactive;
+    while (node != NULL)
+    {
+        Node* temp = node->next;
+        node_free(node);
+        node = temp;
+    }
+
     free(nodes);
 }
 
@@ -123,12 +134,24 @@ Node* node_list_append(NodeList* nodes, Location location, Type* type)
 {
     Node* node = node_allocate(location, type);
 
-    if (nodes->nodes != NULL)
+    if (type->behaviors->count > 0)
     {
-        node->next = nodes->nodes;
-        nodes->nodes->prev = node;
+        if (nodes->active != NULL)
+        {
+            node->next = nodes->active;
+            nodes->active->prev = node;
+        }
+        nodes->active = node;
     }
-    nodes->nodes = node;
+    else
+    {
+        if (nodes->inactive != NULL)
+        {
+            node->next = nodes->inactive;
+            nodes->inactive->prev = node;
+        }
+        nodes->inactive = node;
+    }
 
     nodes->size++;
     return node;
@@ -136,10 +159,18 @@ Node* node_list_append(NodeList* nodes, Location location, Type* type)
 
 void node_list_remove(NodeList* nodes, Node* node)
 {
-    if (node->prev != NULL)
-        node->prev->next = node->next;
+    if (node->prev == NULL)
+    {
+        assert(node == nodes->active || node == nodes->inactive);
+        if (node == nodes->active)
+            nodes->active = node->next;
+        else
+            nodes->inactive = node->next;
+    }
     else
-        nodes->nodes = node->next;
+    {
+        node->prev->next = node->next;
+    }
 
     if (node->next != NULL)
         node->next->prev = node->prev;
@@ -155,10 +186,18 @@ void node_list_move_after(NodeList* nodes, Node* node, Node* target)
         return;
 
     // Remove 'target' from the list
-    if (target->prev != NULL)
-        target->prev->next = target->next;
+    if (target->prev == NULL)
+    {
+        assert(target == nodes->active || target == nodes->inactive);
+        if (target == nodes->active)
+            nodes->active = target->next;
+        else
+            nodes->inactive = target->next;
+    }
     else
-        nodes->nodes = target->next;
+    {
+        target->prev->next = target->next;
+    }
 
     if (target->next != NULL)
         target->next->prev = target->prev;
@@ -174,7 +213,12 @@ void node_list_move_after(NodeList* nodes, Node* node, Node* target)
 
 void node_list_print(NodeList* nodes)
 {
-    FOR_NODE_LIST(node, nodes)
+    FOR_NODES(node, nodes->active)
+    {
+        node_print(node);
+    }
+
+    FOR_NODES(node, nodes->inactive)
     {
         node_print(node);
     }

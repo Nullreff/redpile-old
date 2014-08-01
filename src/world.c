@@ -222,7 +222,7 @@ bool world_run_data(World* world, QueueData* data)
 
 void world_print_messages(World* world)
 {
-    FOR_NODE_LIST(node, world->nodes)
+    FOR_NODES(node, world->nodes->active)
     {
         MessageStore* store = node->store;
         while (store != NULL)
