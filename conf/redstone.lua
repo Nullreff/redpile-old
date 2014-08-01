@@ -96,7 +96,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
         return true
     end
 
-    node:adjacent(DOWN, function(found)
+    node:adjacent_each(DOWN, function(found)
         if found.type == 'CONDUCTOR' and
            has_lower_power(found, messages, new_power)
        then
@@ -110,7 +110,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
 
     local wire_power = new_power - 1
 
-    node:adjacent(NORTH, SOUTH, EAST, WEST, function(found, dir)
+    node:adjacent_each(NORTH, SOUTH, EAST, WEST, function(found, dir)
         if found.type == 'AIR' then
             found = found:adjacent(DOWN)
             if found.type ~= 'WIRE' then
@@ -148,7 +148,7 @@ define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
     node:set_power(new_power)
 
     local max_powerd = new_power == MAX_POWER
-    node:adjacent(function(found)
+    node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' and (max_powerd or found.type ~= 'WIRE') then
             if has_lower_power(found, messages, new_power) then
                 found:send(0, MESSAGE_POWER, new_power)
@@ -168,13 +168,13 @@ define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
     node:set_power(MAX_POWER)
 
     local behind = node:adjacent(BEHIND)
-    node:adjacent(NORTH, SOUTH, EAST, WEST, DOWN, function(found)
+    node:adjacent_each(NORTH, SOUTH, EAST, WEST, DOWN, function(found)
         if found.location ~= behind.location then
             found:send(1, MESSAGE_POWER, MAX_POWER)
         end
     end)
 
-    node:adjacent(UP, function(found)
+    node:adjacent_each(UP, function(found)
         if found.type == 'CONDUCTOR' then
             found:send(1, MESSAGE_POWER, MAX_POWER)
         end
@@ -274,7 +274,7 @@ define_behavior('power_switch', 0, function(node, messages)
 
     node:set_power(MAX_POWER)
     local behind = node:adjacent(BEHIND)
-    node:adjacent(function(found)
+    node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' or found.location == behind.location then
             found:send(0, MESSAGE_POWER, MAX_POWER)
         end

@@ -241,92 +241,93 @@ static int script_node_adjacent(ScriptState* state)
     assert(script_data != NULL);
 
     Node* current = script_node_from_stack(state, 1);
-
     int top = lua_gettop(state);
 
-    if (lua_isfunction(state, top))
+    if (top == 1)
     {
-        int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
-
-        if (top == 2)
+        // Loop through all directions
+        for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
         {
-            // Function only, loop through all directions
-            for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
-            {
-                Node* node = world_get_adjacent_node(script_data->world, current, dir);
-                lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-                script_create_node(state, node);
-                lua_pushnumber(state, dir);
-                lua_call(state, 2, 0);
-            }
+            Node* node = world_get_adjacent_node(script_data->world, current, dir);
+            script_create_node(state, node);
         }
-        else
-        {
-            // Loop through all the directions passed
-            for (int i = 2; i < top; i++)
-            {
-                LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
-                double raw_direction = lua_tonumber(state, i);
-                LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
-
-                Direction direction = raw_direction;
-                if (raw_direction >= DIRECTIONS_COUNT)
-                {
-                    int index;
-                    FieldType field_type;
-                    bool found = type_find_field(current->type, "direction", &index, &field_type);
-                    LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
-                    direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
-                }
-
-                Node* node = world_get_adjacent_node(script_data->world, current, direction);
-                lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-                script_create_node(state, node);
-                lua_pushnumber(state, direction);
-                lua_call(state, 2, 0);
-            }
-
-        }
-        return 0;
+        return DIRECTIONS_COUNT;
     }
     else
     {
-        if (top == 1)
+        // Loop through directions passed
+        for (int i = 2; i <= top; i++)
         {
-            // Loop through all directions
-            for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
+            LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
+            double raw_direction = lua_tonumber(state, i);
+            LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
+
+            Direction direction = raw_direction;
+            if (raw_direction >= DIRECTIONS_COUNT)
             {
-                Node* node = world_get_adjacent_node(script_data->world, current, dir);
-                script_create_node(state, node);
+                int index;
+                FieldType field_type;
+                bool found = type_find_field(current->type, "direction", &index, &field_type);
+                LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
             }
-            return DIRECTIONS_COUNT;
+
+            Node* node = world_get_adjacent_node(script_data->world, current, direction);
+            script_create_node(state, node);
         }
-        else
+
+        return top - 1;
+    }
+}
+
+static int script_node_adjacent_each(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    Node* current = script_node_from_stack(state, 1);
+    int top = lua_gettop(state);
+    int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
+
+    if (top == 2)
+    {
+        // Function only, loop through all directions
+        for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
         {
-            // Loop through directions passed
-            for (int i = 2; i <= top; i++)
-            {
-                LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
-                double raw_direction = lua_tonumber(state, i);
-                LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
-
-                Direction direction = raw_direction;
-                if (raw_direction >= DIRECTIONS_COUNT)
-                {
-                    int index;
-                    FieldType field_type;
-                    bool found = type_find_field(current->type, "direction", &index, &field_type);
-                    LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
-                    direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
-                }
-
-                Node* node = world_get_adjacent_node(script_data->world, current, direction);
-                script_create_node(state, node);
-            }
-
-            return top - 1;
+            Node* node = world_get_adjacent_node(script_data->world, current, dir);
+            lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+            script_create_node(state, node);
+            lua_pushnumber(state, dir);
+            lua_call(state, 2, 0);
         }
     }
+    else
+    {
+        // Loop through all the directions passed
+        for (int i = 2; i < top; i++)
+        {
+            LUA_ERROR_IF(!lua_isnumber(state, i), "You must pass a direction to adjacent");
+            double raw_direction = lua_tonumber(state, i);
+            LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT, "Invalid direction");
+
+            Direction direction = raw_direction;
+            if (raw_direction >= DIRECTIONS_COUNT)
+            {
+                int index;
+                FieldType field_type;
+                bool found = type_find_field(current->type, "direction", &index, &field_type);
+                LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+            }
+
+            Node* node = world_get_adjacent_node(script_data->world, current, direction);
+            lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+            script_create_node(state, node);
+            lua_pushnumber(state, direction);
+            lua_call(state, 2, 0);
+        }
+
+    }
+    return 0;
 }
 
 static int script_node_send(ScriptState* state)
@@ -470,6 +471,7 @@ static void script_create_node(ScriptState* state, Node* node)
 
     static const luaL_Reg node_funcs[] = {
         {"adjacent", script_node_adjacent},
+        {"adjacent_each", script_node_adjacent_each},
         {"send", script_node_send},
         {"set_power", script_node_set_power},
         {"move", script_node_move},
