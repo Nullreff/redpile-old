@@ -225,7 +225,7 @@ static void script_create_location(ScriptState* state, Location location)
 static Node* script_node_from_stack(ScriptState* state, unsigned int stack_index)
 {
     luaL_checktype(state, stack_index, LUA_TTABLE);
-    lua_getfield(state, stack_index, "index");
+    lua_getfield(state, stack_index, "stack_index");
     double raw_index = lua_tonumber(state, -1);
     assert(IS_UINT(raw_index));
 
@@ -434,11 +434,43 @@ static int script_node_remove(ScriptState* state)
     return 0;
 }
 
+static int script_node_index(ScriptState* state)
+{
+    const char* field = lua_tostring(state, 2);
+    lua_getmetatable(state, 1);
+    lua_pushstring(state, field);
+    lua_gettable(state, -2);
+    return !lua_isnil(state, -1) ? 1 : 0;
+}
+
 static void script_create_node(ScriptState* state, Node* node)
 {
     assert(node != NULL);
 
-    lua_createtable(state, 0, 10);
+    // Node table
+    lua_createtable(state, 0, 6);
+
+    static const luaL_Reg node_funcs[] = {
+        {"adjacent", script_node_adjacent},
+        {"adjacent_each", script_node_adjacent_each},
+        {"send", script_node_send},
+        {"set_power", script_node_set_power},
+        {"move", script_node_move},
+        {"remove", script_node_remove},
+        {NULL, NULL}
+    };
+    luaL_setfuncs(state, node_funcs, 0);
+
+    // Node metatable
+    int field_count = node->type->fields->count;
+    lua_createtable(state, 0, 4 + field_count);
+
+    int index = node_stack_push(node_stack, node);
+    LUA_ERROR_IF(index == -1, "Node stack overflow!");
+
+    lua_pushstring(state, "stack_index");
+    lua_pushnumber(state, index);
+    lua_settable(state, -3);
 
     lua_pushstring(state, "location");
     script_create_location(state, node->location);
@@ -448,7 +480,10 @@ static void script_create_node(ScriptState* state, Node* node)
     lua_pushstring(state, node->type->name);
     lua_settable(state, -3);
 
-    for (int i = 0; i < node->type->fields->count; i++)
+    lua_pushcfunction(state, script_node_index);
+    lua_setfield(state, -2, "__index");
+
+    for (int i = 0; i < field_count; i++)
     {
         Field* field = node->type->fields->data + i;
         lua_pushstring(state, field->name);
@@ -462,23 +497,7 @@ static void script_create_node(ScriptState* state, Node* node)
         lua_settable(state, -3);
     }
 
-    int index = node_stack_push(node_stack, node);
-    LUA_ERROR_IF(index == -1, "Node stack overflow!");
-
-    lua_pushstring(state, "index");
-    lua_pushnumber(state, index);
-    lua_settable(state, -3);
-
-    static const luaL_Reg node_funcs[] = {
-        {"adjacent", script_node_adjacent},
-        {"adjacent_each", script_node_adjacent_each},
-        {"send", script_node_send},
-        {"set_power", script_node_set_power},
-        {"move", script_node_move},
-        {"remove", script_node_remove},
-        {NULL, NULL}
-    };
-    luaL_setfuncs(state, node_funcs, 0);
+    lua_setmetatable(state, -2);
 }
 
 static int script_messages_first(ScriptState* state)
