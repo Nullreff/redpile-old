@@ -199,13 +199,9 @@ int main(int argc, char* argv[])
     world = world_allocate(config->world_size, type_data);
 
     if (config->benchmark)
-    {
         bench_run(world, config->benchmark);
-    }
     else
-    {
         repl_run();
-    }
 
     redpile_cleanup();
     return EXIT_SUCCESS;
