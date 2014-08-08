@@ -169,7 +169,7 @@ void queue_free(Queue* queue)
         hashmap_free(queue->sourcemap, free);
 }
 
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int message)
+void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, int64_t message)
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
@@ -276,7 +276,7 @@ end:
 
 void queue_data_print(
     QueueData* data,
-    void (*print_message)(unsigned int type, unsigned int message))
+    void (*print_message)(unsigned int type, int64_t message))
 {
     repl_print("(%d,%d,%d) ",
         data->target.location.x,
@@ -289,7 +289,7 @@ void queue_data_print(
 
 void queue_data_print_verbose(
     QueueData* data,
-    void (*print_message)(unsigned int type, unsigned int message),
+    void (*print_message)(unsigned int type, int64_t message),
     unsigned long long current_tick)
 {
     repl_print("%llu (%d,%d,%d) => (%d,%d,%d) ",

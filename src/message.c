@@ -180,7 +180,7 @@ MessageStore* message_store_discard_old(MessageStore* store, unsigned long long 
     return return_store;
 }
 
-void message_type_print(MessageType type, unsigned int message)
+void message_type_print(MessageType type, int64_t message)
 {
     switch (type)
     {

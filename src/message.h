@@ -35,7 +35,7 @@ typedef struct {
         Type* type;
     } source;
     MessageType type;
-    unsigned int value;
+    int64_t value;
 } Message;
 
 typedef struct {
@@ -67,6 +67,6 @@ Messages* message_store_find_instructions(MessageStore* store, unsigned long lon
 MessageStore* message_store_find(MessageStore* store, unsigned long long tick);
 MessageStore* message_store_discard_old(MessageStore* store, unsigned long long current_tick);
 
-void message_type_print(MessageType type, unsigned int message);
+void message_type_print(MessageType type, int64_t message);
 
 #endif

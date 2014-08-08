@@ -35,7 +35,7 @@ typedef struct {
     } target;
     unsigned long long tick;
     unsigned int type;
-    unsigned int message;
+    int64_t message;
 } QueueData;
 
 typedef struct QueueNode {
@@ -64,13 +64,13 @@ typedef struct {
 
 Queue queue_empty(bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int message);
+void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, int64_t message);
 bool queue_contains(Queue* queue, QueueNode* node);
 unsigned int queue_merge(Queue* queue, Queue* append);
 void queue_remove_source(Queue* queue, Location source);
 void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, QueueNode** found_node, unsigned int* max_size);
-void queue_data_print(QueueData* data, void (*print_message)(unsigned int type, unsigned int message));
-void queue_data_print_verbose(QueueData* data, void (*print_message)(unsigned int type, unsigned int message), unsigned long long current_tick);
+void queue_data_print(QueueData* data, void (*print_message)(unsigned int type, int64_t message));
+void queue_data_print_verbose(QueueData* data, void (*print_message)(unsigned int type, int64_t message), unsigned long long current_tick);
 
 #endif
 

@@ -61,7 +61,7 @@ typedef struct {
     Node* nodes[];
 } NodeStack;
 
-#define MAX_FIELDS 100
+#define MAX_FIELDS 256
 #define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
 #define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
 #define FOR_NODES(NODE,START) for (Node* NODE = START; NODE != NULL; NODE = NODE->next)
