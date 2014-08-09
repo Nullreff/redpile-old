@@ -370,40 +370,6 @@ static int script_node_send(ScriptState* state)
     return 0;
 }
 
-static int script_node_set(ScriptState* state)
-{
-    assert(script_data != NULL);
-
-    Node* node = script_node_from_stack(state, 1);
-
-    const char* name = lua_tostring(state, 2);
-    int found_index;
-    FieldType field_type;
-    bool found = type_find_field(node->type, name, &found_index, &field_type);
-
-    LUA_ERROR_IF(field_type != FIELD_INT && field_type != FIELD_DIRECTION, "Unsupported field type");
-    LUA_ERROR_IF(!found, "Could not find field");
-    LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a field value");
-    double found_value = lua_tonumber(state, 3);
-
-    int64_t index = found_index;
-    int64_t value = found_value;
-    index <<= 32;
-    value <<= 32;
-    value >>= 32;
-        
-    queue_add(
-        script_data->sets,
-        MESSAGE_SET,
-        script_data->world->ticks,
-        node,
-        node,
-        index | value
-    );
-
-    return 0;
-}
-
 static int script_node_move(ScriptState* state)
 {
     assert(script_data != NULL);
@@ -445,13 +411,61 @@ static int script_node_remove(ScriptState* state)
     return 0;
 }
 
-static int script_node_index(ScriptState* state)
+static int script_node_index_get(ScriptState* state)
 {
+    assert(script_data != NULL);
+
     const char* field = lua_tostring(state, 2);
     lua_getmetatable(state, 1);
     lua_pushstring(state, field);
     lua_gettable(state, -2);
     return !lua_isnil(state, -1) ? 1 : 0;
+}
+
+static int script_node_index_set(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    const char* name = lua_tostring(state, 2);
+    double found_value = lua_tonumber(state, 3);
+
+    Node* node = script_node_from_stack(state, 1);
+
+    int found_index;
+    FieldType field_type;
+    bool found = type_find_field(node->type, name, &found_index, &field_type);
+
+    LUA_ERROR_IF(field_type != FIELD_INT && field_type != FIELD_DIRECTION, "Unsupported field type");
+    LUA_ERROR_IF(!found, "Could not find field");
+    LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a field value");
+
+    // TODO: Support multiple fields in a message
+    // Right now we're just jamming two 32 bit
+    // values into a 64 bit field
+    int64_t index = found_index;
+    int64_t value = found_value;
+    assert(index < ((int64_t)1 << 33));
+    assert(value < ((int64_t)1 << 33));
+    index <<= 32;
+    value <<= 32;
+    value >>= 32;
+
+    queue_add(
+        script_data->sets,
+        MESSAGE_SET,
+        script_data->world->ticks,
+        node,
+        node,
+        index | value
+    );
+
+    // Save the new value in the metatable
+    lua_getmetatable(state, 1);
+    lua_pushstring(state, name);
+    lua_pushnumber(state, found_value);
+    lua_settable(state, -3);
+
+    return 0;
 }
 
 static void script_create_node(ScriptState* state, Node* node)
@@ -465,7 +479,6 @@ static void script_create_node(ScriptState* state, Node* node)
         {"adjacent", script_node_adjacent},
         {"adjacent_each", script_node_adjacent_each},
         {"send", script_node_send},
-        {"set", script_node_set},
         {"move", script_node_move},
         {"remove", script_node_remove},
         {NULL, NULL}
@@ -474,7 +487,7 @@ static void script_create_node(ScriptState* state, Node* node)
 
     // Node metatable
     int field_count = node->type->fields->count;
-    lua_createtable(state, 0, 4 + field_count);
+    lua_createtable(state, 0, 5 + field_count);
 
     int index = node_stack_push(node_stack, node);
     LUA_ERROR_IF(index == -1, "Node stack overflow!");
@@ -491,8 +504,11 @@ static void script_create_node(ScriptState* state, Node* node)
     lua_pushstring(state, node->type->name);
     lua_settable(state, -3);
 
-    lua_pushcfunction(state, script_node_index);
+    lua_pushcfunction(state, script_node_index_get);
     lua_setfield(state, -2, "__index");
+
+    lua_pushcfunction(state, script_node_index_set);
+    lua_setfield(state, -2, "__newindex");
 
     for (int i = 0; i < field_count; i++)
     {
