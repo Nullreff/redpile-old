@@ -87,28 +87,26 @@ end)
 
 define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
     local covered = node:adjacent(UP).type ~= 'AIR'
-
     local power_msg = messages:max()
-    local new_power = power_msg and power_msg.value or 0
-    node.power = new_power
+    node.power = power_msg and power_msg.value or 0
 
-    if new_power == 0 then
+    if node.power == 0 then
         return true
     end
 
     node:adjacent_each(DOWN, function(found)
         if found.type == 'CONDUCTOR' and
-           has_lower_power(found, messages, new_power)
+           has_lower_power(found, messages, node.power)
        then
-           found:send(0, MESSAGE_POWER, new_power)
+           found:send(0, MESSAGE_POWER, node.power)
        end
     end)
 
-    if new_power == 1 then
+    if node.power == 1 then
         return true
     end
 
-    local wire_power = new_power - 1
+    local wire_power = node.power - 1
 
     node:adjacent_each(NORTH, SOUTH, EAST, WEST, function(found, dir)
         if found.type == 'AIR' then
@@ -143,15 +141,13 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
 end)
 
 define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
-    local new_power = msg_power(messages:max())
+    node.power = msg_power(messages:max())
+    local max_powerd = node.power == MAX_POWER
 
-    node.power = new_power
-
-    local max_powerd = new_power == MAX_POWER
     node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' and (max_powerd or found.type ~= 'WIRE') then
-            if has_lower_power(found, messages, new_power) then
-                found:send(0, MESSAGE_POWER, new_power)
+            if has_lower_power(found, messages, node.power) then
+                found:send(0, MESSAGE_POWER, node.power)
             end
         end
     end)
@@ -223,9 +219,8 @@ define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
-    local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
-    node.power = new_power
-    if new_power == 0 then
+    node.power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    if node.power == 0 then
         return true
     end
 
@@ -240,9 +235,8 @@ define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
-    local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
-    node.power = new_power
-    if new_power == 0 then
+    node.power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    if node.power == 0 then
         return true
     end
 
@@ -251,12 +245,12 @@ define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
         msg_power(messages:source(node:adjacent(RIGHT).location))
     )
 
-    local change = new_power
+    local change = node.power
     if node.state > 0 then
         change = change - side_power
     end
 
-    new_power = (new_power > side_power) and change or 0
+    local new_power = (node.power > side_power) and change or 0
     if new_power == 0 then
         return true
     end
