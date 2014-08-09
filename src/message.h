@@ -26,7 +26,8 @@ typedef enum {
     MESSAGE_POWER  = 1 << 0,
     MESSAGE_PUSH   = 1 << 1,
     MESSAGE_PULL   = 1 << 2,
-    MESSAGE_REMOVE = 1 << 3
+    MESSAGE_REMOVE = 1 << 3,
+    MESSAGE_SET    = 1 << 4
 } MessageType;
 
 typedef struct {

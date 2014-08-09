@@ -274,23 +274,36 @@ end:
     return;
 }
 
-void queue_data_print(
-    QueueData* data,
-    void (*print_message)(unsigned int type, int64_t message))
+static void queue_data_print_type(QueueData* data)
+{
+    switch (data->type)
+    {
+        case MESSAGE_POWER:  repl_print("POWER %u\n", data->message); break;
+        case MESSAGE_PUSH:   repl_print("PUSH %s\n", Directions[data->message]); break;
+        case MESSAGE_PULL:   repl_print("PULL %s\n", Directions[data->message]); break;
+        case MESSAGE_REMOVE: repl_print("REMOVE\n"); break;
+        case MESSAGE_SET: {
+            unsigned int index = data->message >> 32;
+            FieldValue value = (data->message << 32) >> 32;
+            char* name = data->source.type->fields->data[index].name;
+            repl_print("SET %s %d\n", name, value);
+        }
+        break;
+    }
+}
+
+void queue_data_print(QueueData* data)
 {
     repl_print("(%d,%d,%d) ",
         data->target.location.x,
         data->target.location.y,
         data->target.location.z);
 
-    print_message(data->type, data->message);
+    queue_data_print_type(data);
 }
 
 
-void queue_data_print_verbose(
-    QueueData* data,
-    void (*print_message)(unsigned int type, int64_t message),
-    unsigned long long current_tick)
+void queue_data_print_verbose(QueueData* data, unsigned long long current_tick)
 {
     repl_print("%llu (%d,%d,%d) => (%d,%d,%d) ",
         data->tick - current_tick,
@@ -301,6 +314,6 @@ void queue_data_print_verbose(
         data->target.location.y,
         data->target.location.z);
 
-    print_message(data->type, data->message);
+    queue_data_print_type(data);
 }
 

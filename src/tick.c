@@ -163,7 +163,7 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
     FOR_QUEUE(set, sets)
     {
         if (log_level != LOG_QUIET)
-            queue_data_print(&set->data, message_type_print);
+            queue_data_print(&set->data);
         world_run_data(world, &set->data);
     }
 }
@@ -210,14 +210,14 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             FOR_QUEUE(message, &messages)
             {
                 if (message->data.tick == world->ticks)
-                    queue_data_print_verbose(&message->data, message_type_print, world->ticks);
+                    queue_data_print_verbose(&message->data, world->ticks);
             }
 
             repl_print("Queued:\n");
             FOR_QUEUE(message, &messages)
             {
                 if (message->data.tick > world->ticks)
-                    queue_data_print_verbose(&message->data, message_type_print, world->ticks);
+                    queue_data_print_verbose(&message->data, world->ticks);
             }
             repl_print("Output:\n");
         }

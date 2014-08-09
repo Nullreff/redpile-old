@@ -192,16 +192,10 @@ bool world_run_data(World* world, QueueData* data)
     Location target_loc;
     switch (data->type)
     {
-        case MESSAGE_POWER: {
-            int power_index;
-            FieldType field_type;
-            if (!type_find_field(data->target.node->type, "power", &power_index, &field_type) ||
-                field_type != FIELD_INT ||
-                FIELD_GET(data->target.node, power_index) == data->message)
-            {
-                return false;
-            }
-            FIELD_SET(data->target.node, power_index, data->message);
+        case MESSAGE_SET: {
+            unsigned int field_index = data->message >> 32;
+            FieldValue field_value = (data->message << 32) >> 32;
+            FIELD_SET(data->target.node, field_index, field_value);
             }
             break;
 
@@ -215,6 +209,9 @@ bool world_run_data(World* world, QueueData* data)
         case MESSAGE_REMOVE:
             world_remove_node(world, data->source.location);
             break;
+            
+        default:
+            ERROR("Unknown system message");
     }
 
     return true;
@@ -240,7 +237,7 @@ void world_print_messages(World* world)
                         .type = inst->type,
                         .message = inst->value
                     };
-                    queue_data_print_verbose(&data, message_type_print, world->ticks);
+                    queue_data_print_verbose(&data, world->ticks);
                 }
             }
             store = store->next;

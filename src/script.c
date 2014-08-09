@@ -370,24 +370,35 @@ static int script_node_send(ScriptState* state)
     return 0;
 }
 
-static int script_node_set_power(ScriptState* state)
+static int script_node_set(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Node* current = script_node_from_stack(state, 1);
+    Node* node = script_node_from_stack(state, 1);
 
-    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a power value");
-    double raw_power = lua_tonumber(state, 2);
-    LUA_ERROR_IF(!IS_UINT(raw_power), "Power must be an integer greater than or equal to zero");
+    const char* name = lua_tostring(state, 2);
+    int found_index;
+    FieldType field_type;
+    bool found = type_find_field(node->type, name, &found_index, &field_type);
 
-    unsigned int power = raw_power;
+    LUA_ERROR_IF(field_type != FIELD_INT && field_type != FIELD_DIRECTION, "Unsupported field type");
+    LUA_ERROR_IF(!found, "Could not find field");
+    LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a field value");
+    double found_value = lua_tonumber(state, 3);
+
+    int64_t index = found_index;
+    int64_t value = found_value;
+    index <<= 32;
+    value <<= 32;
+    value >>= 32;
+        
     queue_add(
         script_data->sets,
-        MESSAGE_POWER,
+        MESSAGE_SET,
         script_data->world->ticks,
-        current,
-        current,
-        power
+        node,
+        node,
+        index | value
     );
 
     return 0;
@@ -454,7 +465,7 @@ static void script_create_node(ScriptState* state, Node* node)
         {"adjacent", script_node_adjacent},
         {"adjacent_each", script_node_adjacent_each},
         {"send", script_node_send},
-        {"set_power", script_node_set_power},
+        {"set", script_node_set},
         {"move", script_node_move},
         {"remove", script_node_remove},
         {NULL, NULL}

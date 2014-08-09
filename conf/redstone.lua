@@ -90,7 +90,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
 
     local power_msg = messages:max()
     local new_power = power_msg and power_msg.value or 0
-    node:set_power(new_power)
+    node:set('power', new_power)
 
     if new_power == 0 then
         return true
@@ -145,7 +145,7 @@ end)
 define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
     local new_power = msg_power(messages:max())
 
-    node:set_power(new_power)
+    node:set('power', new_power)
 
     local max_powerd = new_power == MAX_POWER
     node:adjacent_each(function(found)
@@ -162,10 +162,10 @@ end)
 define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
     local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
     if new_power > 0 then
-        node:set_power(0)
+        node:set('power', 0)
         return true
     end
-    node:set_power(MAX_POWER)
+    node:set('power', MAX_POWER)
 
     local behind = node:adjacent(BEHIND)
     node:adjacent_each(NORTH, SOUTH, EAST, WEST, DOWN, function(found)
@@ -211,7 +211,7 @@ define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
         return false
     end
 
-    node:set_power(new_power)
+    node:set('power', new_power)
 
     if state == EXTENDING then
         first:send(1, MESSAGE_PUSH, node.direction)
@@ -224,7 +224,7 @@ end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
     local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
-    node:set_power(new_power)
+    node:set('power', new_power)
     if new_power == 0 then
         return true
     end
@@ -241,7 +241,7 @@ end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
     local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
-    node:set_power(new_power)
+    node:set('power', new_power)
     if new_power == 0 then
         return true
     end
@@ -268,11 +268,11 @@ end)
 
 define_behavior('power_switch', 0, function(node, messages)
     if node.state == 0 then
-        node:set_power(0)
+        node:set('power', 0)
         return true
     end
 
-    node:set_power(MAX_POWER)
+    node:set('power', MAX_POWER)
     local behind = node:adjacent(BEHIND)
     node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' or found.location == behind.location then
