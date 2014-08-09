@@ -33,6 +33,7 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 
 * ~~Block storage~~
 * ~~Command line interface~~
+* ~~Sockets interface~~
 * ~~Basic Redstone~~
 * ~~Block message passing~~
 * ~~Scripting via [Lua](http://www.lua.org/)~~
@@ -41,7 +42,6 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * Tick caching
 * Map loading/saving
 * Restone [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
-* Sockets interface
 * Bukkit patch
 * Language bindings
 * Statistics & reporting
