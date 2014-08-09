@@ -52,12 +52,10 @@ end
 -- This function takes a reference to the current node and a list of messages
 -- received from other nodes.  It can then do whatever calculations it needs
 -- to, send messages to other nodes and make modifications to the world.
--- However, be aware of three things:
+-- However, be aware of two things:
 --   1. Any modifications to the world will not occur until after the current
 --   tick has completely finished processing all nodes.  If you need to
 --   communicate a change with another node, send it a message.
---   2. All data passed in via `node` and `messages` will change between
---   calls.  Do not store copies as it is liable to change.
 --   3. This function may be called multiple times before, during, and after
 --   the tick or may be cached and never run again.  Therefore it needs be
 --   'pure' and not use any global state in the program.
