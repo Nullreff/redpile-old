@@ -3,11 +3,9 @@ Redpile [![Build Status](https://travis-ci.org/Nullreff/redpile.svg?branch=maste
 
 **THIS IS A WORK IN PROGRESS**
 
-Redpile is a high performance implementation of redstone for Minecraft.
-It can be run from the command line or as a sub-process of a larger program.
-When started, it creates a simulation of a Minecraft world focused solely on redstone.
-Commands are sent on the standard input and block updates are received on the standard output.
-It's intended to be very simple: You can set blocks, get blocks and run redstone ticks.
+Redpile is a rethink of Redstone for Minecraft with more flexibility, speed and utility.
+It can be run from the command line or as a standalone server that talks via sockets.
+For more information, check out [redpile.org](http://redpile.org/).
 
 Building & Usage
 ----------------
