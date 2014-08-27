@@ -75,7 +75,9 @@ static int repl_read_stdin(char* buff, int buffsize)
 static void repl_print_network(const char* format, va_list ap)
 {
     size_t count = vsnprintf(format_buff, FORMAT_BUFF_SIZE, format, ap);
-    write(comm_fd, format_buff, count);
+    size_t written = write(comm_fd, format_buff, count);
+    if (written < 0)
+        ERROR("Problem writing to network\n");
 }
 
 static void repl_print_stdout(const char* format, va_list ap)
