@@ -5,7 +5,7 @@ VALGRIND := valgrind --error-exitcode=1 --leak-check=full --show-reachable=yes
 RSPEC := rspec
 COMPILE := make --no-print-directory
 
-.PHONY: all clean release debug test bench memcheck docs publish_docs
+.PHONY: all clean release debug install test bench memcheck docs publish_docs
 
 all: release
 
@@ -16,10 +16,13 @@ clean:
 	rm -rf ${BUILD_DIR}
 
 release: ${BUILD_DIR}
-	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE=RELEASE .. && ${COMPILE}
+	cd ${BUILD_DIR} && cmake -DCMAKE_BUILD_TYPE=RELEASE .. && ${COMPILE}
 
 debug: ${BUILD_DIR}
-	cd ${BUILD_DIR}; cmake -DCMAKE_BUILD_TYPE=DEBUG .. && ${COMPILE}
+	cd ${BUILD_DIR} && cmake -DCMAKE_BUILD_TYPE=DEBUG .. && ${COMPILE}
+
+install:
+	cd ${BUILD_DIR} && make install --no-print-directory
 
 test: debug
 	${RSPEC}

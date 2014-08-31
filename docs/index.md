@@ -17,21 +17,21 @@ sudo apt-get install git gcc build-essential cmake bison flex
 git clone https://github.com/Nullreff/redpile.git
 cd redpile
 make
+sudo make install
 ~~~
 
-There should now be a `redpile` executable in the `build/src` directory.
 The `master` branch should always build and pass all tests.
 If it doesn't, please open an issue.
 
 Usage
 -----
 
-For playing around, you can run redpile in `--interactive` (`-i`) mode.
+For playing around, you can run redpile in `-i` (interactive) mode.
 You can also have it listen on a specific port `-p <port>`.
 See `--help` for a list of all options.
 
 ~~~bash
-$ ./build/src/redpile -i conf/redstone.lua
+$ redpile -i conf/redstone.lua
 > set 0 0 0 torch direction:up
 > get 0 0 0
 (0,0,0) TORCH 0 direction:UP
