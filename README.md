@@ -48,7 +48,6 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 License
 -------
 
-Redpile is GPL, see LICENSE for more information.  
-Linenoise is BSD, see [github.com/antirez/linenoise](https://github.com/antirez/linenoise)  
-Lua is MIT, see [lua.org/license.html](http://www.lua.org/license.html)
-
+[Redpile](http://redpile.org/) - BSD License
+[Linenoise](https://github.com/antirez/linenoise/) - BSD License
+[Lua](http://www.lua.org/) - MIT License
