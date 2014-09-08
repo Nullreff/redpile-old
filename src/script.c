@@ -686,7 +686,7 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
     return data;
 }
 
-Result script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptData* data)
+bool script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptData* data)
 {
     lua_settop(state, 0);
 
@@ -703,15 +703,9 @@ Result script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptD
     if (error)
     {
         repl_print_error("%s\n", lua_tostring(state, -1));
-        return ERROR;
+        return false;
     }
 
-    if (!lua_isboolean(state, -1))
-    {
-        repl_print_error("Call to behavior '%s' did not return a boolan\n", behavior->name);
-        return ERROR;
-    }
-
-    return lua_toboolean(state, -1) ? COMPLETE : INCOMPLETE;
+    return true;
 }
 

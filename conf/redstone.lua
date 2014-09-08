@@ -29,6 +29,10 @@
 --
 
 MAX_POWER = 15
+RETRACTED  = 0
+RETRACTING = 1
+EXTENDED   = 2
+EXTENDING  = 3
 
 function has_lower_power(node, messages, power)
     local received_power = messages:source(node.location)
@@ -59,31 +63,29 @@ end
 --   1. Any modifications to the world will not occur until after the current
 --   tick has completely finished processing all nodes.  If you need to
 --   communicate a change with another node, send it a message.
---   3. This function may be called multiple times before, during, and after
+--   2. This function may be called multiple times before, during, and after
 --   the tick or may be cached and never run again.  Therefore it needs be
 --   'pure' and not use any global state in the program.
--- Since multiple behaviors can be added to a single type, the return value
--- determines if the behavior was successful and processing should stop (true)
--- or if it didn't find what it needed and processing should continue (false).
 --
 
-define_behavior('push_move', MESSAGE_PUSH + MESSAGE_PULL, function(node, messages)
+define_behavior('push_solid', MESSAGE_PUSH + MESSAGE_PULL, function(node, messages)
     if messages.count > 0 then
         message = messages:first()
         node:move(message.value)
-        return true
     end
-
-    return false
 end)
 
-define_behavior('push_break', MESSAGE_PUSH, function(node, messages)
+define_behavior('push_breakable', MESSAGE_PUSH, function(node, messages)
     if messages.count > 0 then
         node:remove()
-        return true
     end
+end)
 
-    return false
+define_behavior('push_piston', MESSAGE_PUSH + MESSAGE_PULL, function(node, messages)
+    if messages.count > 0 and node.state == RETRACTED then
+        message = messages:first()
+        node:move(message.value)
+    end
 end)
 
 define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
@@ -92,7 +94,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
     node.power = power_msg and power_msg.value or 0
 
     if node.power == 0 then
-        return true
+        return
     end
 
     node:adjacent_each(DOWN, function(found)
@@ -104,7 +106,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
     end)
 
     if node.power == 1 then
-        return true
+        return
     end
 
     local wire_power = node.power - 1
@@ -113,7 +115,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
         if found.type == 'AIR' then
             found = found:adjacent(DOWN)
             if found.type ~= 'WIRE' then
-                return true
+                return
             end
         elseif found.type == 'CONDUCTOR' then
             if node:adjacent(direction_left(dir)).type ~= 'WIRE' and
@@ -124,12 +126,12 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
            end
 
            if covered then
-               return true
+               return
            end
 
            found = found:adjacent(UP)
            if found.type ~= 'WIRE' then
-               return true
+               return
            end
         end
 
@@ -137,8 +139,6 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
             found:send(0, MESSAGE_POWER, wire_power)
         end
     end)
-
-    return true
 end)
 
 define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
@@ -152,15 +152,13 @@ define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
             end
         end
     end)
-
-    return true
 end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
     local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
     if new_power > 0 then
         node.power = 0
-        return true
+        return
     end
     node.power = MAX_POWER
 
@@ -176,69 +174,51 @@ define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
             found:send(1, MESSAGE_POWER, MAX_POWER)
         end
     end)
-
-    return true
 end)
 
-RETRACTED  = 0
-RETRACTING = 1
-EXTENDED   = 2
-EXTENDING  = 3
 define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
     local first = node:adjacent(FORWARDS)
     local second = first:adjacent(node.direction)
     local new_power = msg_power(messages:max())
-    local state
 
     if new_power == 0 then
         if first.type == 'AIR' and second.type ~= 'AIR' and node.power > 0 then
-            state = RETRACTING
+            node.state = RETRACTING
         else
-            state = RETRACTED
+            node.state = RETRACTED
         end
     else
         if second.type == 'AIR' and first.type ~= 'AIR' and node.power == 0 then
-            state = EXTENDING
+            node.state = EXTENDING
         else
-            state = EXTENDED
+            node.state = EXTENDED
         end
-    end
-
-    if state == RETRACTED then
-        return false
     end
 
     node.power = new_power
 
-    if state == EXTENDING then
+    if node.state == EXTENDING then
         first:send(1, MESSAGE_PUSH, node.direction)
-    elseif state == RETRACTING then
+    elseif node.state == RETRACTING then
         second:send(1, MESSAGE_PULL, direction_invert(node.direction))
     end
-
-    return true
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
     node.power = msg_power(messages:source(node:adjacent(BEHIND).location))
-    if node.power == 0 then
-        return true
-    end
-
-    if messages:source(node:adjacent(RIGHT).location) ~= nil or
-       messages:source(node:adjacent(LEFT).location) ~= nil then
-       return true
+    if node.power ~= 0 and
+       messages:source(node:adjacent(RIGHT).location) == nil and
+       messages:source(node:adjacent(LEFT).location) == nil
+   then
+       node:adjacent(FORWARDS):send(node.state + 1, MESSAGE_POWER, MAX_POWER)
    end
 
-   node:adjacent(FORWARDS):send(node.state + 1, MESSAGE_POWER, MAX_POWER)
-
-   return true
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
     node.power = msg_power(messages:source(node:adjacent(BEHIND).location))
     if node.power == 0 then
-        return true
+        return
     end
 
     local side_power = math.max(
@@ -252,19 +232,15 @@ define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
     end
 
     local new_power = (node.power > side_power) and change or 0
-    if new_power == 0 then
-        return true
+    if new_power ~= 0 then
+        node:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
     end
-
-    node:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
-
-    return true
 end)
 
 define_behavior('power_switch', 0, function(node, messages)
     if node.state == 0 then
         node.power = 0
-        return true
+        return
     end
 
     node.power = MAX_POWER
@@ -274,8 +250,6 @@ define_behavior('power_switch', 0, function(node, messages)
             found:send(0, MESSAGE_POWER, MAX_POWER)
         end
     end)
-
-    return true
 end)
 
 -- Types are created using the `define_type` function which takes:
@@ -304,48 +278,48 @@ define_type(
 define_type(
     'INSULATOR',
     {},
-    {'push_move'}
+    {'push_solid'}
 )
 
 define_type(
     'WIRE',
     {power = FIELD_INT},
-    {'push_break', 'power_wire'}
+    {'push_breakable', 'power_wire'}
 )
 
 define_type(
     'CONDUCTOR',
     {power = FIELD_INT},
-    {'push_move', 'power_conductor'}
+    {'push_solid', 'power_conductor'}
 )
 
 define_type(
     'TORCH',
     {power = FIELD_INT, direction = FIELD_DIRECTION},
-    {'push_break', 'power_torch'}
+    {'push_breakable', 'power_torch'}
 )
 
 define_type(
     'PISTON',
-    {power = FIELD_INT, direction = FIELD_DIRECTION},
-    {'power_piston', 'push_move'}
+    {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
+    {'push_piston', 'power_piston'}
 )
 
 define_type(
     'REPEATER',
     {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
-    {'push_break', 'power_repeater'}
+    {'push_breakable', 'power_repeater'}
 )
 
 define_type(
     'COMPARATOR',
     {power = FIELD_INT, direction =  FIELD_DIRECTION, state = FIELD_INT},
-    {'push_break', 'power_comparator'}
+    {'push_breakable', 'power_comparator'}
 )
 
 define_type(
     'SWITCH',
     {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
-    {'push_break', 'power_switch'}
+    {'push_breakable', 'power_switch'}
 )
 

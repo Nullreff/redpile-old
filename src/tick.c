@@ -74,7 +74,10 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
     return messages;
 }
 
-static Result process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
+#define PROCESS_DONE 0
+#define PROCESS_CHANGED 1
+#define PROCESS_ERROR 2
+static int process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
 {
     Messages* input = find_input(world, node, messages);
 
@@ -83,19 +86,17 @@ static Result process_node(ScriptState* state, World* world, Node* node, Queue* 
         Behavior* behavior = node->type->behaviors->data[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
         ScriptData data = (ScriptData){world, node, found, output, sets};
-        Result result = script_state_run_behavior(state, behavior, &data);
+        bool success = script_state_run_behavior(state, behavior, &data);
         free(found);
-        if (result == COMPLETE)
-            break;
-        else if (result == ERROR)
-            return ERROR;
+        if (!success)
+            return PROCESS_ERROR;
     }
 
     if (node->last_input == NULL)
     {
         node->last_input = input;
         node->last_input_tick = world->ticks;
-        return COMPLETE;
+        return PROCESS_CHANGED;
     }
     else if (node->last_input_tick != world->ticks ||
             !messages_equal(node->last_input, input))
@@ -103,12 +104,12 @@ static Result process_node(ScriptState* state, World* world, Node* node, Queue* 
         free(node->last_input);
         node->last_input = input;
         node->last_input_tick = world->ticks;
-        return COMPLETE;
+        return PROCESS_CHANGED;
     }
     else
     {
         free(input);
-        return INCOMPLETE;
+        return PROCESS_DONE;
     }
 }
 
@@ -202,11 +203,11 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
                 node_print(node);
 
             Queue output = queue_empty(false, false, 0);
-            Result result = process_node(state, world, node, &output, &messages, &sets);
-            if (result == ERROR)
+            bool status = process_node(state, world, node, &output, &messages, &sets);
+            if (status == PROCESS_ERROR)
                 return;
 
-            process_output(world, node, result == COMPLETE, &output, &messages, &sets);
+            process_output(world, node, status == PROCESS_CHANGED, &output, &messages, &sets);
 
             loops++;
             if (loops > world->nodes->size * 3)
