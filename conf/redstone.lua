@@ -155,7 +155,7 @@ define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
 end)
 
 define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
-    local new_power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    local new_power = msg_power(messages:source(BEHIND))
     if new_power > 0 then
         node.power = 0
         return
@@ -205,10 +205,10 @@ define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
 end)
 
 define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
-    node.power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    node.power = msg_power(messages:source(BEHIND))
     if node.power ~= 0 and
-       messages:source(node:adjacent(RIGHT).location) == nil and
-       messages:source(node:adjacent(LEFT).location) == nil
+       messages:source(RIGHT) == nil and
+       messages:source(LEFT) == nil
    then
        node:adjacent(FORWARDS):send(node.state + 1, MESSAGE_POWER, MAX_POWER)
    end
@@ -216,14 +216,14 @@ define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
 end)
 
 define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
-    node.power = msg_power(messages:source(node:adjacent(BEHIND).location))
+    node.power = msg_power(messages:source(BEHIND))
     if node.power == 0 then
         return
     end
 
     local side_power = math.max(
-        msg_power(messages:source(node:adjacent(LEFT).location)),
-        msg_power(messages:source(node:adjacent(RIGHT).location))
+        msg_power(messages:source(LEFT)),
+        msg_power(messages:source(RIGHT))
     )
 
     local change = node.power

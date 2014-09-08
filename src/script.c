@@ -569,7 +569,35 @@ static int script_messages_source(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Location location = script_location_from_stack(state, 2);
+    Location location;
+    if (lua_isnumber(state, 2))
+    {
+        double raw_direction = lua_tonumber(state, 2);
+        LUA_ERROR_IF(!IS_UINT(raw_direction) ||
+                     raw_direction >= DIRECTIONS_COUNT + MOVEMENTS_COUNT ||
+                     raw_direction < 0,
+                     "Invalid direction");
+        if (raw_direction < DIRECTIONS_COUNT)
+        {
+            location = location_move(script_data->node->location,
+                                     (Direction)(int)raw_direction, 1);
+        }
+        else
+        {
+            int index;
+            FieldType field_type;
+            bool found = type_find_field(script_data->node->type, "direction", &index, &field_type);
+            LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to source");
+            Direction dir = direction_move(FIELD_GET(script_data->node, index),
+                                           (Movement)(int)raw_direction);
+            location = location_move(script_data->node->location, dir, 1);
+        }
+    }
+    else
+    {
+        location = script_location_from_stack(state, 2);
+    }
+
     Message* message = messages_find_source(script_data->input, location);
     if (message != NULL)
         script_create_message(state, message);
