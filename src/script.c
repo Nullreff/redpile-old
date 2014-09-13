@@ -464,7 +464,7 @@ static int script_node_index_set(ScriptState* state)
 
     queue_add(
         script_data->sets,
-        MESSAGE_SET,
+        MESSAGE_FIELD,
         script_data->world->ticks,
         node,
         node,

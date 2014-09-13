@@ -294,7 +294,7 @@ static void queue_data_print_type(QueueData* data)
         case MESSAGE_PUSH:   repl_print("PUSH %s\n", Directions[data->message]); break;
         case MESSAGE_PULL:   repl_print("PULL %s\n", Directions[data->message]); break;
         case MESSAGE_REMOVE: repl_print("REMOVE\n"); break;
-        case MESSAGE_SET: {
+        case MESSAGE_FIELD: {
             unsigned int index = data->message >> 32;
             FieldValue value = (data->message << 32) >> 32;
             char* name = data->source.type->fields->data[index].name;

@@ -204,7 +204,7 @@ bool world_run_data(World* world, QueueData* data)
     Location target_loc;
     switch (data->type)
     {
-        case MESSAGE_SET: {
+        case MESSAGE_FIELD: {
             unsigned int field_index = data->message >> 32;
             FieldValue field_value = (data->message << 32) >> 32;
             FIELD_SET(data->target.node, field_index, field_value);

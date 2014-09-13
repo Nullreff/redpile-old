@@ -200,7 +200,7 @@ void message_type_print(MessageType type, int64_t message)
         case MESSAGE_PUSH:   repl_print("PUSH %s\n", Directions[message]); break;
         case MESSAGE_PULL:   repl_print("PULL %s\n", Directions[message]); break;
         case MESSAGE_REMOVE: repl_print("REMOVE\n"); break;
-        case MESSAGE_SET:    repl_print("SET\n"); break;
+        case MESSAGE_FIELD:  repl_print("FIELD\n"); break;
     }
 }
 

@@ -71,9 +71,9 @@ If `count` is provided, it will run `count` ticks.
 
 The following are the possible outputs that can occur as the result of a tick:
 
-* `(x,y,z) POWER power` - Set the power of `(x,y,z)` to `power`
+* `(x,y,z) FIELD field value` - Set the field `field` on `(x,y,z)` to `value`
 * `(x,y,z) PUSH direction` - Pushes the node at `(x,y,z)` in `direction`
-* `(x,y,z) PULL direction` - Pulls the node at `(x,y,z)` in `direction`
+* `(x,y,z) REMOVE` - Replaces the node with the default type
 
 TICKV
 -----
