@@ -43,12 +43,22 @@ function msg_power(message)
     return message and message.value or 0
 end
 
+-- Message Types are created using the 'redpile.message_type' function which takes:
+--
+-- Name (String)
+-- The name that will be printed to represent this particular message
+--
+-- return
+-- A numer used to identify this particular message type.  Assign it to a
+-- variable for ease of use.
 
-MESSAGE_POWER = define_message_type('POWER')
-MESSAGE_PUSH = define_message_type('PUSH')
-MESSAGE_PULL = define_message_type('PULL')
+MESSAGE = {
+    POWER = redpile.message_type('POWER'),
+    PUSH  = redpile.message_type('PUSH'),
+    PULL  = redpile.message_type('PULL')
+}
 
--- Behaviors are created using the `define_behavior` function which takes:
+-- Behaviors are created using the `redpile.behavior` function which takes:
 --
 -- NAME (String)
 -- The name is what will be used to reference a behavior later when we attach
@@ -73,27 +83,27 @@ MESSAGE_PULL = define_message_type('PULL')
 --   'pure' and not use any global state in the program.
 --
 
-define_behavior('push_solid', MESSAGE_PUSH + MESSAGE_PULL, function(node, messages)
+redpile.behavior('push_solid', MESSAGE.PUSH + MESSAGE.PULL, function(node, messages)
     if messages.count > 0 then
         message = messages:first()
         node:move(message.value)
     end
 end)
 
-define_behavior('push_breakable', MESSAGE_PUSH, function(node, messages)
+redpile.behavior('push_breakable', MESSAGE.PUSH, function(node, messages)
     if messages.count > 0 then
         node:remove()
     end
 end)
 
-define_behavior('push_piston', MESSAGE_PUSH + MESSAGE_PULL, function(node, messages)
+redpile.behavior('push_piston', MESSAGE.PUSH + MESSAGE.PULL, function(node, messages)
     if messages.count > 0 and node.state == RETRACTED then
         message = messages:first()
         node:move(message.value)
     end
 end)
 
-define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
+redpile.behavior('power_wire', MESSAGE.POWER, function(node, messages)
     local covered = node:adjacent(UP).type ~= 'AIR'
     local power_msg = messages:max()
     node.power = power_msg and power_msg.value or 0
@@ -106,7 +116,7 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
         if found.type == 'CONDUCTOR' and
            has_lower_power(found, messages, node.power)
        then
-           found:send(0, MESSAGE_POWER, node.power)
+           found:send(0, MESSAGE.POWER, node.power)
        end
     end)
 
@@ -123,11 +133,11 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
                 return
             end
         elseif found.type == 'CONDUCTOR' then
-            if node:adjacent(direction_left(dir)).type ~= 'WIRE' and
-               node:adjacent(direction_right(dir)).type ~= 'WIRE' and
+            if node:adjacent(redpile.direction_left(dir)).type ~= 'WIRE' and
+               node:adjacent(redpile.direction_right(dir)).type ~= 'WIRE' and
                has_lower_power(found, messages, wire_power)
            then
-               found:send(0, MESSAGE_POWER, wire_power)
+               found:send(0, MESSAGE.POWER, wire_power)
            end
 
            if covered then
@@ -141,25 +151,25 @@ define_behavior('power_wire', MESSAGE_POWER, function(node, messages)
         end
 
         if has_lower_power(found, messages, wire_power) then
-            found:send(0, MESSAGE_POWER, wire_power)
+            found:send(0, MESSAGE.POWER, wire_power)
         end
     end)
 end)
 
-define_behavior('power_conductor', MESSAGE_POWER, function(node, messages)
+redpile.behavior('power_conductor', MESSAGE.POWER, function(node, messages)
     node.power = msg_power(messages:max())
     local max_powerd = node.power == MAX_POWER
 
     node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' and (max_powerd or found.type ~= 'WIRE') then
             if has_lower_power(found, messages, node.power) then
-                found:send(0, MESSAGE_POWER, node.power)
+                found:send(0, MESSAGE.POWER, node.power)
             end
         end
     end)
 end)
 
-define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
+redpile.behavior('power_torch', MESSAGE.POWER, function(node, messages)
     local new_power = msg_power(messages:source(BEHIND))
     if new_power > 0 then
         node.power = 0
@@ -170,18 +180,18 @@ define_behavior('power_torch', MESSAGE_POWER, function(node, messages)
     local behind = node:adjacent(BEHIND)
     node:adjacent_each(NORTH, SOUTH, EAST, WEST, DOWN, function(found)
         if found.location ~= behind.location then
-            found:send(1, MESSAGE_POWER, MAX_POWER)
+            found:send(1, MESSAGE.POWER, MAX_POWER)
         end
     end)
 
     node:adjacent_each(UP, function(found)
         if found.type == 'CONDUCTOR' then
-            found:send(1, MESSAGE_POWER, MAX_POWER)
+            found:send(1, MESSAGE.POWER, MAX_POWER)
         end
     end)
 end)
 
-define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
+redpile.behavior('power_piston', MESSAGE.POWER, function(node, messages)
     local first = node:adjacent(FORWARDS)
     local second = first:adjacent(node.direction)
     local new_power = msg_power(messages:max())
@@ -203,24 +213,24 @@ define_behavior('power_piston', MESSAGE_POWER, function(node, messages)
     node.power = new_power
 
     if node.state == EXTENDING then
-        first:send(1, MESSAGE_PUSH, node.direction)
+        first:send(1, MESSAGE.PUSH, node.direction)
     elseif node.state == RETRACTING then
-        second:send(1, MESSAGE_PULL, direction_invert(node.direction))
+        second:send(1, MESSAGE.PULL, redpile.direction_invert(node.direction))
     end
 end)
 
-define_behavior('power_repeater', MESSAGE_POWER, function(node, messages)
+redpile.behavior('power_repeater', MESSAGE.POWER, function(node, messages)
     node.power = msg_power(messages:source(BEHIND))
     if node.power ~= 0 and
        messages:source(RIGHT) == nil and
        messages:source(LEFT) == nil
    then
-       node:adjacent(FORWARDS):send(node.state + 1, MESSAGE_POWER, MAX_POWER)
+       node:adjacent(FORWARDS):send(node.state + 1, MESSAGE.POWER, MAX_POWER)
    end
 
 end)
 
-define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
+redpile.behavior('power_comparator', MESSAGE.POWER, function(node, messages)
     node.power = msg_power(messages:source(BEHIND))
     if node.power == 0 then
         return
@@ -238,11 +248,11 @@ define_behavior('power_comparator', MESSAGE_POWER, function(node, messages)
 
     local new_power = (node.power > side_power) and change or 0
     if new_power ~= 0 then
-        node:adjacent(FORWARDS):send(1, MESSAGE_POWER, new_power)
+        node:adjacent(FORWARDS):send(1, MESSAGE.POWER, new_power)
     end
 end)
 
-define_behavior('power_switch', 0, function(node, messages)
+redpile.behavior('power_switch', 0, function(node, messages)
     if node.state == 0 then
         node.power = 0
         return
@@ -252,12 +262,12 @@ define_behavior('power_switch', 0, function(node, messages)
     local behind = node:adjacent(BEHIND)
     node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' or found.location == behind.location then
-            found:send(0, MESSAGE_POWER, MAX_POWER)
+            found:send(0, MESSAGE.POWER, MAX_POWER)
         end
     end)
 end)
 
--- Types are created using the `define_type` function which takes:
+-- Types are created using the `redpile.type` function which takes:
 --
 -- NAME <String>
 -- The name used to reference this type.  Should be upper case.
@@ -274,55 +284,55 @@ end)
 -- order listed.
 --
 
-define_type(
+redpile.type(
     'AIR',
     {},
     {}
 )
 
-define_type(
+redpile.type(
     'INSULATOR',
     {},
     {'push_solid'}
 )
 
-define_type(
+redpile.type(
     'WIRE',
     {power = FIELD_INT},
     {'push_breakable', 'power_wire'}
 )
 
-define_type(
+redpile.type(
     'CONDUCTOR',
     {power = FIELD_INT},
     {'push_solid', 'power_conductor'}
 )
 
-define_type(
+redpile.type(
     'TORCH',
     {power = FIELD_INT, direction = FIELD_DIRECTION},
     {'push_breakable', 'power_torch'}
 )
 
-define_type(
+redpile.type(
     'PISTON',
     {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
     {'push_piston', 'power_piston'}
 )
 
-define_type(
+redpile.type(
     'REPEATER',
     {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
     {'push_breakable', 'power_repeater'}
 )
 
-define_type(
+redpile.type(
     'COMPARATOR',
     {power = FIELD_INT, direction =  FIELD_DIRECTION, state = FIELD_INT},
     {'push_breakable', 'power_comparator'}
 )
 
-define_type(
+redpile.type(
     'SWITCH',
     {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
     {'push_breakable', 'power_switch'}

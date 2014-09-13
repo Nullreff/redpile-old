@@ -674,18 +674,18 @@ ScriptState* script_state_allocate(void)
     lua_pushnumber(state, FIELD_DIRECTION);
     lua_setglobal(state, "FIELD_DIRECTION");
 
-    lua_pushcfunction(state, script_define_behavior);
-    lua_setglobal(state, "define_behavior");
-    lua_pushcfunction(state, script_define_type);
-    lua_setglobal(state, "define_type");
-    lua_pushcfunction(state, script_define_message_type);
-    lua_setglobal(state, "define_message_type");
-    lua_pushcfunction(state, script_direction_left);
-    lua_setglobal(state, "direction_left");
-    lua_pushcfunction(state, script_direction_right);
-    lua_setglobal(state, "direction_right");
-    lua_pushcfunction(state, script_direction_invert);
-    lua_setglobal(state, "direction_invert");
+    lua_createtable(state, 0, 6);
+    static const luaL_Reg redpile_funcs[] = {
+        {"message_type", script_define_message_type},
+        {"behavior", script_define_behavior},
+        {"type", script_define_type},
+        {"direction_left", script_direction_left},
+        {"direction_right", script_direction_right},
+        {"direction_invert", script_direction_invert},
+        {NULL, NULL}
+    };
+    luaL_setfuncs(state, redpile_funcs, 0);
+    lua_setglobal(state, "redpile");
 
     lua_settop(state, 0);
 
