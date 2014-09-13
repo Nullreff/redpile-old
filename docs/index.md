@@ -39,17 +39,12 @@ $ redpile -i conf/redstone.lua
 > set 0 0 2 wire
 > tick
 (0,0,0) SET power 15
-(0,0,1) SET power 0
-(0,0,2) SET power 0
-(0,0,3) SET power 0
 > tick
-(0,0,0) SET power 15
-(0,0,3) SET power 13
 (0,0,2) SET power 14
 (0,0,1) SET power 15
 > status
 ticks: 2
-nodes: 29
+nodes: 22
 hashmap_allocated: 1024
 hashmap_overflow: 0
 hashmap_resizes: 0
@@ -60,5 +55,5 @@ message_max_queued: 1
 >
 ~~~
 
-For more commands, check out the [commands](commands.md) and [types](types.md) pages.
+For more information, check out the [commands](commands.md) and [types](types.md) pages.
 
