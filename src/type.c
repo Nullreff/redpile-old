@@ -54,8 +54,10 @@ TypeData* type_data_allocate(void)
     TypeData* type_data = malloc(sizeof(TypeData));
     type_data->type_count = 0;
     type_data->behavior_count = 0;
+    type_data->message_type_count = 0;
     type_data->types = NULL;
     type_data->behaviors = NULL;
+    type_data->message_types = NULL;
     type_data->default_type = NULL;
     return type_data;
 }
@@ -82,6 +84,15 @@ void type_data_free(TypeData* type_data)
         free(behavior->name);
         free(behavior);
         behavior = temp;
+    }
+
+    MessageType* message_type = type_data->message_types;
+    while (message_type != NULL)
+    {
+        MessageType* temp = message_type->next;
+        free(message_type->name);
+        free(message_type);
+        message_type = temp;
     }
 
     free(type_data);
@@ -113,6 +124,18 @@ Behavior* type_data_append_behavior(TypeData* type_data, char* name, unsigned in
     type_data->behaviors = behavior;
     type_data->behavior_count++;
     return behavior;
+}
+
+MessageType* type_data_append_message_type(TypeData* type_data, char* name)
+{
+    MessageType* message_type = malloc(sizeof(MessageType));
+    message_type->name = name;
+    message_type->id = 1 << type_data->message_type_count;
+
+    message_type->next = type_data->message_types;
+    type_data->message_types = message_type;
+    type_data->message_type_count++;
+    return message_type;
 }
 
 Type** type_data_type_indexes_allocate(TypeData* type_data)

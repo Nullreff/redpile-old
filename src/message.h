@@ -35,19 +35,17 @@
 #include "type.h"
 
 typedef enum {
-    MESSAGE_POWER  = 1 << 0,
-    MESSAGE_PUSH   = 1 << 1,
-    MESSAGE_PULL   = 1 << 2,
-    MESSAGE_REMOVE = 1 << 3,
-    MESSAGE_FIELD  = 1 << 4
-} MessageType;
+    SM_MOVE   = 1 << 0,
+    SM_FIELD  = 1 << 1,
+    SM_REMOVE = 1 << 2,
+} SystemMessage;
 
 typedef struct {
     struct {
         Location location;
         Type* type;
     } source;
-    MessageType type;
+    unsigned int type;
     int64_t value;
 } Message;
 
@@ -79,7 +77,5 @@ void message_store_free(MessageStore* store);
 Messages* message_store_find_instructions(MessageStore* store, unsigned long long tick);
 MessageStore* message_store_find(MessageStore* store, unsigned long long tick);
 MessageStore* message_store_discard_old(MessageStore* store, unsigned long long current_tick);
-
-void message_type_print(MessageType type, int64_t message);
 
 #endif

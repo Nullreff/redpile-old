@@ -30,13 +30,14 @@
 
 #include "queue.h"
 #include "repl.h"
+#include <inttypes.h>
 
 static bool queue_data_equals(QueueData* n1, QueueData* n2)
 {
     return n1->type == n2->type &&
            LOCATION_EQUALS(n1->source.location, n2->source.location) &&
            n1->target.node == n2->target.node &&
-           n1->message == n2->message &&
+           n1->value == n2->value &&
            n1->tick == n2->tick;
 }
 
@@ -181,7 +182,7 @@ void queue_free(Queue* queue)
         hashmap_free(queue->sourcemap, free);
 }
 
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, int64_t message)
+void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, int64_t value)
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
@@ -191,7 +192,7 @@ void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* s
         .target.node = target,
         .tick = tick,
         .type = type,
-        .message = message
+        .value = value
     };
     queue_push(queue, node);
 }
@@ -290,15 +291,13 @@ static void queue_data_print_type(QueueData* data)
 {
     switch (data->type)
     {
-        case MESSAGE_POWER:  repl_print("POWER %u\n", data->message); break;
-        case MESSAGE_PUSH:   repl_print("PUSH %s\n", Directions[data->message]); break;
-        case MESSAGE_PULL:   repl_print("PULL %s\n", Directions[data->message]); break;
-        case MESSAGE_REMOVE: repl_print("REMOVE\n"); break;
-        case MESSAGE_FIELD: {
-            unsigned int index = data->message >> 32;
-            FieldValue value = (data->message << 32) >> 32;
+        case SM_MOVE:   repl_print("MOVE %s\n", Directions[data->value]); break;
+        case SM_REMOVE: repl_print("REMOVE\n"); break;
+        case SM_FIELD: {
+            unsigned int index = data->value >> 32;
+            FieldValue value = (data->value << 32) >> 32;
             char* name = data->source.type->fields->data[index].name;
-            repl_print("SET %s %d\n", name, value);
+            repl_print("FIELD %s %d\n", name, value);
         }
         break;
     }
@@ -315,7 +314,7 @@ void queue_data_print(QueueData* data)
 }
 
 
-void queue_data_print_verbose(QueueData* data, unsigned long long current_tick)
+void queue_data_print_message(QueueData* data, TypeData* type_data, unsigned long long current_tick)
 {
     repl_print("%llu (%d,%d,%d) => (%d,%d,%d) ",
         data->tick - current_tick,
@@ -326,6 +325,13 @@ void queue_data_print_verbose(QueueData* data, unsigned long long current_tick)
         data->target.location.y,
         data->target.location.z);
 
-    queue_data_print_type(data);
+    for (MessageType* mt = type_data->message_types; mt != NULL; mt = mt->next)
+    {
+        if (mt->id == data->type)
+        {
+            printf("%s %lld\n", mt->name, data->value);
+            break;
+        }
+    }
 }
 

@@ -33,7 +33,7 @@
 
 static Message message_create(QueueData* data)
 {
-    return (Message){{data->source.location, data->source.type}, data->type, data->message};
+    return (Message){{data->source.location, data->source.type}, data->type, data->value};
 }
 
 static Messages* find_input(World* world, Node* node, Queue* queue)
@@ -222,14 +222,14 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             FOR_QUEUE(message, &messages)
             {
                 if (message->data.tick == world->ticks)
-                    queue_data_print_verbose(&message->data, world->ticks);
+                    queue_data_print_message(&message->data, world->type_data, world->ticks);
             }
 
             repl_print("Queued:\n");
             FOR_QUEUE(message, &messages)
             {
                 if (message->data.tick > world->ticks)
-                    queue_data_print_verbose(&message->data, world->ticks);
+                    queue_data_print_message(&message->data, world->type_data, world->ticks);
             }
             repl_print("Output:\n");
         }

@@ -43,6 +43,11 @@ function msg_power(message)
     return message and message.value or 0
 end
 
+
+MESSAGE_POWER = define_message_type('POWER')
+MESSAGE_PUSH = define_message_type('PUSH')
+MESSAGE_PULL = define_message_type('PULL')
+
 -- Behaviors are created using the `define_behavior` function which takes:
 --
 -- NAME (String)

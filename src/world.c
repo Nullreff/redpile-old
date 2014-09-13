@@ -204,23 +204,22 @@ bool world_run_data(World* world, QueueData* data)
     Location target_loc;
     switch (data->type)
     {
-        case MESSAGE_FIELD: {
-            unsigned int field_index = data->message >> 32;
-            FieldValue field_value = (data->message << 32) >> 32;
+        case SM_FIELD: {
+            unsigned int field_index = data->value >> 32;
+            FieldValue field_value = (data->value << 32) >> 32;
             if (field_value == FIELD_GET(data->target.node, field_index))
                 return false;
             FIELD_SET(data->target.node, field_index, field_value);
             }
             break;
 
-        case MESSAGE_PUSH:
-        case MESSAGE_PULL:
+        case SM_MOVE:
             target_loc = data->source.location;
-            world_node_move(world, data->target.node, data->message);
+            world_node_move(world, data->target.node, data->value);
             world_fill_missing(world, target_loc);
             break;
 
-        case MESSAGE_REMOVE:
+        case SM_REMOVE:
             world_remove_node(world, data->source.location);
             break;
             
@@ -249,9 +248,9 @@ void world_print_messages(World* world)
                         .target.location = node->location,
                         .tick = store->tick,
                         .type = inst->type,
-                        .message = inst->value
+                        .value = inst->value
                     };
-                    queue_data_print_verbose(&data, world->ticks);
+                    queue_data_print_message(&data, world->type_data, world->ticks);
                 }
             }
             store = store->next;

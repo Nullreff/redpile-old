@@ -69,11 +69,19 @@ typedef struct Type {
     Behaviors* behaviors;
 } Type;
 
+typedef struct MessageType {
+    struct MessageType* next;
+    char* name;
+    unsigned int id;
+} MessageType;
+
 typedef struct {
     unsigned int type_count;
     unsigned int behavior_count;
+    unsigned int message_type_count;
     Type* types;
     Behavior* behaviors;
+    MessageType* message_types;
     Type* default_type;
 } TypeData;
 
@@ -85,6 +93,7 @@ TypeData* type_data_allocate(void);
 void type_data_free(TypeData* type_data);
 Type* type_data_append_type(TypeData* type_data, char* name, unsigned int field_count, unsigned int behavior_count);
 Behavior* type_data_append_behavior(TypeData* type_data, char* name, unsigned int mask, int function_ref);
+MessageType* type_data_append_message_type(TypeData* type_data, char* name);
 Type** type_data_type_indexes_allocate(TypeData* type_data);
 Type* type_data_find_type(TypeData* type_data, const char* name);
 void type_data_set_default_type(TypeData* type_data, Type* type);

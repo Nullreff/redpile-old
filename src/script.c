@@ -68,6 +68,7 @@ static int script_define_behavior(ScriptState* state)
 static int script_define_type(ScriptState* state)
 {
     assert(type_data != NULL);
+
     int top = lua_gettop(state);
     LUA_ERROR_IF(top != 3, "define_type requires 3 arguments");
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a type name");
@@ -118,6 +119,18 @@ static int script_define_type(ScriptState* state)
     }
 
     return 0;
+}
+
+static int script_define_message_type(ScriptState* state)
+{
+    assert(type_data != NULL);
+
+    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a message type name");
+    char* name = strdup(lua_tostring(state, 1));
+    MessageType* message_type = type_data_append_message_type(type_data, name);
+    lua_pushnumber(state, message_type->id);
+
+    return 1;
 }
 
 static int script_direction_right(ScriptState* state)
@@ -363,7 +376,7 @@ static int script_node_send(ScriptState* state)
     LUA_ERROR_IF(!IS_UINT(raw_value), "Value must be greater than or equal to zero");
 
     unsigned int delay = raw_delay;
-    MessageType message_type = raw_message_type;
+    unsigned int message_type = raw_message_type;
     unsigned int value = raw_value;
 
     // Only send messages the target node listens for
@@ -395,7 +408,7 @@ static int script_node_move(ScriptState* state)
     Direction direction = raw_direction;
     queue_add(
         script_data->sets,
-        MESSAGE_PUSH,
+        SM_MOVE,
         script_data->world->ticks,
         current,
         current,
@@ -413,7 +426,7 @@ static int script_node_remove(ScriptState* state)
 
     queue_add(
         script_data->sets,
-        MESSAGE_REMOVE,
+        SM_REMOVE,
         script_data->world->ticks,
         current,
         current,
@@ -464,7 +477,7 @@ static int script_node_index_set(ScriptState* state)
 
     queue_add(
         script_data->sets,
-        MESSAGE_FIELD,
+        SM_FIELD,
         script_data->world->ticks,
         node,
         node,
@@ -656,15 +669,6 @@ ScriptState* script_state_allocate(void)
     lua_pushnumber(state, RIGHT);
     lua_setglobal(state, "RIGHT");
 
-    lua_pushnumber(state, MESSAGE_POWER);
-    lua_setglobal(state, "MESSAGE_POWER");
-    lua_pushnumber(state, MESSAGE_PUSH);
-    lua_setglobal(state, "MESSAGE_PUSH");
-    lua_pushnumber(state, MESSAGE_PULL);
-    lua_setglobal(state, "MESSAGE_PULL");
-    lua_pushnumber(state, MESSAGE_REMOVE);
-    lua_setglobal(state, "MESSAGE_REMOVE");
-
     lua_pushnumber(state, FIELD_INT);
     lua_setglobal(state, "FIELD_INT");
     lua_pushnumber(state, FIELD_DIRECTION);
@@ -674,6 +678,8 @@ ScriptState* script_state_allocate(void)
     lua_setglobal(state, "define_behavior");
     lua_pushcfunction(state, script_define_type);
     lua_setglobal(state, "define_type");
+    lua_pushcfunction(state, script_define_message_type);
+    lua_setglobal(state, "define_message_type");
     lua_pushcfunction(state, script_direction_left);
     lua_setglobal(state, "direction_left");
     lua_pushcfunction(state, script_direction_right);

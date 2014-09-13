@@ -192,15 +192,3 @@ MessageStore* message_store_discard_old(MessageStore* store, unsigned long long 
     return return_store;
 }
 
-void message_type_print(MessageType type, int64_t message)
-{
-    switch (type)
-    {
-        case MESSAGE_POWER:  repl_print("POWER %u\n", message); break;
-        case MESSAGE_PUSH:   repl_print("PUSH %s\n", Directions[message]); break;
-        case MESSAGE_PULL:   repl_print("PULL %s\n", Directions[message]); break;
-        case MESSAGE_REMOVE: repl_print("REMOVE\n"); break;
-        case MESSAGE_FIELD:  repl_print("FIELD\n"); break;
-    }
-}
-
