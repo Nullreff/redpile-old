@@ -363,13 +363,13 @@ static int script_node_send(ScriptState* state)
     Node* target = script_node_from_stack(state, 1);
     assert(source != target);
 
-    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a delay to send");
-    double raw_delay = lua_tonumber(state, 2);
-    LUA_ERROR_IF(!IS_UINT(raw_delay), "Delay must be greater than or equal to zero");
-
-    LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a message type to send");
-    double raw_message_type = lua_tonumber(state, 3);
+    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a message type to send");
+    double raw_message_type = lua_tonumber(state, 2);
     LUA_ERROR_IF(!IS_UINT(raw_message_type), "Message type must be greater than or equal to zero");
+
+    LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a delay to send");
+    double raw_delay = lua_tonumber(state, 3);
+    LUA_ERROR_IF(!IS_UINT(raw_delay), "Delay must be greater than or equal to zero");
 
     LUA_ERROR_IF(!lua_isnumber(state, 4), "You must pass a value to send");
     double raw_value = lua_tonumber(state, 4);
