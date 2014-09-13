@@ -37,13 +37,15 @@ describe 'Torch' do
   end
 
   it 'turns a torch off with power' do
-    run(
+    result = run(
       'SET 0 0 1 WIRE',
       'SET 0 0 0 TORCH direction:SOUTH',
       'SET 0 0 -1 WIRE',
       'SET 0 0 -2 SWITCH direction:UP state:1',
-      'TICK 2'
-    ).should =~ /\(0,0,1\) SET power 0\n/
+      'TICK 2',
+      'GET 0 0 1'
+    )
+    contains_node?(result, 0, 0, 1, 'WIRE', power: 0)
   end
 
   it 'passes power up through a conductor' do

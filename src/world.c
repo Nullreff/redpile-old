@@ -207,6 +207,8 @@ bool world_run_data(World* world, QueueData* data)
         case MESSAGE_FIELD: {
             unsigned int field_index = data->message >> 32;
             FieldValue field_value = (data->message << 32) >> 32;
+            if (field_value == FIELD_GET(data->target.node, field_index))
+                return false;
             FIELD_SET(data->target.node, field_index, field_value);
             }
             break;
