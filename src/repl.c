@@ -36,6 +36,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <stdarg.h>
+#include <errno.h>
 
 int listen_fd, comm_fd;
 struct sockaddr_in servaddr;
@@ -48,7 +49,16 @@ char* format_buff;
 
 static int repl_read_network(char* buff, int buffsize)
 {
-    return read(comm_fd, buff, buffsize);
+    ssize_t size = read(comm_fd, buff, buffsize);
+    if (size == -1)
+    {
+        WARN("Trouble reading from socket: %s\n", strerror(errno));
+        return 0;
+    }
+    else
+    {
+        return size;
+    }
 }
 
 static int repl_read_linenoise(char* buff, int buffsize)
@@ -62,7 +72,7 @@ static int repl_read_linenoise(char* buff, int buffsize)
     int size = strlen(line);
     if (size + 2 > buffsize)
     {
-        fprintf(stderr, "Line too long, truncating to %i\n", buffsize);
+        WARN("Line too long, truncating to %i\n", buffsize);
         size = buffsize - 2;
     }
 
@@ -81,15 +91,23 @@ static int repl_read_linenoise(char* buff, int buffsize)
 
 static int repl_read_stdin(char* buff, int buffsize)
 {
-    return read(STDIN_FILENO, buff, buffsize);
+    ssize_t size = read(STDIN_FILENO, buff, buffsize);
+    if (size == -1)
+    {
+        WARN("Trouble reading from stdin: %s\n", strerror(errno));
+        return 0;
+    }
+    else
+    {
+        return size;
+    }
 }
 
 static void repl_print_network(const char* format, va_list ap)
 {
     size_t count = vsnprintf(format_buff, FORMAT_BUFF_SIZE, format, ap);
-    size_t written = write(comm_fd, format_buff, count);
-    if (written < 0)
-        ERROR("Problem writing to network\n");
+    ssize_t written = write(comm_fd, format_buff, count);
+    WARN_IF(written == -1, "Trouble writing to socket: %s\n", strerror(errno));
 }
 
 static void repl_print_stdout(const char* format, va_list ap)
@@ -109,21 +127,29 @@ void repl_run(void)
     if (config->port > 0)
     {
         listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+        ERROR_IF(listen_fd == -1, "Error creating socket: %s\n", strerror(errno));
 
         memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_addr.s_addr = htons(INADDR_ANY);
         servaddr.sin_port = htons(config->port);
 
-        bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
-        listen(listen_fd, 10);
+        int result;
+        result = bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+        ERROR_IF(result == -1, "Error binding to socket: %s\n", strerror(errno));
+
+        result = listen(listen_fd, 10);
+        ERROR_IF(result == -1, "Error opening socket: %s\n", strerror(errno));
+
         printf("Listening on 0.0.0.0:%d\n", config->port);
 
-        int result;
         while (1)
         {
             comm_fd = accept(listen_fd, (struct sockaddr*) NULL, NULL);
+            WARN_IF(comm_fd == -1, "Trouble accepting connection: %s\n", strerror(errno));
+
             do { result = yyparse(); } while (result != 0);
+            close(comm_fd);
         };
     }
     else
@@ -136,6 +162,8 @@ void repl_run(void)
 void repl_cleanup(void)
 {
     free(format_buff);
+    close(listen_fd);
+    close(comm_fd);
     yylex_destroy();
 }
 

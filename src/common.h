@@ -37,6 +37,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#define WARN(...) fprintf(stderr, __VA_ARGS__)
+#define WARN_IF(CONDITION, ...) if (CONDITION) { WARN(__VA_ARGS__); }
 #define ERROR(...) do { fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE); } while(0)
 #define ERROR_IF(CONDITION, ...) if (CONDITION) { ERROR(__VA_ARGS__); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
