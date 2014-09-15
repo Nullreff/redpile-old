@@ -169,7 +169,17 @@ static void load_config(int argc, char* argv[])
     }
 }
 
-static void redpile_cleanup(void)
+static void signal_callback(int signal)
+{
+    if (signal == SIGINT)
+    {
+        redpile_cleanup();
+        exit(EXIT_SUCCESS);
+    }
+}
+
+// Referenced from common.h
+void redpile_cleanup(void)
 {
     if (world != NULL)
         world_free(world);
@@ -183,15 +193,6 @@ static void redpile_cleanup(void)
     repl_cleanup();
 
     printf("\n");
-}
-
-static void signal_callback(int signal)
-{
-    if (signal == SIGINT)
-    {
-        redpile_cleanup();
-        exit(EXIT_SUCCESS);
-    }
 }
 
 int main(int argc, char* argv[])

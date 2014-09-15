@@ -35,6 +35,7 @@
 
 #define PARSE_ERROR(...) repl_print_error(__VA_ARGS__); YYABORT;
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); YYABORT; }
+#define PARSE_ERROR_FREE(VAR, ...) repl_print_error(__VA_ARGS__); free(VAR); YYABORT;
 
 int yylex(void);
 void yyerror(const char* const message);
@@ -105,22 +106,22 @@ set_args: /* empty */           { $$ = command_args_allocate(MAX_FIELDS); }
 
 tick_args: /* empty */ { $$ = 1; }
          | INT         { PARSE_ERROR_IF($1 < 0, "Tick count must be greater than zero\n"); $$ = $1; }
-         | STRING      { PARSE_ERROR("Tick count must be numeric\n"); }
+         | STRING      { PARSE_ERROR_FREE($1, "Tick count must be numeric\n"); }
 ;
 
-command: PING                                           { command_ping();                            }
-       | STATUS                                         { command_status();                          }
-       | SET location type set_args                     { command_set($2, $3, $4);                   }
-       | SETR location location type set_args           { command_setr($2, $3, $4, $5);              }
-       | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6);         }
-       | DELETE location                                { command_delete($2);                        }
-       | GET location                                   { command_get($2);                           }
-       | TICK tick_args                                 { command_tick($2, LOG_NORMAL);              }
-       | TICKV tick_args                                { command_tick($2, LOG_VERBOSE);             }
-       | TICKQ tick_args                                { command_tick($2, LOG_QUIET);               }
-       | MESSAGES                                       { command_messages();                        }
-       | COMMENT anything
-       | STRING anything                                { PARSE_ERROR("Unknown command '%s'\n", $1); }
+command: PING                                           { command_ping(); }
+       | STATUS                                         { command_status(); }
+       | SET location type set_args                     { command_set($2, $3, $4); }
+       | SETR location location type set_args           { command_setr($2, $3, $4, $5); }
+       | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6); }
+       | DELETE location                                { command_delete($2); }
+       | GET location                                   { command_get($2); }
+       | TICK tick_args                                 { command_tick($2, LOG_NORMAL); }
+       | TICKV tick_args                                { command_tick($2, LOG_VERBOSE); }
+       | TICKQ tick_args                                { command_tick($2, LOG_QUIET); }
+       | MESSAGES                                       { command_messages(); }
+       | COMMENT anything                               { /* NOOP */ }
+       | STRING anything                                { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
 ;
 %%
 
@@ -128,5 +129,4 @@ void yyerror(const char* const message)
 {
     command_error(message);
 }
-
 

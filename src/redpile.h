@@ -36,8 +36,7 @@
 
 #define REDPILE_VERSION "0.5.0"
 
-typedef struct {
-    int world_size;
+typedef struct { int world_size;
     bool interactive;
     unsigned short port;
     unsigned int benchmark;
