@@ -7,8 +7,9 @@ It can be run from the command line or as a standalone server that talks via soc
 Installation
 ------------
 
-*Note: Redpile is currently only supported on [Debian](https://www.debian.org/) as that's what my development machine runs.
-Official support for other operating systems will come once it hits 1.0.0*
+Redpile should compile and run just fine on any Linux based system.
+My development machine runs [Debian](https://www.debian.org/) so that will be the primary target.
+Official support for other operating systems will come once it hits 1.0.0.
 
 To install Redpile, open a shell and run the following commands:
 
@@ -18,6 +19,15 @@ git clone https://github.com/Nullreff/redpile.git
 cd redpile
 make
 sudo make install
+~~~
+
+You can also run tests to verify that everything is working:
+
+~~~bash
+sudo apt-get install ruby valgrind
+sudo gem install rspec
+make test    # Run all tests (fast)
+make memtest # Run tests under valgrind (slow)
 ~~~
 
 The `master` branch should always build and pass all tests.
