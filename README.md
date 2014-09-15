@@ -40,7 +40,7 @@ If you're interested in helping, pull requests are always welcome.  The biggest 
 * Tick caching
 * Map loading/saving
 * Restone [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
-* Bukkit patch
+* Bukkit patch (or not)
 * Language bindings
 * Statistics & reporting
 * Convert parts to [Rust](http://www.rust-lang.org/) (once rust is stable)
