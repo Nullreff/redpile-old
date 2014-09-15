@@ -329,7 +329,7 @@ void queue_data_print_message(QueueData* data, TypeData* type_data, unsigned lon
     {
         if (mt->id == data->type)
         {
-            printf("%s %lld\n", mt->name, data->value);
+            printf("%s %" PRId64 "\n", mt->name, data->value);
             break;
         }
     }
