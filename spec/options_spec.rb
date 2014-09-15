@@ -7,6 +7,7 @@ BAD_NEGATIVES = [0, -1, -20]
 BAD_NUMBERS = ['abc', 'a12', '12c']
 BAD_POWERS = [3, 13, 28]
 BAD_PORTS = [65536, 100000000]
+EXIT_FAILURE = 256
 
 describe 'Options' do
   [true, false].each do |short|
@@ -32,42 +33,42 @@ describe 'Options' do
 
       BAD_NUMBERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
-          redpile(short ? "-w #{size}" : "--world-size #{size}", false).
+          redpile(opts: short ? "-w #{size}" : "--world-size #{size}", result: EXIT_FAILURE).
           run.should =~ /You must pass an integer as the world size\n/
         end
       end
 
       BAD_NEGATIVES.each do |size|
         it "errors when run with a world size of '#{size}'" do
-          redpile(short ? "-w #{size}" : "--world-size #{size}", false).
+          redpile(opts: short ? "-w #{size}" : "--world-size #{size}", result: EXIT_FAILURE).
           run.should =~ /You must provide a world size larger than zero\n/
         end
       end
 
       BAD_POWERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
-          redpile(short ? "-w #{size}" : "--world-size #{size}", false).
+          redpile(opts: short ? "-w #{size}" : "--world-size #{size}", result: EXIT_FAILURE).
           run.should =~ /You must provide a world size that is a power of two\n/
         end
       end
 
       BAD_NUMBERS.each do |port|
         it "errors when run on the port #{port}" do
-          redpile(short ? "-p #{port}" : "--port #{port}", false).
+          redpile(opts: short ? "-p #{port}" : "--port #{port}", result: EXIT_FAILURE).
           run.should =~ /You must pass an integer as the port number\n/
         end
       end
 
       BAD_NEGATIVES.each do |port|
         it "errors when run on the port #{port}" do
-          redpile(short ? "-p #{port}" : "--port #{port}", false).
+          redpile(opts: short ? "-p #{port}" : "--port #{port}", result: EXIT_FAILURE).
           run.should =~ /You must provide a port number greater than zero\n/
         end
       end
 
       BAD_PORTS.each do |port|
         it "errors when run on the port #{port}" do
-          redpile(short ? "-p #{port}" : "--port #{port}", false).
+          redpile(opts: short ? "-p #{port}" : "--port #{port}", result: EXIT_FAILURE).
           run.should =~ /You must provide a port number less than or equal to 65535\n/
         end
       end
@@ -84,16 +85,21 @@ describe 'Options' do
 
   BAD_NUMBERS.each do |count|
     it "errors when run with '#{count}' benchmarks" do
-      redpile("--benchmark #{count}", false).
+      redpile(opts: "--benchmark #{count}", result: EXIT_FAILURE).
       run.should =~ /You must pass an integer as the number of benchmarks to run\n/
     end
   end
 
   BAD_NEGATIVES.each do |count|
     it "errors when run with '#{count}' benchmarks" do
-      redpile("--benchmark #{count}", false).
+      redpile(opts: "--benchmark #{count}", result: EXIT_FAILURE).
       run.should =~ /You must provide a benchmark size greater than zero\n/
     end
+  end
+
+  it 'errors when given an empty configuration file' do
+    redpile(config: '/dev/null', result: EXIT_FAILURE).
+    run.should =~ %r{^No types defined in configuration file /dev/null$}
   end
 end
 

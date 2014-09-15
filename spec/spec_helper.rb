@@ -13,27 +13,48 @@ def socket_with_timeout(ip, port)
 end
 
 module Helpers
-  REDPILE_CMD = './build/src/redpile conf/redstone.lua'
-  VALGRIND_CMD = 'valgrind -q --error-exitcode=1 --leak-check=full --show-reachable=yes'
+  REDPILE_CONF = 'conf/redstone.lua'
+  REDPILE_CMD = './build/src/redpile'
+  VALGRIND_CMD = 'valgrind -q --leak-check=full --show-reachable=yes '
 
   class Redpile
-    def initialize(process, test_exit)
+    def initialize(process, valgrind, result)
       @process = process
-      @test_exit = test_exit
+      @valgrind = valgrind
+      @result = result
     end
 
     def run(*commands)
       commands.each {|cmd| @process.puts cmd}
       @process.close_write
       result = @process.read
-      raise "Exited with status code #{$?.to_i}" if @test_exit && $?.to_i > 0
+      @process.close
+      if @valgrind && result =~ /(^==\d+==[^\n]+\n)+/m
+        fail $~.to_s
+      elsif @result != $?.to_i
+        fail "Exited with status code #{$?.to_i}"
+      end
       result
     end
   end
 
-  def redpile(opts = '', test_exit = ENV['VALGRIND'])
-    process = IO.popen("#{ENV['VALGRIND'] ? VALGRIND_CMD : ''} #{REDPILE_CMD} #{opts} 2>&1", 'r+')
-    Redpile.new(process, test_exit)
+  def redpile(args = nil)
+    if args.is_a?(String)
+      @opts = args
+    elsif args.is_a?(Hash)
+      @opts = args[:opts]
+      @config = args[:config]
+      @result = args[:result]
+    end
+
+    @opts ||= ''
+    @config ||= REDPILE_CONF
+    @result ||= 0
+    @command ||= ENV['VALGRIND'] ? VALGRIND_CMD + REDPILE_CMD : REDPILE_CMD
+
+    cmd = "#{@command} #{@opts} #{@config} 2>&1"
+    process = IO.popen(cmd, 'r+')
+    Redpile.new(process, ENV['VALGRIND'], @result)
   end
   
   def run(*commands)
