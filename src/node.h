@@ -36,7 +36,11 @@
 #include "message.h"
 #include "type.h"
 
-typedef int FieldValue;
+typedef union {
+    int integer;
+    Direction direction;
+} FieldValue;
+
 typedef struct {
     unsigned int count;
     FieldValue data[];
@@ -74,8 +78,12 @@ typedef struct {
 } NodeStack;
 
 #define MAX_FIELDS 256
-#define FIELD_GET(NODE,INDEX) (((INDEX) < (NODE)->fields.count) ? (NODE)->fields.data[INDEX] : 0)
-#define FIELD_SET(NODE,INDEX,VALUE) if ((INDEX) < (NODE)->fields.count) { (NODE)->fields.data[INDEX] = VALUE; }
+#define FIELD_GET(NODE,INDEX,TYPE)\
+    (assert((INDEX) < (NODE)->fields.count), (NODE)->fields.data[INDEX].TYPE)
+#define FIELD_SET(NODE,INDEX,TYPE,VALUE)\
+    do { assert((INDEX) < (NODE)->fields.count);\
+         (NODE)->fields.data[INDEX].TYPE = VALUE;\
+    } while (0)
 #define FOR_NODES(NODE,START) for (Node* NODE = START; NODE != NULL; NODE = NODE->next)
 
 Messages* node_find_messages(Node* node, unsigned long long tick);

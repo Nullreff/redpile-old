@@ -206,10 +206,10 @@ bool world_run_data(World* world, QueueData* data)
     {
         case SM_FIELD: {
             unsigned int field_index = data->value >> 32;
-            FieldValue field_value = (data->value << 32) >> 32;
-            if (field_value == FIELD_GET(data->target.node, field_index))
+            int field_value = (data->value << 32) >> 32;
+            if (field_value == FIELD_GET(data->target.node, field_index, integer))
                 return false;
-            FIELD_SET(data->target.node, field_index, field_value);
+            FIELD_SET(data->target.node, field_index, integer, field_value);
             }
             break;
 

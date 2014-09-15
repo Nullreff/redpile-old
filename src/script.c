@@ -294,7 +294,7 @@ static int script_node_adjacent(ScriptState* state)
                 FieldType field_type;
                 bool found = type_find_field(current->type, "direction", &index, &field_type);
                 LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
-                direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+                direction = direction_move(FIELD_GET(current, index, direction), (Movement)raw_direction);
             }
 
             Node* node = world_get_adjacent_node(script_data->world, current, direction);
@@ -341,7 +341,7 @@ static int script_node_adjacent_each(ScriptState* state)
                 FieldType field_type;
                 bool found = type_find_field(current->type, "direction", &index, &field_type);
                 LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
-                direction = direction_move(FIELD_GET(current, index), (Movement)raw_direction);
+                direction = direction_move(FIELD_GET(current, index, direction), (Movement)raw_direction);
             }
 
             Node* node = world_get_adjacent_node(script_data->world, current, direction);
@@ -542,8 +542,10 @@ static void script_create_node(ScriptState* state, Node* node)
         switch (field->type)
         {
             case FIELD_INT:
+                lua_pushnumber(state, FIELD_GET(node, i, integer));
+                break;
             case FIELD_DIRECTION:
-                lua_pushnumber(state, FIELD_GET(node, i));
+                lua_pushnumber(state, FIELD_GET(node, i, direction));
                 break;
         }
         lua_settable(state, -3);
@@ -601,7 +603,7 @@ static int script_messages_source(ScriptState* state)
             FieldType field_type;
             bool found = type_find_field(script_data->node->type, "direction", &index, &field_type);
             LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to source");
-            Direction dir = direction_move(FIELD_GET(script_data->node, index),
+            Direction dir = direction_move(FIELD_GET(script_data->node, index, direction),
                                            (Movement)(int)raw_direction);
             location = location_move(script_data->node->location, dir, 1);
         }

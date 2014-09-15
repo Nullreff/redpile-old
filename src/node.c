@@ -100,11 +100,11 @@ void node_print(Node* node)
         switch (field->type)
         {
             case FIELD_INT:
-                repl_print(" %s:%d", field->name, node->fields.data[i]);
+                repl_print(" %s:%d", field->name, node->fields.data[i].integer);
                 break;
 
             case FIELD_DIRECTION:
-                repl_print(" %s:%s", field->name, Directions[node->fields.data[i]]);
+                repl_print(" %s:%s", field->name, Directions[node->fields.data[i].direction]);
                 break;
         }
     }

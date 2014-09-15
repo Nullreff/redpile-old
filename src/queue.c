@@ -295,7 +295,7 @@ static void queue_data_print_type(QueueData* data)
         case SM_REMOVE: repl_print("REMOVE\n"); break;
         case SM_FIELD: {
             unsigned int index = data->value >> 32;
-            FieldValue value = (data->value << 32) >> 32;
+            int value = (data->value << 32) >> 32;
             char* name = data->source.type->fields->data[index].name;
             repl_print("FIELD %s %d\n", name, value);
         }
@@ -312,7 +312,6 @@ void queue_data_print(QueueData* data)
 
     queue_data_print_type(data);
 }
-
 
 void queue_data_print_message(QueueData* data, TypeData* type_data, unsigned long long current_tick)
 {

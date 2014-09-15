@@ -86,7 +86,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                 int found_int;
                 if (integer_parse(arg->value, &found_int))
                 {
-                    FIELD_SET(node, index, found_int);
+                    FIELD_SET(node, index, integer, found_int);
                 }
                 else
                 {
@@ -100,7 +100,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                 Direction found_dir;
                 if (direction_parse(arg->value, &found_dir))
                 {
-                    FIELD_SET(node, index, found_dir);
+                    FIELD_SET(node, index, direction, found_dir);
                 }
                 else
                 {
