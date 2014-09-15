@@ -37,7 +37,7 @@ static bool queue_data_equals(QueueData* n1, QueueData* n2)
     return n1->type == n2->type &&
            LOCATION_EQUALS(n1->source.location, n2->source.location) &&
            n1->target.node == n2->target.node &&
-           n1->value == n2->value &&
+           n1->value.integer == n2->value.integer &&
            n1->tick == n2->tick;
 }
 
@@ -182,7 +182,7 @@ void queue_free(Queue* queue)
         hashmap_free(queue->sourcemap, free);
 }
 
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, int64_t value)
+void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int index, FieldValue value)
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
@@ -192,6 +192,7 @@ void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* s
         .target.node = target,
         .tick = tick,
         .type = type,
+        .index = index,
         .value = value
     };
     queue_push(queue, node);
@@ -291,15 +292,15 @@ static void queue_data_print_type(QueueData* data)
 {
     switch (data->type)
     {
-        case SM_MOVE:   repl_print("MOVE %s\n", Directions[data->value]); break;
+        case SM_MOVE:   repl_print("MOVE %s\n", Directions[data->value.direction]); break;
         case SM_REMOVE: repl_print("REMOVE\n"); break;
-        case SM_FIELD: {
-            unsigned int index = data->value >> 32;
-            int value = (data->value << 32) >> 32;
-            char* name = data->source.type->fields->data[index].name;
-            repl_print("FIELD %s %d\n", name, value);
-        }
-        break;
+        case SM_FIELD:
+            repl_print("FIELD");
+            node_print_field(
+                data->source.type->fields->data + data->index,
+                data->value);
+            repl_print("\n");
+            break;
     }
 }
 
@@ -328,7 +329,8 @@ void queue_data_print_message(QueueData* data, TypeData* type_data, unsigned lon
     {
         if (mt->id == data->type)
         {
-            printf("%s %" PRId64 "\n", mt->name, data->value);
+            // TODO: Print additional types
+            repl_print("%s %d\n", mt->name, data->value.integer);
             break;
         }
     }

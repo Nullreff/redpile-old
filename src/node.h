@@ -39,6 +39,7 @@
 typedef union {
     int integer;
     Direction direction;
+    char* string;
 } FieldValue;
 
 typedef struct {
@@ -88,6 +89,7 @@ typedef struct {
 
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
+void node_print_field(Field* field, FieldValue value);
 void node_print(Node* node);
 
 NodeList* node_list_allocate(void);

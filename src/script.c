@@ -33,7 +33,8 @@
 #include "common.h"
 #include "repl.h"
 
-#define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { lua_pushstring(state, MESSAGE); lua_error(state); }
+#define LUA_ERROR(MESSAGE) lua_pushstring(state, MESSAGE); lua_error(state)
+#define LUA_ERROR_IF(CONDITION,MESSAGE) if (CONDITION) { LUA_ERROR(MESSAGE); }
 #define IS_UINT(NUM) ((NUM - ((double)(int)NUM) == 0) && (NUM >= 0))
 
 // Used during script_state_load_config and script_state_run_behavior
@@ -375,19 +376,20 @@ static int script_node_send(ScriptState* state)
     double raw_value = lua_tonumber(state, 4);
     LUA_ERROR_IF(!IS_UINT(raw_value), "Value must be greater than or equal to zero");
 
-    unsigned int delay = raw_delay;
     unsigned int message_type = raw_message_type;
-    unsigned int value = raw_value;
 
     // Only send messages the target node listens for
     if ((target->type->behavior_mask & message_type) != 0)
     {
+        unsigned int delay = raw_delay;
+        FieldValue value = { .integer = raw_value };
         queue_add(
             script_data->messages,
             message_type,
             script_data->world->ticks + delay,
             source,
             target,
+            0,
             value
         );
     }
@@ -405,14 +407,15 @@ static int script_node_move(ScriptState* state)
     double raw_direction = lua_tonumber(state, 2);
     LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
 
-    Direction direction = raw_direction;
+    FieldValue value = { .direction = raw_direction };
     queue_add(
         script_data->sets,
         SM_MOVE,
         script_data->world->ticks,
         current,
         current,
-        direction
+        0,
+        value
     );
 
     return 0;
@@ -424,13 +427,15 @@ static int script_node_remove(ScriptState* state)
 
     Node* current = script_node_from_stack(state, 1);
 
+    FieldValue value = {};
     queue_add(
         script_data->sets,
         SM_REMOVE,
         script_data->world->ticks,
         current,
         current,
-        0
+        0,
+        value
     );
 
     return 0;
@@ -451,29 +456,37 @@ static int script_node_index_set(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    const char* name = lua_tostring(state, 2);
-    double found_value = lua_tonumber(state, 3);
-
     Node* node = script_node_from_stack(state, 1);
+    const char* name = lua_tostring(state, 2);
 
     int found_index;
     FieldType field_type;
     bool found = type_find_field(node->type, name, &found_index, &field_type);
-
-    LUA_ERROR_IF(field_type != FIELD_INT && field_type != FIELD_DIRECTION, "Unsupported field type");
     LUA_ERROR_IF(!found, "Could not find field");
-    LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a field value");
 
-    // TODO: Support multiple fields in a message
-    // Right now we're just jamming two 32 bit
-    // values into a 64 bit field
-    int64_t index = found_index;
-    int64_t value = found_value;
-    assert(index < ((int64_t)1 << 33));
-    assert(value < ((int64_t)1 << 33));
-    index <<= 32;
-    value <<= 32;
-    value >>= 32;
+    FieldValue value;
+    switch (field_type)
+    {
+        case FIELD_INTEGER: {
+            LUA_ERROR_IF(!lua_isnumber(state, 3),
+                         "Attempting to assign a non number to a numeric field");
+            value.integer = lua_tonumber(state, 3);
+        } break;
+
+        case FIELD_DIRECTION: {
+            LUA_ERROR_IF(!lua_isnumber(state, 3),
+                         "Attempting to assign a non number to a direction field");
+            value.direction = lua_tonumber(state, 3);
+            LUA_ERROR_IF(value.direction < 0 || value.direction >= DIRECTIONS_COUNT,
+                         "Attempting to assign a non direction number to a direction field");
+        } break;
+
+        case FIELD_STRING: {
+            LUA_ERROR_IF(!lua_isstring(state, 3),
+                         "Attempting to assign a non string to a string field");
+            value.string = strdup(lua_tostring(state, 3));
+        } break;
+    }
 
     queue_add(
         script_data->sets,
@@ -481,13 +494,27 @@ static int script_node_index_set(ScriptState* state)
         script_data->world->ticks,
         node,
         node,
-        index | value
+        found_index,
+        value
     );
 
     // Save the new value in the metatable
     lua_getmetatable(state, 1);
     lua_pushstring(state, name);
-    lua_pushnumber(state, found_value);
+    switch (field_type)
+    {
+        case FIELD_INTEGER:
+            lua_pushnumber(state, value.integer);
+            break;
+
+        case FIELD_DIRECTION:
+            lua_pushnumber(state, value.direction);
+            break;
+
+        case FIELD_STRING:
+            lua_pushstring(state, value.string);
+            break;
+    }
     lua_settable(state, -3);
 
     return 0;
@@ -541,11 +568,16 @@ static void script_create_node(ScriptState* state, Node* node)
         lua_pushstring(state, field->name);
         switch (field->type)
         {
-            case FIELD_INT:
+            case FIELD_INTEGER:
                 lua_pushnumber(state, FIELD_GET(node, i, integer));
                 break;
+
             case FIELD_DIRECTION:
                 lua_pushnumber(state, FIELD_GET(node, i, direction));
+                break;
+
+            case FIELD_STRING:
+                lua_pushstring(state, FIELD_GET(node, i, string));
                 break;
         }
         lua_settable(state, -3);
@@ -671,10 +703,12 @@ ScriptState* script_state_allocate(void)
     lua_pushnumber(state, RIGHT);
     lua_setglobal(state, "RIGHT");
 
-    lua_pushnumber(state, FIELD_INT);
-    lua_setglobal(state, "FIELD_INT");
+    lua_pushnumber(state, FIELD_INTEGER);
+    lua_setglobal(state, "FIELD_INTEGER");
     lua_pushnumber(state, FIELD_DIRECTION);
     lua_setglobal(state, "FIELD_DIRECTION");
+    lua_pushnumber(state, FIELD_STRING);
+    lua_setglobal(state, "FIELD_STRING");
 
     lua_createtable(state, 0, 6);
     static const luaL_Reg redpile_funcs[] = {

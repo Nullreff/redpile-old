@@ -82,7 +82,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
 
         switch (field_type)
         {
-            case FIELD_INT: {
+            case FIELD_INTEGER: {
                 int found_int;
                 if (integer_parse(arg->value, &found_int))
                 {
@@ -93,8 +93,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                     repl_print_error("'%s' is not an integer\n", arg->value);
                     return;
                 }
-            }
-            break;
+            } break;
 
             case FIELD_DIRECTION: {
                 Direction found_dir;
@@ -107,8 +106,11 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
                     repl_print_error("'%s' is not a direction\n", arg->value);
                     return;
                 }
-            }
-            break;
+            } break;
+
+            case FIELD_STRING:
+                FIELD_SET(node, index, string, arg->value);
+                break;
         }
     }
 }

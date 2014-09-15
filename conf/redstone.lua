@@ -276,7 +276,7 @@ end)
 -- Table of fields to store on this node.  Declare in the format:
 --   {FIELD_NAME} = {FIELD_TYPE}
 -- Available field types are:
---   FIELD_INT
+--   FIELD_INTEGER
 --   FIELD_DIRECTION
 --
 -- BEHAVIORS <Table>
@@ -298,43 +298,43 @@ redpile.type(
 
 redpile.type(
     'WIRE',
-    {power = FIELD_INT},
+    {power = FIELD_INTEGER},
     {'push_breakable', 'power_wire'}
 )
 
 redpile.type(
     'CONDUCTOR',
-    {power = FIELD_INT},
+    {power = FIELD_INTEGER},
     {'push_solid', 'power_conductor'}
 )
 
 redpile.type(
     'TORCH',
-    {power = FIELD_INT, direction = FIELD_DIRECTION},
+    {power = FIELD_INTEGER, direction = FIELD_DIRECTION},
     {'push_breakable', 'power_torch'}
 )
 
 redpile.type(
     'PISTON',
-    {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
+    {power = FIELD_INTEGER, direction = FIELD_DIRECTION, state = FIELD_INTEGER},
     {'push_piston', 'power_piston'}
 )
 
 redpile.type(
     'REPEATER',
-    {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
+    {power = FIELD_INTEGER, direction = FIELD_DIRECTION, state = FIELD_INTEGER},
     {'push_breakable', 'power_repeater'}
 )
 
 redpile.type(
     'COMPARATOR',
-    {power = FIELD_INT, direction =  FIELD_DIRECTION, state = FIELD_INT},
+    {power = FIELD_INTEGER, direction =  FIELD_DIRECTION, state = FIELD_INTEGER},
     {'push_breakable', 'power_comparator'}
 )
 
 redpile.type(
     'SWITCH',
-    {power = FIELD_INT, direction = FIELD_DIRECTION, state = FIELD_INT},
+    {power = FIELD_INTEGER, direction = FIELD_DIRECTION, state = FIELD_INTEGER},
     {'push_breakable', 'power_switch'}
 )
 

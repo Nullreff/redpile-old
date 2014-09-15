@@ -9,7 +9,7 @@ describe 'Wire' do
       'SET 0 0 2 AIR',
       'SET 0 -1 2 WIRE',
       'TICK'
-    ).should =~ /\(0,-1,2\) FIELD power 14/
+    ).should =~ /\(0,-1,2\) FIELD power:14/
   end
 
   it 'propigates power to the side and up' do
@@ -19,7 +19,7 @@ describe 'Wire' do
       'SET 0 0 2 CONDUCTOR',
       'SET 0 1 2 WIRE',
       'TICK'
-    ).should =~ /\(0,1,2\) FIELD power 14/
+    ).should =~ /\(0,1,2\) FIELD power:14/
   end
 
   it 'does not propigate to the side and up when a block is on top' do
@@ -41,7 +41,7 @@ describe 'Wire' do
       'SET 0 0 1 WIRE',
       'SET 0 0 2 CONDUCTOR',
       'TICK'
-    ).should =~ /\(0,0,2\) FIELD power 14/
+    ).should =~ /\(0,0,2\) FIELD power:14/
   end
 
   it 'diverts power from a condutor when a wire is on the left' do
@@ -101,7 +101,7 @@ describe 'Wire' do
        'SET 0 0 1 WIRE',
        'SET 0 -1 1 CONDUCTOR',
        'TICK'
-    ).should =~ /\(0,-1,1\) FIELD power 15/
+    ).should =~ /\(0,-1,1\) FIELD power:15/
   end
 
   it 'propigates power in a loop' do
@@ -116,13 +116,13 @@ describe 'Wire' do
       'SET 1 0 0 WIRE',
       'TICK'
     )
-    result.should =~ /^\(0,0,1\) FIELD power 15$/
-    result.should =~ /^\(0,0,2\) FIELD power 14$/
-    result.should =~ /^\(1,0,2\) FIELD power 13$/
-    result.should =~ /^\(2,0,2\) FIELD power 12$/
-    result.should =~ /^\(2,0,1\) FIELD power 13$/
-    result.should =~ /^\(2,0,0\) FIELD power 14$/
-    result.should =~ /^\(1,0,0\) FIELD power 15$/
+    result.should =~ /^\(0,0,1\) FIELD power:15$/
+    result.should =~ /^\(0,0,2\) FIELD power:14$/
+    result.should =~ /^\(1,0,2\) FIELD power:13$/
+    result.should =~ /^\(2,0,2\) FIELD power:12$/
+    result.should =~ /^\(2,0,1\) FIELD power:13$/
+    result.should =~ /^\(2,0,0\) FIELD power:14$/
+    result.should =~ /^\(1,0,0\) FIELD power:15$/
   end
 
   it 'avoids looping when processing a grid of wire' do

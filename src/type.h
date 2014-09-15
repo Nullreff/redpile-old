@@ -35,8 +35,9 @@
 
 #define FIELD_DATA_COUNT 2
 typedef enum {
-    FIELD_INT,
-    FIELD_DIRECTION
+    FIELD_INTEGER,
+    FIELD_DIRECTION,
+    FIELD_STRING
 } FieldType;
 
 typedef struct {

@@ -86,6 +86,24 @@ MessageStore* node_find_store(Node* node, unsigned long long tick)
     return store;
 }
 
+void node_print_field(Field* field, FieldValue value)
+{
+    switch (field->type)
+    {
+        case FIELD_INTEGER:
+            repl_print(" %s:%d", field->name, value.integer);
+            break;
+
+        case FIELD_DIRECTION:
+            repl_print(" %s:%s", field->name, Directions[value.direction]);
+            break;
+
+        case FIELD_STRING:
+            repl_print(" %s:%s", field->name, value.string);
+            break;
+    }
+}
+
 void node_print(Node* node)
 {
     repl_print("(%d,%d,%d) %s",
@@ -95,19 +113,7 @@ void node_print(Node* node)
            node->type->name);
 
     for (int i = 0; i < node->type->fields->count; i++)
-    {
-        Field* field = node->type->fields->data + i;
-        switch (field->type)
-        {
-            case FIELD_INT:
-                repl_print(" %s:%d", field->name, node->fields.data[i].integer);
-                break;
-
-            case FIELD_DIRECTION:
-                repl_print(" %s:%s", field->name, Directions[node->fields.data[i].direction]);
-                break;
-        }
-    }
+        node_print_field(node->type->fields->data + i, node->fields.data[i]);
 
     repl_print("\n");
 }

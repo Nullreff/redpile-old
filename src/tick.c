@@ -33,7 +33,7 @@
 
 static Message message_create(QueueData* data)
 {
-    return (Message){{data->source.location, data->source.type}, data->type, data->value};
+    return (Message){{data->source.location, data->source.type}, data->type, data->value.integer};
 }
 
 static Messages* find_input(World* world, Node* node, Queue* queue)

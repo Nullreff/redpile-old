@@ -205,8 +205,9 @@ bool world_run_data(World* world, QueueData* data)
     switch (data->type)
     {
         case SM_FIELD: {
-            unsigned int field_index = data->value >> 32;
-            int field_value = (data->value << 32) >> 32;
+            unsigned int field_index = data->index;
+            int field_value = data->value.integer;
+            // TODO: Compare actual types
             if (field_value == FIELD_GET(data->target.node, field_index, integer))
                 return false;
             FIELD_SET(data->target.node, field_index, integer, field_value);
@@ -215,7 +216,7 @@ bool world_run_data(World* world, QueueData* data)
 
         case SM_MOVE:
             target_loc = data->source.location;
-            world_node_move(world, data->target.node, data->value);
+            world_node_move(world, data->target.node, data->value.direction);
             world_fill_missing(world, target_loc);
             break;
 
@@ -248,6 +249,7 @@ void world_print_messages(World* world)
                         .target.location = node->location,
                         .tick = store->tick,
                         .type = inst->type,
+                        .index = 0,
                         .value = inst->value
                     };
                     queue_data_print_message(&data, world->type_data, world->ticks);

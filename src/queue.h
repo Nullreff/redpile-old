@@ -47,7 +47,8 @@ typedef struct {
     } target;
     unsigned long long tick;
     unsigned int type;
-    int64_t value;
+    unsigned int index;
+    FieldValue value;
 } QueueData;
 
 typedef struct QueueNode {
@@ -76,7 +77,7 @@ typedef struct {
 
 Queue queue_empty(bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, int64_t value);
+void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int index, FieldValue value);
 bool queue_contains(Queue* queue, QueueNode* node);
 unsigned int queue_merge(Queue* queue, Queue* append);
 void queue_remove_source(Queue* queue, Location source);
