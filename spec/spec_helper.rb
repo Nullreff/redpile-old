@@ -32,7 +32,7 @@ module Helpers
       if @valgrind && result =~ /(^==\d+==[^\n]+\n)+/m
         fail $~.to_s
       elsif @result != $?.to_i
-        fail "Exited with status code #{$?.to_i}"
+        fail "#{result}\nExited with status code #{$?.to_i}"
       end
       result
     end
