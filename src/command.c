@@ -109,7 +109,7 @@ void run_command_set(Location location, Type* type, CommandArgs* args)
             } break;
 
             case FIELD_STRING:
-                FIELD_SET(node, index, string, arg->value);
+                FIELD_SET(node, index, string, strdup(arg->value));
                 break;
         }
     }

@@ -267,6 +267,13 @@ redpile.behavior('power_switch', 0, function(node, messages)
     end)
 end)
 
+redpile.behavior('power_command', MESSAGE.POWER, function(node, messages)
+    node.power = msg_power(messages:max())
+    if node.power > 0 then
+        node:echo(node.message)
+    end
+end)
+
 -- Types are created using the `redpile.type` function which takes:
 --
 -- NAME <String>
@@ -336,5 +343,11 @@ redpile.type(
     'SWITCH',
     {power = FIELD_INTEGER, direction = FIELD_DIRECTION, state = FIELD_INTEGER},
     {'push_breakable', 'power_switch'}
+)
+
+redpile.type(
+    'COMMAND',
+    {power = FIELD_INTEGER, message = FIELD_STRING},
+    {'power_command'}
 )
 

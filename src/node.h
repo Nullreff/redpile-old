@@ -36,12 +36,6 @@
 #include "message.h"
 #include "type.h"
 
-typedef union {
-    int integer;
-    Direction direction;
-    char* string;
-} FieldValue;
-
 typedef struct {
     unsigned int count;
     FieldValue data[];

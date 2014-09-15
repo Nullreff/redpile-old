@@ -206,13 +206,27 @@ bool world_run_data(World* world, QueueData* data)
     {
         case SM_FIELD: {
             unsigned int field_index = data->index;
-            int field_value = data->value.integer;
-            // TODO: Compare actual types
-            if (field_value == FIELD_GET(data->target.node, field_index, integer))
-                return false;
-            FIELD_SET(data->target.node, field_index, integer, field_value);
+            switch (data->target.node->type->fields->data[field_index].type)
+            {
+                case FIELD_INTEGER:
+                    if (data->value.integer == FIELD_GET(data->target.node, field_index, integer))
+                        return false;
+                    FIELD_SET(data->target.node, field_index, integer, data->value.integer);
+                    break;
+
+                case FIELD_DIRECTION:
+                    if (data->value.direction == FIELD_GET(data->target.node, field_index, direction))
+                        return false;
+                    FIELD_SET(data->target.node, field_index, direction, data->value.direction);
+                    break;
+
+                case FIELD_STRING:
+                    if (data->value.string == FIELD_GET(data->target.node, field_index, string))
+                        return false;
+                    FIELD_SET(data->target.node, field_index, string, data->value.string);
+                    break;
             }
-            break;
+        } break;
 
         case SM_MOVE:
             target_loc = data->source.location;
@@ -222,6 +236,10 @@ bool world_run_data(World* world, QueueData* data)
 
         case SM_REMOVE:
             world_remove_node(world, data->source.location);
+            break;
+
+        case SM_ECHO:
+            /* noop */
             break;
             
         default:
@@ -250,7 +268,7 @@ void world_print_messages(World* world)
                         .tick = store->tick,
                         .type = inst->type,
                         .index = 0,
-                        .value = inst->value
+                        .value = { .integer = inst->value }
                     };
                     queue_data_print_message(&data, world->type_data, world->ticks);
                 }

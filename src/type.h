@@ -32,13 +32,20 @@
 #define REDPILE_TYPE_H
 
 #include "common.h"
+#include "location.h"
 
-#define FIELD_DATA_COUNT 2
+#define FIELD_DATA_COUNT 3
 typedef enum {
     FIELD_INTEGER,
     FIELD_DIRECTION,
     FIELD_STRING
 } FieldType;
+
+typedef union {
+    int integer;
+    Direction direction;
+    char* string;
+} FieldValue;
 
 typedef struct {
     char* name;
