@@ -172,6 +172,8 @@ void queue_free(Queue* queue)
     while (node != NULL)
     {
         QueueNode* temp = node->next;
+        if (node->data.type == SM_ECHO)
+            free(node->data.value.string);
         free(node);
         node = temp;
     }
