@@ -47,6 +47,14 @@ static void node_free(Node* node)
 {
     message_store_free(node->store);
     free(node->last_input);
+
+    for (int i = 0; i < node->type->fields->count; i++)
+    {
+        Field* field = node->type->fields->data + i;
+        if (field->type == FIELD_STRING)
+            free(node->fields.data[i].string);
+    }
+
     free(node);
 }
 
