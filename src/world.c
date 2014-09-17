@@ -238,7 +238,7 @@ bool world_run_data(World* world, QueueData* data)
             world_remove_node(world, data->source.location);
             break;
 
-        case SM_ECHO:
+        case SM_DATA:
             /* noop */
             break;
             

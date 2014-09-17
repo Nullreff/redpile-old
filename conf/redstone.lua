@@ -267,10 +267,10 @@ redpile.behavior('power_switch', 0, function(node, messages)
     end)
 end)
 
-redpile.behavior('power_command', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_echo', MESSAGE.POWER, function(node, messages)
     node.power = value_or_zero(messages:max())
     if node.power > 0 then
-        node:echo(node.message)
+        node:data(node.message)
     end
 end)
 
@@ -346,8 +346,8 @@ redpile.type(
 )
 
 redpile.type(
-    'COMMAND',
+    'ECHO',
     {power = FIELD_INTEGER, message = FIELD_STRING},
-    {'power_command'}
+    {'power_echo'}
 )
 

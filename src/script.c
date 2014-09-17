@@ -441,19 +441,19 @@ static int script_node_remove(ScriptState* state)
     return 0;
 }
 
-static int script_node_echo(ScriptState* state)
+static int script_node_data(ScriptState* state)
 {
     assert(script_data != NULL);
 
     Node* current = script_node_from_stack(state, 1);
 
-    LUA_ERROR_IF(!lua_isstring(state, 2), "You must pass a message to echo");
+    LUA_ERROR_IF(!lua_isstring(state, 2), "You must pass a message to data");
     char* message = strdup(lua_tostring(state, 2));
 
     FieldValue value = { .string = message };
     queue_add(
         script_data->sets,
-        SM_ECHO,
+        SM_DATA,
         script_data->world->ticks,
         current,
         current,
@@ -559,7 +559,7 @@ static void script_create_node(ScriptState* state, Node* node)
         {"send", script_node_send},
         {"move", script_node_move},
         {"remove", script_node_remove},
-        {"echo", script_node_echo},
+        {"data", script_node_data},
         {NULL, NULL}
     };
     luaL_setfuncs(state, node_funcs, 0);

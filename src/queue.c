@@ -172,7 +172,7 @@ void queue_free(Queue* queue)
     while (node != NULL)
     {
         QueueNode* temp = node->next;
-        if (node->data.type == SM_ECHO)
+        if (node->data.type == SM_DATA)
             free(node->data.value.string);
         free(node);
         node = temp;
@@ -296,7 +296,7 @@ static void queue_data_print_type(QueueData* data)
     {
         case SM_MOVE:   repl_print("MOVE %s\n", Directions[data->value.direction]); break;
         case SM_REMOVE: repl_print("REMOVE\n"); break;
-        case SM_ECHO:   repl_print("ECHO %s\n", data->value.string); break;
+        case SM_DATA:   repl_print("DATA %s\n", data->value.string); break;
         case SM_FIELD:
             repl_print("FIELD");
             node_print_field(

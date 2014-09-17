@@ -38,7 +38,7 @@ typedef enum {
     SM_MOVE   = 1 << 0,
     SM_FIELD  = 1 << 1,
     SM_REMOVE = 1 << 2,
-    SM_ECHO   = 1 << 3
+    SM_DATA   = 1 << 3
 } SystemMessage;
 
 typedef struct {
