@@ -39,7 +39,7 @@ function has_lower_power(node, messages, power)
     return received_power == nil or received_power.value < power
 end
 
-function msg_power(message)
+function value_or_zero(message)
     return message and message.value or 0
 end
 
@@ -157,7 +157,7 @@ redpile.behavior('power_wire', MESSAGE.POWER, function(node, messages)
 end)
 
 redpile.behavior('power_conductor', MESSAGE.POWER, function(node, messages)
-    node.power = msg_power(messages:max())
+    node.power = value_or_zero(messages:max())
     local max_powerd = node.power == MAX_POWER
 
     node:adjacent_each(function(found)
@@ -170,7 +170,7 @@ redpile.behavior('power_conductor', MESSAGE.POWER, function(node, messages)
 end)
 
 redpile.behavior('power_torch', MESSAGE.POWER, function(node, messages)
-    local new_power = msg_power(messages:source(BEHIND))
+    local new_power = value_or_zero(messages:source(BEHIND))
     if new_power > 0 then
         node.power = 0
         return
@@ -194,7 +194,7 @@ end)
 redpile.behavior('power_piston', MESSAGE.POWER, function(node, messages)
     local first = node:adjacent(FORWARDS)
     local second = first:adjacent(node.direction)
-    local new_power = msg_power(messages:max())
+    local new_power = value_or_zero(messages:max())
 
     if new_power == 0 then
         if first.type == 'AIR' and second.type ~= 'AIR' and node.power > 0 then
@@ -220,7 +220,7 @@ redpile.behavior('power_piston', MESSAGE.POWER, function(node, messages)
 end)
 
 redpile.behavior('power_repeater', MESSAGE.POWER, function(node, messages)
-    node.power = msg_power(messages:source(BEHIND))
+    node.power = value_or_zero(messages:source(BEHIND))
     if node.power ~= 0 and
        messages:source(RIGHT) == nil and
        messages:source(LEFT) == nil
@@ -231,14 +231,14 @@ redpile.behavior('power_repeater', MESSAGE.POWER, function(node, messages)
 end)
 
 redpile.behavior('power_comparator', MESSAGE.POWER, function(node, messages)
-    node.power = msg_power(messages:source(BEHIND))
+    node.power = value_or_zero(messages:source(BEHIND))
     if node.power == 0 then
         return
     end
 
     local side_power = math.max(
-        msg_power(messages:source(LEFT)),
-        msg_power(messages:source(RIGHT))
+        value_or_zero(messages:source(LEFT)),
+        value_or_zero(messages:source(RIGHT))
     )
 
     local change = node.power
@@ -268,7 +268,7 @@ redpile.behavior('power_switch', 0, function(node, messages)
 end)
 
 redpile.behavior('power_command', MESSAGE.POWER, function(node, messages)
-    node.power = msg_power(messages:max())
+    node.power = value_or_zero(messages:max())
     if node.power > 0 then
         node:echo(node.message)
     end
