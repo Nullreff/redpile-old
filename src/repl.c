@@ -67,6 +67,8 @@ static int repl_read_linenoise(char* buff, int buffsize)
     if (line == NULL)
         return 0;
 
+    linenoiseHistoryAdd(line);
+
     // Linenoise has a buffer size of 4096
     // Flex has a default buffer size of at least 8192 on 32 bit
     int size = strlen(line);
