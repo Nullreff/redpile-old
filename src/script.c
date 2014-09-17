@@ -509,6 +509,9 @@ static int script_node_index_set(ScriptState* state)
                          "Attempting to assign a non string to a string field");
             value.string = strdup(lua_tostring(state, 3));
         } break;
+
+        default:
+            ERROR("Unknown field type");
     }
 
     queue_add(
