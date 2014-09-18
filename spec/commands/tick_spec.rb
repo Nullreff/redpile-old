@@ -3,7 +3,7 @@ include Helpers
 
 describe 'TICK' do
   it 'runs a standard tick' do
-    run('TICK').should == "\n"
+    run('TICK').should == ''
   end
 
   it 'runs a verbose tick' do
@@ -11,7 +11,7 @@ describe 'TICK' do
   end
 
   it 'runs a quiet tick' do
-    run('TICKQ').should == "\n"
+    run('TICKQ').should == ''
   end
 
   it 'runs multiple ticks' do
@@ -19,10 +19,10 @@ describe 'TICK' do
   end
 
   it 'errors for negative ticks' do
-    run('TICK -2').should =~ /^Tick count must be greater than zero$/
+    run('TICK -2').should == 'Tick count must be greater than zero'
   end
 
   it 'errors for non numerical ticks' do
-    run('TICK abc').should =~ /^Tick count must be numeric$/
+    run('TICK abc').should == 'Tick count must be numeric'
   end
 end

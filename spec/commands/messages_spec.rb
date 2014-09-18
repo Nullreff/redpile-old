@@ -3,7 +3,7 @@ include Helpers
 
 describe 'MESSAGES' do
   it 'displays no messages when empty' do
-    run('MESSAGES').should == "\n"
+    run('MESSAGES').should == ''
   end
 
   it 'prints a list of messages after a tick' do

@@ -7,7 +7,7 @@ RANGE1 = (-1..1).map do |x|
       "(#{x},#{y},#{z}) AIR"
     end
   end
-end.flatten.flatten.join("\n") + "\n\n"
+end.flatten.flatten.join("\n")
 
 RANGE2 = (-1..1).map do |x|
   (-1..1).map do |y|
@@ -15,26 +15,26 @@ RANGE2 = (-1..1).map do |x|
       "(#{x * 2},#{y * 2},#{z * 2}) AIR"
     end
   end
-end.flatten.flatten.join("\n") + "\n\n"
+end.flatten.flatten.join("\n")
 
 describe 'NODE' do
   context 'sets' do
     it 'a single node' do
-      run('NODE 0,0,0 TORCH direction:UP').should == "\n"
+      run('NODE 0,0,0 TORCH direction:UP').should == ''
     end
 
     it 'a range of nodes' do
-      run('NODE -5..5,-5..5,-5..5 TORCH direction:UP').should == "\n"
+      run('NODE -5..5,-5..5,-5..5 TORCH direction:UP').should == ''
     end
 
     it 'a range of nodes with step' do
-      run('NODE -10..10%2,-10..10%2,-10..10%2 TORCH direction:UP').should == "\n"
+      run('NODE -10..10%2,-10..10%2,-10..10%2 TORCH direction:UP').should == ''
     end
   end
 
   context 'gets' do
     it 'a single node' do
-      run('NODE 0,0,0').should == "(0,0,0) AIR\n\n"
+      run('NODE 0,0,0').should == '(0,0,0) AIR'
     end
 
     it 'a range of nodes' do
@@ -47,11 +47,11 @@ describe 'NODE' do
   end
 
   it 'errors if given an incorrect direction' do
-    run('NODE 0,0,0 TORCH direction:INVALID').should =~ /^'INVALID' is not a direction$/
+    run('NODE 0,0,0 TORCH direction:INVALID').should == "'INVALID' is not a direction"
   end
 
   it 'errors if given an incorrect type' do
-    run('NODE 0,0,0 INVALID').should =~ /^Unknown type 'INVALID'$/
+    run('NODE 0,0,0 INVALID').should == "Unknown type 'INVALID'"
   end
 
   context 'inserts' do

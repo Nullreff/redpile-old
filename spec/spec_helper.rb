@@ -14,7 +14,7 @@ module Helpers
     def run(*commands)
       commands.each {|cmd| @process.puts cmd}
       @process.close_write
-      result = @process.read
+      result = @process.read.strip
       @process.close
       if @valgrind && result =~ /(^==\d+==[^\n]+\n)+/m
         fail $~.to_s
@@ -49,11 +49,11 @@ module Helpers
   end
 
   def powered(x, y, z)
-    /^\(#{x},#{y},#{z}\) \S+ power:[^0]\d+\s/
+    /^\(#{x},#{y},#{z}\) \S+ power:[^0]\d+$/
   end
 
   def unpowered(x, y, z)
-    /^\(#{x},#{y},#{z}\) \S+ power:0\s/
+    /^\(#{x},#{y},#{z}\) \S+ power:0$/
   end
 
   def contains_node?(result, x, y, z, type, fields = {})

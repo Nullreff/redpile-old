@@ -9,7 +9,7 @@ describe 'Torch' do
         'NODE 0,0,0 TORCH direction:UP',
         "NODE 0,0,1..#{range} WIRE",
         'TICK 2'
-      ).should =~ /\(0,0,#{range}\) FIELD power:#{16 - range}\n/
+      ).should =~ /^\(0,0,#{range}\) FIELD power:#{16 - range}$/
     end
   end
 
