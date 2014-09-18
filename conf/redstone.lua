@@ -227,7 +227,6 @@ redpile.behavior('power_repeater', MESSAGE.POWER, function(node, messages)
    then
        node:adjacent(FORWARDS):send(MESSAGE.POWER, node.state + 1, MAX_POWER)
    end
-
 end)
 
 redpile.behavior('power_comparator', MESSAGE.POWER, function(node, messages)
