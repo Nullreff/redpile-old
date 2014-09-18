@@ -269,7 +269,7 @@ end)
 
 redpile.behavior('power_echo', MESSAGE.POWER, function(node, messages)
     node.power = value_or_zero(messages:max())
-    if node.power > 0 then
+    if node.power > 0 and node.message then
         node:data(node.message)
     end
 end)

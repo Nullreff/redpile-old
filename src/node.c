@@ -107,7 +107,10 @@ void node_print_field(Field* field, FieldValue value)
             break;
 
         case FIELD_STRING:
-            repl_print(" %s:\"%s\"", field->name, value.string);
+            if (value.string)
+                repl_print(" %s:\"%s\"", field->name, value.string);
+            else
+                repl_print(" %s:\"\"", field->name);
             break;
     }
 }
