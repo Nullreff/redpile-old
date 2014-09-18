@@ -51,6 +51,17 @@ Sets the node(s) in the specified range to have a type of `type`.
 In addition, any fields passed passed with the syntax `name:value` will be set on the node as well.
 See [Types](types.md) for more information on types.
 
+FIELD
+-----
+
+Syntax: `FIELD range name`
+
+Returns the value(s) of the specified field `name` for all nodes in the specified range.
+
+Syntax: `FIELD range name:value`
+
+Sets the value(s) of the specified field `name` with `value`.
+
 DELETE
 ------
 
