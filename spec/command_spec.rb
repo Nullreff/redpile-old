@@ -65,7 +65,7 @@ describe 'Commands' do
   end
 
   it 'error if given an incorrect type' do
-    run('NODE 0 0 0 INVALID').should =~ /^Unknown type: 'INVALID'$/
+    run('NODE 0 0 0 INVALID').should =~ /^Unknown type 'INVALID'$/
   end
 
   it 'errors if given an incorrect direction' do

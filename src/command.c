@@ -289,7 +289,7 @@ bool type_parse(char* string, Type** found_type)
         return true;
     }
 
-    repl_print_error("Unknown type: '%s'\n", string);
+    repl_print_error("Unknown type '%s'\n", string);
     free(string);
     return false;
 }
