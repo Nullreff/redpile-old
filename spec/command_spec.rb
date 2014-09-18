@@ -139,7 +139,7 @@ describe 'Commands' do
     end
   end
 
-  %w(WIRE CONDUCTOR).each do |block|
+  %w(WIRE CONDUCTOR ECHO).each do |block|
     it "inserts an #{block} block" do
       result = run(
         "SET 0 0 0 #{block}",
