@@ -33,6 +33,8 @@
 #include "redpile.h"
 #include "repl.h"
 
+#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
+
 static bool direction_parse(char* string, Direction* found_dir)
 {
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
@@ -162,6 +164,33 @@ void command_node_get(Location location)
     }
 }
 
+void command_noder_get(Location l1, Location l2)
+{
+    command_noders_get(l1, l2, location_create(1, 1, 1));
+}
+
+void command_noders_get(Location l1, Location l2, Location step)
+{
+    PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");
+    PARSE_ERROR_IF(step.y <= 0, "y_step must be greater than zero\n");
+    PARSE_ERROR_IF(step.z <= 0, "z_step must be greater than zero\n");
+
+    int x_start = l1.x > l2.x ? l2.x : l1.x;
+    int x_end   = l1.x > l2.x ? l1.x : l2.x;
+    int y_start = l1.y > l2.y ? l2.y : l1.y;
+    int y_end   = l1.y > l2.y ? l1.y : l2.y;
+    int z_start = l1.z > l2.z ? l2.z : l1.z;
+    int z_end   = l1.z > l2.z ? l1.z : l2.z;
+
+    for (int x = x_start; x <= x_end; x += step.x)
+    for (int y = y_start; y <= y_end; y += step.y)
+    for (int z = z_start; z <= z_end; z += step.z)
+        command_node_get(location_create(x, y, z));
+
+end:
+    ;
+}
+
 void command_node_set(Location location, Type* type, CommandArgs* args)
 {
     run_command_node_set(location, type, args);
@@ -173,7 +202,6 @@ void command_noder_set(Location l1, Location l2, Type* type, CommandArgs* args)
     command_noders_set(l1, l2, location_create(1, 1, 1), type, args);
 }
 
-#define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
 void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
 {
     PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");

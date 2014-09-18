@@ -53,6 +53,8 @@ void command_args_append(CommandArgs* args, char* name, char* value);
 void command_ping(void);
 void command_status(void);
 void command_node_get(Location location);
+void command_noder_get(Location l1, Location l2);
+void command_noders_get(Location l1, Location l2, Location step);
 void command_node_set(Location location, Type* type, CommandArgs* args);
 void command_noder_set(Location start, Location end, Type* type, CommandArgs* args);
 void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args);

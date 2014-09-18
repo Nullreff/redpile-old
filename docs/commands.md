@@ -39,6 +39,7 @@ See [Types](types.md) for more information on types.
 NODER
 -----
 
+Syntax: `NODER x_start y_start z_start x_end y_end z_end`  
 Syntax: `NODER x_start y_start z_start x_end y_end z_end type [fields]`
 
 Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)`.
@@ -46,6 +47,7 @@ Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)
 NODERS
 ------
 
+Syntax: `NODERS x_start y_start z_start x_end y_end z_end x_step y_step z_step`  
 Syntax: `NODERS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [fields]`
 
 Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
