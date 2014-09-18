@@ -1,6 +1,22 @@
 require 'spec_helper'
 include Helpers
 
+RANGE1 = (-1..1).map do |x|
+  (-1..1).map do |y|
+    (-1..1).map do |z|
+      "(#{x},#{y},#{z}) AIR"
+    end
+  end
+end.flatten.flatten.join("\n") + "\n\n"
+
+RANGE2 = (-1..1).map do |x|
+  (-1..1).map do |y|
+    (-1..1).map do |z|
+      "(#{x * 2},#{y * 2},#{z * 2}) AIR"
+    end
+  end
+end.flatten.flatten.join("\n") + "\n\n"
+
 describe 'NODE' do
   context 'sets' do
     it 'a single node' do
@@ -17,8 +33,16 @@ describe 'NODE' do
   end
 
   context 'gets' do
-    it 'a signle node' do
-      run('NODE 0,0,0').should =~ /^\(0,0,0\) AIR$/
+    it 'a single node' do
+      run('NODE 0,0,0').should == "(0,0,0) AIR\n\n"
+    end
+
+    it 'a range of nodes' do
+      run('NODE -1..1,-1..1,-1..1').should == RANGE1
+    end
+
+    it 'a range of nodes with step' do
+      run('NODE -2..2%2,-2..2%2,-2..2%2').should == RANGE2
     end
   end
 
