@@ -35,7 +35,7 @@
 
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
 
-static bool direction_parse(char* string, Direction* found_dir)
+static bool direction_parse(const char* string, Direction* found_dir)
 {
     for (int i = 0; i < DIRECTIONS_COUNT; i++)
     {
@@ -49,7 +49,7 @@ static bool direction_parse(char* string, Direction* found_dir)
     return false;
 }
 
-static bool integer_parse(char* string, int* found_int)
+static bool integer_parse(const char* string, int* found_int)
 {
     char* parse_error = NULL;
     int value = strtol(string, &parse_error, 10);
@@ -65,56 +65,57 @@ static bool integer_parse(char* string, int* found_int)
     }
 }
 
+static void node_field_set(Node* node, const char* name, const char* value)
+{
+    int index;
+    Field* field = type_find_field(node->type, name, &index);
+    if (!field)
+    {
+        repl_print_error("The type '%s' doesn't have the field '%s'\n", node->type->name, name);
+        return;
+    }
+
+    switch (field->type)
+    {
+        case FIELD_INTEGER: {
+            int result;
+            if (integer_parse(value, &result))
+            {
+                FIELD_SET(node, index, integer, result);
+            }
+            else
+            {
+                repl_print_error("'%s' is not an integer\n", value);
+                return;
+            }
+        } break;
+
+        case FIELD_DIRECTION: {
+            Direction result;
+            if (direction_parse(value, &result))
+            {
+                FIELD_SET(node, index, direction, result);
+            }
+            else
+            {
+                repl_print_error("'%s' is not a direction\n", value);
+                return;
+            }
+        } break;
+
+        case FIELD_STRING:
+            FIELD_SET(node, index, string, strdup(value));
+            break;
+    }
+}
+
 void run_command_node_set(Location location, Type* type, CommandArgs* args)
 {
     Node* node = world_set_node(world, location, type);
     assert(node != NULL);
 
     for (int i = 0; i < args->index; i++)
-    {
-        CommandArg* arg = args->data + i;
-
-        int index;
-        Field* field = type_find_field(node->type, arg->name, &index);
-        if (!field)
-        {
-            repl_print_error("The type '%s' doesn't have the field '%s'\n", node->type->name, arg->name);
-            return;
-        }
-
-        switch (field->type)
-        {
-            case FIELD_INTEGER: {
-                int found_int;
-                if (integer_parse(arg->value, &found_int))
-                {
-                    FIELD_SET(node, index, integer, found_int);
-                }
-                else
-                {
-                    repl_print_error("'%s' is not an integer\n", arg->value);
-                    return;
-                }
-            } break;
-
-            case FIELD_DIRECTION: {
-                Direction found_dir;
-                if (direction_parse(arg->value, &found_dir))
-                {
-                    FIELD_SET(node, index, direction, found_dir);
-                }
-                else
-                {
-                    repl_print_error("'%s' is not a direction\n", arg->value);
-                    return;
-                }
-            } break;
-
-            case FIELD_STRING:
-                FIELD_SET(node, index, string, strdup(arg->value));
-                break;
-        }
-    }
+        node_field_set(node, args->data[i].name, args->data[i].value);
 }
 
 CommandArgs* command_args_allocate(unsigned int count)
@@ -242,6 +243,19 @@ void command_field_get(Location location, char* name)
     }
 
     node_print_field_value(node, field->type, node->fields.data[index]);
+}
+
+void command_field_set(Location location, const char* name, const char* value)
+{
+    Node* node = world_get_node(world, location);
+    if (!node)
+    {
+        Type* type = type_data_get_default_type(world->type_data);
+        repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
+        return;
+    }
+
+    node_field_set(node, name, value);
 }
 
 void command_delete(Location location)
