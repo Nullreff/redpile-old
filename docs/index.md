@@ -42,16 +42,16 @@ See `--help` for a list of all options.
 
 ~~~bash
 $ redpile -i conf/redstone.lua
-> set 0 0 0 torch direction:up
-> get 0 0 0
+> node 0 0 0 torch direction:up
+> node 0 0 0
 (0,0,0) TORCH power:0 direction:UP
-> set 0 0 1 wire
-> set 0 0 2 wire
+> node 0 0 1 wire
+> node 0 0 2 wire
 > tick
-(0,0,0) SET power 15
+(0,0,0) FIELD power 15
 > tick
-(0,0,2) SET power 14
-(0,0,1) SET power 15
+(0,0,2) FIELD power 14
+(0,0,1) FIELD power 15
 > status
 ticks: 2
 nodes: 22

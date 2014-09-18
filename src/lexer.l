@@ -44,11 +44,10 @@
 #                 { return COMMENT;    }
 (?i:ping)         { return PING;       }
 (?i:status)       { return STATUS;     }
-(?i:set)          { return SET;        }
-(?i:setr)         { return SETR;       }
-(?i:setrs)        { return SETRS;      }
+(?i:node)         { return NODE;       }
+(?i:noder)        { return NODER;      }
+(?i:noders)       { return NODERS;     }
 (?i:delete)       { return DELETE;     }
-(?i:get)          { return GET;        }
 (?i:tick)         { return TICK;       }
 (?i:tickv)        { return TICKV;      }
 (?i:tickq)        { return TICKQ;      }

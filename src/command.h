@@ -52,9 +52,10 @@ void command_args_append(CommandArgs* args, char* name, char* value);
 
 void command_ping(void);
 void command_status(void);
-void command_set(Location location, Type* type, CommandArgs* args);
-void command_setr(Location start, Location end, Type* type, CommandArgs* args);
-void command_setrs(Location l1, Location l2, Location step, Type* type, CommandArgs* args);
+void command_node_get(Location location);
+void command_node_set(Location location, Type* type, CommandArgs* args);
+void command_noder_set(Location start, Location end, Type* type, CommandArgs* args);
+void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args);
 void command_delete(Location location);
 void command_get(Location location);
 void command_tick(int count, LogLevel log_level);

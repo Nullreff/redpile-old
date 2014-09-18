@@ -63,7 +63,7 @@ static bool integer_parse(char* string, int* found_int)
     }
 }
 
-void run_command_set(Location location, Type* type, CommandArgs* args)
+void run_command_node_set(Location location, Type* type, CommandArgs* args)
 {
     Node* node = world_set_node(world, location, type);
     assert(node != NULL);
@@ -148,19 +148,33 @@ void command_status(void)
     world_stats_print(world_get_stats(world));
 }
 
-void command_set(Location location, Type* type, CommandArgs* args)
+void command_node_get(Location location)
 {
-    run_command_set(location, type, args);
+    Node* node = world_get_node(world, location);
+    if (node == NULL)
+    {
+        Type* type = type_data_get_default_type(world->type_data);
+        repl_print("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
+    }
+    else
+    {
+        node_print(node);
+    }
+}
+
+void command_node_set(Location location, Type* type, CommandArgs* args)
+{
+    run_command_node_set(location, type, args);
     command_args_free(args);
 }
 
-void command_setr(Location l1, Location l2, Type* type, CommandArgs* args)
+void command_noder_set(Location l1, Location l2, Type* type, CommandArgs* args)
 {
-    command_setrs(l1, l2, location_create(1, 1, 1), type, args);
+    command_noders_set(l1, l2, location_create(1, 1, 1), type, args);
 }
 
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
-void command_setrs(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
+void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
 {
     PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");
     PARSE_ERROR_IF(step.y <= 0, "y_step must be greater than zero\n");
@@ -176,7 +190,7 @@ void command_setrs(Location l1, Location l2, Location step, Type* type, CommandA
     for (int x = x_start; x <= x_end; x += step.x)
     for (int y = y_start; y <= y_end; y += step.y)
     for (int z = z_start; z <= z_end; z += step.z)
-        run_command_set(location_create(x, y, z), type, args);
+        run_command_node_set(location_create(x, y, z), type, args);
 
 end:
     command_args_free(args);
@@ -185,20 +199,6 @@ end:
 void command_delete(Location location)
 {
     world_remove_node(world, location);
-}
-
-void command_get(Location location)
-{
-    Node* node = world_get_node(world, location);
-    if (node == NULL)
-    {
-        Type* type = type_data_get_default_type(world->type_data);
-        repl_print("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
-    }
-    else
-    {
-        node_print(node);
-    }
 }
 
 void command_tick(int count, LogLevel log_level)

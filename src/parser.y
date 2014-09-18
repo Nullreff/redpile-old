@@ -71,11 +71,10 @@ void yyerror(const char* const message);
 /* Commands */
 %token PING
 %token STATUS
-%token SET
-%token SETR
-%token SETRS
+%token NODE
+%token NODER
+%token NODERS
 %token DELETE
-%token GET
 %token TICK
 %token TICKV
 %token TICKQ
@@ -109,19 +108,19 @@ tick_args: /* empty */ { $$ = 1; }
          | STRING      { PARSE_ERROR_FREE($1, "Tick count must be numeric\n"); }
 ;
 
-command: PING                                           { command_ping(); }
-       | STATUS                                         { command_status(); }
-       | SET location type set_args                     { command_set($2, $3, $4); }
-       | SETR location location type set_args           { command_setr($2, $3, $4, $5); }
-       | SETRS location location location type set_args { command_setrs($2, $3, $4, $5, $6); }
-       | DELETE location                                { command_delete($2); }
-       | GET location                                   { command_get($2); }
-       | TICK tick_args                                 { command_tick($2, LOG_NORMAL); }
-       | TICKV tick_args                                { command_tick($2, LOG_VERBOSE); }
-       | TICKQ tick_args                                { command_tick($2, LOG_QUIET); }
-       | MESSAGES                                       { command_messages(); }
-       | COMMENT anything                               { /* NOOP */ }
-       | STRING anything                                { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
+command: PING                                            { command_ping(); }
+       | STATUS                                          { command_status(); }
+       | NODE location                                   { command_node_get($2); }
+       | NODE location type set_args                     { command_node_set($2, $3, $4); }
+       | NODER location location type set_args           { command_noder_set($2, $3, $4, $5); }
+       | NODERS location location location type set_args { command_noders_set($2, $3, $4, $5, $6); }
+       | DELETE location                                 { command_delete($2); }
+       | TICK tick_args                                  { command_tick($2, LOG_NORMAL); }
+       | TICKV tick_args                                 { command_tick($2, LOG_VERBOSE); }
+       | TICKQ tick_args                                 { command_tick($2, LOG_QUIET); }
+       | MESSAGES                                        { command_messages(); }
+       | COMMENT anything                                { /* NOOP */ }
+       | STRING anything                                 { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
 ;
 %%
 

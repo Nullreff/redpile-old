@@ -22,37 +22,33 @@ Syntax: `MESSAGES`
 
 Prints the list of messages currently 'in flight' between nodes.
 
-GET
----
+NODE
+----
 
-Syntax: `GET x y z`
+Syntax: `NODE x y z`
 
 Returns information about the node at `(x, y, z)` in the format `(x,y,z) type [fields]`.
 Each field will be displayed in the format `name:value`.
 
-SET
----
-
-Syntax: `SET x y z type [fields]`
+Syntax: `NODE x y z type [fields]`
 
 Sets the node at `(x, y, z)` to have a type of `type`.
 In addition, any fields passed passed with the syntax `name:value` will be set on the node as well.
 See [Types](types.md) for more information on types.
 
-SETR
-----
+NODER
+-----
 
-Syntax: `SETR x_start y_start z_start x_end y_end z_end type [fields]`
+Syntax: `NODER x_start y_start z_start x_end y_end z_end type [fields]`
 
-Runs a `SET` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)`.
+Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)`.
 
-SETRS
-----
+NODERS
+------
 
-Syntax: `SETRS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [fields]`
+Syntax: `NODERS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [fields]`
 
-Runs a `SET` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
-
+Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
 
 DELETE
 ------
