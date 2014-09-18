@@ -48,6 +48,8 @@
 (?i:noder)        { return NODER;      }
 (?i:noders)       { return NODERS;     }
 (?i:field)        { return FIELD;      }
+(?i:fieldr)       { return FIELDR;     }
+(?i:fieldrs)      { return FIELDRS;    }
 (?i:delete)       { return DELETE;     }
 (?i:tick)         { return TICK;       }
 (?i:tickv)        { return TICKV;      }

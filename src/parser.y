@@ -75,6 +75,8 @@ void yyerror(const char* const message);
 %token NODER
 %token NODERS
 %token FIELD
+%token FIELDR
+%token FIELDRS
 %token DELETE
 %token TICK
 %token TICKV
@@ -119,6 +121,10 @@ command: PING                                            { command_ping(); }
        | NODERS location location location type set_args { command_noders_set($2, $3, $4, $5, $6); }
        | FIELD location STRING                           { command_field_get($2, $3); }
        | FIELD location STRING VALUE                     { command_field_set($2, $3, $4); }
+       | FIELDR location location STRING                 { command_fieldr_get($2, $3, $4); }
+       | FIELDR location location STRING VALUE           { command_fieldr_set($2, $3, $4, $5); }
+       | FIELDRS location location location STRING       { command_fieldrs_get($2, $3, $4, $5); }
+       | FIELDRS location location location STRING VALUE { command_fieldrs_set($2, $3, $4, $5, $6); }
        | DELETE location                                 { command_delete($2); }
        | TICK tick_args                                  { command_tick($2, LOG_NORMAL); }
        | TICKV tick_args                                 { command_tick($2, LOG_VERBOSE); }

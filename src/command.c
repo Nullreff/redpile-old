@@ -34,6 +34,19 @@
 #include "repl.h"
 
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
+#define FOR_LOCATION_RANGE(START,END,STEP)\
+    PARSE_ERROR_IF((STEP).x <= 0, "x_step must be greater than zero\n");\
+    PARSE_ERROR_IF((STEP).y <= 0, "y_step must be greater than zero\n");\
+    PARSE_ERROR_IF((STEP).z <= 0, "z_step must be greater than zero\n");\
+    int x_start = (START).x > (END).x ? (END).x : (START).x;\
+    int x_end   = (START).x > (END).x ? (START).x : (END).x;\
+    int y_start = (START).y > (END).y ? (END).y : (START).y;\
+    int y_end   = (START).y > (END).y ? (START).y : (END).y;\
+    int z_start = (START).z > (END).z ? (END).z : (START).z;\
+    int z_end   = (START).z > (END).z ? (START).z : (END).z;\
+    for (int x = x_start; x <= x_end; x += (STEP).x)\
+    for (int y = y_start; y <= y_end; y += (STEP).y)\
+    for (int z = z_start; z <= z_end; z += (STEP).z)
 
 static bool direction_parse(const char* string, Direction* found_dir)
 {
@@ -167,29 +180,16 @@ void command_node_get(Location location)
 
 void command_noder_get(Location l1, Location l2)
 {
-    command_noders_get(l1, l2, location_create(1, 1, 1));
+    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
+        command_node_get(location_create(x, y, z));
+end:;
 }
 
 void command_noders_get(Location l1, Location l2, Location step)
 {
-    PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");
-    PARSE_ERROR_IF(step.y <= 0, "y_step must be greater than zero\n");
-    PARSE_ERROR_IF(step.z <= 0, "z_step must be greater than zero\n");
-
-    int x_start = l1.x > l2.x ? l2.x : l1.x;
-    int x_end   = l1.x > l2.x ? l1.x : l2.x;
-    int y_start = l1.y > l2.y ? l2.y : l1.y;
-    int y_end   = l1.y > l2.y ? l1.y : l2.y;
-    int z_start = l1.z > l2.z ? l2.z : l1.z;
-    int z_end   = l1.z > l2.z ? l1.z : l2.z;
-
-    for (int x = x_start; x <= x_end; x += step.x)
-    for (int y = y_start; y <= y_end; y += step.y)
-    for (int z = z_start; z <= z_end; z += step.z)
+    FOR_LOCATION_RANGE(l1, l2, step)
         command_node_get(location_create(x, y, z));
-
-end:
-    ;
+end:;
 }
 
 void command_node_set(Location location, Type* type, CommandArgs* args)
@@ -200,32 +200,19 @@ void command_node_set(Location location, Type* type, CommandArgs* args)
 
 void command_noder_set(Location l1, Location l2, Type* type, CommandArgs* args)
 {
-    command_noders_set(l1, l2, location_create(1, 1, 1), type, args);
+    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
+        run_command_node_set(location_create(x, y, z), type, args);
+end: command_args_free(args);
 }
 
 void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
 {
-    PARSE_ERROR_IF(step.x <= 0, "x_step must be greater than zero\n");
-    PARSE_ERROR_IF(step.y <= 0, "y_step must be greater than zero\n");
-    PARSE_ERROR_IF(step.z <= 0, "z_step must be greater than zero\n");
-
-    int x_start = l1.x > l2.x ? l2.x : l1.x;
-    int x_end   = l1.x > l2.x ? l1.x : l2.x;
-    int y_start = l1.y > l2.y ? l2.y : l1.y;
-    int y_end   = l1.y > l2.y ? l1.y : l2.y;
-    int z_start = l1.z > l2.z ? l2.z : l1.z;
-    int z_end   = l1.z > l2.z ? l1.z : l2.z;
-
-    for (int x = x_start; x <= x_end; x += step.x)
-    for (int y = y_start; y <= y_end; y += step.y)
-    for (int z = z_start; z <= z_end; z += step.z)
+    FOR_LOCATION_RANGE(l1, l2, step)
         run_command_node_set(location_create(x, y, z), type, args);
-
-end:
-    command_args_free(args);
+end: command_args_free(args);
 }
 
-void command_field_get(Location location, char* name)
+void command_field_get(Location location, const char* name)
 {
     Node* node = world_get_node(world, location);
     if (!node)
@@ -245,6 +232,20 @@ void command_field_get(Location location, char* name)
     node_print_field_value(node, field->type, node->fields.data[index]);
 }
 
+void command_fieldr_get(Location l1, Location l2, const char* name)
+{
+    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
+        command_field_get(location_create(x, y, z), name);
+end:;
+}
+
+void command_fieldrs_get(Location l1, Location l2, Location step, const char* name)
+{
+    FOR_LOCATION_RANGE(l1, l2, step)
+        command_field_get(location_create(x, y, z), name);
+end:;
+}
+
 void command_field_set(Location location, const char* name, const char* value)
 {
     Node* node = world_get_node(world, location);
@@ -256,6 +257,20 @@ void command_field_set(Location location, const char* name, const char* value)
     }
 
     node_field_set(node, name, value);
+}
+
+void command_fieldr_set(Location l1, Location l2, const char* name, const char* value)
+{
+    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
+        command_field_set(location_create(x, y, z), name, value);
+end:;
+}
+
+void command_fieldrs_set(Location l1, Location l2, Location step, const char* name, const char* value)
+{
+    FOR_LOCATION_RANGE(l1, l2, step)
+        command_field_set(location_create(x, y, z), name, value);
+end:;
 }
 
 void command_delete(Location location)
