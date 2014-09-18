@@ -1,6 +1,21 @@
 Commands
 ========
 
+Most commands in redpile use a 'region' syntax to designate which nodes should be affected by the command.
+Regions are made up of three 'ranges' that designate a range of numbers and an optional step.
+Ranges can be written as:
+
+* `5` - Only the number five (5)
+* `-2..3` - The numbers negative two through three (-2, -1, 0, 1, 2, 3)
+* `0..6%2` - The numbers zero through six with a step of two (0, 2, 4, 6)
+
+These are then combined with a comma separating each range to make a region.  For example:
+
+* `0,0,0` - A single node at the origin.
+* `0,0,0..5` - A line of nodes running from the origin to five away on the z axis.
+* `-1..1,-1..1,-1..1` - A cube of nodes that goes from negative one to one.
+* `-12..12%3,5,-12..12%3` - A grid of nodes raised five from the origin with two empty nodes between each.
+
 PING
 ----
 
@@ -25,39 +40,23 @@ Prints the list of messages currently 'in flight' between nodes.
 NODE
 ----
 
-Syntax: `NODE x y z`
+Syntax: `NODE range`
 
-Returns information about the node at `(x, y, z)` in the format `(x,y,z) type [fields]`.
+Returns information about the node(s) in the specified range in the format `(x,y,z) type [fields]`.
 Each field will be displayed in the format `name:value`.
 
-Syntax: `NODE x y z type [fields]`
+Syntax: `NODE range type [fields]`
 
-Sets the node at `(x, y, z)` to have a type of `type`.
+Sets the node(s) in the specified range to have a type of `type`.
 In addition, any fields passed passed with the syntax `name:value` will be set on the node as well.
 See [Types](types.md) for more information on types.
-
-NODER
------
-
-Syntax: `NODER x_start y_start z_start x_end y_end z_end`  
-Syntax: `NODER x_start y_start z_start x_end y_end z_end type [fields]`
-
-Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)`.
-
-NODERS
-------
-
-Syntax: `NODERS x_start y_start z_start x_end y_end z_end x_step y_step z_step`  
-Syntax: `NODERS x_start y_start z_start x_end y_end z_end x_step y_step z_step material [fields]`
-
-Runs a `NODE` command on the range of nodes between `(x_start, y_start, z_start)` and `(x_end, y_end, z_end)` incrementing by `(x_step, y_step, z_step)` every time.
 
 DELETE
 ------
 
-Syntax: `DELETE x y z`
+Syntax: `DELETE range`
 
-Removes the node at `(x, y, z)`.
+Removes any nodes inside the range provided
 
 TICK
 ----
