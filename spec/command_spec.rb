@@ -130,12 +130,13 @@ describe 'Commands' do
     ).should =~ /^nodes: 1$/
   end
 
-  %w(AIR INSULATOR).each do |block|
-    it "inserts an #{block} block" do
-      run(
-        "SET 0 0 0 #{block}",
+  %w(AIR INSULATOR).each do |type|
+    it "inserts an #{type}" do
+      result = run(
+        "SET 0 0 0 #{type}",
         "GET 0 0 0"
-      ).should =~ /^\(0,0,0\) #{block}$/
+      )
+      contains_node?(result, 0, 0, 0, type)
     end
   end
 

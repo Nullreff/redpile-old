@@ -71,7 +71,7 @@ module Helpers
 
   def contains_node?(result, x, y, z, type, fields = {})
     if fields.empty?
-       result.should =~ /^\(#{x},#{y},#{z}\) #{type}$/
+       result.should =~ /^\(#{x},#{y},#{z}\) #{type}.*$/
        return
     end
     result.should =~ /^(\(#{x},#{y},#{z}\) #{type} .*)$/
