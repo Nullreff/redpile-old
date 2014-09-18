@@ -61,7 +61,6 @@ void command_noders_set(Location l1, Location l2, Location step, Type* type, Com
 void command_field_get(Location location, char* name);
 void command_field_set(Location location, const char* name, const char* value);
 void command_delete(Location location);
-void command_get(Location location);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);
 
