@@ -1,18 +1,5 @@
-require 'socket'
-require 'timeout'
-
-def socket_with_timeout(ip, port)
-  Timeout::timeout(1) do
-    while true
-      begin
-        return TCPSocket.new(ip, port)
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-      end
-    end
-  end
-end
-
 module Helpers
+  DIRECTIONS = %w(NORTH SOUTH EAST WEST UP DOWN)
   REDPILE_CONF = 'conf/redstone.lua'
   REDPILE_CMD = './build/src/redpile'
   VALGRIND_CMD = 'valgrind -q --leak-check=full --show-reachable=yes '

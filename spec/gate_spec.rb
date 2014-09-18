@@ -1,7 +1,7 @@
 require 'spec_helper'
 include Helpers
 
-# More complex logic gate tests.  Taken from:
+# Logic gate tests. Taken from:
 # http://minecraft.gamepedia.com/Tutorials/Basic_Logic_Gates
 
 describe 'Logic' do
