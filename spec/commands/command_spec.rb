@@ -7,7 +7,7 @@ describe 'Commands' do
   end
 
   it 'parses the DELETE command' do
-    run('DELETE 0 0 0').should == "\n"
+    run('DELETE 0,0,0').should == "\n"
   end
 
   it 'errors on an unknown command' do
