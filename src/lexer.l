@@ -47,6 +47,7 @@
 (?i:node)         { return NODE;       }
 (?i:noder)        { return NODER;      }
 (?i:noders)       { return NODERS;     }
+(?i:field)        { return FIELD;      }
 (?i:delete)       { return DELETE;     }
 (?i:tick)         { return TICK;       }
 (?i:tickv)        { return TICKV;      }

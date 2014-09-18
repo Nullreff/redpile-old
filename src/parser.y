@@ -74,6 +74,7 @@ void yyerror(const char* const message);
 %token NODE
 %token NODER
 %token NODERS
+%token FIELD
 %token DELETE
 %token TICK
 %token TICKV
@@ -116,6 +117,7 @@ command: PING                                            { command_ping(); }
        | NODER location location type set_args           { command_noder_set($2, $3, $4, $5); }
        | NODERS location location location               { command_noders_get($2, $3, $4); }
        | NODERS location location location type set_args { command_noders_set($2, $3, $4, $5, $6); }
+       | FIELD location STRING                           { command_field_get($2, $3); }
        | DELETE location                                 { command_delete($2); }
        | TICK tick_args                                  { command_tick($2, LOG_NORMAL); }
        | TICKV tick_args                                 { command_tick($2, LOG_VERBOSE); }

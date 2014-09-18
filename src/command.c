@@ -75,14 +75,14 @@ void run_command_node_set(Location location, Type* type, CommandArgs* args)
         CommandArg* arg = args->data + i;
 
         int index;
-        FieldType field_type;
-        if (!type_find_field(node->type, arg->name, &index, &field_type))
+        Field* field = type_find_field(node->type, arg->name, &index);
+        if (!field)
         {
             repl_print_error("The type '%s' doesn't have the field '%s'\n", node->type->name, arg->name);
             return;
         }
 
-        switch (field_type)
+        switch (field->type)
         {
             case FIELD_INTEGER: {
                 int found_int;
@@ -222,6 +222,26 @@ void command_noders_set(Location l1, Location l2, Location step, Type* type, Com
 
 end:
     command_args_free(args);
+}
+
+void command_field_get(Location location, char* name)
+{
+    Node* node = world_get_node(world, location);
+    if (!node)
+    {
+        repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
+        return;
+    }
+
+    int index;
+    Field* field = type_find_field(node->type, name, &index);
+    if (!field)
+    {
+        repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
+        return;
+    }
+
+    node_print_field_value(node, field->type, node->fields.data[index]);
 }
 
 void command_delete(Location location)

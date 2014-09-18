@@ -292,9 +292,8 @@ static int script_node_adjacent(ScriptState* state)
             if (raw_direction >= DIRECTIONS_COUNT)
             {
                 int index;
-                FieldType field_type;
-                bool found = type_find_field(current->type, "direction", &index, &field_type);
-                LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                Field* field = type_find_field(current->type, "direction", &index);
+                LUA_ERROR_IF(!field || field->type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
                 direction = direction_move(FIELD_GET(current, index, direction), (Movement)raw_direction);
             }
 
@@ -339,9 +338,8 @@ static int script_node_adjacent_each(ScriptState* state)
             if (raw_direction >= DIRECTIONS_COUNT)
             {
                 int index;
-                FieldType field_type;
-                bool found = type_find_field(current->type, "direction", &index, &field_type);
-                LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
+                Field* field = type_find_field(current->type, "direction", &index);
+                LUA_ERROR_IF(!field || field->type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
                 direction = direction_move(FIELD_GET(current, index, direction), (Movement)raw_direction);
             }
 
@@ -482,13 +480,12 @@ static int script_node_index_set(ScriptState* state)
     Node* node = script_node_from_stack(state, 1);
     const char* name = lua_tostring(state, 2);
 
-    int found_index;
-    FieldType field_type;
-    bool found = type_find_field(node->type, name, &found_index, &field_type);
-    LUA_ERROR_IF(!found, "Could not find field");
+    int index;
+    Field* field = type_find_field(node->type, name, &index);
+    LUA_ERROR_IF(!field, "Could not find field");
 
     FieldValue value;
-    switch (field_type)
+    switch (field->type)
     {
         case FIELD_INTEGER: {
             LUA_ERROR_IF(!lua_isnumber(state, 3),
@@ -520,14 +517,14 @@ static int script_node_index_set(ScriptState* state)
         script_data->world->ticks,
         node,
         node,
-        found_index,
+        index,
         value
     );
 
     // Save the new value in the metatable
     lua_getmetatable(state, 1);
     lua_pushstring(state, name);
-    switch (field_type)
+    switch (field->type)
     {
         case FIELD_INTEGER:
             lua_pushnumber(state, value.integer);
@@ -659,9 +656,8 @@ static int script_messages_source(ScriptState* state)
         else
         {
             int index;
-            FieldType field_type;
-            bool found = type_find_field(script_data->node->type, "direction", &index, &field_type);
-            LUA_ERROR_IF(!found || field_type != FIELD_DIRECTION, "No direction field found on the node passed to source");
+            Field* field = type_find_field(script_data->node->type, "direction", &index);
+            LUA_ERROR_IF(!field || field->type != FIELD_DIRECTION, "No direction field found on the node passed to source");
             Direction dir = direction_move(FIELD_GET(script_data->node, index, direction),
                                            (Movement)(int)raw_direction);
             location = location_move(script_data->node->location, dir, 1);

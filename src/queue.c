@@ -297,10 +297,7 @@ static void queue_data_print_type(QueueData* data)
         case SM_MOVE:   repl_print("MOVE %s\n", Directions[data->value.direction]); break;
         case SM_REMOVE: repl_print("REMOVE\n"); break;
         case SM_DATA:
-            if (data->value.string)
-                repl_print("DATA \"%s\"\n", data->value.string);
-            else
-                repl_print("DATA \"\"\n");
+            repl_print("DATA \"%s\"\n", data->value.string ? data->value.string : "");
             break;
         case SM_FIELD:
             repl_print("FIELD");
