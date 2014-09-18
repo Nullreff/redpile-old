@@ -40,21 +40,21 @@
 %option noinput
 %%
 [ \t\0]           ;
-\n                { return LINE_BREAK; }
-#                 { return COMMENT;    }
-(?i:ping)         { return PING;       }
-(?i:status)       { return STATUS;     }
-(?i:node)         { return NODE;       }
-(?i:noder)        { return NODER;      }
-(?i:noders)       { return NODERS;     }
-(?i:field)        { return FIELD;      }
-(?i:fieldr)       { return FIELDR;     }
-(?i:fieldrs)      { return FIELDRS;    }
-(?i:delete)       { return DELETE;     }
-(?i:tick)         { return TICK;       }
-(?i:tickv)        { return TICKV;      }
-(?i:tickq)        { return TICKQ;      }
-(?i:messages)     { return MESSAGES;   }
+\n                { return LINE_BREAK;  }
+#                 { return COMMENT;     }
+,                 { return COMMA;       }
+\.\.                { return ELLIPSIS;    }
+%                 { return MODULUS;     }
+(?i:ping)         { return PING;        }
+(?i:status)       { return STATUS;      }
+(?i:node)         { return NODE;        }
+(?i:field)        { return FIELD;       }
+(?i:delete)       { return DELETE;      }
+(?i:tick)         { return TICK;        }
+(?i:tickv)        { return TICKV;       }
+(?i:tickq)        { return TICKQ;       }
+(?i:messages)     { return MESSAGES;    }
+
 :[a-zA-Z0-9]+     { yylval.string  = strdup(yytext + 1);       return VALUE;  }
 :\"(\\\"|[^"])+\" { yylval.string  = strdup(yytext + 2);
                     yylval.string[yyleng - 3] = '\0';          return VALUE;  }

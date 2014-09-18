@@ -34,19 +34,19 @@
 #include "repl.h"
 
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
-#define FOR_LOCATION_RANGE(START,END,STEP)\
-    PARSE_ERROR_IF((STEP).x <= 0, "x_step must be greater than zero\n");\
-    PARSE_ERROR_IF((STEP).y <= 0, "y_step must be greater than zero\n");\
-    PARSE_ERROR_IF((STEP).z <= 0, "z_step must be greater than zero\n");\
-    int x_start = (START).x > (END).x ? (END).x : (START).x;\
-    int x_end   = (START).x > (END).x ? (START).x : (END).x;\
-    int y_start = (START).y > (END).y ? (END).y : (START).y;\
-    int y_end   = (START).y > (END).y ? (START).y : (END).y;\
-    int z_start = (START).z > (END).z ? (END).z : (START).z;\
-    int z_end   = (START).z > (END).z ? (START).z : (END).z;\
-    for (int x = x_start; x <= x_end; x += (STEP).x)\
-    for (int y = y_start; y <= y_end; y += (STEP).y)\
-    for (int z = z_start; z <= z_end; z += (STEP).z)
+#define FOR_REGION(R)\
+    int x_start = (R)->x.start > (R)->x.end ? (R)->x.end : (R)->x.start;\
+    int x_end   = (R)->x.start > (R)->x.end ? (R)->x.start : (R)->x.end;\
+    int y_start = (R)->y.start > (R)->y.end ? (R)->y.end : (R)->y.start;\
+    int y_end   = (R)->y.start > (R)->y.end ? (R)->y.start : (R)->y.end;\
+    int z_start = (R)->z.start > (R)->z.end ? (R)->z.end : (R)->z.start;\
+    int z_end   = (R)->z.start > (R)->z.end ? (R)->z.start : (R)->z.end;\
+    int x_step  = abs((R)->x.step);\
+    int y_step  = abs((R)->y.step);\
+    int z_step  = abs((R)->z.step);\
+    for (int x = x_start; x <= x_end; x += x_step)\
+    for (int y = y_start; y <= y_end; y += y_step)\
+    for (int z = z_start; z <= z_end; z += z_step)
 
 static bool direction_parse(const char* string, Direction* found_dir)
 {
@@ -122,13 +122,27 @@ static void node_field_set(Node* node, const char* name, const char* value)
     }
 }
 
-void run_command_node_set(Location location, Type* type, CommandArgs* args)
+static void run_command_node_set(Location location, Type* type, CommandArgs* args)
 {
     Node* node = world_set_node(world, location, type);
     assert(node != NULL);
 
     for (int i = 0; i < args->index; i++)
         node_field_set(node, args->data[i].name, args->data[i].value);
+}
+
+Range range_create(int start, int end, unsigned int step)
+{
+    return (Range){start, end, step};
+}
+
+Region* region_allocate(Range x, Range y, Range z)
+{
+    Region* region = malloc(sizeof(Region));
+    region->x = x;
+    region->y = y;
+    region->z = z;
+    return region;
 }
 
 CommandArgs* command_args_allocate(unsigned int count)
@@ -164,118 +178,76 @@ void command_status(void)
     world_stats_print(world_get_stats(world));
 }
 
-void command_node_get(Location location)
+void command_node_get(Region* region)
 {
-    Node* node = world_get_node(world, location);
-    if (node == NULL)
+    FOR_REGION(region)
     {
-        Type* type = type_data_get_default_type(world->type_data);
-        repl_print("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
+        Location location = location_create(x, y, z);
+        Node* node = world_get_node(world, location);
+        if (node == NULL)
+        {
+            Type* type = type_data_get_default_type(world->type_data);
+            repl_print("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
+        }
+        else
+        {
+            node_print(node);
+        }
     }
-    else
-    {
-        node_print(node);
-    }
 }
 
-void command_noder_get(Location l1, Location l2)
+void command_node_set(Region* region, Type* type, CommandArgs* args)
 {
-    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
-        command_node_get(location_create(x, y, z));
-end:;
-}
-
-void command_noders_get(Location l1, Location l2, Location step)
-{
-    FOR_LOCATION_RANGE(l1, l2, step)
-        command_node_get(location_create(x, y, z));
-end:;
-}
-
-void command_node_set(Location location, Type* type, CommandArgs* args)
-{
-    run_command_node_set(location, type, args);
+    FOR_REGION(region)
+        run_command_node_set(location_create(x, y, z), type, args);
     command_args_free(args);
 }
 
-void command_noder_set(Location l1, Location l2, Type* type, CommandArgs* args)
+void command_field_get(Region* region, const char* name)
 {
-    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
-        run_command_node_set(location_create(x, y, z), type, args);
-end: command_args_free(args);
-}
-
-void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args)
-{
-    FOR_LOCATION_RANGE(l1, l2, step)
-        run_command_node_set(location_create(x, y, z), type, args);
-end: command_args_free(args);
-}
-
-void command_field_get(Location location, const char* name)
-{
-    Node* node = world_get_node(world, location);
-    if (!node)
+    FOR_REGION(region)
     {
-        repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
-        return;
-    }
+        Location location = location_create(x, y, z);
+        Node* node = world_get_node(world, location);
+        if (!node)
+        {
+            repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
+            return;
+        }
 
-    int index;
-    Field* field = type_find_field(node->type, name, &index);
-    if (!field)
+        int index;
+        Field* field = type_find_field(node->type, name, &index);
+        if (!field)
+        {
+            repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
+            return;
+        }
+
+        node_print_field_value(node, field->type, node->fields.data[index]);
+    }
+}
+
+void command_field_set(Region* region, const char* name, const char* value)
+{
+    FOR_REGION(region)
     {
-        repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
-        return;
+        Location location = location_create(x, y, z);
+        Node* node = world_get_node(world, location);
+        if (!node)
+        {
+            Type* type = type_data_get_default_type(world->type_data);
+            repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
+            return;
+        }
+
+        node_field_set(node, name, value);
     }
-
-    node_print_field_value(node, field->type, node->fields.data[index]);
 }
 
-void command_fieldr_get(Location l1, Location l2, const char* name)
+void command_delete(Region* region)
 {
-    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
-        command_field_get(location_create(x, y, z), name);
-end:;
-}
-
-void command_fieldrs_get(Location l1, Location l2, Location step, const char* name)
-{
-    FOR_LOCATION_RANGE(l1, l2, step)
-        command_field_get(location_create(x, y, z), name);
-end:;
-}
-
-void command_field_set(Location location, const char* name, const char* value)
-{
-    Node* node = world_get_node(world, location);
-    if (!node)
-    {
-        Type* type = type_data_get_default_type(world->type_data);
-        repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
-        return;
-    }
-
-    node_field_set(node, name, value);
-}
-
-void command_fieldr_set(Location l1, Location l2, const char* name, const char* value)
-{
-    FOR_LOCATION_RANGE(l1, l2, location_create(1, 1, 1))
-        command_field_set(location_create(x, y, z), name, value);
-end:;
-}
-
-void command_fieldrs_set(Location l1, Location l2, Location step, const char* name, const char* value)
-{
-    FOR_LOCATION_RANGE(l1, l2, step)
-        command_field_set(location_create(x, y, z), name, value);
-end:;
-}
-
-void command_delete(Location location)
-{
-    world_remove_node(world, location);
+    FOR_REGION(region)
+        world_remove_node(world, location_create(x, y, z));
 }
 
 void command_tick(int count, LogLevel log_level)

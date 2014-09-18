@@ -51,19 +51,25 @@ void yyerror(const char* const message);
 %union {
     int integer;
     char *string;
-    Location location;
+    Range range;
+    Region* region;
     Type* type;
     CommandArgs* args;
 }
 
+/* Symbols */
 %token LINE_BREAK
 %token COMMENT
+%token COMMA
+%token ELLIPSIS
+%token MODULUS
 
 /* Data */
 %token <integer> INT
 %token <string> STRING
 %token <string> VALUE
-%type  <location> location
+%type  <range> range
+%type  <region> region
 %type  <type> type
 %type  <args> set_args
 %type  <integer> tick_args
@@ -92,8 +98,12 @@ line: LINE_BREAK
     | command LINE_BREAK
 ;
 
-location: INT INT INT { $$ = location_create($1, $2, $3); }
+range: INT                          { $$ = range_create($1, $1, 1); }
+     | INT ELLIPSIS INT             { $$ = range_create($1, $3, 1); }
+     | INT ELLIPSIS INT MODULUS INT { $$ = range_create($1, $3, $5); }
 ;
+
+region: range COMMA range COMMA range { $$ = region_allocate($1, $3, $5); }
 
 type: STRING { Type* type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
 ;
@@ -113,19 +123,11 @@ tick_args: /* empty */ { $$ = 1; }
 
 command: PING                                            { command_ping(); }
        | STATUS                                          { command_status(); }
-       | NODE location                                   { command_node_get($2); }
-       | NODE location type set_args                     { command_node_set($2, $3, $4); }
-       | NODER location location                         { command_noder_get($2, $3); }
-       | NODER location location type set_args           { command_noder_set($2, $3, $4, $5); }
-       | NODERS location location location               { command_noders_get($2, $3, $4); }
-       | NODERS location location location type set_args { command_noders_set($2, $3, $4, $5, $6); }
-       | FIELD location STRING                           { command_field_get($2, $3); }
-       | FIELD location STRING VALUE                     { command_field_set($2, $3, $4); }
-       | FIELDR location location STRING                 { command_fieldr_get($2, $3, $4); }
-       | FIELDR location location STRING VALUE           { command_fieldr_set($2, $3, $4, $5); }
-       | FIELDRS location location location STRING       { command_fieldrs_get($2, $3, $4, $5); }
-       | FIELDRS location location location STRING VALUE { command_fieldrs_set($2, $3, $4, $5, $6); }
-       | DELETE location                                 { command_delete($2); }
+       | NODE region                                     { command_node_get($2); }
+       | NODE region type set_args                       { command_node_set($2, $3, $4); }
+       | FIELD region STRING                             { command_field_get($2, $3); }
+       | FIELD region STRING VALUE                       { command_field_set($2, $3, $4); }
+       | DELETE region                                   { command_delete($2); }
        | TICK tick_args                                  { command_tick($2, LOG_NORMAL); }
        | TICKV tick_args                                 { command_tick($2, LOG_VERBOSE); }
        | TICKQ tick_args                                 { command_tick($2, LOG_QUIET); }

@@ -36,6 +36,18 @@
 #include "location.h"
 
 typedef struct {
+    int start;
+    int end;
+    unsigned int step;
+} Range;
+
+typedef struct {
+    Range x;
+    Range y;
+    Range z;
+} Region;
+
+typedef struct {
     char* name;
     char* value;
 } CommandArg;
@@ -46,25 +58,20 @@ typedef struct {
     CommandArg data[];
 } CommandArgs;
 
+Range range_create(int start, int end, unsigned int step);
+Region* region_allocate(Range x, Range y, Range z);
+
 CommandArgs* command_args_allocate(unsigned int count);
 void command_args_free(CommandArgs* args);
 void command_args_append(CommandArgs* args, char* name, char* value);
 
 void command_ping(void);
 void command_status(void);
-void command_node_get(Location location);
-void command_noder_get(Location l1, Location l2);
-void command_noders_get(Location l1, Location l2, Location step);
-void command_node_set(Location location, Type* type, CommandArgs* args);
-void command_noder_set(Location start, Location end, Type* type, CommandArgs* args);
-void command_noders_set(Location l1, Location l2, Location step, Type* type, CommandArgs* args);
-void command_field_get(Location location, const char* name);
-void command_fieldr_get(Location l1, Location l2, const char* name);
-void command_fieldrs_get(Location l1, Location l2, Location step, const char* name);
-void command_field_set(Location location, const char* name, const char* value);
-void command_fieldr_set(Location l1, Location l2, const char* name, const char* value);
-void command_fieldrs_set(Location l1, Location l2, Location step, const char* name, const char* value);
-void command_delete(Location location);
+void command_node_get(Region* region);
+void command_node_set(Region* region, Type* type, CommandArgs* args);
+void command_field_get(Region* region, const char* name);
+void command_field_set(Region* region, const char* name, const char* value);
+void command_delete(Region* region);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);
 
