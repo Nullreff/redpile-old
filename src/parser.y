@@ -88,6 +88,7 @@ void yyerror(const char* const message);
 %token TICKV
 %token TICKQ
 %token MESSAGES
+%token TYPES
 
 %%
 input: /* empty */
@@ -132,6 +133,7 @@ command: PING                                            { command_ping(); }
        | TICKV tick_args                                 { command_tick($2, LOG_VERBOSE); }
        | TICKQ tick_args                                 { command_tick($2, LOG_QUIET); }
        | MESSAGES                                        { command_messages(); }
+       | TYPES                                           { command_types(); }
        | COMMENT anything                                { /* NOOP */ }
        | STRING anything                                 { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
 ;

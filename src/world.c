@@ -278,3 +278,24 @@ void world_print_messages(World* world)
     }
 }
 
+void world_print_types(World* world)
+{
+    FOR_TYPES(type, world->type_data)
+    {
+        repl_print("%s\n", type->name);
+        for (int i = 0; i < type->fields->count; i++)
+        {
+            Field* field = type->fields->data + i;
+            char* type;
+            switch (field->type)
+            {
+                case FIELD_INTEGER: type = "INTEGER"; break;
+                case FIELD_DIRECTION: type = "DIRECTION"; break;
+                case FIELD_STRING: type = "STRING"; break;
+                default: ERROR("Unknown type");
+            }
+            repl_print("  %d: %s %s\n", i, field->name, type);
+        }
+    }
+}
+

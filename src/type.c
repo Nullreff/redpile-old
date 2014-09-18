@@ -155,7 +155,7 @@ Type** type_data_type_indexes_allocate(TypeData* type_data)
 
 Type* type_data_find_type(TypeData* type_data, const char* name)
 {
-    FOR_TYPE(type, type_data)
+    FOR_TYPES(type, type_data)
     {
         if (strcasecmp(name, type->name) == 0)
             return type;
@@ -175,7 +175,7 @@ Type* type_data_get_default_type(TypeData* type_data)
 
 Behavior* type_data_find_behavior(TypeData* type_data, const char* name)
 {
-    FOR_BEHAVIOR(behavior, type_data)
+    FOR_BEHAVIORS(behavior, type_data)
     {
         if (strcasecmp(name, behavior->name) == 0)
             return behavior;

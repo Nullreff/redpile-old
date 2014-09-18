@@ -43,7 +43,7 @@
 \n                { return LINE_BREAK;  }
 #                 { return COMMENT;     }
 ,                 { return COMMA;       }
-\.\.                { return ELLIPSIS;    }
+\.\.              { return ELLIPSIS;    }
 %                 { return MODULUS;     }
 (?i:ping)         { return PING;        }
 (?i:status)       { return STATUS;      }
@@ -54,6 +54,7 @@
 (?i:tickv)        { return TICKV;       }
 (?i:tickq)        { return TICKQ;       }
 (?i:messages)     { return MESSAGES;    }
+(?i:types)        { return TYPES;       }
 
 :[a-zA-Z0-9]+     { yylval.string  = strdup(yytext + 1);       return VALUE;  }
 :\"(\\\"|[^"])+\" { yylval.string  = strdup(yytext + 2);

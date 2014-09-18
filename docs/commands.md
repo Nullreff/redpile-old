@@ -37,6 +37,13 @@ Syntax: `MESSAGES`
 
 Prints the list of messages currently 'in flight' between nodes.
 
+TYPES
+-----
+
+Syntax: `TYPES`
+
+Prints a list of defined types and their fields.
+
 NODE
 ----
 

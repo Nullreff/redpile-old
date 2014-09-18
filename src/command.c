@@ -261,6 +261,11 @@ void command_messages(void)
     world_print_messages(world);
 }
 
+void command_types(void)
+{
+    world_print_types(world);
+}
+
 void command_error(const char* message)
 {
     repl_print_error("%s\n", message);

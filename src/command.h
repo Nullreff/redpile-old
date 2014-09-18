@@ -74,6 +74,7 @@ void command_field_set(Region* region, const char* name, const char* value);
 void command_delete(Region* region);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);
+void command_types(void);
 
 void command_error(const char* message);
 bool type_parse(char* string, Type** type);
