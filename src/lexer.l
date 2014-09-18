@@ -39,23 +39,23 @@
 %option nounput
 %option noinput
 %%
-[ \t\0]         ;
-\n              { return LINE_BREAK; }
-#               { return COMMENT;    }
-(?i:ping)       { return PING;       }
-(?i:status)     { return STATUS;     }
-(?i:set)        { return SET;        }
-(?i:setr)       { return SETR;       }
-(?i:setrs)      { return SETRS;      }
-(?i:delete)     { return DELETE;     }
-(?i:get)        { return GET;        }
-(?i:tick)       { return TICK;       }
-(?i:tickv)      { return TICKV;      }
-(?i:tickq)      { return TICKQ;      }
-(?i:messages)   { return MESSAGES;   }
-:[a-zA-Z0-9]+   { yylval.string  = strdup(yytext + 1);       return VALUE;  }
-:\"([^"]+)\"    { yylval.string  = strdup(yytext + 2);
-                  yylval.string[yyleng - 3] = '\0';          return VALUE;  }
--?[0-9]+        { yylval.integer = strtol(yytext, NULL, 10); return INT;    }
-[a-zA-Z0-9]+    { yylval.string  = strdup(yytext);           return STRING; }
+[ \t\0]           ;
+\n                { return LINE_BREAK; }
+#                 { return COMMENT;    }
+(?i:ping)         { return PING;       }
+(?i:status)       { return STATUS;     }
+(?i:set)          { return SET;        }
+(?i:setr)         { return SETR;       }
+(?i:setrs)        { return SETRS;      }
+(?i:delete)       { return DELETE;     }
+(?i:get)          { return GET;        }
+(?i:tick)         { return TICK;       }
+(?i:tickv)        { return TICKV;      }
+(?i:tickq)        { return TICKQ;      }
+(?i:messages)     { return MESSAGES;   }
+:[a-zA-Z0-9]+     { yylval.string  = strdup(yytext + 1);       return VALUE;  }
+:\"(\\\"|[^"])+\" { yylval.string  = strdup(yytext + 2);
+                    yylval.string[yyleng - 3] = '\0';          return VALUE;  }
+-?[0-9]+          { yylval.integer = strtol(yytext, NULL, 10); return INT;    }
+[a-zA-Z0-9]+      { yylval.string  = strdup(yytext);           return STRING; }
 %%

@@ -18,6 +18,14 @@ describe 'Echo' do
     contains_node?(result, 0, 0, 0, 'ECHO', message: '"Hello world"')
   end
 
+  it 'Stores a message with escaped quotes' do
+    result = run(
+      'SET 0 0 0 ECHO message:"Hello \"Quoted\" world"',
+      'GET 0 0 0'
+    )
+    contains_node?(result, 0, 0, 0, 'ECHO', message: '"Hello \\\"Quoted\\\" world"')
+  end
+
   it 'Prints a message when powered' do
     run(
       'SET 0 0 0 SWITCH direction:up state:1',
