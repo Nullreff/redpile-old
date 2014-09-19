@@ -3,7 +3,8 @@ Redpile [![Build Status](https://travis-ci.org/Nullreff/redpile.svg?branch=maste
 
 **THIS IS A WORK IN PROGRESS**
 
-Redpile is a rethink of Redstone for Minecraft with more flexibility, speed and utility.
+Redpile is a voxel logic simulator.
+You can think of it as a Redstone simulator with more flexibility, speed and utility.
 It can be run from the command line or as a standalone server that talks via sockets.
 For more information, check out [redpile.org](http://redpile.org/).
 

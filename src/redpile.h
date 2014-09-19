@@ -1,4 +1,4 @@
-/* redpile.h - High performance redstone
+/* redpile.h - Voxel logic simulator
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * All rights reserved.

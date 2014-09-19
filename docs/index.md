@@ -1,7 +1,8 @@
 Redpile
 =======
 
-Redpile is a rethink of Redstone for Minecraft with more flexibility, speed and utility.
+Redpile is a voxel logic simulator.
+You can think of it as a Redstone simulator with more flexibility, speed and utility.
 It can be run from the command line or as a standalone server that talks via sockets.
 
 Installation
@@ -36,6 +37,8 @@ If it doesn't, please open an issue.
 Usage
 -----
 
+In order to run, Redpile needs a configuration file.
+A file that simulates Redstone is provided in `conf/redstone.lua`.
 For playing around, you can run redpile in `-i` (interactive) mode.
 You can also have it listen on a specific port `-p <port>`.
 See `--help` for a list of all options.
