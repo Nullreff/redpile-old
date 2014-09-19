@@ -53,7 +53,6 @@ void yyerror(const char* const message);
     char *string;
     Range range;
     Region* region;
-    Type* type;
     CommandArgs* args;
 }
 
@@ -70,7 +69,6 @@ void yyerror(const char* const message);
 %token <string> VALUE
 %type  <range> range
 %type  <region> region
-%type  <type> type
 %type  <args> set_args
 %type  <integer> tick_args
 
@@ -106,9 +104,6 @@ range: INT                          { $$ = range_create($1, $1, 1); }
 
 region: range COMMA range COMMA range { $$ = region_allocate($1, $3, $5); }
 
-type: STRING { Type* type; if (!type_parse($1, &type)) YYABORT; $$ = type; }
-;
-
 anything: /* empty */
         | STRING anything { free($1); }
         | INT anything
@@ -125,7 +120,7 @@ tick_args: /* empty */ { $$ = 1; }
 command: PING                                            { command_ping(); }
        | STATUS                                          { command_status(); }
        | NODE region                                     { command_node_get($2); }
-       | NODE region type set_args                       { command_node_set($2, $3, $4); }
+       | NODE region STRING set_args                     { command_node_set($2, $3, $4); }
        | FIELD region STRING                             { command_field_get($2, $3); }
        | FIELD region STRING VALUE                       { command_field_set($2, $3, $4); }
        | DELETE region                                   { command_delete($2); }

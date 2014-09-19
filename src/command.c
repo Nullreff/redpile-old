@@ -78,7 +78,21 @@ static bool integer_parse(const char* string, int* found_int)
     }
 }
 
-static void node_field_set(Node* node, const char* name, const char* value)
+static bool type_parse(char* string, Type** type)
+{
+    *type = type_data_find_type(world->type_data, string);
+    if (*type != NULL)
+    {
+        free(string);
+        return true;
+    }
+
+    repl_print_error("Unknown type '%s'\n", string);
+    free(string);
+    return false;
+}
+
+static void node_field_set(Node* node, char* name, char* value)
 {
     int index;
     Field* field = type_find_field(node->type, name, &index);
@@ -194,16 +208,22 @@ void command_node_get(Region* region)
             node_print(node);
         }
     }
+    free(region);
 }
 
-void command_node_set(Region* region, Type* type, CommandArgs* args)
+void command_node_set(Region* region, char* type_name, CommandArgs* args)
 {
-    FOR_REGION(region)
-        run_command_node_set(location_create(x, y, z), type, args);
+    Type* type;
+    if (type_parse(type_name, &type))
+    {
+        FOR_REGION(region)
+            run_command_node_set(location_create(x, y, z), type, args);
+    }
+    free(region);
     command_args_free(args);
 }
 
-void command_field_get(Region* region, const char* name)
+void command_field_get(Region* region, char* name)
 {
     FOR_REGION(region)
     {
@@ -225,9 +245,11 @@ void command_field_get(Region* region, const char* name)
 
         node_print_field_value(node, field->type, node->fields.data[index]);
     }
+    free(region);
+    free(name);
 }
 
-void command_field_set(Region* region, const char* name, const char* value)
+void command_field_set(Region* region, char* name, char* value)
 {
     FOR_REGION(region)
     {
@@ -242,12 +264,16 @@ void command_field_set(Region* region, const char* name, const char* value)
 
         node_field_set(node, name, value);
     }
+    free(region);
+    free(name);
+    free(value);
 }
 
 void command_delete(Region* region)
 {
     FOR_REGION(region)
         world_remove_node(world, location_create(x, y, z));
+    free(region);
 }
 
 void command_tick(int count, LogLevel log_level)
@@ -269,20 +295,5 @@ void command_types(void)
 void command_error(const char* message)
 {
     repl_print_error("%s\n", message);
-}
-
-bool type_parse(char* string, Type** found_type)
-{
-    Type* type = type_data_find_type(world->type_data, string);
-    if (type != NULL)
-    {
-        *found_type = type;
-        free(string);
-        return true;
-    }
-
-    repl_print_error("Unknown type '%s'\n", string);
-    free(string);
-    return false;
 }
 

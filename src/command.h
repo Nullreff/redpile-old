@@ -68,15 +68,14 @@ void command_args_append(CommandArgs* args, char* name, char* value);
 void command_ping(void);
 void command_status(void);
 void command_node_get(Region* region);
-void command_node_set(Region* region, Type* type, CommandArgs* args);
-void command_field_get(Region* region, const char* name);
-void command_field_set(Region* region, const char* name, const char* value);
+void command_node_set(Region* region, char* type, CommandArgs* args);
+void command_field_get(Region* region, char* name);
+void command_field_set(Region* region, char* name, char* value);
 void command_delete(Region* region);
 void command_tick(int count, LogLevel log_level);
 void command_messages(void);
 void command_types(void);
 
 void command_error(const char* message);
-bool type_parse(char* string, Type** type);
 
 #endif
