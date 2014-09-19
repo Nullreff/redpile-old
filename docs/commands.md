@@ -63,11 +63,13 @@ FIELD
 
 Syntax: `FIELD range name`
 
-Returns the value(s) of the specified field `name` for all nodes in the specified range.
+Returns the value(s) of the specified field `name` for all nodes in the specified range in the format `(x,y,z) value`.
+Any nodes in the range that do not have that field will have `nil` returned as a value.
 
 Syntax: `FIELD range name:value`
 
 Sets the value(s) of the specified field `name` with `value`.
+Any nodes in the range that do not have that field will not be modified.
 
 DELETE
 ------
