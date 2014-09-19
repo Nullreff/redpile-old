@@ -38,7 +38,7 @@
 typedef struct {
     int start;
     int end;
-    unsigned int step;
+    int step;
 } Range;
 
 typedef struct {
