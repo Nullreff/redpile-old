@@ -3,11 +3,10 @@ PROJECT(redpile)
 
 ADD_DEFINITIONS(-std=gnu99 -Wall)
 
-ADD_SUBDIRECTORY(deps/lua)
-ADD_SUBDIRECTORY(deps/linenoise)
-
 INCLUDE_DIRECTORIES(deps/lua)
 INCLUDE_DIRECTORIES(deps/linenoise)
 
+ADD_SUBDIRECTORY(deps/lua)
+ADD_SUBDIRECTORY(deps/linenoise)
 ADD_SUBDIRECTORY(src)
 
