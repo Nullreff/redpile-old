@@ -8,11 +8,11 @@ It can be run from the command line or as a standalone server that talks via soc
 Installation
 ------------
 
-Redpile should compile and run just fine on any Linux based system.
+Redpile should compile and run just fine on any *nix system.
 My development machine runs [Debian](https://www.debian.org/) so that will be the primary target.
 Official support for other operating systems will come once it hits 1.0.0.
 
-To install Redpile, open a shell and run the following commands:
+To install Redpile, open a shell and run the following commands.  Substitute `apt-get` for whatever package manager you use.
 
 ~~~bash
 sudo apt-get install git gcc build-essential cmake bison flex
