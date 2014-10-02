@@ -41,6 +41,7 @@
 int listen_fd, comm_fd;
 struct sockaddr_in servaddr;
 
+// See parser.y
 int yyparse(void);
 int yylex_destroy(void);
 

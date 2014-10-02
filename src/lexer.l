@@ -41,7 +41,7 @@
 %%
 [ \t\0]           ;
 \n                { return LINE_BREAK;  }
-#                 { return COMMENT;     }
+#.*$              { return COMMENT;     }
 ,                 { return COMMA;       }
 \.\.              { return ELLIPSIS;    }
 %                 { return MODULUS;     }

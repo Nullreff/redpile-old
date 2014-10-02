@@ -36,9 +36,10 @@
 #define PARSE_ERROR(...) repl_print_error(__VA_ARGS__); YYABORT;
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); YYABORT; }
 #define PARSE_ERROR_FREE(VAR, ...) repl_print_error(__VA_ARGS__); free(VAR); YYABORT;
+#define yyerror command_error
 
+// See lexer.l
 int yylex(void);
-void yyerror(const char* const message);
 %}
 
 %code requires {
@@ -103,6 +104,7 @@ range: INT                          { $$ = range_create($1, $1, 1); }
 ;
 
 region: range COMMA range COMMA range { $$ = region_allocate($1, $3, $5); }
+;
 
 anything: /* empty */
         | STRING anything { free($1); }
@@ -111,6 +113,7 @@ anything: /* empty */
 
 set_args: /* empty */           { $$ = command_args_allocate(MAX_FIELDS); }
         | set_args STRING VALUE { command_args_append($1, $2, $3); $$ = $1; }
+;
 
 tick_args: /* empty */ { $$ = 1; }
          | INT         { PARSE_ERROR_IF($1 < 0, "Tick count must be greater than zero\n"); $$ = $1; }
@@ -129,13 +132,8 @@ command: PING                                            { command_ping(); }
        | TICKQ tick_args                                 { command_tick($2, LOG_QUIET); }
        | MESSAGES                                        { command_messages(); }
        | TYPES                                           { command_types(); }
-       | COMMENT anything                                { /* NOOP */ }
+       | COMMENT                                         { /* NOOP */ }
        | STRING anything                                 { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
 ;
 %%
-
-void yyerror(const char* const message)
-{
-    command_error(message);
-}
 
