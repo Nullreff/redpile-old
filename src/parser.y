@@ -96,6 +96,8 @@ input: /* empty */
 
 line: LINE_BREAK
     | command LINE_BREAK
+    | COMMENT LINE_BREAK
+    | command COMMENT LINE_BREAK
 ;
 
 range: INT                          { $$ = range_create($1, $1, 1); }
@@ -132,7 +134,6 @@ command: PING                                            { command_ping(); }
        | TICKQ tick_args                                 { command_tick($2, LOG_QUIET); }
        | MESSAGES                                        { command_messages(); }
        | TYPES                                           { command_types(); }
-       | COMMENT                                         { /* NOOP */ }
        | STRING anything                                 { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
 ;
 %%

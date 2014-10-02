@@ -17,5 +17,9 @@ describe 'Commands' do
   it 'does not execute a commented out line' do
     run('# Comment goes here').should == ''
   end
+
+  it 'ignores a comment on a line with a command' do
+    run('PING # Comment goes here').should == 'PONG'
+  end
 end
 
