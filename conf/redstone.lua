@@ -43,7 +43,7 @@ function value_or_zero(message)
     return message and message.value or 0
 end
 
--- Message Types are created using the 'redpile.message_type' function which takes:
+-- Messages are defined using the 'redpile.message' function which takes:
 --
 -- Name (String)
 -- The name that will be printed to represent this particular message
@@ -53,12 +53,12 @@ end
 -- variable for ease of use.
 
 MESSAGE = {
-    POWER = redpile.message_type('POWER'),
-    PUSH  = redpile.message_type('PUSH'),
-    PULL  = redpile.message_type('PULL')
+    POWER = redpile.message('POWER'),
+    PUSH  = redpile.message('PUSH'),
+    PULL  = redpile.message('PULL')
 }
 
--- Behaviors are created using the `redpile.behavior` function which takes:
+-- Behaviors are defined using the `redpile.behavior` function which takes:
 --
 -- NAME (String)
 -- The name is what will be used to reference a behavior later when we attach
@@ -273,7 +273,7 @@ redpile.behavior('power_echo', MESSAGE.POWER, function(node, messages)
     end
 end)
 
--- Types are created using the `redpile.type` function which takes:
+-- Types are defined using the `redpile.type` function which takes:
 --
 -- NAME <String>
 -- The name used to reference this type.  Should be upper case.

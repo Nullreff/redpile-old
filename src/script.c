@@ -122,7 +122,7 @@ static int script_define_type(ScriptState* state)
     return 0;
 }
 
-static int script_define_message_type(ScriptState* state)
+static int script_define_message(ScriptState* state)
 {
     assert(type_data != NULL);
 
@@ -735,7 +735,7 @@ ScriptState* script_state_allocate(void)
 
     lua_createtable(state, 0, 6);
     static const luaL_Reg redpile_funcs[] = {
-        {"message_type", script_define_message_type},
+        {"message", script_define_message},
         {"behavior", script_define_behavior},
         {"type", script_define_type},
         {"direction_left", script_direction_left},
