@@ -46,17 +46,12 @@ end
 -- Messages are defined using the 'redpile.message' function which takes:
 --
 -- Name (String)
--- The name that will be printed to represent this particular message
+-- The name that will be used to represent this particular message
 --
--- return
--- A numer used to identify this particular message type.  Assign it to a
--- variable for ease of use.
 
-MESSAGE = {
-    POWER = redpile.message('POWER'),
-    PUSH  = redpile.message('PUSH'),
-    PULL  = redpile.message('PULL')
-}
+redpile.message('POWER')
+redpile.message('PUSH')
+redpile.message('PULL')
 
 -- Behaviors are defined using the `redpile.behavior` function which takes:
 --
@@ -83,27 +78,27 @@ MESSAGE = {
 --   'pure' and not use any global state in the program.
 --
 
-redpile.behavior('push_solid', MESSAGE.PUSH + MESSAGE.PULL, function(node, messages)
+redpile.behavior('push_solid', 'PUSH', 'PULL', function(node, messages)
     if messages.count > 0 then
         message = messages:first()
         node:move(message.value)
     end
 end)
 
-redpile.behavior('push_breakable', MESSAGE.PUSH, function(node, messages)
+redpile.behavior('push_breakable', 'PUSH', function(node, messages)
     if messages.count > 0 then
         node:remove()
     end
 end)
 
-redpile.behavior('push_piston', MESSAGE.PUSH + MESSAGE.PULL, function(node, messages)
+redpile.behavior('push_piston', 'PUSH', 'PULL', function(node, messages)
     if messages.count > 0 and node.state == RETRACTED then
         message = messages:first()
         node:move(message.value)
     end
 end)
 
-redpile.behavior('power_wire', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_wire', 'POWER', function(node, messages)
     local covered = node:adjacent(UP).type ~= 'AIR'
     local power_msg = messages:max()
     node.power = power_msg and power_msg.value or 0
@@ -116,7 +111,7 @@ redpile.behavior('power_wire', MESSAGE.POWER, function(node, messages)
         if found.type == 'CONDUCTOR' and
            has_lower_power(found, messages, node.power)
        then
-           found:send(MESSAGE.POWER, 0, node.power)
+           found:send('POWER', 0, node.power)
        end
     end)
 
@@ -137,7 +132,7 @@ redpile.behavior('power_wire', MESSAGE.POWER, function(node, messages)
                node:adjacent(redpile.direction_right(dir)).type ~= 'WIRE' and
                has_lower_power(found, messages, wire_power)
            then
-               found:send(MESSAGE.POWER, 0, wire_power)
+               found:send('POWER', 0, wire_power)
            end
 
            if covered then
@@ -151,25 +146,25 @@ redpile.behavior('power_wire', MESSAGE.POWER, function(node, messages)
         end
 
         if has_lower_power(found, messages, wire_power) then
-            found:send(MESSAGE.POWER, 0, wire_power)
+            found:send('POWER', 0, wire_power)
         end
     end)
 end)
 
-redpile.behavior('power_conductor', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_conductor', 'POWER', function(node, messages)
     node.power = value_or_zero(messages:max())
     local max_powerd = node.power == MAX_POWER
 
     node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' and (max_powerd or found.type ~= 'WIRE') then
             if has_lower_power(found, messages, node.power) then
-                found:send(MESSAGE.POWER, 0, node.power)
+                found:send('POWER', 0, node.power)
             end
         end
     end)
 end)
 
-redpile.behavior('power_torch', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_torch', 'POWER', function(node, messages)
     local new_power = value_or_zero(messages:source(BEHIND))
     if new_power > 0 then
         node.power = 0
@@ -180,18 +175,18 @@ redpile.behavior('power_torch', MESSAGE.POWER, function(node, messages)
     local behind = node:adjacent(BEHIND)
     node:adjacent_each(NORTH, SOUTH, EAST, WEST, DOWN, function(found)
         if found.location ~= behind.location then
-            found:send(MESSAGE.POWER, 1, MAX_POWER)
+            found:send('POWER', 1, MAX_POWER)
         end
     end)
 
     node:adjacent_each(UP, function(found)
         if found.type == 'CONDUCTOR' then
-            found:send(MESSAGE.POWER, 1, MAX_POWER)
+            found:send('POWER', 1, MAX_POWER)
         end
     end)
 end)
 
-redpile.behavior('power_piston', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_piston', 'POWER', function(node, messages)
     local first = node:adjacent(FORWARDS)
     local second = first:adjacent(node.direction)
     local new_power = value_or_zero(messages:max())
@@ -213,23 +208,23 @@ redpile.behavior('power_piston', MESSAGE.POWER, function(node, messages)
     node.power = new_power
 
     if node.state == EXTENDING then
-        first:send(MESSAGE.PUSH, 1, node.direction)
+        first:send('PUSH', 1, node.direction)
     elseif node.state == RETRACTING then
-        second:send(MESSAGE.PULL, 1, redpile.direction_invert(node.direction))
+        second:send('PULL', 1, redpile.direction_invert(node.direction))
     end
 end)
 
-redpile.behavior('power_repeater', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_repeater', 'POWER', function(node, messages)
     node.power = value_or_zero(messages:source(BEHIND))
     if node.power ~= 0 and
        messages:source(RIGHT) == nil and
        messages:source(LEFT) == nil
    then
-       node:adjacent(FORWARDS):send(MESSAGE.POWER, node.state + 1, MAX_POWER)
+       node:adjacent(FORWARDS):send('POWER', node.state + 1, MAX_POWER)
    end
 end)
 
-redpile.behavior('power_comparator', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_comparator', 'POWER', function(node, messages)
     node.power = value_or_zero(messages:source(BEHIND))
     if node.power == 0 then
         return
@@ -247,11 +242,11 @@ redpile.behavior('power_comparator', MESSAGE.POWER, function(node, messages)
 
     local new_power = (node.power > side_power) and change or 0
     if new_power ~= 0 then
-        node:adjacent(FORWARDS):send(MESSAGE.POWER, 1, new_power)
+        node:adjacent(FORWARDS):send('POWER', 1, new_power)
     end
 end)
 
-redpile.behavior('power_switch', 0, function(node, messages)
+redpile.behavior('power_switch', function(node, messages)
     if node.state == 0 then
         node.power = 0
         return
@@ -261,12 +256,12 @@ redpile.behavior('power_switch', 0, function(node, messages)
     local behind = node:adjacent(BEHIND)
     node:adjacent_each(function(found)
         if found.type ~= 'CONDUCTOR' or found.location == behind.location then
-            found:send(MESSAGE.POWER, 0, MAX_POWER)
+            found:send('POWER', 0, MAX_POWER)
         end
     end)
 end)
 
-redpile.behavior('power_echo', MESSAGE.POWER, function(node, messages)
+redpile.behavior('power_echo', 'POWER', function(node, messages)
     node.power = value_or_zero(messages:max())
     if node.power > 0 and node.message then
         node:data(node.message)

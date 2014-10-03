@@ -138,6 +138,16 @@ MessageType* type_data_append_message_type(TypeData* type_data, char* name)
     return message_type;
 }
 
+MessageType* type_data_find_message_type(TypeData* type_data, const char* name)
+{
+    FOR_MESSAGE_TYPES(message_type, type_data)
+    {
+        if (strcasecmp(name, message_type->name) == 0)
+            return message_type;
+    }
+    return NULL;
+}
+
 Type** type_data_type_indexes_allocate(TypeData* type_data)
 {
     Type** indexes = malloc(sizeof(Type*) * type_data->type_count);

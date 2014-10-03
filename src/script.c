@@ -52,15 +52,22 @@ static int script_define_behavior(ScriptState* state)
 {
     assert(type_data != NULL);
 
+    int top = lua_gettop(state);
+    LUA_ERROR_IF(top < 2, "define_behavior requires at least 2 arguments");
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a behavior name");
-    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a behavior mask");
-    double raw_mask = lua_tonumber(state, 2);
-    LUA_ERROR_IF(!IS_UINT(raw_mask), "Behavior mask must be a positive integer");
-    LUA_ERROR_IF(!lua_isfunction(state, 3), "You must pass a behavior function");
+    LUA_ERROR_IF(!lua_isfunction(state, top), "You must pass a behavior function");
+
+    unsigned int mask = 0;
+    for (int i = 2; i < top; i++)
+    {
+        LUA_ERROR_IF(!lua_isstring(state, i), "Message type must be a string");
+        const char* message_name = lua_tostring(state, i);
+        MessageType* message_type = type_data_find_message_type(type_data, message_name);
+        mask |= message_type->id;
+    }
 
     int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
     char* name = strdup(lua_tostring(state, 1));
-    unsigned int mask = raw_mask;
 
     type_data_append_behavior(type_data, name, mask, function_ref);
     return 0;
@@ -128,10 +135,9 @@ static int script_define_message(ScriptState* state)
 
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a message type name");
     char* name = strdup(lua_tostring(state, 1));
-    MessageType* message_type = type_data_append_message_type(type_data, name);
-    lua_pushnumber(state, message_type->id);
+    type_data_append_message_type(type_data, name);
 
-    return 1;
+    return 0;
 }
 
 static int script_direction_right(ScriptState* state)
@@ -362,9 +368,10 @@ static int script_node_send(ScriptState* state)
     Node* target = script_node_from_stack(state, 1);
     assert(source != target);
 
-    LUA_ERROR_IF(!lua_isnumber(state, 2), "You must pass a message type to send");
-    double raw_message_type = lua_tonumber(state, 2);
-    LUA_ERROR_IF(!IS_UINT(raw_message_type), "Message type must be greater than or equal to zero");
+    LUA_ERROR_IF(!lua_isstring(state, 2), "You must pass a message type to send");
+    const char* message_name = lua_tostring(state, 2);
+    MessageType* message_type = type_data_find_message_type(
+            script_data->world->type_data, message_name);
 
     LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a delay to send");
     double raw_delay = lua_tonumber(state, 3);
@@ -374,16 +381,14 @@ static int script_node_send(ScriptState* state)
     double raw_value = lua_tonumber(state, 4);
     LUA_ERROR_IF(!IS_UINT(raw_value), "Value must be greater than or equal to zero");
 
-    unsigned int message_type = raw_message_type;
-
     // Only send messages the target node listens for
-    if ((target->type->behavior_mask & message_type) != 0)
+    if ((target->type->behavior_mask & message_type->id) != 0)
     {
         unsigned int delay = raw_delay;
         FieldValue value = { .integer = raw_value };
         queue_add(
             script_data->messages,
-            message_type,
+            message_type->id,
             script_data->world->ticks + delay,
             source,
             target,
