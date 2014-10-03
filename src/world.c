@@ -283,19 +283,33 @@ void world_print_types(World* world)
     FOR_TYPES(type, world->type_data)
     {
         repl_print("%s\n", type->name);
-        for (int i = 0; i < type->fields->count; i++)
+    }
+}
+
+void world_print_type(World* world, const char* name)
+{
+    Type* type = type_data_find_type(world->type_data, name);
+    repl_print("Name: %s\n", name);
+    repl_print("Fields:\n");
+    for (int i = 0; i < type->fields->count; i++)
+    {
+        Field* field = type->fields->data + i;
+        char* type;
+        switch (field->type)
         {
-            Field* field = type->fields->data + i;
-            char* type;
-            switch (field->type)
-            {
-                case FIELD_INTEGER: type = "INTEGER"; break;
-                case FIELD_DIRECTION: type = "DIRECTION"; break;
-                case FIELD_STRING: type = "STRING"; break;
-                default: ERROR("Unknown type");
-            }
-            repl_print("  %d: %s %s\n", i, field->name, type);
+            case FIELD_INTEGER: type = "INTEGER"; break;
+            case FIELD_DIRECTION: type = "DIRECTION"; break;
+            case FIELD_STRING: type = "STRING"; break;
+            default: ERROR("Unknown type");
         }
+        repl_print("  %d: %s %s\n", i, field->name, type);
+    }
+
+    repl_print("Behaviors:\n");
+    for (int i = 0; i < type->behaviors->count; i++)
+    {
+        Behavior* behavior = type->behaviors->data[i];
+        repl_print("  %d: %s\n", i, behavior->name);
     }
 }
 

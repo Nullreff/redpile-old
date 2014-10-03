@@ -287,9 +287,15 @@ void command_messages(void)
     world_print_messages(world);
 }
 
-void command_types(void)
+void command_type_list(void)
 {
     world_print_types(world);
+}
+
+void command_type_show(char* name)
+{
+    world_print_type(world, name);
+    free(name);
 }
 
 void command_error(const char* message)

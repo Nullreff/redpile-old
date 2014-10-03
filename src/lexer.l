@@ -54,7 +54,7 @@
 (?i:tickv)        { return TICKV;       }
 (?i:tickq)        { return TICKQ;       }
 (?i:messages)     { return MESSAGES;    }
-(?i:types)        { return TYPES;       }
+(?i:type)         { return TYPE;        }
 
 :[a-zA-Z0-9]+     { yylval.string  = strdup(yytext + 1);       return VALUE;  }
 :\"(\\\"|[^"])+\" { yylval.string  = strdup(yytext + 2);
