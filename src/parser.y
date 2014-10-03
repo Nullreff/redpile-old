@@ -86,7 +86,7 @@ int yylex(void);
 %token TICK
 %token TICKV
 %token TICKQ
-%token MESSAGES
+%token MESSAGE
 %token TYPE
 
 %%
@@ -132,7 +132,7 @@ command: PING                                            { command_ping(); }
        | TICK tick_args                                  { command_tick($2, LOG_NORMAL); }
        | TICKV tick_args                                 { command_tick($2, LOG_VERBOSE); }
        | TICKQ tick_args                                 { command_tick($2, LOG_QUIET); }
-       | MESSAGES                                        { command_messages(); }
+       | MESSAGE                                         { command_message(); }
        | TYPE                                            { command_type_list(); }
        | TYPE STRING                                     { command_type_show($2); }
        | STRING anything                                 { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }

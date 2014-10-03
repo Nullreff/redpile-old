@@ -85,6 +85,7 @@ void world_set_node_missing_callback(World* world, bool enable);
 bool world_run_data(World* world, QueueData* data);
 void world_print_messages(World* world);
 void world_print_types(World* world);
+void world_print_type(World* world, const char* name);
 
 #endif
 

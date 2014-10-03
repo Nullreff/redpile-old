@@ -30,10 +30,10 @@ Syntax: `STATUS`
 
 Prints information about the current state of the world and redpile's internal state.
 
-MESSAGES
+MESSAGE
 --------
 
-Syntax: `MESSAGES`
+Syntax: `MESSAGE`
 
 Prints the list of messages currently 'in flight' between nodes.
 

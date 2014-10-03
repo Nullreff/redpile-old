@@ -45,16 +45,16 @@
 ,                 { return COMMA;       }
 \.\.              { return ELLIPSIS;    }
 %                 { return MODULUS;     }
-(?i:ping)         { return PING;        }
-(?i:status)       { return STATUS;      }
-(?i:node)         { return NODE;        }
-(?i:field)        { return FIELD;       }
-(?i:delete)       { return DELETE;      }
-(?i:tick)         { return TICK;        }
-(?i:tickv)        { return TICKV;       }
-(?i:tickq)        { return TICKQ;       }
-(?i:messages)     { return MESSAGES;    }
-(?i:type)         { return TYPE;        }
+^(?i:ping)        { return PING;        }
+^(?i:status)      { return STATUS;      }
+^(?i:node)        { return NODE;        }
+^(?i:field)       { return FIELD;       }
+^(?i:delete)      { return DELETE;      }
+^(?i:tick)        { return TICK;        }
+^(?i:tickv)       { return TICKV;       }
+^(?i:tickq)       { return TICKQ;       }
+^(?i:message)     { return MESSAGE;     }
+^(?i:type)        { return TYPE;        }
 
 :[a-zA-Z0-9]+     { yylval.string  = strdup(yytext + 1);       return VALUE;  }
 :\"(\\\"|[^"])+\" { yylval.string  = strdup(yytext + 2);

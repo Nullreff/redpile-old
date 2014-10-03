@@ -282,7 +282,7 @@ void command_tick(int count, LogLevel log_level)
         tick_run(state, world, count, log_level);
 }
 
-void command_messages(void)
+void command_message(void)
 {
     world_print_messages(world);
 }
