@@ -2,7 +2,7 @@ Commands
 ========
 
 Most commands in redpile use a 'region' syntax to designate which nodes should be affected by the command.
-Regions are made up of three 'ranges' that designate a range of numbers and an optional step.
+Regions are made up of three 'ranges' that designate a series of numbers and an optional step.
 Ranges can be written as:
 
 * `5` - Only the number five (5)
