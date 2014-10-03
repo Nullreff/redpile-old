@@ -284,6 +284,7 @@ end)
 -- Available field types are:
 --   FIELD_INTEGER
 --   FIELD_DIRECTION
+--   FIELD_STRING
 --
 -- BEHAVIORS <Table>
 -- Table containing names of behaviors for this type that will be run in the
