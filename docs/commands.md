@@ -90,23 +90,17 @@ Syntax: `TICK [count]`
 Runs a single redstone tick by default.
 If `count` is provided, it will run `count` ticks.
 
+Syntax: `TICKV [count]`
+
+Runs the `TICK` command with verbose output.
+
+Syntax: `TICKQ [count]`
+
+Runs the `TICK` command but suppresses all output except errors.
+
 The following are the possible outputs that can occur as the result of a tick:
 
 * `(x,y,z) FIELD field value` - Set the field `field` on `(x,y,z)` to `value`
 * `(x,y,z) PUSH direction` - Pushes the node at `(x,y,z)` in `direction`
 * `(x,y,z) REMOVE` - Replaces the node with the default type
-
-TICKV
------
-
-Syntax: `TICKV [count]`
-
-Runs the `TICK` command with verbose output.
-
-TICKQ
------
-
-Syntax: `TICKQ [count]`
-
-Runs the `TICK` command but suppresses all output except errors.
 
