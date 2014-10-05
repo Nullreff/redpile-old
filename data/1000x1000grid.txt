@@ -1,5 +1,0 @@
-setr -500 0 -500 500 0 500 wire
-setrs -500 0 -500 500 0 500 100 1 100 torch direction:up
-tickq 10
-status
-
