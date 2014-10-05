@@ -5,7 +5,7 @@ include Helpers
 # http://minecraft.gamepedia.com/Tutorials/Basic_Logic_Gates
 
 describe 'Logic' do
-  context 'NOP' do
+  describe 'NOP' do
     def nop_gate(in1)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
@@ -19,7 +19,7 @@ describe 'Logic' do
     it('1 => 1') {nop_gate(1).should =~ powered(0, 0, 2)}
   end
 
-  context 'NOT' do
+  describe 'NOT' do
     def not_gate(in1)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
@@ -34,7 +34,7 @@ describe 'Logic' do
     it('1 => 0') {not_gate(1).should =~ unpowered(0, 0, 3)}
   end
 
-  context 'AND' do
+  describe 'AND' do
     def and_gate(in1, in2)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
@@ -57,7 +57,7 @@ describe 'Logic' do
     it('1 1 => 1') {and_gate(1, 1).should =~   powered(1, 0, 3)}
   end
 
-  context 'NAND' do
+  describe 'NAND' do
     def nand_gate(in1, in2)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
@@ -79,7 +79,7 @@ describe 'Logic' do
     it('1 1 => 0') {nand_gate(1, 1).should =~ unpowered(1, 0, 2)}
   end
 
-  context 'OR' do
+  describe 'OR' do
     def or_gate(in1, in2)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
@@ -102,7 +102,7 @@ describe 'Logic' do
     it('1 1 => 1') {or_gate(1, 1).should =~   powered(1, 0, 4)}
   end
 
-  context 'NOR' do
+  describe 'NOR' do
     def nor_gate(in1, in2)
       run(
         "NODE 0,0,0 SWITCH direction:WEST state:#{in1}",
@@ -120,7 +120,7 @@ describe 'Logic' do
     it('1 1 => 0') {nor_gate(1, 1).should =~ unpowered(1, 0, 2)}
   end
 
-  context 'XOR' do
+  describe 'XOR' do
     def xor_gate(in1, in2)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
@@ -161,7 +161,7 @@ describe 'Logic' do
     it('1 1 => 0') {xor_gate(1, 1).should =~ unpowered(1, 0, 5)}
   end
 
-  context 'XNOR' do
+  describe 'XNOR' do
     def xnor_gate(in1, in2)
       run(
         "NODE 0,0,0 SWITCH direction:NORTH state:#{in1}",
