@@ -43,30 +43,26 @@ For playing around, you can run redpile in `-i` (interactive) mode.
 You can also have it listen on a specific port `-p <port>`.
 See `--help` for a list of all options.
 
+An example session in interactive mode is shown below.
+For more information, check out the [commands](commands.md) and [types](types.md) pages.
+
 ~~~bash
-$ redpile -i conf/redstone.lua
+$ redpile -i conf/redstone.lua 
 > node 0,0,0 torch direction:up
-> node 0,0,0
+> node 0,0,1..2 wire
+> node 0,0,0..3
 (0,0,0) TORCH power:0 direction:UP
-> node 0,0,1 wire
-> node 0,0,2 wire
-> tick
-(0,0,0) FIELD power 15
-> tick
-(0,0,2) FIELD power 14
-(0,0,1) FIELD power 15
-> status
-ticks: 2
-nodes: 22
-hashmap_allocated: 1024
-hashmap_overflow: 0
-hashmap_resizes: 0
-hashmap_max_depth: 0
-message_max_inputs: 1
-message_max_outputs: 1
-message_max_queued: 1
+(0,0,1) WIRE power:0
+(0,0,2) WIRE power:0
+(0,0,3) AIR
+> tick 2
+(0,0,0) FIELD power:15
+(0,0,2) FIELD power:14
+(0,0,1) FIELD power:15
+> message
+0 (0,0,0) => (0,0,1) POWER 15
+> node 0,0,2
+(0,0,2) WIRE power:14
 >
 ~~~
-
-For more information, check out the [commands](commands.md) and [types](types.md) pages.
 
