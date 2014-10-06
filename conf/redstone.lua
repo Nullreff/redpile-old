@@ -50,9 +50,9 @@ end
 -- it to a type.
 --
 -- MESSAGES <Table>
--- Determines which message types this behavior listens for.  All possible
--- message types are define above via `redpile.message`.  Do not list a message
--- type more than once.
+-- Determines which message types this behavior listens for.  Message types are
+-- specified when calling `node:send(message_type, ...)`.  Do not list a
+-- message type more than once.
 --
 -- BEHAVIOR (Function)
 -- This function takes a reference to the current node and a list of messages
