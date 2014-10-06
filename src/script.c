@@ -65,7 +65,14 @@ static int script_define_behavior(ScriptState* state)
     {
         LUA_ERROR_IF(!lua_isstring(state, -1), "Message type must be a string");
         const char* message_name = lua_tostring(state, -1);
+
         MessageType* message_type = type_data_find_message_type(type_data, message_name);
+        if (message_type == NULL)
+        {
+            char* dup_name = strdup(message_name);
+            message_type = type_data_append_message_type(type_data, dup_name);
+        }
+
         mask |= message_type->id;
         lua_pop(state, 1);
     }
@@ -126,17 +133,6 @@ static int script_define_type(ScriptState* state)
         LUA_ERROR_IF(behavior_count > 0, "The default type cannot have any behaviors");
         type_data_set_default_type(type_data, type);
     }
-
-    return 0;
-}
-
-static int script_define_message(ScriptState* state)
-{
-    assert(type_data != NULL);
-
-    LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a message type name");
-    char* name = strdup(lua_tostring(state, 1));
-    type_data_append_message_type(type_data, name);
 
     return 0;
 }
@@ -373,6 +369,7 @@ static int script_node_send(ScriptState* state)
     const char* message_name = lua_tostring(state, 2);
     MessageType* message_type = type_data_find_message_type(
             script_data->world->type_data, message_name);
+    LUA_ERROR_IF(!message_type, "Unknown message type");
 
     LUA_ERROR_IF(!lua_isnumber(state, 3), "You must pass a delay to send");
     double raw_delay = lua_tonumber(state, 3);
@@ -739,9 +736,8 @@ ScriptState* script_state_allocate(void)
     lua_pushnumber(state, FIELD_STRING);
     lua_setglobal(state, "FIELD_STRING");
 
-    lua_createtable(state, 0, 6);
+    lua_createtable(state, 0, 5);
     static const luaL_Reg redpile_funcs[] = {
-        {"message", script_define_message},
         {"behavior", script_define_behavior},
         {"type", script_define_type},
         {"direction_left", script_direction_left},

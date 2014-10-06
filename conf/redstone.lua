@@ -43,16 +43,6 @@ function value_or_zero(message)
     return message and message.value or 0
 end
 
--- Messages are defined using the 'redpile.message' function which takes:
---
--- Name (String)
--- The name that will be used to represent this particular message
---
-
-redpile.message('POWER')
-redpile.message('PUSH')
-redpile.message('PULL')
-
 -- Behaviors are defined using the `redpile.behavior` function which takes:
 --
 -- NAME (String)
