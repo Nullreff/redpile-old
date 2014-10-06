@@ -30,7 +30,6 @@ test: debug
 
 memtest: debug
 	TEST_VALGRIND=true ${RSPEC}
-	TEST_VALGRIND=true TEST_INTERACTIVE=true ${RSPEC}
 
 memcheck: debug
 	${VALGRIND} ${REDPILE} -i
