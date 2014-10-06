@@ -188,10 +188,8 @@ void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* s
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
-        .source.location = source->location,
-        .source.type = source->type,
-        .target.location = target->location,
-        .target.node = target,
+        .source = {source->location, source->type},
+        .target = {target->location, target},
         .tick = tick,
         .type = type,
         .index = index,
@@ -211,7 +209,7 @@ bool queue_contains(Queue* queue, QueueNode* node)
     if (found == NULL)
         return false;
 
-    for (int i = 0; i < index->size; i++)
+    for (unsigned int i = 0; i < index->size; i++)
     {
         assert(found != NULL && found->data.target.node == node->data.target.node);
         if (queue_data_equals(&found->data, &node->data))
@@ -254,7 +252,7 @@ void queue_remove_source(Queue* queue, Location source)
         return;
 
     QueueNodeList* node_list = bucket->value;
-    for (int i = 0; i < node_list->size; i++)
+    for (unsigned int i = 0; i < node_list->size; i++)
         queue_remove(queue, node_list->nodes[i]);
 
     node_list->size = 0;
@@ -271,7 +269,7 @@ void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, Qu
     if (found == NULL)
         goto end;
 
-    for (int i = 0; i < index->size; i++)
+    for (unsigned int i = 0; i < index->size; i++)
     {
         assert(found != NULL && found->data.target.node == target);
         if (found->data.tick == tick)

@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(redpile)
 
-ADD_DEFINITIONS(-std=gnu99 -Wall)
+ADD_DEFINITIONS(-std=gnu99 -Wall -Wextra -Werror)
 
 INCLUDE_DIRECTORIES(deps/lua)
 INCLUDE_DIRECTORIES(deps/linenoise)

@@ -110,6 +110,6 @@ void type_data_set_default_type(TypeData* type_data, Type* type);
 Type* type_data_get_default_type(TypeData* type_data);
 Behavior* type_data_find_behavior(TypeData* type_data, const char* name);
 
-Field* type_find_field(Type* type, const char* name, int* index);
+Field* type_find_field(Type* type, const char* name, unsigned int* index);
 
 #endif

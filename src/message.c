@@ -48,7 +48,7 @@ Messages* messages_filter_copy(Messages* messages, unsigned int mask)
 {
     Messages* new = messages_allocate(messages->size);
     unsigned int new_index = 0;
-    for (int i = 0; i < messages->size; i++)
+    for (unsigned int i = 0; i < messages->size; i++)
     {
         if ((messages->data[i].type & mask) != 0)
             memcpy(new->data + new_index++, messages->data + i, sizeof(Message));
@@ -62,7 +62,7 @@ bool messages_equal(Messages* first, Messages* second)
     if (first->size != second->size)
         return false;
 
-    for (int i = 0; i < first->size; i++)
+    for (unsigned int i = 0; i < first->size; i++)
     {
         if (LOCATION_EQUALS(first->data[i].source.location, second->data[i].source.location) &&
             first->data[i].type == second->data[i].type &&
@@ -91,7 +91,7 @@ Message* messages_find_max(Messages* messages)
 {
     unsigned int max = 0;
     Message* found = NULL;
-    for (int i = 0; i < messages->size; i++)
+    for (unsigned int i = 0; i < messages->size; i++)
     {
         if (messages->data[i].value > max)
         {
@@ -104,7 +104,7 @@ Message* messages_find_max(Messages* messages)
 
 Message* messages_find_source(Messages* messages, Location source)
 {
-    for (int i = 0; i < messages->size; i++)
+    for (unsigned int i = 0; i < messages->size; i++)
     {
         if (LOCATION_EQUALS(messages->data[i].source.location, source))
             return messages->data + i;

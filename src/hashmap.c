@@ -47,7 +47,7 @@ static Bucket* hashmap_add_next(Hashmap* hashmap, Bucket* bucket)
 
 static void hashmap_free_buckets(Hashmap* hashmap, void (*free_values)(void* value))
 {
-    for (int i = 0; i < hashmap->size; i++)
+    for (unsigned int i = 0; i < hashmap->size; i++)
     {
         Bucket* current = hashmap->data + i;
         if (free_values && current->value != NULL)
@@ -96,7 +96,7 @@ void hashmap_resize(Hashmap* hashmap, unsigned int new_size)
     new_hashmap->resizes = hashmap->resizes + 1;
     new_hashmap->min_size = hashmap->min_size;
 
-    for (int i = 0; i < hashmap->size; i++)
+    for (unsigned int i = 0; i < hashmap->size; i++)
     {
         Bucket* bucket = hashmap->data + i;
         if (bucket->value == NULL)
@@ -121,7 +121,7 @@ Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create)
     if (hashmap->overflow > hashmap->size)
         hashmap_resize(hashmap, hashmap->size * 2);
 
-    int depth = 0;
+    unsigned int depth = 0;
     int hash = location_hash(key, hashmap->size);
     Bucket* bucket = hashmap->data + hash;
 
@@ -162,8 +162,8 @@ void* hashmap_remove(Hashmap* hashmap, Location key)
     // Resize down the bucket array
     if (hashmap->overflow == 0 && hashmap->size > hashmap->min_size)
     {
-        int half_size = hashmap->size / 2;
-        int new_size = hashmap->min_size > half_size ? hashmap->min_size : half_size;
+        unsigned int half_size = hashmap->size / 2;
+        unsigned int new_size = hashmap->min_size > half_size ? hashmap->min_size : half_size;
         hashmap_resize(hashmap, new_size);
     }
 

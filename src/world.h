@@ -50,9 +50,9 @@ typedef struct {
     // See hashmap.c for more information.
     Hashmap* hashmap;
 
-    // Used for calculating and storing missing
-    // nodes during a redstone tick.
-    Type* (*node_missing)(TypeData* type_data, Location location);
+    // If set to true, any non-existant nodes requested
+    // will be filled in with the default material.
+    bool fill_missing;
 
     // Additional stats
     unsigned long long ticks; // Redstone ticks
@@ -81,7 +81,7 @@ void world_remove_node(World* world, Location location);
 Node* world_get_adjacent_node(World* world, Node* node, Direction dir);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
-void world_set_node_missing_callback(World* world, bool enable);
+void world_fill_missing_nodes(World* world, bool enable);
 bool world_run_data(World* world, QueueData* data);
 void world_print_messages(World* world);
 void world_print_types(World* world);

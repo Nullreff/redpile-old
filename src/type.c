@@ -70,7 +70,7 @@ void type_data_free(TypeData* type_data)
         Type* temp = type->next;
         free(type->name);
         free(type->behaviors);
-        for (int i = 0; i < type->fields->count; i++)
+        for (unsigned int i = 0; i < type->fields->count; i++)
             free(type->fields->data[i].name);
         free(type->fields);
         free(type);
@@ -153,7 +153,7 @@ Type** type_data_type_indexes_allocate(TypeData* type_data)
     Type** indexes = malloc(sizeof(Type*) * type_data->type_count);
 
     Type* type = type_data->types;
-    for (int i = 0; i < type_data->type_count; i++)
+    for (unsigned int i = 0; i < type_data->type_count; i++)
     {
         assert(type != NULL);
         indexes[i] = type;
@@ -193,9 +193,9 @@ Behavior* type_data_find_behavior(TypeData* type_data, const char* name)
     return NULL;
 }
 
-Field* type_find_field(Type* type, const char* name, int* index)
+Field* type_find_field(Type* type, const char* name, unsigned int* index)
 {
-    for (int i = 0; i < type->fields->count; i++)
+    for (unsigned int i = 0; i < type->fields->count; i++)
     {
         Field* field = type->fields->data + i;
         if (strcasecmp(field->name, name) == 0)

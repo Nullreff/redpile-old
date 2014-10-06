@@ -56,7 +56,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
     if (new_size != 0)
     {
         QueueNode* found = new_messages;
-        for (int i = existing_size; i < total; i++)
+        for (unsigned int i = existing_size; i < total; i++)
         {
             messages->data[i] = message_create(&found->data);
             found = found->next;
@@ -81,7 +81,7 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
 {
     Messages* input = find_input(world, node, messages);
 
-    for (int i = 0; i < node->type->behaviors->count; i++)
+    for (unsigned int i = 0; i < node->type->behaviors->count; i++)
     {
         Behavior* behavior = node->type->behaviors->data[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
@@ -160,7 +160,7 @@ static void run_messages(World* world, Queue* queue)
         store->messages = messages_resize(store->messages, old_size + count);
 
         store->messages->data[old_size] = message_create(data);
-        for (int i = 1; i < count; i++)
+        for (unsigned int i = 1; i < count; i++)
         {
             queue_node = queue_node->next;
             store->messages->data[old_size + i] = message_create(data);
@@ -182,9 +182,9 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
 
 void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log_level)
 {
-    world_set_node_missing_callback(world, true);
+    world_fill_missing_nodes(world, true);
 
-    for (int i = 0; i < count; i++)
+    for (unsigned int i = 0; i < count; i++)
     {
         if (log_level == LOG_VERBOSE)
             repl_print("--- Tick %llu ---\n", world->ticks);
@@ -242,6 +242,6 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
         world->ticks++;
     }
 
-    world_set_node_missing_callback(world, false);
+    world_fill_missing_nodes(world, false);
 }
 

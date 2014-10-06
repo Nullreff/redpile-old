@@ -53,37 +53,15 @@ static void world_update_adjacent_nodes(World* world, Node* node)
     }
 }
 
-static void world_reset_adjacent_nodes(World* world, Node* node)
-{
-    for (int i = 0; i < DIRECTIONS_COUNT; i++)
-    {
-        if (node->adjacent[i] != NULL)
-        {
-            Direction dir = (Direction)i;
-            node->adjacent[i]->adjacent[direction_invert(dir)] = NULL;
-        }
-    }
-}
-
-static Type* node_missing_noop(TypeData* type_data, Location location)
-{
-    return NULL;
-}
-
-static Type* node_missing_default_type(TypeData* type_data, Location location)
-{
-    return type_data_get_default_type(type_data);
-}
-
 static bool world_fill_missing(World* world, Location location)
 {
-    Type* type = world->node_missing(world->type_data, location);
-    if (type != NULL)
-    {
-        world_set_node(world, location, type);
-        return true;
-    }
-    return false;
+    if (!world->fill_missing)
+        return false;
+
+    Type* type = type_data_get_default_type(world->type_data);
+    assert(type != NULL);
+    world_set_node(world, location, type);
+    return true;
 }
 
 static void world_node_move(World* world, Node* node, Direction direction)
@@ -103,7 +81,7 @@ World* world_allocate(unsigned int size, TypeData* type_data)
     world->hashmap = hashmap_allocate(size);
     world->nodes = node_list_allocate();
     world->type_data = type_data;
-    world->node_missing = node_missing_noop;
+    world->fill_missing = false;
 
     // Stats
     world->ticks = 0;
@@ -145,7 +123,15 @@ void world_remove_node(World* world, Location location)
     Node* node = hashmap_remove(world->hashmap, location);
     if (node != NULL)
     {
-        world_reset_adjacent_nodes(world, node);
+        for (int i = 0; i < DIRECTIONS_COUNT; i++)
+        {
+            if (node->adjacent[i] != NULL)
+            {
+                Direction dir = (Direction)i;
+                node->adjacent[i]->adjacent[direction_invert(dir)] = NULL;
+            }
+        }
+
         node_list_remove(world->nodes, node);
     }
 }
@@ -191,12 +177,9 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, message_max_queued, u);
 }
 
-void world_set_node_missing_callback(World* world, bool enable)
+void world_fill_missing_nodes(World* world, bool enable)
 {
-    if (enable)
-        world->node_missing = node_missing_default_type;
-    else
-        world->node_missing = node_missing_noop;
+    world->fill_missing = enable;
 }
 
 bool world_run_data(World* world, QueueData* data)
@@ -258,13 +241,12 @@ void world_print_messages(World* world)
         {
             if (store->tick >= world->ticks)
             {
-                for (int j = 0; j < store->messages->size; j++)
+                for (unsigned int j = 0; j < store->messages->size; j++)
                 {
                     Message* inst = store->messages->data + j;
                     QueueData data = (QueueData) {
-                        .source.location = inst->source.location,
-                        .source.type = inst->source.type,
-                        .target.location = node->location,
+                        .source = {inst->source.location, inst->source.type},
+                        .target = {node->location, node},
                         .tick = store->tick,
                         .type = inst->type,
                         .index = 0,
@@ -291,7 +273,7 @@ void world_print_type(World* world, const char* name)
     Type* type = type_data_find_type(world->type_data, name);
     repl_print("Name: %s\n", name);
     repl_print("Fields:\n");
-    for (int i = 0; i < type->fields->count; i++)
+    for (unsigned int i = 0; i < type->fields->count; i++)
     {
         Field* field = type->fields->data + i;
         char* type;
@@ -306,7 +288,7 @@ void world_print_type(World* world, const char* name)
     }
 
     repl_print("Behaviors:\n");
-    for (int i = 0; i < type->behaviors->count; i++)
+    for (unsigned int i = 0; i < type->behaviors->count; i++)
     {
         Behavior* behavior = type->behaviors->data[i];
         repl_print("  %d: %s\n", i, behavior->name);

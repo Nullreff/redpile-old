@@ -94,7 +94,7 @@ static bool type_parse(char* string, Type** type)
 
 static void node_field_set(Node* node, char* name, char* value)
 {
-    int index;
+    unsigned int index;
     Field* field = type_find_field(node->type, name, &index);
     if (!field)
     {
@@ -141,7 +141,7 @@ static void run_command_node_set(Location location, Type* type, CommandArgs* arg
     Node* node = world_set_node(world, location, type);
     assert(node != NULL);
 
-    for (int i = 0; i < args->index; i++)
+    for (unsigned int i = 0; i < args->index; i++)
         node_field_set(node, args->data[i].name, args->data[i].value);
 }
 
@@ -169,7 +169,7 @@ CommandArgs* command_args_allocate(unsigned int count)
 
 void command_args_free(CommandArgs* args)
 {
-    for (int i = 0; i < args->index; i++)
+    for (unsigned int i = 0; i < args->index; i++)
     {
         free(args->data[i].name);
         free(args->data[i].value);
@@ -235,7 +235,7 @@ void command_field_get(Region* region, char* name)
             return;
         }
 
-        int index;
+        unsigned int index;
         Field* field = type_find_field(node->type, name, &index);
         if (!field)
         {

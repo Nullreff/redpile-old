@@ -48,7 +48,7 @@ static void node_free(Node* node)
     message_store_free(node->store);
     free(node->last_input);
 
-    for (int i = 0; i < node->type->fields->count; i++)
+    for (unsigned int i = 0; i < node->type->fields->count; i++)
     {
         Field* field = node->type->fields->data + i;
         if (field->type == FIELD_STRING)
@@ -150,7 +150,7 @@ void node_print(Node* node)
            node->location.z,
            node->type->name);
 
-    for (int i = 0; i < node->type->fields->count; i++)
+    for (unsigned int i = 0; i < node->type->fields->count; i++)
         node_print_field(node->type->fields->data + i, node->fields.data[i]);
 
     repl_print("\n");
@@ -297,7 +297,8 @@ void node_stack_free(NodeStack* stack)
 
 int node_stack_push(NodeStack* stack, Node* node)
 {
-    if (stack->index + 1 >= stack->count)
+    assert((stack->index + 1) >= 0);
+    if ((unsigned int)(stack->index + 1) >= stack->count)
         return -1;
 
     stack->nodes[++stack->index] = node;
