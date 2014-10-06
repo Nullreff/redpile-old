@@ -26,9 +26,11 @@ install:
 
 test: debug
 	${RSPEC}
+	TEST_INTERACTIVE=true ${RSPEC}
 
 memtest: debug
-	VALGRIND=true ${RSPEC}
+	TEST_VALGRIND=true ${RSPEC}
+	TEST_VALGRIND=true TEST_INTERACTIVE=true ${RSPEC}
 
 memcheck: debug
 	${VALGRIND} ${REDPILE} -i

@@ -79,17 +79,13 @@ static int repl_read_linenoise(char* buff, int buffsize)
         size = buffsize - 2;
     }
 
-    // Flex won't generate output until we fill it's buffer
-    // Since this is interactive mode, we just zero it out
-    // and fill it with whatever we read in.
-    memset(buff, '\0', buffsize);
     memcpy(buff, line, size);
 
     // Linenoise strips out the line return
     buff[size] = '\n';
 
     free(line);
-    return buffsize;
+    return size + 1;
 }
 
 static int repl_read_stdin(char* buff, int buffsize)

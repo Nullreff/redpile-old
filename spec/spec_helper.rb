@@ -37,7 +37,8 @@ module Helpers
     @opts ||= ''
     @config ||= REDPILE_CONF
     @result ||= 0
-    @command ||= ENV['VALGRIND'] ? VALGRIND_CMD + REDPILE_CMD : REDPILE_CMD
+    @command ||= ENV['TEST_VALGRIND'] ? VALGRIND_CMD + REDPILE_CMD : REDPILE_CMD
+    @command += ' -i' if ENV['TEST_INTERACTIVE']
 
     cmd = "#{@command} #{@opts} #{@config} 2>&1"
     process = IO.popen(cmd, 'r+')
