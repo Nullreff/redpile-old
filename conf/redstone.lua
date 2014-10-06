@@ -59,11 +59,10 @@ redpile.message('PULL')
 -- The name is what will be used to reference a behavior later when we attach
 -- it to a type.
 --
--- MASK <Number> (must be positive integer)
--- The mask determines which message types this behavior listens for.  All
--- possible message types are define as integers which are powers of two.
--- This means they can be combined together with `+` to allow through multiple
--- message types.  Do not list a message type more than once.
+-- MESSAGES <Table>
+-- Determines which message types this behavior listens for.  All possible
+-- message types are define above via `redpile.message`.  Do not list a message
+-- type more than once.
 --
 -- BEHAVIOR (Function)
 -- This function takes a reference to the current node and a list of messages
@@ -78,27 +77,27 @@ redpile.message('PULL')
 --   'pure' and not use any global state in the program.
 --
 
-redpile.behavior('push_solid', 'PUSH', 'PULL', function(node, messages)
+redpile.behavior('push_solid', {'PUSH', 'PULL'}, function(node, messages)
     if messages.count > 0 then
         message = messages:first()
         node:move(message.value)
     end
 end)
 
-redpile.behavior('push_breakable', 'PUSH', function(node, messages)
+redpile.behavior('push_breakable', {'PUSH'}, function(node, messages)
     if messages.count > 0 then
         node:remove()
     end
 end)
 
-redpile.behavior('push_piston', 'PUSH', 'PULL', function(node, messages)
+redpile.behavior('push_piston', {'PUSH', 'PULL'}, function(node, messages)
     if messages.count > 0 and node.state == RETRACTED then
         message = messages:first()
         node:move(message.value)
     end
 end)
 
-redpile.behavior('power_wire', 'POWER', function(node, messages)
+redpile.behavior('power_wire', {'POWER'}, function(node, messages)
     local covered = node:adjacent(UP).type ~= 'AIR'
     local power_msg = messages:max()
     node.power = power_msg and power_msg.value or 0
@@ -151,7 +150,7 @@ redpile.behavior('power_wire', 'POWER', function(node, messages)
     end)
 end)
 
-redpile.behavior('power_conductor', 'POWER', function(node, messages)
+redpile.behavior('power_conductor', {'POWER'}, function(node, messages)
     node.power = value_or_zero(messages:max())
     local max_powerd = node.power == MAX_POWER
 
@@ -164,7 +163,7 @@ redpile.behavior('power_conductor', 'POWER', function(node, messages)
     end)
 end)
 
-redpile.behavior('power_torch', 'POWER', function(node, messages)
+redpile.behavior('power_torch', {'POWER'}, function(node, messages)
     local new_power = value_or_zero(messages:source(BEHIND))
     if new_power > 0 then
         node.power = 0
@@ -186,7 +185,7 @@ redpile.behavior('power_torch', 'POWER', function(node, messages)
     end)
 end)
 
-redpile.behavior('power_piston', 'POWER', function(node, messages)
+redpile.behavior('power_piston', {'POWER'}, function(node, messages)
     local first = node:adjacent(FORWARDS)
     local second = first:adjacent(node.direction)
     local new_power = value_or_zero(messages:max())
@@ -214,7 +213,7 @@ redpile.behavior('power_piston', 'POWER', function(node, messages)
     end
 end)
 
-redpile.behavior('power_repeater', 'POWER', function(node, messages)
+redpile.behavior('power_repeater', {'POWER'}, function(node, messages)
     node.power = value_or_zero(messages:source(BEHIND))
     if node.power ~= 0 and
        messages:source(RIGHT) == nil and
@@ -224,7 +223,7 @@ redpile.behavior('power_repeater', 'POWER', function(node, messages)
    end
 end)
 
-redpile.behavior('power_comparator', 'POWER', function(node, messages)
+redpile.behavior('power_comparator', {'POWER'}, function(node, messages)
     node.power = value_or_zero(messages:source(BEHIND))
     if node.power == 0 then
         return
@@ -246,7 +245,7 @@ redpile.behavior('power_comparator', 'POWER', function(node, messages)
     end
 end)
 
-redpile.behavior('power_switch', function(node, messages)
+redpile.behavior('power_switch', {}, function(node, messages)
     if node.state == 0 then
         node.power = 0
         return
@@ -261,7 +260,7 @@ redpile.behavior('power_switch', function(node, messages)
     end)
 end)
 
-redpile.behavior('power_echo', 'POWER', function(node, messages)
+redpile.behavior('power_echo', {'POWER'}, function(node, messages)
     node.power = value_or_zero(messages:max())
     if node.power > 0 and node.message then
         node:data(node.message)

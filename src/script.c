@@ -52,22 +52,23 @@ static int script_define_behavior(ScriptState* state)
 {
     assert(type_data != NULL);
 
-    int top = lua_gettop(state);
-    LUA_ERROR_IF(top < 2, "define_behavior requires at least 2 arguments");
     LUA_ERROR_IF(!lua_isstring(state, 1), "You must pass a behavior name");
-    LUA_ERROR_IF(!lua_isfunction(state, top), "You must pass a behavior function");
+    LUA_ERROR_IF(!lua_istable(state, 2), "You must pass a table of message types");
+    LUA_ERROR_IF(!lua_isfunction(state, 3), "You must pass a behavior function");
 
+    char* name = strdup(lua_tostring(state, 1));
+    int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
     unsigned int mask = 0;
-    for (int i = 2; i < top; i++)
+
+    lua_pushnil(state);
+    while (lua_next(state, 2) != 0)
     {
-        LUA_ERROR_IF(!lua_isstring(state, i), "Message type must be a string");
-        const char* message_name = lua_tostring(state, i);
+        LUA_ERROR_IF(!lua_isstring(state, -1), "Message type must be a string");
+        const char* message_name = lua_tostring(state, -1);
         MessageType* message_type = type_data_find_message_type(type_data, message_name);
         mask |= message_type->id;
+        lua_pop(state, 1);
     }
-
-    int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
-    char* name = strdup(lua_tostring(state, 1));
 
     type_data_append_behavior(type_data, name, mask, function_ref);
     return 0;
