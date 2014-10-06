@@ -228,22 +228,19 @@ void command_field_get(Region* region, char* name)
     FOR_REGION(region)
     {
         Location location = location_create(x, y, z);
-        Node* node = world_get_node(world, location);
-        if (!node)
-        {
-            repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
-            return;
-        }
-
+        Node* node;
+        Field* field;
         unsigned int index;
-        Field* field = type_find_field(node->type, name, &index);
-        if (!field)
+
+        if (!(node = world_get_node(world, location)) ||
+            !(field = type_find_field(node->type, name, &index)))
         {
             repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
-            return;
         }
-
-        node_print_field_value(node, field->type, node->fields.data[index]);
+        else
+        {
+            node_print_field_value(node, field->type, node->fields.data[index]);
+        }
     }
     free(region);
     free(name);
