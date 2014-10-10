@@ -6,7 +6,6 @@ Redpile [![Build Status](https://travis-ci.org/Nullreff/redpile.svg?branch=maste
 Redpile is a voxel logic simulator.
 You can think of it as a Redstone simulator with more flexibility, speed and utility.
 It can be run from the command line or as a standalone server that talks via sockets.
-For more information, check out [redpile.org](http://redpile.org/).
 
 Building & Usage
 ----------------
@@ -19,11 +18,10 @@ Requires:
 * Bison
 * Flex
 * Rspec (tests)
+* Valgrind (tests)
 
-Run `make` to compile or `make test` to run tests.
-
-Redpile reads commands for block updates from the standard input and writes the resulting changes to the standard output.
-For command line options, try `redpile --help`.  Checkout `docs/commands` for more information on it's usage.
+Run `make` to compile or `make test` to run tests.  Run `make help` for a list of all commands.
+For more information, check out [redpile.org](http://redpile.org/).
 
 Roadmap
 -------
@@ -52,3 +50,4 @@ License
 * [Redpile](http://redpile.org/) - BSD License
 * [Linenoise](https://github.com/antirez/linenoise/) - BSD License
 * [Lua](http://www.lua.org/) - MIT License
+
