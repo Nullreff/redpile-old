@@ -50,20 +50,20 @@ module Helpers
   end
 
   def powered(x, y, z)
-    /^\(#{x},#{y},#{z}\) \S+ power:[^0]\d+$/
+    /^#{x},#{y},#{z} \S+ power:[^0]\d+$/
   end
 
   def unpowered(x, y, z)
-    /^\(#{x},#{y},#{z}\) \S+ power:0$/
+    /^#{x},#{y},#{z} \S+ power:0$/
   end
 
   def contains_node?(result, x, y, z, type, fields = {})
     if fields.empty?
-       result.should =~ /^\(#{x},#{y},#{z}\) #{type}.*$/
+       result.should =~ /^#{x},#{y},#{z} #{type}.*$/
        return
     end
-    result.should =~ /^(\(#{x},#{y},#{z}\) #{type} .*)$/
-    found_fields = result[/^\(#{x},#{y},#{z}\) #{type} .*$/]
+    result.should =~ /^#{x},#{y},#{z} #{type} .*$/
+    found_fields = result[/^#{x},#{y},#{z} #{type} .*$/]
     fields.each{|key,value| found_fields.should =~ /#{key}:#{value}/}
   end
 end

@@ -4,7 +4,7 @@ include Helpers
 FIELD_RANGE1 = (-1..1).map do |x|
   (-1..1).map do |y|
     (-1..1).map do |z|
-      "(#{x},#{y},#{z}) 10"
+      "#{x},#{y},#{z} 10"
     end
   end
 end.flatten.flatten.join("\n")
@@ -12,7 +12,7 @@ end.flatten.flatten.join("\n")
 FIELD_RANGE2 = (-1..1).map do |x|
   (-1..1).map do |y|
     (-1..1).map do |z|
-      "(#{x * 2},#{y * 2},#{z * 2}) 10"
+      "#{x * 2},#{y * 2},#{z * 2} 10"
     end
   end
 end.flatten.flatten.join("\n")
@@ -46,7 +46,7 @@ describe 'NODE' do
       run(
         'NODE 0,0,0 WIRE power:10',
         'FIELD 0,0,0 power'
-      ).should == '(0,0,0) 10'
+      ).should == '0,0,0 10'
     end
 
     it 'a field on a range of nodes' do

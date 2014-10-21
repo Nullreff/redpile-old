@@ -39,7 +39,7 @@ describe 'Echo' do
       'NODE 0,0,0 SWITCH direction:up state:1',
       'NODE 0,0,1 ECHO message:Hello',
       'TICK'
-    ).should =~ /\(0,0,1\) DATA "Hello"/
+    ).should =~ /0,0,1 DATA "Hello"/
   end
 
   it 'Does not print a message when unpowered' do
@@ -47,7 +47,7 @@ describe 'Echo' do
       'NODE 0,0,0 SWITCH direction:up state:0',
       'NODE 0,0,1 ECHO message:Hello',
       'TICK'
-    ).should_not =~ /\(0,0,1\) DATA "Hello"/
+    ).should_not =~ /0,0,1 DATA "Hello"/
   end
 
   it 'Does not print an empty message when powered' do
@@ -55,7 +55,7 @@ describe 'Echo' do
       'NODE 0,0,0 SWITCH direction:up state:1',
       'NODE 0,0,1 ECHO',
       'TICK'
-    ).should_not =~ /\(0,0,1\) DATA ""/
+    ).should_not =~ /0,0,1 DATA ""/
   end
 end
 

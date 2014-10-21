@@ -4,7 +4,7 @@ include Helpers
 NODE_RANGE1 = (-1..1).map do |x|
   (-1..1).map do |y|
     (-1..1).map do |z|
-      "(#{x},#{y},#{z}) AIR"
+      "#{x},#{y},#{z} AIR"
     end
   end
 end.flatten.flatten.join("\n")
@@ -12,7 +12,7 @@ end.flatten.flatten.join("\n")
 NODE_RANGE2 = (-1..1).map do |x|
   (-1..1).map do |y|
     (-1..1).map do |z|
-      "(#{x * 2},#{y * 2},#{z * 2}) AIR"
+      "#{x * 2},#{y * 2},#{z * 2} AIR"
     end
   end
 end.flatten.flatten.join("\n")
@@ -34,7 +34,7 @@ describe 'NODE' do
 
   context 'gets' do
     it 'a single node' do
-      run('NODE 0,0,0').should == '(0,0,0) AIR'
+      run('NODE 0,0,0').should == '0,0,0 AIR'
     end
 
     it 'a range of nodes' do

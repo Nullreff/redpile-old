@@ -12,6 +12,6 @@ describe 'MESSAGE' do
       'NODE 0,0,1..5 WIRE',
       'TICK',
       'MESSAGE'
-    ).should =~ /^\d \(0,0,0\) => \(\d,\d,\d\) POWER \d+$/
+    ).should =~ /^\d 0,0,0 => \d,\d,\d POWER \d+$/
   end
 end

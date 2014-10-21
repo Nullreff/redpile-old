@@ -309,7 +309,7 @@ static void queue_data_print_type(QueueData* data)
 
 void queue_data_print(QueueData* data)
 {
-    repl_print("(%d,%d,%d) ",
+    repl_print("%d,%d,%d ",
         data->target.location.x,
         data->target.location.y,
         data->target.location.z);
@@ -319,7 +319,7 @@ void queue_data_print(QueueData* data)
 
 void queue_data_print_message(QueueData* data, TypeData* type_data, unsigned long long current_tick)
 {
-    repl_print("%llu (%d,%d,%d) => (%d,%d,%d) ",
+    repl_print("%llu %d,%d,%d => %d,%d,%d ",
         data->tick - current_tick,
         data->source.location.x,
         data->source.location.y,

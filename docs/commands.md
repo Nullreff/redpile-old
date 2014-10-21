@@ -53,7 +53,7 @@ NODE
 
 Syntax: `NODE range`
 
-Returns information about the node(s) in the specified range in the format `(x,y,z) type [fields]`.
+Returns information about the node(s) in the specified range in the format `x,y,z type [fields]`.
 Each field will be displayed in the format `name:value`.
 
 Syntax: `NODE range type [fields]`
@@ -67,7 +67,7 @@ FIELD
 
 Syntax: `FIELD range name`
 
-Returns the value(s) of the specified field `name` for all nodes in the specified range in the format `(x,y,z) value`.
+Returns the value(s) of the specified field `name` for all nodes in the specified range in the format `x,y,z value`.
 Any nodes in the range that do not have that field will have `nil` returned as a value.
 
 Syntax: `FIELD range name:value`
@@ -100,7 +100,7 @@ Runs the `TICK` command but suppresses all output except errors.
 
 The following are the possible outputs that can occur as the result of a tick:
 
-* `(x,y,z) FIELD field value` - Set the field `field` on `(x,y,z)` to `value`
-* `(x,y,z) PUSH direction` - Pushes the node at `(x,y,z)` in `direction`
-* `(x,y,z) REMOVE` - Replaces the node with the default type
+* `x,y,z FIELD field value` - Set the field `field` on `(x,y,z)` to `value`
+* `x,y,z PUSH direction` - Pushes the node at `(x,y,z)` in `direction`
+* `x,y,z REMOVE` - Replaces the node with the default type
 

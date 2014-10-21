@@ -201,7 +201,7 @@ void command_node_get(Region* region)
         if (node == NULL)
         {
             Type* type = type_data_get_default_type(world->type_data);
-            repl_print("(%d,%d,%d) %s\n", location.x, location.y, location.z, type->name);
+            repl_print("%d,%d,%d %s\n", location.x, location.y, location.z, type->name);
         }
         else
         {
@@ -235,7 +235,7 @@ void command_field_get(Region* region, char* name)
         if (!(node = world_get_node(world, location)) ||
             !(field = type_find_field(node->type, name, &index)))
         {
-            repl_print("(%d,%d,%d) nil\n", location.x, location.y, location.z);
+            repl_print("%d,%d,%d nil\n", location.x, location.y, location.z);
         }
         else
         {

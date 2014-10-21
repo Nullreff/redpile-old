@@ -9,7 +9,7 @@ describe 'Comparator' do
         'NODE 0,0,1 COMPARATOR direction:SOUTH state:0',
         "NODE 0,0,2 #{material}",
         'TICK 2'
-      ).should =~ /\(0,0,2\) FIELD power:15/
+      ).should =~ /0,0,2 FIELD power:15/
     end
   end
 

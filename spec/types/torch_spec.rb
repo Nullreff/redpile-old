@@ -9,7 +9,7 @@ describe 'Torch' do
         'NODE 0,0,0 TORCH direction:UP',
         "NODE 0,0,1..#{range} WIRE",
         'TICK 2'
-      ).should =~ /^\(0,0,#{range}\) FIELD power:#{16 - range}$/
+      ).should =~ /^0,0,#{range} FIELD power:#{16 - range}$/
     end
   end
 
@@ -33,7 +33,7 @@ describe 'Torch' do
       'NODE 0,0,1 WIRE',
       'NODE 0,0,2 TORCH direction:NORTH',
       'TICK 2'
-    ).should =~ /\(0,0,0\) FIELD power:14\n/
+    ).should =~ /0,0,0 FIELD power:14\n/
   end
 
   it 'turns a torch off with power' do
@@ -55,7 +55,7 @@ describe 'Torch' do
       'NODE 0,2,0 WIRE',
       'TICK 2'
     )
-    result.should =~ /\(0,1,0\) FIELD power:15/
-    result.should =~ /\(0,2,0\) FIELD power:15/
+    result.should =~ /0,1,0 FIELD power:15/
+    result.should =~ /0,2,0 FIELD power:15/
   end
 end

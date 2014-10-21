@@ -51,18 +51,18 @@ $ redpile -i conf/redstone.lua
 > node 0,0,0 torch direction:up
 > node 0,0,1..2 wire
 > node 0,0,0..3
-(0,0,0) TORCH power:0 direction:UP
-(0,0,1) WIRE power:0
-(0,0,2) WIRE power:0
-(0,0,3) AIR
+0,0,0 TORCH power:0 direction:UP
+0,0,1 WIRE power:0
+0,0,2 WIRE power:0
+0,0,3 AIR
 > tick 2
-(0,0,0) FIELD power:15
-(0,0,2) FIELD power:14
-(0,0,1) FIELD power:15
+0,0,0 FIELD power:15
+0,0,2 FIELD power:14
+0,0,1 FIELD power:15
 > message
-0 (0,0,0) => (0,0,1) POWER 15
+0 0,0,0 => 0,0,1 POWER 15
 > node 0,0,2
-(0,0,2) WIRE power:14
+0,0,2 WIRE power:14
 >
 ~~~
 

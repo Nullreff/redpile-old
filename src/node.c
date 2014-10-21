@@ -99,7 +99,7 @@ void node_print_field_value(Node* node, FieldType type, FieldValue value)
     switch (type)
     {
         case FIELD_INTEGER:
-            repl_print("(%d,%d,%d) %d\n",
+            repl_print("%d,%d,%d %d\n",
                 node->location.x,
                 node->location.y,
                 node->location.z,
@@ -107,7 +107,7 @@ void node_print_field_value(Node* node, FieldType type, FieldValue value)
             break;
 
         case FIELD_DIRECTION:
-            repl_print("(%d,%d,%d) %s\n",
+            repl_print("%d,%d,%d %s\n",
                 node->location.x,
                 node->location.y,
                 node->location.z,
@@ -115,7 +115,7 @@ void node_print_field_value(Node* node, FieldType type, FieldValue value)
             break;
 
         case FIELD_STRING:
-            repl_print("(%d,%d,%d) \"%s\"\n",
+            repl_print("%d,%d,%d \"%s\"\n",
                 node->location.x,
                 node->location.y,
                 node->location.z,
@@ -144,7 +144,7 @@ void node_print_field(Field* field, FieldValue value)
 
 void node_print(Node* node)
 {
-    repl_print("(%d,%d,%d) %s",
+    repl_print("%d,%d,%d %s",
            node->location.x,
            node->location.y,
            node->location.z,
