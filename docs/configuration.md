@@ -12,12 +12,9 @@ Redpile sees the world as a 3D grid of 'nodes' starting at `0,0,0`.
 These nodes continue outwards on all three axes both positively and negatively.
 Each node has a 'type' assigned to it that determines what data it stores and
 how it interacts with other nodes.
-
 Depending on it's type, nodes will have fields that can store data.
 For instance, `TORCH` has the fields `power` which stores an integer and
 `direction` which stores a direction.
-
-You can modify and access nodes using the `NODE` command.
 
 Types
 -----
@@ -116,4 +113,111 @@ Removes any data associated with the current node and sets it to the default typ
 Syntax: `node:data(message)`
 
 Prints `message` in the format `x,y,z DATA "message"`
+
+### node.location
+
+Syntax `local loc = node.location`
+
+Return a lua table with the `x`, `y` and `z` coordinates of this node.
+Assigning a value back does not move this node, use `node:move` instead.
+
+### node.type
+
+Syntax `local type = node.type`
+
+Return the type of this node as a string.
+Assigning a value back does not change the type of this node.
+
+### node.[field]
+
+Syntax: `local power = node.power`
+
+Returns the value of `[field]` on this node.
+
+Syntax: `node.power = 15`
+
+Assignes the value provided to the field on this node.
+This assignment will be valid during the current behavior and after the entire tick has finished processing.
+Do not depend on accessing updated fields from other nodes, please use message passing instead.
+
+### messages.count
+
+Syntax: `local count = messages.count`
+
+Returns the number of messages passed to this behavior.
+Assigning a value back to count does nothing.
+
+### messages:first
+
+Syntax: `messages:first()`
+
+Returns the first message passed to this node.
+The ordering of messages is indeterminate, please don't rely on it.
+
+### messages:max
+
+Syntax: `messages:max()`
+
+Returns the message with the largest `value` attached to it.
+If there are two messages with the same large `value`, the first will be selected.
+As with calls to `first`, the ordering of messages is indeterminate.
+
+### messages:source
+
+Syntax: `messages:source(location)`
+
+Returns the message passed from `location`.
+If there are two messages from the same location, the first will be selected.
+As with calls to `first`, the ordering of messages is indeterminate.
+
+### redpile.direction_left
+
+Syntax: `redpile.direction_left(direction)`
+
+Returns the direction to the left of `direction`.
+
+* `NORTH` => `WEST`
+* `SOUTH` => `EAST`
+* `EAST` => `NORTH`
+* `WEST` => `SOUTH`
+* `UP` => Error
+* `DOWN` => Error
+
+### `redpile.direction_right`
+
+Syntax: `redpile.direction_right(direction)`
+
+Returns the direction to the right of `direction`.
+
+* `NORTH` => `EAST`
+* `SOUTH` => `WEST`
+* `EAST` => `SOUTH`
+* `WEST` => `NORTH`
+* `UP` => Error
+* `DOWN` => Error
+
+### `redpile.direction_invert`
+
+Syntax: `redpile.direction_invert(direction)`
+
+Returns the direction inverse to `direction`.
+
+* `NORTH` => `SOUTH`
+* `SOUTH` => `NORTH`
+* `EAST` => `WEST`
+* `WEST` => `EAST`
+* `UP` => `DOWN`
+* `DOWN` => `UP`
+
+Messages
+--------
+
+As mentioned in the Behaviors section, you can communicate between nodes by passing 'messages'.
+On the senders side, this is done using the method `node:send`.
+On the receiving side, messages are retreived from the `messages` variable passed to a behavior.
+When received, messages will contain the following fields:
+
+* `value` (number) - The value sent from `node:send`
+
+Modifying messages during a behavior has no effect.
 
