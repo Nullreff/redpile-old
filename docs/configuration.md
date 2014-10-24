@@ -185,7 +185,7 @@ Returns the direction to the left of `direction`.
 
 ### `redpile.direction_right`
 
-Syntax: `redpile.direction_right(direction)`
+Syntax: redpile.direction_right(direction)
 
 Returns the direction to the right of `direction`.
 
@@ -196,7 +196,7 @@ Returns the direction to the right of `direction`.
 * `UP` => Error
 * `DOWN` => Error
 
-### `redpile.direction_invert`
+### redpile.direction_invert
 
 Syntax: `redpile.direction_invert(direction)`
 
@@ -218,6 +218,4 @@ On the receiving side, messages are retreived from the `messages` variable passe
 When received, messages will contain the following fields:
 
 * `value` (number) - The value sent from `node:send`
-
-Modifying messages during a behavior has no effect.
 
