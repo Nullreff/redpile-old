@@ -183,9 +183,9 @@ Returns the direction to the left of `direction`.
 * `UP` => Error
 * `DOWN` => Error
 
-### `redpile.direction_right`
+### redpile.direction_right
 
-Syntax: redpile.direction_right(direction)
+Syntax: `redpile.direction_right(direction)`
 
 Returns the direction to the right of `direction`.
 
