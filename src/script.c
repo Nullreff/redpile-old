@@ -680,6 +680,24 @@ static int script_messages_source(ScriptState* state)
     return 1;
 }
 
+static int script_messages_each(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
+
+    for (unsigned int i = 0; i < script_data->input->size; i++)
+    {
+        Message* message = script_data->input->data + i;
+        lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+        script_create_message(state, message);
+        lua_call(state, 1, 0);
+    }
+
+    return 0;
+}
+
+
 static void script_setup_data(ScriptState* state, ScriptData* data)
 {
     //self
@@ -696,6 +714,7 @@ static void script_setup_data(ScriptState* state, ScriptData* data)
         {"first", script_messages_first},
         {"max", script_messages_max},
         {"source", script_messages_source},
+        {"each", script_messages_each},
         {NULL, NULL}
     };
     luaL_setfuncs(state, message_funcs, 0);

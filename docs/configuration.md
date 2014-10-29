@@ -170,6 +170,12 @@ Returns the message passed from `location`.
 If there are two messages from the same location, the first will be selected.
 As with calls to `first`, the ordering of messages is indeterminate.
 
+### messages:each
+
+Syntax: `message:each(callback)`
+
+Calls `callback` for every message passed to this behavior.
+
 ### redpile.direction_left
 
 Syntax: `redpile.direction_left(direction)`
