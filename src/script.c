@@ -47,6 +47,7 @@ ScriptData* script_data = NULL;
 NodeStack* node_stack = NULL;
 
 static void script_create_node(ScriptState* state, Node* node);
+static void script_create_message(ScriptState* state, Message* message);
 
 static int script_define_behavior(ScriptState* state)
 {
@@ -174,15 +175,6 @@ static int script_direction_invert(ScriptState* state)
     lua_pushnumber(state, inverse);
 
     return 1;
-}
-
-static void script_create_message(ScriptState* state, Message* message)
-{
-    lua_createtable(state, 0, 1);
-
-    lua_pushstring(state, "value");
-    lua_pushnumber(state, message->value);
-    lua_settable(state, -3);
 }
 
 static Location script_location_from_stack(ScriptState* state, unsigned int stack_index)
@@ -697,6 +689,18 @@ static int script_messages_each(ScriptState* state)
     return 0;
 }
 
+static void script_create_message(ScriptState* state, Message* message)
+{
+    lua_createtable(state, 0, 2);
+
+    lua_pushstring(state, "value");
+    lua_pushnumber(state, message->value);
+    lua_settable(state, -3);
+
+    lua_pushstring(state, "source");
+    script_create_location(state, message->source.location);
+    lua_settable(state, -3);
+}
 
 static void script_setup_data(ScriptState* state, ScriptData* data)
 {
