@@ -118,7 +118,7 @@ void hashmap_resize(Hashmap* hashmap, unsigned int new_size)
 
 Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create)
 {
-    if (hashmap->overflow > hashmap->size)
+    if (create && hashmap->overflow > hashmap->size)
         hashmap_resize(hashmap, hashmap->size * 2);
 
     unsigned int depth = 0;
