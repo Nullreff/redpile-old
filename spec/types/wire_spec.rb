@@ -132,4 +132,21 @@ describe 'Wire' do
       'TICK 2'
     ).should_not =~ /^Logic loop detected while performing tick$/
   end
+
+  it 'propigates power out to all corners' do
+    result = run(
+      'NODE -20..20,0,-20..20 wire',
+      'NODE 0,0,0 torch direction:UP',
+      'TICKQ 2',
+      'FIELD 15,0,0 power',
+      'FIELD -15,0,0 power',
+      'FIELD 0,0,15 power',
+      'FIELD 0,0,-15 power'
+    )
+
+    result.should =~ /^15,0,0 1$/
+    result.should =~ /^-15,0,0 1$/
+    result.should =~ /^0,0,15 1$/
+    result.should =~ /^0,0,-15 1$/
+  end
 end
