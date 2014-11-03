@@ -64,14 +64,14 @@ bool messages_equal(Messages* first, Messages* second)
 
     for (unsigned int i = 0; i < first->size; i++)
     {
-        if (location_equals(first->data[i].source.location, second->data[i].source.location) &&
-            first->data[i].type == second->data[i].type &&
-            first->data[i].value == second->data[i].value)
+        if (!location_equals(first->data[i].source.location, second->data[i].source.location) ||
+            first->data[i].type != second->data[i].type ||
+            first->data[i].value != second->data[i].value)
         {
-            return true;
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 Messages* messages_resize(Messages* messages, unsigned int size)
