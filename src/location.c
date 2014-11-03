@@ -130,6 +130,11 @@ Location location_move(Location loc, Direction dir, int length)
     }
 }
 
+bool location_equals(Location l1, Location l2)
+{
+    return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
+}
+
 unsigned int location_hash_unbounded(Location loc)
 {
     unsigned int total = 0;

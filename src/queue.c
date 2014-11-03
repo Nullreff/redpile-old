@@ -35,7 +35,7 @@
 static bool queue_data_equals(QueueData* n1, QueueData* n2)
 {
     return n1->type == n2->type &&
-           LOCATION_EQUALS(n1->source.location, n2->source.location) &&
+           location_equals(n1->source.location, n2->source.location) &&
            n1->target.node == n2->target.node &&
            n1->value.integer == n2->value.integer &&
            n1->tick == n2->tick;

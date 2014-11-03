@@ -64,7 +64,7 @@ bool messages_equal(Messages* first, Messages* second)
 
     for (unsigned int i = 0; i < first->size; i++)
     {
-        if (LOCATION_EQUALS(first->data[i].source.location, second->data[i].source.location) &&
+        if (location_equals(first->data[i].source.location, second->data[i].source.location) &&
             first->data[i].type == second->data[i].type &&
             first->data[i].value == second->data[i].value)
         {
@@ -106,7 +106,7 @@ Message* messages_find_source(Messages* messages, Location source)
 {
     for (unsigned int i = 0; i < messages->size; i++)
     {
-        if (LOCATION_EQUALS(messages->data[i].source.location, source))
+        if (location_equals(messages->data[i].source.location, source))
             return messages->data + i;
     }
     return NULL;

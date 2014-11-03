@@ -134,7 +134,7 @@ Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create)
     }
     else
     {
-        while (!LOCATION_EQUALS(bucket->key, key))
+        while (!location_equals(bucket->key, key))
         {
             if (bucket->next == NULL)
             {
@@ -174,7 +174,7 @@ void* hashmap_remove(Hashmap* hashmap, Location key)
     if (bucket->value == NULL)
         return NULL;
 
-    while (!LOCATION_EQUALS(bucket->key, key))
+    while (!location_equals(bucket->key, key))
     {
         if (bucket->next == NULL)
             return NULL;

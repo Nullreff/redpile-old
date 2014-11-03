@@ -123,7 +123,7 @@ static void process_output(World* world, Node* node, bool changed, Queue* output
 
             if (data->tick == world->ticks && !queue_contains(messages, queue_node))
             {
-                assert(!LOCATION_EQUALS(data->target.location, data->source.location));
+                assert(!location_equals(data->target.location, data->source.location));
                 queue_remove_source(messages, data->target.location);
                 queue_remove_source(sets, data->target.location);
                 node_list_move_after(world->nodes, node, data->target.node);
@@ -142,7 +142,7 @@ static void run_messages(World* world, Queue* queue)
     {
         QueueData* data = &queue_node->data;
 
-        assert(!LOCATION_EQUALS(data->target.location, data->source.location));
+        assert(!location_equals(data->target.location, data->source.location));
         Node* target = data->target.node;
         MessageStore* store = node_find_store(data->target.node, data->tick);
 
