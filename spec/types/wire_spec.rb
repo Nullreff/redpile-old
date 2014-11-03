@@ -127,7 +127,7 @@ describe 'Wire' do
 
   it 'avoids looping when processing a grid of wire' do
     run(
-      'NODER -5..5,0,-5..5 WIRE',
+      'NODE -5..5,0,-5..5 WIRE',
       'NODE 0,0,0 TORCH direction:UP',
       'TICK 2'
     ).should_not =~ /^Logic loop detected while performing tick$/
