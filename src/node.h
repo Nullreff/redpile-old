@@ -36,50 +36,56 @@
 #include "message.h"
 #include "type.h"
 
+#define MAX_FIELDS 256
+
+// Depth of 12
+#define CHUNK_WIDTH 16
+#define CHUNK_SIZE (CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_WIDTH)
+#define TREE_WIDTH 2
+#define TREE_SIZE (TREE_WIDTH * TREE_WIDTH * TREE_WIDTH)
+
 typedef struct {
     unsigned int count;
     FieldValue data[];
 } FieldData;
 
-typedef struct Node {
-    Location location;
+typedef struct NodeData {
     Type* type;
-
-    // We keep references to the 6 nodes adjacent to this one for faster
-    // access during redstone ticks.  This adds a bit of extra time to
-    // insertions but more than makes up for it when running ticks
-    struct Node* adjacent[6];
-    struct Node* next;
-    struct Node* prev;
+    FieldData* fields;
 
     MessageStore* store;
-
     Messages* last_input;
     unsigned long long last_input_tick;
+} NodeData;
 
-    FieldData fields;
+struct NodeLeaf;
+
+typedef struct {
+    struct NodeTree* parent;
+    union {
+        struct NodeTree* children[TREE_SIZE];
+        struct NodeLeaf* leaves[TREE_SIZE];
+    } data;
+} NodeTree;
+
+typedef struct {
+    NodeTree* parent;
+    unsigned int ref_count;
+    NodeData data[CHUNK_SIZE];
+} NodeLeaf;
+
+typedef struct {
+    Location location;
+    NodeData* data;
+    NodeLeaf* leaf;
 } Node;
 
-typedef struct {
-    Node* active;
-    Node* inactive;
-    unsigned int size;
-} NodeList;
-
-typedef struct {
-    int index;
+typedef struct NodeList {
     unsigned int count;
-    Node* nodes[];
-} NodeStack;
-
-#define MAX_FIELDS 256
-#define FIELD_GET(NODE,INDEX,TYPE)\
-    (assert((INDEX) < (NODE)->fields.count), (NODE)->fields.data[INDEX].TYPE)
-#define FIELD_SET(NODE,INDEX,TYPE,VALUE)\
-    do { assert((INDEX) < (NODE)->fields.count);\
-         (NODE)->fields.data[INDEX].TYPE = VALUE;\
-    } while (0)
-#define FOR_NODES(NODE,START) for (Node* NODE = START; NODE != NULL; NODE = NODE->next)
+    int index;
+    struct NodeList* next;
+    Node nodes[];
+} NodeList;
 
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
@@ -87,18 +93,17 @@ void node_print_field_value(Node* node, FieldType type, FieldValue value);
 void node_print_field(Field* field, FieldValue value);
 void node_print(Node* node);
 
-NodeList* node_list_allocate(void);
+NodeTree* node_tree_allocate(void);
+void node_tree_free(NodeTree* tree);
+void node_tree_add(NodeTree* tree, Location location, Type* type, Node* node);
+void node_tree_remove(NodeTree* tree, Node* node);
+
+NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
-Node* node_list_append(NodeList* nodes, Location location, Type* type);
+NodeList* node_list_flatten(NodeList* nodes);
+int node_list_add(NodeList* stack, Node* node);
 void node_list_remove(NodeList* nodes, Node* node);
 void node_list_move_after(NodeList* nodes, Node* node, Node* target);
-void node_list_print(NodeList* nodes);
-
-NodeStack* node_stack_allocate(unsigned int count);
-void node_stack_free(NodeStack* stack);
-int node_stack_push(NodeStack* stack, Node* node);
-bool node_stack_pop(NodeStack* stack);
-Node* node_stack_index(NodeStack* stack, unsigned int index);
-Node* node_stack_first(NodeStack* stack);
+bool node_list_index(NodeList* stack, unsigned int index, Node* cursor);
 
 #endif
