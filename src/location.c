@@ -30,6 +30,7 @@
 
 #include "location.h"
 #include "common.h"
+#include <limits.h>
 
 char* Directions[6] = {
     "NORTH",
@@ -98,7 +99,7 @@ Direction direction_move(Direction direction, Movement move)
 
 Location location_empty(void)
 {
-    return location_create(0, 0, 0);
+    return (Location){COORD_EMPTY, COORD_EMPTY, COORD_EMPTY};
 }
 
 Location location_from_values(int values[])
@@ -113,6 +114,7 @@ Location location_random(void)
 
 Location location_create(Coord x, Coord y, Coord z)
 {
+    assert(x != COORD_EMPTY && y != COORD_EMPTY && z != COORD_EMPTY);
     return (Location){x, y, z};
 }
 

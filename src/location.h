@@ -56,6 +56,7 @@ typedef enum {
     RIGHT    = 9
 } Movement;
 
+#define COORD_EMPTY INT_MIN
 typedef int Coord;
 typedef struct {
     Coord x;

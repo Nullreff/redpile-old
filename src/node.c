@@ -31,37 +31,15 @@
 #include "node.h"
 #include "repl.h"
 
-static Node* node_allocate(Location location, Type* type)
+Node node_empty(void)
 {
-    Node* node = calloc(1, sizeof(Node) + (type->fields->count * sizeof(FieldValue)));
-    CHECK_OOM(node);
-    node->location = location;
-    node->type = type;
-    node->store = NULL;
-    node->last_input = NULL;
-    node->fields.count = type->fields->count;
-    return node;
-}
-
-static void node_free(Node* node)
-{
-    message_store_free(node->store);
-    free(node->last_input);
-
-    for (unsigned int i = 0; i < node->type->fields->count; i++)
-    {
-        Field* field = node->type->fields->data + i;
-        if (field->type == FIELD_STRING)
-            free(node->fields.data[i].string);
-    }
-
-    free(node);
+    return (Node){location_empty(), NULL, NULL};
 }
 
 Messages* node_find_messages(Node* node, unsigned long long tick)
 {
-    node->store = message_store_discard_old(node->store, tick);
-    MessageStore* store = node->store;
+    NodeData* data = node->data;
+    MessageStore* store = data->store = message_store_discard_old(data->store, tick);
     if (store == NULL)
         return NULL;
 
@@ -74,11 +52,12 @@ Messages* node_find_messages(Node* node, unsigned long long tick)
 
 MessageStore* node_find_store(Node* node, unsigned long long tick)
 {
-    MessageStore* store = node->store;
+    NodeData* data = node->data;
+    MessageStore* store = data->store;
     if (store == NULL)
     {
         store = message_store_allocate(tick);
-        node->store = store;
+        data->store = store;
     }
     else
     {
@@ -86,8 +65,8 @@ MessageStore* node_find_store(Node* node, unsigned long long tick)
         if (store == NULL)
         {
             store = message_store_allocate(tick);
-            store->next = node->store;
-            node->store = store;
+            store->next = data->store;
+            data->store = store;
         }
     }
 
@@ -144,183 +123,178 @@ void node_print_field(Field* field, FieldValue value)
 
 void node_print(Node* node)
 {
+    NodeData* data = node->data;
     repl_print("%d,%d,%d %s",
            node->location.x,
            node->location.y,
            node->location.z,
-           node->type->name);
+           data->type->name);
 
-    for (unsigned int i = 0; i < node->type->fields->count; i++)
-        node_print_field(node->type->fields->data + i, node->fields.data[i]);
+    for (unsigned int i = 0; i < data->type->fields->count; i++)
+        node_print_field(data->type->fields->data + i, data->fields->data[i]);
 
     repl_print("\n");
 }
 
-NodeList* node_list_allocate(void)
+NodeTree* node_tree_allocate(void)
 {
-    NodeList* nodes = calloc(1, sizeof(NodeList));
+    // TODO: Implement
+}
+
+void node_tree_free(NodeTree* tree)
+{
+    // TODO: Implement
+}
+
+void node_tree_add(NodeTree* tree, Location location, Type* type, Node* node)
+{
+    // TODO: Implement
+}
+
+void node_tree_remove(NodeTree* tree, Node* node)
+{
+    // TODO: Implement
+}
+
+NodeList* node_list_allocate(unsigned int count)
+{
+    NodeList* nodes = malloc(sizeof(NodeList) + (sizeof(Node) * count));
     CHECK_OOM(nodes);
+    nodes->count = 0;
+    nodes->index = -1;
+    nodes->next = NULL;
     return nodes;
 }
 
 void node_list_free(NodeList* nodes)
 {
-    Node* node;
-
-    node = nodes->active;
-    while (node != NULL)
+    NodeList* list = nodes;
+    while (list != NULL)
     {
-        Node* temp = node->next;
-        node_free(node);
-        node = temp;
+        NodeList* temp = list;
+        list = list->next;
+        free(temp);
     }
-
-    node = nodes->inactive;
-    while (node != NULL)
-    {
-        Node* temp = node->next;
-        node_free(node);
-        node = temp;
-    }
-
-    free(nodes);
 }
 
-Node* node_list_append(NodeList* nodes, Location location, Type* type)
+NodeList* node_list_flatten(NodeList* nodes)
 {
-    Node* node = node_allocate(location, type);
-
-    if (type->behaviors->count > 0)
-    {
-        if (nodes->active != NULL)
-        {
-            node->next = nodes->active;
-            nodes->active->prev = node;
-        }
-        nodes->active = node;
-    }
-    else
-    {
-        if (nodes->inactive != NULL)
-        {
-            node->next = nodes->inactive;
-            nodes->inactive->prev = node;
-        }
-        nodes->inactive = node;
-    }
-
-    nodes->size++;
-    return node;
+    // TODO: Implement
+    return nodes;
 }
 
-void node_list_remove(NodeList* nodes, Node* node)
+int node_list_add(NodeList* stack, Node* node)
 {
-    if (node->prev == NULL)
+    assert(stack->count != 0);
+
+    if (stack->index + 1 < stack->count)
     {
-        assert(node == nodes->active || node == nodes->inactive);
-        if (node == nodes->active)
-            nodes->active = node->next;
+        stack->next = node_list_allocate(stack->count);
+        stack = stack->next;
+    }
+
+    stack->index++;
+    stack->nodes[stack->index] = *node;
+}
+
+void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
+{
+    for (NodeList* list = nodes; list != NULL; list = list->next)
+    {
+        for (int i = 0; i < list->count; i++)
+        {
+            if (location_equals(node->location, list->nodes[i].location))
+            {
+                list->nodes[i] = node_empty();
+                if (!remove_multiple)
+                    break;
+            }
+        }
+    }
+}
+
+static bool node_list_contains(NodeList* list, Node* node)
+{
+    return node >= list->nodes && node <= (list->nodes + list->index);
+}
+
+static void node_list_move_after_index(NodeList* nodes, int index, Node* node)
+{
+    assert(index >= 0 && index <= nodes->count);
+
+    NodeList* list = nodes;
+    while (true)
+    {
+        for (int i = index; i <= list->index; i++)
+        {
+            if (location_equals(list->nodes[i].location, location_empty()))
+            {
+                list->nodes[i] = *node;
+                *node = node_empty();
+                return;
+            }
+        }
+
+        if (list->index + 1 < list->count)
+        {
+            list->index++;
+            list->nodes[list->index] = *node;
+            *node = node_empty();
+            return;
+        }
+
+        if (list->next != NULL)
+        {
+            index = 0;
+            list = list->next;
+        }
         else
-            nodes->inactive = node->next;
-    }
-    else
-    {
-        node->prev->next = node->next;
+        {
+            break;
+        }
     }
 
-    if (node->next != NULL)
-        node->next->prev = node->prev;
-
-    nodes->size--;
-    node_free(node);
+    list->next = node_list_allocate(list->count);
+    list = list->next;
+    list->index = 0;
+    list->nodes[0] = *node;
+    *node = node_empty();
 }
 
 void node_list_move_after(NodeList* nodes, Node* node, Node* target)
 {
-    // Already in the right place
-    if (node->next == target)
-        return;
-
-    // Remove 'target' from the list
-    if (target->prev == NULL)
+    for (NodeList* list = nodes; list != NULL; list = list->next)
     {
-        assert(target == nodes->active || target == nodes->inactive);
-        if (target == nodes->active)
-            nodes->active = target->next;
+        int index = node - list->nodes;
+        if (index >= 0 && index <= list->index)
+        {
+            node_list_move_after_index(list, index, target);
+            break;
+        }
+    }
+}
+
+bool node_list_index(NodeList* nodes, unsigned int index, Node* cursor)
+{
+    assert(index >= 0);
+
+    for (NodeList* list = nodes; list != NULL; list = list->next)
+    {
+        if (index <= list->index)
+        {
+            cursor = list->nodes + index;
+            return true;
+        }
+        else if (index < list->count)
+        {
+            return false;
+        }
         else
-            nodes->inactive = target->next;
-    }
-    else
-    {
-        target->prev->next = target->next;
+        {
+            index -= list->count;
+        }
     }
 
-    if (target->next != NULL)
-        target->next->prev = target->prev;
-
-    // Add 'target' after 'node'
-    target->next = node->next;
-    if (node->next != NULL)
-        node->next->prev = target;
-
-    node->next = target;
-    target->prev = node;
-}
-
-void node_list_print(NodeList* nodes)
-{
-    FOR_NODES(node, nodes->active)
-    {
-        node_print(node);
-    }
-
-    FOR_NODES(node, nodes->inactive)
-    {
-        node_print(node);
-    }
-
-    repl_print("Total: %u\n", nodes->size);
-}
-
-NodeStack* node_stack_allocate(unsigned int count)
-{
-    NodeStack* stack = malloc(sizeof(NodeStack) + (sizeof(Node*) * count));
-    stack->index = -1;
-    stack->count = count;
-    return stack;
-}
-
-void node_stack_free(NodeStack* stack)
-{
-    free(stack);
-}
-
-int node_stack_push(NodeStack* stack, Node* node)
-{
-    assert((stack->index + 1) >= 0);
-    if ((unsigned int)(stack->index + 1) >= stack->count)
-        return -1;
-
-    stack->nodes[++stack->index] = node;
-    return stack->index;
-}
-
-bool node_stack_pop(NodeStack* stack)
-{
-    assert(stack->index > 0);
-    stack->index--;
-    return true;
-}
-
-Node* node_stack_index(NodeStack* stack, unsigned int index)
-{
-    return index < stack->count ? stack->nodes[index] : NULL;
-}
-
-Node* node_stack_first(NodeStack* stack)
-{
-    Node* node = node_stack_index(stack, 0);
-    assert(node != NULL);
-    return node;
+    return false;
 }
 

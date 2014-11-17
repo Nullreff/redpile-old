@@ -87,6 +87,7 @@ typedef struct NodeList {
     Node nodes[];
 } NodeList;
 
+Node node_empty(void);
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print_field_value(Node* node, FieldType type, FieldValue value);
@@ -96,7 +97,7 @@ void node_print(Node* node);
 NodeTree* node_tree_allocate(void);
 void node_tree_free(NodeTree* tree);
 void node_tree_add(NodeTree* tree, Location location, Type* type, Node* node);
-void node_tree_remove(NodeTree* tree, Node* node);
+void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple);
 
 NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
@@ -104,6 +105,6 @@ NodeList* node_list_flatten(NodeList* nodes);
 int node_list_add(NodeList* stack, Node* node);
 void node_list_remove(NodeList* nodes, Node* node);
 void node_list_move_after(NodeList* nodes, Node* node, Node* target);
-bool node_list_index(NodeList* stack, unsigned int index, Node* cursor);
+bool node_list_index(NodeList* nodes, unsigned int index, Node* cursor);
 
 #endif
