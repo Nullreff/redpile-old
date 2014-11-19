@@ -51,7 +51,7 @@ static void print_version()
 
 static void print_help()
 {
-    printf("Redpile - High Performance Redstone\n\n"
+    printf("Redpile - A Voxel Logic Simulator\n\n"
            "Usage: redpile [options] <config>\n"
            "Options:\n"
            "    -p <port>, --port <port>\n"

@@ -16,7 +16,7 @@ describe 'Options' do
       end
 
       it 'prints a help message' do
-        redpile(short ? '-h' : '--help').run.should =~ /^Redpile - High Performance Redstone/
+        redpile(short ? '-h' : '--help').run.should =~ /^Redpile - A Voxel Logic Simulator/
       end
 
       it 'runs in interactive mode' do
