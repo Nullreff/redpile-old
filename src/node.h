@@ -38,11 +38,12 @@
 
 #define MAX_FIELDS 256
 
-// Depth of 12
-#define CHUNK_WIDTH 16
-#define CHUNK_SIZE (CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_WIDTH)
+#define TREE_DEPTH 12
 #define TREE_WIDTH 2
 #define TREE_SIZE (TREE_WIDTH * TREE_WIDTH * TREE_WIDTH)
+
+#define LEAF_WIDTH 16
+#define LEAF_SIZE (LEAF_WIDTH * LEAF_WIDTH * LEAF_WIDTH)
 
 typedef struct {
     unsigned int count;
@@ -60,18 +61,19 @@ typedef struct NodeData {
 
 struct NodeLeaf;
 
-typedef struct {
+typedef struct NodeTree {
     struct NodeTree* parent;
+    unsigned int level;
     union {
         struct NodeTree* children[TREE_SIZE];
         struct NodeLeaf* leaves[TREE_SIZE];
     } data;
 } NodeTree;
 
-typedef struct {
+typedef struct NodeLeaf {
     NodeTree* parent;
     unsigned int ref_count;
-    NodeData data[CHUNK_SIZE];
+    NodeData data[LEAF_SIZE];
 } NodeLeaf;
 
 typedef struct {
@@ -94,17 +96,16 @@ void node_print_field_value(Node* node, FieldType type, FieldValue value);
 void node_print_field(Field* field, FieldValue value);
 void node_print(Node* node);
 
-NodeTree* node_tree_allocate(void);
+NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent);
 void node_tree_free(NodeTree* tree);
-void node_tree_add(NodeTree* tree, Location location, Type* type, Node* node);
-void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple);
+void node_tree_get(NodeTree* tree, Location location, Node* node, bool create);
+void node_tree_remove(NodeTree* tree, Node* node);
 
 NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
 NodeList* node_list_flatten(NodeList* nodes);
 int node_list_add(NodeList* stack, Node* node);
-void node_list_remove(NodeList* nodes, Node* node);
 void node_list_move_after(NodeList* nodes, Node* node, Node* target);
-bool node_list_index(NodeList* nodes, unsigned int index, Node* cursor);
+Node* node_list_index(NodeList* nodes, unsigned int index);
 
 #endif

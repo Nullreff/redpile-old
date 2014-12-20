@@ -136,24 +136,122 @@ void node_print(Node* node)
     repl_print("\n");
 }
 
-NodeTree* node_tree_allocate(void)
+NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent)
 {
-    // TODO: Implement
+    NodeTree* tree = calloc(1, sizeof(NodeTree));
+    CHECK_OOM(tree);
+    tree->level = level;
+    tree->parent = parent;
+    return tree;
+}
+
+static NodeLeaf* node_leaf_allocate(NodeTree* parent)
+{
+    NodeLeaf* leaf = calloc(1, sizeof(NodeLeaf));
+    CHECK_OOM(leaf);
+    leaf->parent = parent;
+    return leaf;
+}
+
+static void node_data_free(NodeData* data)
+{
+    message_store_free(data->store);
+    free(data->last_input);
+
+    for (unsigned int i = 0; i < data->type->fields->count; i++)
+    {
+        Field* field = data->type->fields->data + i;
+        if (field->type == FIELD_STRING)
+            free(data->fields->data[i].string);
+    }
+    free(data->fields);
 }
 
 void node_tree_free(NodeTree* tree)
 {
-    // TODO: Implement
+    if (tree->level != 0)
+    {
+        for (unsigned int i = 0; i < TREE_SIZE; i++)
+        {
+            if (tree->data.children[i] != NULL)
+                node_tree_free(tree->data.children[i]);
+        }
+    }
+    else
+    {
+        for (unsigned int i = 0; i < TREE_SIZE; i++)
+        {
+            NodeLeaf* leaf = tree->data.leaves[i];
+            if (leaf != NULL)
+            {
+                for (unsigned int i = 0; i < LEAF_SIZE; i++)
+                {
+                    if (leaf->data[i].type != NULL)
+                        node_data_free(leaf->data + i);
+                }
+                free(leaf);
+            }
+        }
+    }
+    free(tree);
 }
 
-void node_tree_add(NodeTree* tree, Location location, Type* type, Node* node)
+void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
 {
-    // TODO: Implement
-}
+    unsigned int offset = (node->location.x >= 0 ? 1 : 0) + (node->location.y >= 0 ? 2 : 0) + (node->location.z >= 0 ? 4 : 0);
+    if (tree->level != 0)
+    {
+        NodeTree* sub_tree = tree->data.children[offset];
+        if (sub_tree == NULL)
+        {
+            if (!create)
+            {
+                *node = node_empty();
+                return;
+            }
 
-void node_tree_remove(NodeTree* tree, Node* node)
-{
-    // TODO: Implement
+            sub_tree = tree->data.children[offset] = node_tree_allocate(tree->level - 1, tree);
+        }
+
+        unsigned int shift = LEAF_WIDTH * (1 << (tree->level - 1));
+        Location sub_location = location_create(
+                location.x >= 0 ? location.x - shift : location.x + shift,
+                location.y >= 0 ? location.y - shift : location.y + shift,
+                location.z >= 0 ? location.z - shift : location.z + shift);
+        node_tree_get(sub_tree, sub_location, node, create);
+        node->location = location;
+    }
+    else
+    {
+        NodeLeaf* leaf = tree->data.leaves[offset];
+        if (leaf != NULL)
+        {
+            if (!create)
+            {
+                *node = node_empty();
+                return;
+            }
+
+            leaf = node_leaf_allocate(tree);
+        }
+
+        Location sub_location = location_create(abs(location.x), abs(location.y), abs(location.z));
+
+        if (sub_location.x >= LEAF_WIDTH ||
+            sub_location.y >= LEAF_WIDTH ||
+            sub_location.z >= LEAF_WIDTH)
+        {
+            *node = node_empty();
+            return;
+        }
+
+        unsigned int leaf_offset = sub_location.x * LEAF_WIDTH * LEAF_WIDTH +
+                                   sub_location.y * LEAF_WIDTH +
+                                   sub_location.z;
+        node->location = location;
+        node->data = &leaf->data[leaf_offset];
+        node->leaf = leaf;
+    }
 }
 
 NodeList* node_list_allocate(unsigned int count)
@@ -187,7 +285,8 @@ int node_list_add(NodeList* stack, Node* node)
 {
     assert(stack->count != 0);
 
-    if (stack->index + 1 < stack->count)
+    assert(stack->index >= -1);
+    if ((unsigned int)(stack->index + 1) < stack->count)
     {
         stack->next = node_list_allocate(stack->count);
         stack = stack->next;
@@ -195,13 +294,14 @@ int node_list_add(NodeList* stack, Node* node)
 
     stack->index++;
     stack->nodes[stack->index] = *node;
+    return stack->index;
 }
 
 void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
 {
     for (NodeList* list = nodes; list != NULL; list = list->next)
     {
-        for (int i = 0; i < list->count; i++)
+        for (unsigned int i = 0; i < list->count; i++)
         {
             if (location_equals(node->location, list->nodes[i].location))
             {
@@ -213,14 +313,9 @@ void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
     }
 }
 
-static bool node_list_contains(NodeList* list, Node* node)
+static void node_list_move_after_index(NodeList* nodes, unsigned int index, Node* node)
 {
-    return node >= list->nodes && node <= (list->nodes + list->index);
-}
-
-static void node_list_move_after_index(NodeList* nodes, int index, Node* node)
-{
-    assert(index >= 0 && index <= nodes->count);
+    assert(index <= nodes->count);
 
     NodeList* list = nodes;
     while (true)
@@ -235,7 +330,8 @@ static void node_list_move_after_index(NodeList* nodes, int index, Node* node)
             }
         }
 
-        if (list->index + 1 < list->count)
+        assert(list->index >= -1);
+        if ((unsigned int)(list->index + 1) < list->count)
         {
             list->index++;
             list->nodes[list->index] = *node;
@@ -274,27 +370,19 @@ void node_list_move_after(NodeList* nodes, Node* node, Node* target)
     }
 }
 
-bool node_list_index(NodeList* nodes, unsigned int index, Node* cursor)
+Node* node_list_index(NodeList* nodes, unsigned int index)
 {
-    assert(index >= 0);
-
     for (NodeList* list = nodes; list != NULL; list = list->next)
     {
-        if (index <= list->index)
-        {
-            cursor = list->nodes + index;
-            return true;
-        }
+        assert(list->index >= -1);
+        if (list->index != -1 && index <= (unsigned int)list->index)
+            return list->nodes + index;
         else if (index < list->count)
-        {
-            return false;
-        }
+            return NULL;
         else
-        {
             index -= list->count;
-        }
     }
 
-    return false;
+    return NULL;
 }
 
