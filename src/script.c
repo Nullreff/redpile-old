@@ -43,8 +43,8 @@ TypeData* type_data = NULL;
 ScriptData* script_data = NULL;
 
 // Keeps track of the current node during calls to `adjacent`.
-#define NODE_STACK_SIZE 20
-NodeStack* node_stack = NULL;
+#define NODE_LIST_SIZE 20
+NodeList* node_list = NULL;
 
 static void script_create_node(ScriptState* state, Node* node);
 static void script_create_message(ScriptState* state, Message* message);
@@ -250,8 +250,7 @@ static Node* script_node_from_stack(ScriptState* state, unsigned int stack_index
     double raw_index = lua_tonumber(state, -1);
     assert(IS_UINT(raw_index));
 
-    Node* current = node_stack_index(node_stack, (unsigned int)raw_index);
-    assert(current != NULL);
+    Node* current = node_list_index(node_list, (unsigned int)raw_index);
 
     lua_pop(state, 1);
     return current;
@@ -269,8 +268,9 @@ static int script_node_adjacent(ScriptState* state)
         // Loop through all directions
         for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
         {
-            Node* node = world_get_adjacent_node(script_data->world, current, dir);
-            script_create_node(state, node);
+            Node node;
+            world_get_adjacent_node(script_data->world, current, dir, &node);
+            script_create_node(state, &node);
         }
         return DIRECTIONS_COUNT;
     }
@@ -287,13 +287,14 @@ static int script_node_adjacent(ScriptState* state)
             if (raw_direction >= DIRECTIONS_COUNT)
             {
                 unsigned int index;
-                Field* field = type_find_field(current->type, "direction", &index);
+                Field* field = type_find_field(current->data->type, "direction", &index);
                 LUA_ERROR_IF(!field || field->type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
                 direction = direction_move(FIELD_GET(current, index, direction), (Movement)raw_direction);
             }
 
-            Node* node = world_get_adjacent_node(script_data->world, current, direction);
-            script_create_node(state, node);
+            Node node;
+            world_get_adjacent_node(script_data->world, current, direction, &node);
+            script_create_node(state, &node);
         }
 
         return top - 1;
@@ -313,9 +314,10 @@ static int script_node_adjacent_each(ScriptState* state)
         // Function only, loop through all directions
         for (Direction dir = (Direction)0; dir < DIRECTIONS_COUNT; dir++)
         {
-            Node* node = world_get_adjacent_node(script_data->world, current, dir);
+            Node node;
+            world_get_adjacent_node(script_data->world, current, dir, &node);
             lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-            script_create_node(state, node);
+            script_create_node(state, &node);
             lua_pushnumber(state, dir);
             lua_call(state, 2, 0);
         }
@@ -333,14 +335,15 @@ static int script_node_adjacent_each(ScriptState* state)
             if (raw_direction >= DIRECTIONS_COUNT)
             {
                 unsigned int index;
-                Field* field = type_find_field(current->type, "direction", &index);
+                Field* field = type_find_field(current->data->type, "direction", &index);
                 LUA_ERROR_IF(!field || field->type != FIELD_DIRECTION, "No direction field found on the node passed to adjacent");
                 direction = direction_move(FIELD_GET(current, index, direction), (Movement)raw_direction);
             }
 
-            Node* node = world_get_adjacent_node(script_data->world, current, direction);
+            Node node;
+            world_get_adjacent_node(script_data->world, current, direction, &node);
             lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
-            script_create_node(state, node);
+            script_create_node(state, &node);
             lua_pushnumber(state, direction);
             lua_call(state, 2, 0);
         }
@@ -353,7 +356,7 @@ static int script_node_send(ScriptState* state)
 {
     assert(script_data != NULL);
 
-    Node* source = node_stack_first(node_stack);
+    Node* source = node_list_index(node_list, 0);
     Node* target = script_node_from_stack(state, 1);
     assert(source != target);
 
@@ -372,7 +375,7 @@ static int script_node_send(ScriptState* state)
     LUA_ERROR_IF(!IS_UINT(raw_value), "Value must be greater than or equal to zero");
 
     // Only send messages the target node listens for
-    if ((target->type->behavior_mask & message_type->id) != 0)
+    if ((target->data->type->behavior_mask & message_type->id) != 0)
     {
         unsigned int delay = raw_delay;
         FieldValue value = { .integer = raw_value };
@@ -476,7 +479,7 @@ static int script_node_index_set(ScriptState* state)
     const char* name = lua_tostring(state, 2);
 
     unsigned int index;
-    Field* field = type_find_field(node->type, name, &index);
+    Field* field = type_find_field(node->data->type, name, &index);
     LUA_ERROR_IF(!field, "Could not find field");
 
     FieldValue value;
@@ -557,11 +560,10 @@ static void script_create_node(ScriptState* state, Node* node)
     luaL_setfuncs(state, node_funcs, 0);
 
     // Node metatable
-    unsigned int field_count = node->type->fields->count;
+    unsigned int field_count = node->data->type->fields->count;
     lua_createtable(state, 0, 5 + field_count);
 
-    int index = node_stack_push(node_stack, node);
-    LUA_ERROR_IF(index == -1, "Node stack overflow!");
+    unsigned int index = node_list_add(node_list, node);
 
     lua_pushstring(state, "stack_index");
     lua_pushnumber(state, index);
@@ -572,7 +574,7 @@ static void script_create_node(ScriptState* state, Node* node)
     lua_settable(state, -3);
 
     lua_pushstring(state, "type");
-    lua_pushstring(state, node->type->name);
+    lua_pushstring(state, node->data->type->name);
     lua_settable(state, -3);
 
     lua_pushcfunction(state, script_node_index_get);
@@ -583,7 +585,7 @@ static void script_create_node(ScriptState* state, Node* node)
 
     for (unsigned int i = 0; i < field_count; i++)
     {
-        Field* field = node->type->fields->data + i;
+        Field* field = node->data->type->fields->data + i;
         lua_pushstring(state, field->name);
         switch (field->type)
         {
@@ -651,7 +653,7 @@ static int script_messages_source(ScriptState* state)
         else
         {
             unsigned int index;
-            Field* field = type_find_field(script_data->node->type, "direction", &index);
+            Field* field = type_find_field(script_data->node->data->type, "direction", &index);
             LUA_ERROR_IF(!field || field->type != FIELD_DIRECTION, "No direction field found on the node passed to source");
             Direction dir = direction_move(FIELD_GET(script_data->node, index, direction),
                                            (Movement)(int)raw_direction);
@@ -811,13 +813,13 @@ bool script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptDat
 
     lua_rawgeti(state, LUA_REGISTRYINDEX, behavior->function_ref);
 
-    node_stack = node_stack_allocate(NODE_STACK_SIZE);
+    node_list = node_list_allocate(NODE_LIST_SIZE);
     script_setup_data(state, data);
 
     script_data = data;
     int error = lua_pcall(state, 2, 1, 0);
     script_data = NULL;
-    node_stack_free(node_stack);
+    node_list_free(node_list);
 
     if (error)
     {

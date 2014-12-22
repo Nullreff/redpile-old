@@ -188,7 +188,7 @@ void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* s
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
-        .source = {source->location, source->type},
+        .source = {source->location, source->data->type},
         .target = {target->location, target},
         .tick = tick,
         .type = type,

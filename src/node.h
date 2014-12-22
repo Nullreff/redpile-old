@@ -89,6 +89,17 @@ typedef struct NodeList {
     Node nodes[];
 } NodeList;
 
+#define NODE_IS_EMPTY(NODE) ((NODE)->data == NULL)
+#define FIELD_GET(NODE,INDEX,TYPE) (NODE)->data->fields->data[INDEX].TYPE
+#define FIELD_SET(NODE,INDEX,TYPE,VALUE) FIELD_GET(NODE,INDEX,TYPE) = VALUE;
+#define FOR_NODES(NODE,LIST)\
+    for (NodeList* node_list = LIST; node_list != NULL; node_list = node_list->next)\
+    for (int index = 0; index <= node_list->index; index++) {\
+        Node* NODE = node_list->nodes + index;
+#define FOR_NODES_END }
+
+void node_data_free(NodeData* data);
+
 Node node_empty(void);
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
@@ -104,7 +115,7 @@ void node_tree_remove(NodeTree* tree, Node* node);
 NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
 NodeList* node_list_flatten(NodeList* nodes);
-int node_list_add(NodeList* stack, Node* node);
+unsigned int node_list_add(NodeList* stack, Node* node);
 void node_list_move_after(NodeList* nodes, Node* node, Node* target);
 Node* node_list_index(NodeList* nodes, unsigned int index);
 

@@ -80,10 +80,11 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
 static int process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
 {
     Messages* input = find_input(world, node, messages);
+    NodeData* data = node->data;
 
-    for (unsigned int i = 0; i < node->type->behaviors->count; i++)
+    for (unsigned int i = 0; i < node->data->type->behaviors->count; i++)
     {
-        Behavior* behavior = node->type->behaviors->data[i];
+        Behavior* behavior = data->type->behaviors->data[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
         ScriptData data = (ScriptData){world, node, found, output, sets};
         bool success = script_state_run_behavior(state, behavior, &data);
@@ -92,18 +93,18 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
             return PROCESS_ERROR;
     }
 
-    if (node->last_input == NULL)
+    if (data->last_input == NULL)
     {
-        node->last_input = input;
-        node->last_input_tick = world->ticks;
+        data->last_input = input;
+        data->last_input_tick = world->ticks;
         return PROCESS_CHANGED;
     }
-    else if (node->last_input_tick != world->ticks ||
-            !messages_equal(node->last_input, input))
+    else if (data->last_input_tick != world->ticks ||
+            !messages_equal(data->last_input, input))
     {
-        free(node->last_input);
-        node->last_input = input;
-        node->last_input_tick = world->ticks;
+        free(data->last_input);
+        data->last_input = input;
+        data->last_input_tick = world->ticks;
         return PROCESS_CHANGED;
     }
     else
@@ -182,22 +183,19 @@ static void run_sets(World* world, Queue* sets, LogLevel log_level)
 
 void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log_level)
 {
-    world_fill_missing_nodes(world, true);
-
     for (unsigned int i = 0; i < count; i++)
     {
         if (log_level == LOG_VERBOSE)
             repl_print("--- Tick %llu ---\n", world->ticks);
 
         unsigned long long loops = 0;
-        Queue messages = queue_empty(true, true, world->hashmap->size);
-        Queue sets = queue_empty(false, true, world->hashmap->size);
+        Queue messages = queue_empty(true, true, world->total_nodes);
+        Queue sets = queue_empty(false, true, world->total_nodes);
 
         if (log_level == LOG_VERBOSE)
             repl_print("Nodes:\n");
 
-        FOR_NODES(node, world->nodes->active)
-        {
+        FOR_NODES(node, world->nodes)
             if (log_level == LOG_VERBOSE)
                 node_print(node);
 
@@ -209,12 +207,12 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             process_output(world, node, status == PROCESS_CHANGED, &output, &messages, &sets);
 
             loops++;
-            if (loops > world->nodes->size * 3)
+            if (loops > world->total_nodes * 3)
             {
                 repl_print_error("Logic loop detected while performing tick\n");
                 break;
             }
-        }
+        FOR_NODES_END
 
         if (log_level == LOG_VERBOSE)
         {
@@ -241,7 +239,5 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
         queue_free(&sets);
         world->ticks++;
     }
-
-    world_fill_missing_nodes(world, false);
 }
 

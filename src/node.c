@@ -153,7 +153,7 @@ static NodeLeaf* node_leaf_allocate(NodeTree* parent)
     return leaf;
 }
 
-static void node_data_free(NodeData* data)
+void node_data_free(NodeData* data)
 {
     message_store_free(data->store);
     free(data->last_input);
@@ -281,20 +281,22 @@ NodeList* node_list_flatten(NodeList* nodes)
     return nodes;
 }
 
-int node_list_add(NodeList* stack, Node* node)
+unsigned int node_list_add(NodeList* stack, Node* node)
 {
     assert(stack->count != 0);
-
     assert(stack->index >= -1);
-    if ((unsigned int)(stack->index + 1) < stack->count)
+
+    unsigned int offset = 0;
+    while ((unsigned int)(stack->index + 1) >= stack->count)
     {
-        stack->next = node_list_allocate(stack->count);
+        if (stack->next == NULL)
+            stack->next = node_list_allocate(stack->count);
+        offset += stack->count;
         stack = stack->next;
     }
 
-    stack->index++;
-    stack->nodes[stack->index] = *node;
-    return stack->index;
+    stack->nodes[++stack->index] = *node;
+    return offset + stack->index;
 }
 
 void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
