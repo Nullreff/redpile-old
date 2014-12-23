@@ -2,9 +2,9 @@ Redpile
 =======
 
 Redpile is a voxel logic simulator.
-You can store, query and modify a grid of three dimensional data using simple text based commands.
-It can be run from the command line or as a standalone server that talks via sockets.
-All configuration is done using the Lua scripting language.
+You can use it to query and modify a grid of three dimensional data using simple text based commands.
+All configuration and custom behavior is done using the Lua scripting language.
+It can be run as a command line tool or as a server that talks via sockets.
 
 Installation
 ------------
