@@ -40,7 +40,9 @@
 typedef struct {
     // All nodes are stored in a linked list.
     // See node.c for more information.
+    NodeTree* tree;
     NodeList* nodes;
+    unsigned int total_nodes;
 
     // Type and behavior information
     // see type.c for more information.
@@ -48,7 +50,6 @@ typedef struct {
 
     // Fast block lookup is done using a hashmap.
     // See hashmap.c for more information.
-    Hashmap* hashmap;
 
     // If set to true, any non-existant nodes requested
     // will be filled in with the default material.
@@ -64,10 +65,7 @@ typedef struct {
 typedef struct {
     unsigned long long ticks;
     unsigned int nodes;
-    unsigned int hashmap_allocated;
-    unsigned int hashmap_overflow;
-    unsigned int hashmap_resizes;
-    unsigned int hashmap_max_depth;
+    unsigned int tree_depth;
     unsigned int message_max_inputs;
     unsigned int message_max_outputs;
     unsigned int message_max_queued;
@@ -75,13 +73,12 @@ typedef struct {
 
 World* world_allocate(unsigned int size, TypeData* type_data);
 void world_free(World* world);
-Node* world_set_node(World* world, Location location, Type* type);
-Node* world_get_node(World* world, Location location);
+void world_set_node(World* world, Location location, Type* type, Node* node);
+void world_get_node(World* world, Location location, Node* node);
 void world_remove_node(World* world, Location location);
-Node* world_get_adjacent_node(World* world, Node* node, Direction dir);
+void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
-void world_fill_missing_nodes(World* world, bool enable);
 bool world_run_data(World* world, QueueData* data);
 void world_print_messages(World* world);
 void world_print_types(World* world);

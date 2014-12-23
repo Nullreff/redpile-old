@@ -32,27 +32,6 @@
 #include "hashmap.h"
 #include "repl.h"
 
-static void world_update_adjacent_nodes(World* world, Node* node)
-{
-    for (int i = 0; i < DIRECTIONS_COUNT; i++)
-    {
-        if (node->adjacent[i] == NULL)
-        {
-            // Find the bucket next to us
-            Direction dir = (Direction)i;
-            Location location = location_move(node->location, dir, 1);
-            Node* found_node = world_get_node(world, location);
-
-            if (found_node != NULL)
-            {
-                // Update it to point both ways
-                found_node->adjacent[direction_invert(dir)] = node;
-                node->adjacent[i] = found_node;
-            }
-        }
-    }
-}
-
 static bool world_fill_missing(World* world, Location location)
 {
     if (!world->fill_missing)
@@ -60,17 +39,17 @@ static bool world_fill_missing(World* world, Location location)
 
     Type* type = type_data_get_default_type(world->type_data);
     assert(type != NULL);
-    world_set_node(world, location, type);
+    world_set_node(world, location, type, NULL);
     return true;
 }
 
 static void world_node_move(World* world, Node* node, Direction direction)
 {
-    Type* type = node->type;
+    Type* type = node->data->type;
     Location new_location = location_move(node->location, direction, 1);
 
     world_remove_node(world, node->location);
-    world_set_node(world, new_location, type);
+    world_set_node(world, new_location, type, NULL);
 }
 
 World* world_allocate(unsigned int size, TypeData* type_data)
@@ -78,8 +57,9 @@ World* world_allocate(unsigned int size, TypeData* type_data)
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
 
-    world->hashmap = hashmap_allocate(size);
-    world->nodes = node_list_allocate();
+    world->tree = node_tree_allocate(0, NULL);
+    world->nodes = node_list_allocate(size);
+    world->total_nodes = 0;
     world->type_data = type_data;
     world->fill_missing = false;
 
@@ -94,69 +74,71 @@ World* world_allocate(unsigned int size, TypeData* type_data)
 
 void world_free(World* world)
 {
-    hashmap_free(world->hashmap, NULL);
+    node_tree_free(world->tree);
     node_list_free(world->nodes);
     type_data_free(world->type_data);
     free(world);
 }
 
-Node* world_set_node(World* world, Location location, Type* type)
+void world_set_node(World* world, Location location, Type* type, Node* node)
 {
-    Bucket* bucket = hashmap_get(world->hashmap, location, true);
+    world->tree = node_tree_ensure_depth(world->tree, location);
 
-    if (bucket->value != NULL)
-        node_list_remove(world->nodes, bucket->value);
+    Node found;
+    node_tree_get(world->tree, location, &found, true);
+    assert(!NODE_IS_EMPTY(&found));
 
-    bucket->value = node_list_append(world->nodes, location, type);
-    world_update_adjacent_nodes(world, bucket->value);
-    return bucket->value;
+    if (found.data->type == NULL)
+    {
+        node_list_add(world->nodes, &found);
+        world->total_nodes++;
+    }
+
+    found.data->type = type;
+
+    if (node != NULL)
+        *node = found;
 }
 
-Node* world_get_node(World* world, Location location)
+void world_get_node(World* world, Location location, Node* node)
 {
-    Bucket* bucket = hashmap_get(world->hashmap, location, false);
-    return bucket != NULL ? bucket->value : NULL;
+    node_tree_get(world->tree, location, node, false);
 }
 
 void world_remove_node(World* world, Location location)
 {
-    Node* node = hashmap_remove(world->hashmap, location);
-    if (node != NULL)
+    Node node;
+    world_get_node(world, location, &node);
+    if (!NODE_IS_EMPTY(&node))
     {
-        for (int i = 0; i < DIRECTIONS_COUNT; i++)
-        {
-            if (node->adjacent[i] != NULL)
-            {
-                Direction dir = (Direction)i;
-                node->adjacent[i]->adjacent[direction_invert(dir)] = NULL;
-            }
-        }
-
-        node_list_remove(world->nodes, node);
+        node_data_free(node.data);
+        memset(node.data, 0, sizeof(NodeData));
+        world->total_nodes--;
     }
 }
 
-Node* world_get_adjacent_node(World* world, Node* node, Direction dir)
+void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node)
 {
-    Node* adjacent = node->adjacent[dir];
-    if (adjacent == NULL)
+    Location location = location_move(current_node->location, dir, 1);
+    world->tree = node_tree_ensure_depth(world->tree, location);
+
+    node_tree_get(world->tree, location, node, true);
+    assert(!NODE_IS_EMPTY(node));
+
+    if (node->data->type == NULL)
     {
-        Location loc = location_move(node->location, dir, 1);
-        if (world_fill_missing(world, loc))
-            adjacent = node->adjacent[dir];
+        node->data->type = type_data_get_default_type(world->type_data);
+        node_list_add(world->nodes, node);
+        world->total_nodes++;
     }
-    return adjacent;
 }
 
 WorldStats world_get_stats(World* world)
 {
     return (WorldStats){
         world->ticks,
-        world->nodes->size,
-        world->hashmap->size,
-        world->hashmap->overflow,
-        world->hashmap->resizes,
-        world->hashmap->max_depth,
+        world->total_nodes,
+        world->tree->level,
         world->max_inputs,
         world->max_outputs,
         world->max_queued,
@@ -168,18 +150,10 @@ void world_stats_print(WorldStats stats)
 {
     STAT_PRINT(stats, ticks, llu);
     STAT_PRINT(stats, nodes, u);
-    STAT_PRINT(stats, hashmap_allocated, u);
-    STAT_PRINT(stats, hashmap_overflow, u);
-    STAT_PRINT(stats, hashmap_resizes, u);
-    STAT_PRINT(stats, hashmap_max_depth, u);
+    STAT_PRINT(stats, tree_depth, u);
     STAT_PRINT(stats, message_max_inputs, u);
     STAT_PRINT(stats, message_max_outputs, u);
     STAT_PRINT(stats, message_max_queued, u);
-}
-
-void world_fill_missing_nodes(World* world, bool enable)
-{
-    world->fill_missing = enable;
 }
 
 bool world_run_data(World* world, QueueData* data)
@@ -189,31 +163,31 @@ bool world_run_data(World* world, QueueData* data)
     {
         case SM_FIELD: {
             unsigned int field_index = data->index;
-            switch (data->target.node->type->fields->data[field_index].type)
+            switch (data->target.data->type->fields->data[field_index].type)
             {
                 case FIELD_INTEGER:
-                    if (data->value.integer == FIELD_GET(data->target.node, field_index, integer))
+                    if (data->value.integer == FIELD_GET(&data->target, field_index, integer))
                         return false;
-                    FIELD_SET(data->target.node, field_index, integer, data->value.integer);
+                    FIELD_SET(&data->target, field_index, integer, data->value.integer);
                     break;
 
                 case FIELD_DIRECTION:
-                    if (data->value.direction == FIELD_GET(data->target.node, field_index, direction))
+                    if (data->value.direction == FIELD_GET(&data->target, field_index, direction))
                         return false;
-                    FIELD_SET(data->target.node, field_index, direction, data->value.direction);
+                    FIELD_SET(&data->target, field_index, direction, data->value.direction);
                     break;
 
                 case FIELD_STRING:
-                    if (data->value.string == FIELD_GET(data->target.node, field_index, string))
+                    if (data->value.string == FIELD_GET(&data->target, field_index, string))
                         return false;
-                    FIELD_SET(data->target.node, field_index, string, data->value.string);
+                    FIELD_SET(&data->target, field_index, string, data->value.string);
                     break;
             }
         } break;
 
         case SM_MOVE:
             target_loc = data->source.location;
-            world_node_move(world, data->target.node, data->value.direction);
+            world_node_move(world, &data->target, data->value.direction);
             world_fill_missing(world, target_loc);
             break;
 
@@ -234,9 +208,8 @@ bool world_run_data(World* world, QueueData* data)
 
 void world_print_messages(World* world)
 {
-    FOR_NODES(node, world->nodes->active)
-    {
-        MessageStore* store = node->store;
+    FOR_NODES(node, world->nodes)
+        MessageStore* store = node->data->store;
         while (store != NULL)
         {
             if (store->tick >= world->ticks)
@@ -246,7 +219,7 @@ void world_print_messages(World* world)
                     Message* inst = store->messages->data + j;
                     QueueData data = (QueueData) {
                         .source = {inst->source.location, inst->source.type},
-                        .target = {node->location, node},
+                        .target = *node,
                         .tick = store->tick,
                         .type = inst->type,
                         .index = 0,
@@ -257,7 +230,7 @@ void world_print_messages(World* world)
             }
             store = store->next;
         }
-    }
+    FOR_NODES_END
 }
 
 void world_print_types(World* world)

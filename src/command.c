@@ -95,10 +95,10 @@ static bool type_parse(char* string, Type** type)
 static void node_field_set(Node* node, char* name, char* value)
 {
     unsigned int index;
-    Field* field = type_find_field(node->type, name, &index);
+    Field* field = type_find_field(node->data->type, name, &index);
     if (!field)
     {
-        repl_print_error("The type '%s' doesn't have the field '%s'\n", node->type->name, name);
+        repl_print_error("The type '%s' doesn't have the field '%s'\n", node->data->type->name, name);
         return;
     }
 
@@ -138,11 +138,11 @@ static void node_field_set(Node* node, char* name, char* value)
 
 static void run_command_node_set(Location location, Type* type, CommandArgs* args)
 {
-    Node* node = world_set_node(world, location, type);
-    assert(node != NULL);
+    Node node;
+    world_set_node(world, location, type, &node);
 
     for (unsigned int i = 0; i < args->index; i++)
-        node_field_set(node, args->data[i].name, args->data[i].value);
+        node_field_set(&node, args->data[i].name, args->data[i].value);
 }
 
 Range range_create(int start, int end, unsigned int step)
@@ -197,15 +197,16 @@ void command_node_get(Region* region)
     FOR_REGION(region)
     {
         Location location = location_create(x, y, z);
-        Node* node = world_get_node(world, location);
-        if (node == NULL)
+        Node node;
+        world_get_node(world, location, &node);
+        if (NODE_IS_EMPTY(&node) || node.data->type == NULL)
         {
             Type* type = type_data_get_default_type(world->type_data);
             repl_print("%d,%d,%d %s\n", location.x, location.y, location.z, type->name);
         }
         else
         {
-            node_print(node);
+            node_print(&node);
         }
     }
     free(region);
@@ -228,19 +229,16 @@ void command_field_get(Region* region, char* name)
     FOR_REGION(region)
     {
         Location location = location_create(x, y, z);
-        Node* node;
+
+        Node node;
+        world_get_node(world, location, &node);
+
         Field* field;
         unsigned int index;
-
-        if (!(node = world_get_node(world, location)) ||
-            !(field = type_find_field(node->type, name, &index)))
-        {
-            repl_print("%d,%d,%d nil\n", location.x, location.y, location.z);
-        }
+        if (node.data->type && (field = type_find_field(node.data->type, name, &index)))
+            node_print_field_value(&node, field->type, node.data->fields->data[index]);
         else
-        {
-            node_print_field_value(node, field->type, node->fields.data[index]);
-        }
+            repl_print("%d,%d,%d nil\n", location.x, location.y, location.z);
     }
     free(region);
     free(name);
@@ -251,16 +249,19 @@ void command_field_set(Region* region, char* name, char* value)
     FOR_REGION(region)
     {
         Location location = location_create(x, y, z);
-        Node* node = world_get_node(world, location);
-        if (!node)
+        Node node;
+        world_get_node(world, location, &node);
+        if (!NODE_IS_EMPTY(&node) && node.data->type)
+        {
+            node_field_set(&node, name, value);
+        }
+        else
         {
             Type* type = type_data_get_default_type(world->type_data);
             repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
-            return;
         }
-
-        node_field_set(node, name, value);
     }
+
     free(region);
     free(name);
     free(value);

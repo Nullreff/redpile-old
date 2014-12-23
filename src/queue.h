@@ -41,10 +41,7 @@ typedef struct {
         Location location;
         Type* type;
     } source;
-    struct {
-        Location location;
-        Node* node;
-    } target;
+    Node target;
     unsigned long long tick;
     unsigned int type;
     unsigned int index;

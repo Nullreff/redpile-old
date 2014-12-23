@@ -76,12 +76,13 @@ Type** indexes;
 static void benchmark_insert(World* world)
 {
     Type* type = indexes[rand() % world->type_data->type_count];
-    world_set_node(world, location_random(), type);
+    world_set_node(world, location_random(), type, NULL);
 }
 
 static void benchmark_get(World* world)
 {
-    world_get_node(world, location_random());
+    Node node;
+    world_get_node(world, location_random(), &node);
 }
 
 static void benchmark_delete(World* world)

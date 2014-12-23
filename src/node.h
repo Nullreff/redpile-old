@@ -36,69 +36,89 @@
 #include "message.h"
 #include "type.h"
 
+#define MAX_FIELDS 256
+
+#define TREE_WIDTH 2
+#define TREE_SIZE (TREE_WIDTH * TREE_WIDTH * TREE_WIDTH)
+
+#define LEAF_WIDTH 16
+#define LEAF_SIZE (LEAF_WIDTH * LEAF_WIDTH * LEAF_WIDTH)
+
 typedef struct {
     unsigned int count;
     FieldValue data[];
 } FieldData;
 
-typedef struct Node {
-    Location location;
+typedef struct NodeData {
     Type* type;
-
-    // We keep references to the 6 nodes adjacent to this one for faster
-    // access during redstone ticks.  This adds a bit of extra time to
-    // insertions but more than makes up for it when running ticks
-    struct Node* adjacent[6];
-    struct Node* next;
-    struct Node* prev;
+    FieldData* fields;
 
     MessageStore* store;
-
     Messages* last_input;
     unsigned long long last_input_tick;
+} NodeData;
 
-    FieldData fields;
+struct NodeLeaf;
+
+typedef struct NodeTree {
+    struct NodeTree* parent;
+    unsigned int level;
+    union {
+        struct NodeTree* children[TREE_SIZE];
+        struct NodeLeaf* leaves[TREE_SIZE];
+    } data;
+} NodeTree;
+
+typedef struct NodeLeaf {
+    NodeTree* parent;
+    unsigned int ref_count;
+    NodeData data[LEAF_SIZE];
+} NodeLeaf;
+
+typedef struct {
+    Location location;
+    NodeData* data;
 } Node;
 
-typedef struct {
-    Node* active;
-    Node* inactive;
-    unsigned int size;
+typedef struct NodeList {
+    unsigned int count;
+    int index;
+    struct NodeList* next;
+    Node nodes[];
 } NodeList;
 
-typedef struct {
-    int index;
-    unsigned int count;
-    Node* nodes[];
-} NodeStack;
+#define NODE_IS_EMPTY(NODE) ((NODE)->data == NULL)
+#define NODE_FIELD(NODE,INDEX,TYPE) (NODE)->data->fields->data[INDEX].TYPE
+#define FIELD_GET(NODE,INDEX,TYPE) ((NODE)->data->fields != NULL ? NODE_FIELD(NODE,INDEX,TYPE) : 0)
+#define FIELD_SET(NODE,INDEX,TYPE,VALUE) (node_initialize_fields(NODE), NODE_FIELD(NODE,INDEX,TYPE) = VALUE)
+#define FOR_NODES(NODE,LIST)\
+    for (NodeList* node_list = LIST; node_list != NULL; node_list = node_list->next)\
+    for (int index = 0; index <= node_list->index; index++) {\
+        Node* NODE = node_list->nodes + index;
+#define FOR_NODES_END }
 
-#define MAX_FIELDS 256
-#define FIELD_GET(NODE,INDEX,TYPE)\
-    (assert((INDEX) < (NODE)->fields.count), (NODE)->fields.data[INDEX].TYPE)
-#define FIELD_SET(NODE,INDEX,TYPE,VALUE)\
-    do { assert((INDEX) < (NODE)->fields.count);\
-         (NODE)->fields.data[INDEX].TYPE = VALUE;\
-    } while (0)
-#define FOR_NODES(NODE,START) for (Node* NODE = START; NODE != NULL; NODE = NODE->next)
+void node_data_free(NodeData* data);
 
+Node node_empty(void);
+void node_initialize_fields(Node* node);
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print_field_value(Node* node, FieldType type, FieldValue value);
 void node_print_field(Field* field, FieldValue value);
 void node_print(Node* node);
+bool node_equals(Node* n1, Node* n2);
 
-NodeList* node_list_allocate(void);
+NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent);
+void node_tree_free(NodeTree* tree);
+NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location);
+void node_tree_get(NodeTree* tree, Location location, Node* node, bool create);
+void node_tree_remove(NodeTree* tree, Node* node);
+
+NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
-Node* node_list_append(NodeList* nodes, Location location, Type* type);
-void node_list_remove(NodeList* nodes, Node* node);
-void node_list_move_after(NodeList* nodes, Node* node, Node* target);
-void node_list_print(NodeList* nodes);
-
-NodeStack* node_stack_allocate(unsigned int count);
-void node_stack_free(NodeStack* stack);
-int node_stack_push(NodeStack* stack, Node* node);
-bool node_stack_pop(NodeStack* stack);
-Node* node_stack_index(NodeStack* stack, unsigned int index);
-Node* node_stack_first(NodeStack* stack);
+NodeList* node_list_flatten(NodeList* nodes);
+unsigned int node_list_add(NodeList* stack, Node* node);
+void node_list_insert_after(NodeList* nodes, Node* node, Node* target);
+Node* node_list_index(NodeList* nodes, unsigned int index);
 
 #endif

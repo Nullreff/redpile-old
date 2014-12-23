@@ -36,7 +36,7 @@ static bool queue_data_equals(QueueData* n1, QueueData* n2)
 {
     return n1->type == n2->type &&
            location_equals(n1->source.location, n2->source.location) &&
-           n1->target.node == n2->target.node &&
+           node_equals(&n1->target, &n2->target) &&
            n1->value.integer == n2->value.integer &&
            n1->tick == n2->tick;
 }
@@ -136,13 +136,13 @@ static void queue_remove(Queue* queue, QueueNode* node)
             if (index->size > 0)
             {
                 // Change the hashmap to target the next node
-                assert(node->next != NULL && node->data.target.node == node->next->data.target.node);
+                assert(node->next != NULL && node_equals(&node->data.target, &node->next->data.target));
                 index->node = node->next;
             }
             else
             {
                 // We ran out of nodes with this target
-                assert(node->next == NULL || node->data.target.node != node->next->data.target.node);
+                assert(node->next == NULL || !node_equals(&node->data.target, &node->next->data.target));
                 index->node = NULL;
             }
         }
@@ -188,8 +188,8 @@ void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* s
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
-        .source = {source->location, source->type},
-        .target = {target->location, target},
+        .source = {source->location, source->data->type},
+        .target = *target,
         .tick = tick,
         .type = type,
         .index = index,
@@ -211,7 +211,7 @@ bool queue_contains(Queue* queue, QueueNode* node)
 
     for (unsigned int i = 0; i < index->size; i++)
     {
-        assert(found != NULL && found->data.target.node == node->data.target.node);
+        assert(found != NULL && node_equals(&found->data.target, &node->data.target));
         if (queue_data_equals(&found->data, &node->data))
             return true;
 
@@ -271,7 +271,7 @@ void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, Qu
 
     for (unsigned int i = 0; i < index->size; i++)
     {
-        assert(found != NULL && found->data.target.node == target);
+        assert(found != NULL && node_equals(&found->data.target, target));
         if (found->data.tick == tick)
         {
             *found_node = found;
@@ -280,7 +280,7 @@ void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, Qu
         }
         found = found->next;
     }
-    assert(found == NULL || found->data.target.node != target);
+    assert(found == NULL || !node_equals(&found->data.target, target));
 
 end:
     *found_node = NULL;
