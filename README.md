@@ -3,7 +3,7 @@ Redpile [![Build Status](https://travis-ci.org/Nullreff/redpile.svg?branch=maste
 
 **THIS IS A WORK IN PROGRESS**
 
-Redpile is a voxel logic simulator.
+Redpile is a voxel database and logic simulator.
 You can use it to query and modify a grid of three dimensional data using simple text based commands.
 All configuration and custom behavior is done using the Lua scripting language.
 It can be run as a command line tool or as a server that talks via sockets.
