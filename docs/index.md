@@ -45,7 +45,7 @@ You can also have it listen on a specific port `-p <port>`.
 See `--help` for a list of all options.
 
 An example session in interactive mode is shown below.
-For more information, check out the [commands](commands.md) and [types](types.md) pages.
+For more information, check out the [commands](commands.md) page.
 
 ~~~bash
 $ redpile -i conf/redstone.lua 

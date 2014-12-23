@@ -29,7 +29,6 @@ __END__
         <li><a href="/">Home</a></li>
         <li><a href="/configuration.html">Configuration</a></li>
         <li><a href="/commands.html">Commands</a></li>
-        <li><a href="/types.html">Types</a></li>
         <li><a href="https://github.com/nullreff/redpile">Code</a></li>
       </ul>
       <div class="content">
