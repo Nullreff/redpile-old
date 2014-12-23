@@ -34,7 +34,7 @@ Roadmap
 * ~~Block message passing~~
 * ~~Scripting via [Lua](http://www.lua.org/)~~
 * ~~Field storage~~
-* Octree storage
+* ~~Octree storage~~
 * Tick caching
 * Loading/saving
 * [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
