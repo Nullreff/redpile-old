@@ -59,6 +59,7 @@ World* world_allocate(unsigned int size, TypeData* type_data)
 
     world->tree = node_tree_allocate(0, NULL);
     world->nodes = node_list_allocate(size);
+    world->total_nodes = 0;
     world->type_data = type_data;
     world->fill_missing = false;
 
@@ -119,7 +120,17 @@ void world_remove_node(World* world, Location location)
 void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node)
 {
     Location location = location_move(current_node->location, dir, 1);
-    world_get_node(world, location, node);
+    world->tree = node_tree_ensure_depth(world->tree, location);
+
+    node_tree_get(world->tree, location, node, true);
+    assert(!NODE_IS_EMPTY(node));
+
+    if (node->data->type == NULL)
+    {
+        node->data->type = type_data_get_default_type(world->type_data);
+        node_list_add(world->nodes, node);
+        world->total_nodes++;
+    }
 }
 
 WorldStats world_get_stats(World* world)
@@ -152,31 +163,31 @@ bool world_run_data(World* world, QueueData* data)
     {
         case SM_FIELD: {
             unsigned int field_index = data->index;
-            switch (data->target.node->data->type->fields->data[field_index].type)
+            switch (data->target.data->type->fields->data[field_index].type)
             {
                 case FIELD_INTEGER:
-                    if (data->value.integer == FIELD_GET(data->target.node, field_index, integer))
+                    if (data->value.integer == FIELD_GET(&data->target, field_index, integer))
                         return false;
-                    FIELD_SET(data->target.node, field_index, integer, data->value.integer);
+                    FIELD_SET(&data->target, field_index, integer, data->value.integer);
                     break;
 
                 case FIELD_DIRECTION:
-                    if (data->value.direction == FIELD_GET(data->target.node, field_index, direction))
+                    if (data->value.direction == FIELD_GET(&data->target, field_index, direction))
                         return false;
-                    FIELD_SET(data->target.node, field_index, direction, data->value.direction);
+                    FIELD_SET(&data->target, field_index, direction, data->value.direction);
                     break;
 
                 case FIELD_STRING:
-                    if (data->value.string == FIELD_GET(data->target.node, field_index, string))
+                    if (data->value.string == FIELD_GET(&data->target, field_index, string))
                         return false;
-                    FIELD_SET(data->target.node, field_index, string, data->value.string);
+                    FIELD_SET(&data->target, field_index, string, data->value.string);
                     break;
             }
         } break;
 
         case SM_MOVE:
             target_loc = data->source.location;
-            world_node_move(world, data->target.node, data->value.direction);
+            world_node_move(world, &data->target, data->value.direction);
             world_fill_missing(world, target_loc);
             break;
 
@@ -208,7 +219,7 @@ void world_print_messages(World* world)
                     Message* inst = store->messages->data + j;
                     QueueData data = (QueueData) {
                         .source = {inst->source.location, inst->source.type},
-                        .target = {node->location, node},
+                        .target = *node,
                         .tick = store->tick,
                         .type = inst->type,
                         .index = 0,

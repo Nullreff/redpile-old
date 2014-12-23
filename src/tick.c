@@ -60,7 +60,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
         {
             messages->data[i] = message_create(&found->data);
             found = found->next;
-            if (found == NULL || found->data.tick != world->ticks || found->data.target.node != node)
+            if (found == NULL || found->data.tick != world->ticks || !node_equals(&found->data.target, node))
             {
                 messages->size = i + 1;
                 break;
@@ -127,7 +127,7 @@ static void process_output(World* world, Node* node, bool changed, Queue* output
                 assert(!location_equals(data->target.location, data->source.location));
                 queue_remove_source(messages, data->target.location);
                 queue_remove_source(sets, data->target.location);
-                node_list_move_after(world->nodes, node, data->target.node);
+                node_list_insert_after(world->nodes, node, &data->target);
             }
         }
     }
@@ -144,14 +144,13 @@ static void run_messages(World* world, Queue* queue)
         QueueData* data = &queue_node->data;
 
         assert(!location_equals(data->target.location, data->source.location));
-        Node* target = data->target.node;
-        MessageStore* store = node_find_store(data->target.node, data->tick);
+        MessageStore* store = node_find_store(&data->target, data->tick);
 
         unsigned int count = 0;
         QueueNode* iter = queue_node;
         while (iter != NULL &&
                iter->data.tick == store->tick &&
-               iter->data.target.node == target)
+               node_equals(&iter->data.target, &data->target))
         {
             count++;
             iter = iter->next;

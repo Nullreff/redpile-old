@@ -78,7 +78,6 @@ typedef struct NodeLeaf {
 typedef struct {
     Location location;
     NodeData* data;
-    NodeLeaf* leaf;
 } Node;
 
 typedef struct NodeList {
@@ -107,6 +106,7 @@ MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print_field_value(Node* node, FieldType type, FieldValue value);
 void node_print_field(Field* field, FieldValue value);
 void node_print(Node* node);
+bool node_equals(Node* n1, Node* n2);
 
 NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent);
 void node_tree_free(NodeTree* tree);
@@ -118,7 +118,7 @@ NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
 NodeList* node_list_flatten(NodeList* nodes);
 unsigned int node_list_add(NodeList* stack, Node* node);
-void node_list_move_after(NodeList* nodes, Node* node, Node* target);
+void node_list_insert_after(NodeList* nodes, Node* node, Node* target);
 Node* node_list_index(NodeList* nodes, unsigned int index);
 
 #endif

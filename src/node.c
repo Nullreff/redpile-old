@@ -34,7 +34,7 @@
 
 Node node_empty(void)
 {
-    return (Node){location_empty(), NULL, NULL};
+    return (Node){location_empty(), NULL};
 }
 
 void node_initialize_fields(Node* node)
@@ -152,6 +152,13 @@ void node_print(Node* node)
     repl_print("\n");
 }
 
+bool node_equals(Node* n1, Node* n2)
+{
+    bool equal = (n1->data == n2->data);
+    assert(equal == location_equals(n1->location, n2->location));
+    return equal;
+}
+
 NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent)
 {
     NodeTree* tree = calloc(1, sizeof(NodeTree));
@@ -233,6 +240,8 @@ NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location)
         {
             NodeTree* new = node_tree_allocate(tree->level, tree);
             new->data.children[(TREE_SIZE - 1) - i] = children[i];
+            if (children[i] != NULL)
+                children[i]->parent = new;
             tree->data.children[i] = new;
         }
         tree->level++;
@@ -292,7 +301,6 @@ void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
                                    sub_location.z;
         node->location = location;
         node->data = leaf->data + leaf_offset;
-        node->leaf = leaf;
     }
 }
 
@@ -357,7 +365,7 @@ void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
     }
 }
 
-static void node_list_move_after_index(NodeList* nodes, unsigned int index, Node* node)
+static void node_list_insert_after_index(NodeList* nodes, unsigned int index, Node* node)
 {
     assert(index <= nodes->count);
 
@@ -379,7 +387,6 @@ static void node_list_move_after_index(NodeList* nodes, unsigned int index, Node
         {
             list->index++;
             list->nodes[list->index] = *node;
-            *node = node_empty();
             return;
         }
 
@@ -398,17 +405,16 @@ static void node_list_move_after_index(NodeList* nodes, unsigned int index, Node
     list = list->next;
     list->index = 0;
     list->nodes[0] = *node;
-    *node = node_empty();
 }
 
-void node_list_move_after(NodeList* nodes, Node* node, Node* target)
+void node_list_insert_after(NodeList* nodes, Node* node, Node* target)
 {
     for (NodeList* list = nodes; list != NULL; list = list->next)
     {
         int index = node - list->nodes;
         if (index >= 0 && index <= list->index)
         {
-            node_list_move_after_index(list, index, target);
+            node_list_insert_after_index(list, index, target);
             break;
         }
     }
