@@ -189,8 +189,8 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             repl_print("--- Tick %llu ---\n", world->ticks);
 
         unsigned long long loops = 0;
-        Queue messages = queue_empty(true, true, world->total_nodes);
-        Queue sets = queue_empty(false, true, world->total_nodes);
+        Queue messages = queue_empty(true, true, 1024);
+        Queue sets = queue_empty(false, true, 1024);
 
         if (log_level == LOG_VERBOSE)
             repl_print("Nodes:\n");

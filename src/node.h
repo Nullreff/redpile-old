@@ -89,8 +89,9 @@ typedef struct NodeList {
 } NodeList;
 
 #define NODE_IS_EMPTY(NODE) ((NODE)->data == NULL)
-#define FIELD_GET(NODE,INDEX,TYPE) (NODE)->data->fields->data[INDEX].TYPE
-#define FIELD_SET(NODE,INDEX,TYPE,VALUE) FIELD_GET(NODE,INDEX,TYPE) = VALUE;
+#define NODE_FIELD(NODE,INDEX,TYPE) (NODE)->data->fields->data[INDEX].TYPE
+#define FIELD_GET(NODE,INDEX,TYPE) ((NODE)->data->fields != NULL ? NODE_FIELD(NODE,INDEX,TYPE) : 0)
+#define FIELD_SET(NODE,INDEX,TYPE,VALUE) (node_initialize_fields(NODE), NODE_FIELD(NODE,INDEX,TYPE) = VALUE)
 #define FOR_NODES(NODE,LIST)\
     for (NodeList* node_list = LIST; node_list != NULL; node_list = node_list->next)\
     for (int index = 0; index <= node_list->index; index++) {\
@@ -100,6 +101,7 @@ typedef struct NodeList {
 void node_data_free(NodeData* data);
 
 Node node_empty(void);
+void node_initialize_fields(Node* node);
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
 void node_print_field_value(Node* node, FieldType type, FieldValue value);

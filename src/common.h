@@ -42,6 +42,16 @@
 #define ERROR(...) do { fprintf(stderr, __VA_ARGS__); redpile_cleanup(); exit(EXIT_FAILURE); } while(0)
 #define ERROR_IF(CONDITION, ...) if (CONDITION) { ERROR(__VA_ARGS__); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
+
+// From http://stackoverflow.com/a/365068
+#define ROUND_TO_POW_2(x)\
+    x--;\
+    x |= x >> 1;\
+    x |= x >> 2;\
+    x |= x >> 4;\
+    x |= x >> 8;\
+    x |= x >> 16;\
+    x++
 #define IS_POWER_OF_TWO(x) ((x & (x - 1)) == 0)
 
 void redpile_cleanup(void);

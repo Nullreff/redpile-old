@@ -88,7 +88,10 @@ void world_set_node(World* world, Location location, Type* type, Node* node)
     assert(!NODE_IS_EMPTY(&found));
 
     if (found.data->type == NULL)
+    {
         node_list_add(world->nodes, &found);
+        world->total_nodes++;
+    }
 
     found.data->type = type;
 
@@ -109,6 +112,7 @@ void world_remove_node(World* world, Location location)
     {
         node_data_free(node.data);
         memset(node.data, 0, sizeof(NodeData));
+        world->total_nodes--;
     }
 }
 

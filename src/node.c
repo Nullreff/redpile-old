@@ -37,6 +37,17 @@ Node node_empty(void)
     return (Node){location_empty(), NULL, NULL};
 }
 
+void node_initialize_fields(Node* node)
+{
+    if (node->data->fields != NULL)
+        return;
+
+    unsigned int field_count = node->data->type->fields->count;
+    FieldData* fields = calloc(1, sizeof(FieldData) + (sizeof(FieldValue) * field_count));
+    fields->count = field_count;
+    node->data->fields = fields;
+}
+
 Messages* node_find_messages(Node* node, unsigned long long tick)
 {
     NodeData* data = node->data;
@@ -131,10 +142,11 @@ void node_print(Node* node)
            node->location.z,
            data->type->name);
 
-    if (data->fields != NULL)
+    for (unsigned int i = 0; i < data->type->fields->count; i++)
     {
-        for (unsigned int i = 0; i < data->type->fields->count; i++)
-            node_print_field(data->type->fields->data + i, data->fields->data[i]);
+        node_print_field(
+            data->type->fields->data + i,
+            data->fields != NULL ? data->fields->data[i] : (FieldValue){0});
     }
 
     repl_print("\n");
@@ -162,13 +174,16 @@ void node_data_free(NodeData* data)
     message_store_free(data->store);
     free(data->last_input);
 
-    for (unsigned int i = 0; i < data->type->fields->count; i++)
+    if (data->fields != NULL)
     {
-        Field* field = data->type->fields->data + i;
-        if (field->type == FIELD_STRING)
-            free(data->fields->data[i].string);
+        for (unsigned int i = 0; i < data->type->fields->count; i++)
+        {
+            Field* field = data->type->fields->data + i;
+            if (field->type == FIELD_STRING)
+                free(data->fields->data[i].string);
+        }
+        free(data->fields);
     }
-    free(data->fields);
 }
 
 void node_tree_free(NodeTree* tree)

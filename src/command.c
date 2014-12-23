@@ -246,22 +246,21 @@ void command_field_get(Region* region, char* name)
 
 void command_field_set(Region* region, char* name, char* value)
 {
-    unsigned int count = 0;
     FOR_REGION(region)
     {
         Location location = location_create(x, y, z);
         Node node;
         world_get_node(world, location, &node);
-        if (node.data->type)
+        if (!NODE_IS_EMPTY(&node) && node.data->type)
         {
             node_field_set(&node, name, value);
-            count++;
+        }
+        else
+        {
             Type* type = type_data_get_default_type(world->type_data);
             repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
         }
     }
-
-    repl_print("# %d nodes modified", count);
 
     free(region);
     free(name);
