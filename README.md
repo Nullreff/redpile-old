@@ -37,9 +37,9 @@ Roadmap
 * ~~Octree storage~~
 * Storage optimization
 * Tick optimization
+* Behaviors API
 * Loading/saving
 * [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
-* Language bindings
 * Statistics & reporting
 * Convert parts to [Rust](http://www.rust-lang.org/) (once rust is stable)
 
