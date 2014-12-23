@@ -199,7 +199,7 @@ void command_node_get(Region* region)
         Location location = location_create(x, y, z);
         Node node;
         world_get_node(world, location, &node);
-        if (node.data->type == NULL)
+        if (NODE_IS_EMPTY(&node) || node.data->type == NULL)
         {
             Type* type = type_data_get_default_type(world->type_data);
             repl_print("%d,%d,%d %s\n", location.x, location.y, location.z, type->name);

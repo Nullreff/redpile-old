@@ -81,8 +81,11 @@ void world_free(World* world)
 
 void world_set_node(World* world, Location location, Type* type, Node* node)
 {
+    world->tree = node_tree_ensure_depth(world->tree, location);
+
     Node found;
     node_tree_get(world->tree, location, &found, true);
+    assert(!NODE_IS_EMPTY(&found));
 
     if (found.data->type == NULL)
         node_list_add(world->nodes, &found);

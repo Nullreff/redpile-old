@@ -38,7 +38,6 @@
 
 #define MAX_FIELDS 256
 
-#define TREE_DEPTH 12
 #define TREE_WIDTH 2
 #define TREE_SIZE (TREE_WIDTH * TREE_WIDTH * TREE_WIDTH)
 
@@ -109,6 +108,7 @@ void node_print(Node* node);
 
 NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent);
 void node_tree_free(NodeTree* tree);
+NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location);
 void node_tree_get(NodeTree* tree, Location location, Node* node, bool create);
 void node_tree_remove(NodeTree* tree, Node* node);
 
