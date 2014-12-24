@@ -87,7 +87,7 @@ TICK
 
 Syntax: `TICK [count]`
 
-Runs a single redstone tick by default.
+Runs a single logic tick by default.
 If `count` is provided, it will run `count` ticks.
 
 Syntax: `TICKV [count]`

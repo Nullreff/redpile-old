@@ -1,4 +1,4 @@
-/* world.c - Data structure for storing a redstone simulation
+/* world.c - Data structure for storing and manipulating nodes
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * All rights reserved.

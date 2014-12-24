@@ -1,4 +1,4 @@
-/* world.h - Data structure for storing a redstone simulation
+/* world.h - Data structure for storing and manipulating nodes
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * All rights reserved.
@@ -56,7 +56,7 @@ typedef struct {
     bool fill_missing;
 
     // Additional stats
-    unsigned long long ticks; // Redstone ticks
+    unsigned long long ticks;
     unsigned int max_inputs;
     unsigned int max_outputs;
     unsigned int max_queued;
