@@ -164,3 +164,17 @@ unsigned int location_hash(Location loc, unsigned int max)
     return total & (max - 1);
 }
 
+Range range_create(int start, int end, unsigned int step)
+{
+    return (Range){start, end, step};
+}
+
+Region* region_allocate(Range x, Range y, Range z)
+{
+    Region* region = malloc(sizeof(Region));
+    region->x = x;
+    region->y = y;
+    region->z = z;
+    return region;
+}
+

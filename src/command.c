@@ -145,20 +145,6 @@ static void run_command_node_set(Location location, Type* type, CommandArgs* arg
         node_field_set(&node, args->data[i].name, args->data[i].value);
 }
 
-Range range_create(int start, int end, unsigned int step)
-{
-    return (Range){start, end, step};
-}
-
-Region* region_allocate(Range x, Range y, Range z)
-{
-    Region* region = malloc(sizeof(Region));
-    region->x = x;
-    region->y = y;
-    region->z = z;
-    return region;
-}
-
 CommandArgs* command_args_allocate(unsigned int count)
 {
     CommandArgs* args = malloc(sizeof(CommandArgs) + (sizeof(CommandArg) * count));

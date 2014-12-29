@@ -64,6 +64,18 @@ typedef struct {
     Coord z;
 } Location;
 
+typedef struct {
+    int start;
+    int end;
+    int step;
+} Range;
+
+typedef struct {
+    Range x;
+    Range y;
+    Range z;
+} Region;
+
 Direction direction_invert(Direction dir);
 Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
@@ -78,4 +90,8 @@ bool location_equals(Location l1, Location l2);
 unsigned int location_hash_unbounded(Location loc);
 unsigned int location_hash(Location loc, unsigned int max);
 
+Range range_create(int start, int end, unsigned int step);
+Region* region_allocate(Range x, Range y, Range z);
+
 #endif
+

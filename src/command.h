@@ -36,18 +36,6 @@
 #include "location.h"
 
 typedef struct {
-    int start;
-    int end;
-    int step;
-} Range;
-
-typedef struct {
-    Range x;
-    Range y;
-    Range z;
-} Region;
-
-typedef struct {
     char* name;
     char* value;
 } CommandArg;
@@ -57,9 +45,6 @@ typedef struct {
     unsigned int index;
     CommandArg data[];
 } CommandArgs;
-
-Range range_create(int start, int end, unsigned int step);
-Region* region_allocate(Range x, Range y, Range z);
 
 CommandArgs* command_args_allocate(unsigned int count);
 void command_args_free(CommandArgs* args);
