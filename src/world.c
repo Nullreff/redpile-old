@@ -90,7 +90,7 @@ void world_set_node(World* world, Location location, Type* type, Node* node)
 
     if (found.data->type == NULL)
     {
-        node_list_add(world->nodes, &found);
+        node_list_prepend(&world->nodes, &found);
         world->total_nodes++;
     }
 
@@ -128,7 +128,7 @@ void world_get_adjacent_node(World* world, Node* current_node, Direction dir, No
     if (node->data->type == NULL)
     {
         node->data->type = type_data_get_default_type(world->type_data);
-        node_list_add(world->nodes, node);
+        node_list_prepend(&world->nodes, node);
         world->total_nodes++;
     }
 }

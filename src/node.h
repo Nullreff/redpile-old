@@ -118,6 +118,7 @@ NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
 NodeList* node_list_flatten(NodeList* nodes);
 unsigned int node_list_add(NodeList* stack, Node* node);
+void node_list_prepend(NodeList** list_ptr, Node* node);
 void node_list_insert_after(NodeList* nodes, Node* node, Node* target);
 Node* node_list_index(NodeList* nodes, unsigned int index);
 

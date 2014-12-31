@@ -331,22 +331,39 @@ NodeList* node_list_flatten(NodeList* nodes)
     return nodes;
 }
 
-unsigned int node_list_add(NodeList* stack, Node* node)
+unsigned int node_list_add(NodeList* list, Node* node)
 {
-    assert(stack->count != 0);
-    assert(stack->index >= -1);
+    assert(list->count != 0);
+    assert(list->index >= -1);
 
     unsigned int offset = 0;
-    while ((unsigned int)(stack->index + 1) >= stack->count)
+    while ((unsigned int)(list->index + 1) >= list->count)
     {
-        if (stack->next == NULL)
-            stack->next = node_list_allocate(stack->count);
-        offset += stack->count;
-        stack = stack->next;
+        if (list->next == NULL)
+            list->next = node_list_allocate(list->count);
+        offset += list->count;
+        list = list->next;
     }
 
-    stack->nodes[++stack->index] = *node;
-    return offset + stack->index;
+    list->nodes[++list->index] = *node;
+    return offset + list->index;
+}
+
+void node_list_prepend(NodeList** list_ptr, Node* node)
+{
+    NodeList* list = *list_ptr;
+    assert(list->count != 0);
+    assert(list->index >= -1);
+
+    if ((unsigned int)(list->index + 1) >= list->count)
+    {
+        NodeList* new = node_list_allocate(list->count);
+        new->next = list;
+        list = new;
+        *list_ptr = list;
+    }
+
+    list->nodes[++list->index] = *node;
 }
 
 void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
