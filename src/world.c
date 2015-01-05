@@ -32,17 +32,6 @@
 #include "hashmap.h"
 #include "repl.h"
 
-static bool world_fill_missing(World* world, Location location)
-{
-    if (!world->fill_missing)
-        return false;
-
-    Type* type = type_data_get_default_type(world->type_data);
-    assert(type != NULL);
-    world_set_node(world, location, type, NULL);
-    return true;
-}
-
 static void world_node_move(World* world, Node* node, Direction direction)
 {
     Type* type = node->data->type;
@@ -61,7 +50,6 @@ World* world_allocate(unsigned int size, TypeData* type_data)
     world->nodes = node_list_allocate(size);
     world->total_nodes = 0;
     world->type_data = type_data;
-    world->fill_missing = false;
 
     // Stats
     world->ticks = 0;
@@ -158,7 +146,6 @@ void world_stats_print(WorldStats stats)
 
 bool world_run_data(World* world, QueueData* data)
 {
-    Location target_loc;
     switch (data->type)
     {
         case SM_FIELD: {
@@ -186,9 +173,7 @@ bool world_run_data(World* world, QueueData* data)
         } break;
 
         case SM_MOVE:
-            target_loc = data->source.location;
             world_node_move(world, &data->target, data->value.direction);
-            world_fill_missing(world, target_loc);
             break;
 
         case SM_REMOVE:

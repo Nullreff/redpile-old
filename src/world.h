@@ -42,18 +42,14 @@ typedef struct {
     // See node.c for more information.
     NodeTree* tree;
     NodeList* nodes;
-    unsigned int total_nodes;
 
     // Type and behavior information
     // see type.c for more information.
     TypeData* type_data;
 
-    // If set to true, any non-existant nodes requested
-    // will be filled in with the default material.
-    bool fill_missing;
-
     // Additional stats
     unsigned long long ticks;
+    unsigned int total_nodes;
     unsigned int max_inputs;
     unsigned int max_outputs;
     unsigned int max_queued;
