@@ -38,7 +38,7 @@
 #include "queue.h"
 
 typedef struct {
-    // All nodes are stored in a linked list.
+    // All nodes are stored in an octree
     // See node.c for more information.
     NodeTree* tree;
     NodeList* nodes;
@@ -47,9 +47,6 @@ typedef struct {
     // Type and behavior information
     // see type.c for more information.
     TypeData* type_data;
-
-    // Fast block lookup is done using a hashmap.
-    // See hashmap.c for more information.
 
     // If set to true, any non-existant nodes requested
     // will be filled in with the default material.
