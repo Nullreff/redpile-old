@@ -83,9 +83,9 @@ Syntax: `node:adjacent_each(callback)`
 
 Calls `callback` for each node adjacent to the current one.
 
-Syntax: `node:adjacent_each(direction1, direction2, ..., function)`
+Syntax: `node:adjacent_each(direction1, direction2, ..., callback)`
 
-Calls `function` for each node adjacent to the current one in the directions listed.
+Calls `callback` for each node adjacent to the current one in the directions listed.
 
 ### node:send
 
