@@ -48,4 +48,6 @@ extern World* world;
 extern ScriptState* state;
 extern RedpileConfig* config;
 
+int redpile_run(int argc, char* argv[]);
+
 #endif

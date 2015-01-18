@@ -195,7 +195,7 @@ void redpile_cleanup(void)
     printf("\n");
 }
 
-int main(int argc, char* argv[])
+int redpile_run(int argc, char* argv[])
 {
     signal(SIGINT, signal_callback);
     load_config(argc, argv);
