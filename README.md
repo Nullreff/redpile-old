@@ -36,6 +36,7 @@ Roadmap
 * ~~Field storage~~
 * ~~Octree storage~~
 * Storage optimization
+* Message filtering
 * Tick optimization
 * Behaviors API
 * Loading/saving
