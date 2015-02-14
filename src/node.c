@@ -267,7 +267,7 @@ void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
             sub_tree = tree->data.children[offset] = node_tree_allocate(tree->level - 1, tree);
         }
 
-        unsigned int shift = LEAF_WIDTH * (1 << (tree->level - 1));
+        int shift = LEAF_WIDTH * (1 << (tree->level - 1));
         Location sub_location = location_create(
                 location.x >= 0 ? location.x - shift : location.x + shift,
                 location.y >= 0 ? location.y - shift : location.y + shift,
@@ -296,7 +296,7 @@ void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
         assert(sub_location.x < LEAF_WIDTH &&
                sub_location.y < LEAF_WIDTH &&
                sub_location.z < LEAF_WIDTH);
-        unsigned int leaf_offset = sub_location.x * LEAF_WIDTH * LEAF_WIDTH +
+        int leaf_offset = sub_location.x * LEAF_WIDTH * LEAF_WIDTH +
                                    sub_location.y * LEAF_WIDTH +
                                    sub_location.z;
         node->location = location;

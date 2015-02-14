@@ -30,7 +30,6 @@
 
 #include "location.h"
 #include "common.h"
-#include <limits.h>
 
 char* Directions[6] = {
     "NORTH",
@@ -97,27 +96,6 @@ Direction direction_move(Direction direction, Movement move)
     }
 }
 
-Location location_empty(void)
-{
-    return (Location){COORD_EMPTY, COORD_EMPTY, COORD_EMPTY};
-}
-
-Location location_from_values(int values[])
-{
-    return location_create(values[0], values[1], values[2]);
-}
-
-Location location_random(void)
-{
-    return location_create(rand(), rand(), rand());
-}
-
-Location location_create(Coord x, Coord y, Coord z)
-{
-    assert(x != COORD_EMPTY && y != COORD_EMPTY && z != COORD_EMPTY);
-    return (Location){x, y, z};
-}
-
 Location location_move(Location loc, Direction dir, int length)
 {
     switch (dir)
@@ -130,11 +108,6 @@ Location location_move(Location loc, Direction dir, int length)
         case DOWN:  return (Location){loc.x, loc.y - length, loc.z};
         default:    ERROR("Invalid direction provided to location_move\n");
     }
-}
-
-bool location_equals(Location l1, Location l2)
-{
-    return l1.x == l2.x && l1.y == l2.y && l1.z == l2.z;
 }
 
 unsigned int location_hash_unbounded(Location loc)
@@ -162,11 +135,6 @@ unsigned int location_hash(Location loc, unsigned int max)
 
     // Same as (total % max) when max is a power of two
     return total & (max - 1);
-}
-
-Range range_create(int start, int end, unsigned int step)
-{
-    return (Range){start, end, step};
 }
 
 Region* region_allocate(Range x, Range y, Range z)

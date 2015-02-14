@@ -32,6 +32,7 @@
 #define REDPILE_LOCATION_H
 
 #include <stdbool.h>
+#include <limits.h>
 
 // I chose 101 because it kind of looks like two redstone torches
 // If you have a better prime number, feel free to use it :)
@@ -81,16 +82,16 @@ Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
 Direction direction_move(Direction direction, Movement move);
 
-Location location_empty(void);
-Location location_from_values(int values[]);
-Location location_random(void);
-Location location_create(Coord x, Coord y, Coord z);
+#define location_empty() (Location){COORD_EMPTY, COORD_EMPTY, COORD_EMPTY}
+#define location_from_values(X,Y,Z) location_create(values[0], values[1], values[2])
+#define location_random() location_create(rand(), rand(), rand())
+#define location_create(X,Y,Z) (Location){X, Y, Z}
+#define location_equals(L1,L2) (L1.x == L2.x && L1.y == L2.y && L1.z == L2.z)
 Location location_move(Location loc, Direction dir, int length);
-bool location_equals(Location l1, Location l2);
 unsigned int location_hash_unbounded(Location loc);
 unsigned int location_hash(Location loc, unsigned int max);
 
-Range range_create(int start, int end, unsigned int step);
+#define range_create(START, END, STEP) (Range){START, END, STEP}
 Region* region_allocate(Range x, Range y, Range z);
 
 #endif
