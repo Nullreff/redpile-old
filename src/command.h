@@ -53,7 +53,7 @@ void command_args_append(CommandArgs* args, char* name, char* value);
 void command_ping(void);
 void command_status(void);
 void command_node_get(Region* region);
-void command_node_set(Region* region, char* type, CommandArgs* args);
+void command_node_set(Region* region, char* type, CommandArgs* fields);
 void command_field_get(Region* region, char* name);
 void command_field_set(Region* region, char* name, char* value);
 void command_delete(Region* region);

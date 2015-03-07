@@ -42,6 +42,7 @@
 #define ERROR(...) do { fprintf(stderr, __VA_ARGS__); redpile_cleanup(); exit(EXIT_FAILURE); } while(0)
 #define ERROR_IF(CONDITION, ...) if (CONDITION) { ERROR(__VA_ARGS__); }
 #define CHECK_OOM(POINTER) ERROR_IF(!POINTER, "Out of memory!\n")
+#define UNUSED __attribute__((unused))
 
 // From http://stackoverflow.com/a/365068
 #define ROUND_TO_POW_2(x)\

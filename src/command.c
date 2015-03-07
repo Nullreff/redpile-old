@@ -34,19 +34,6 @@
 #include "repl.h"
 
 #define PARSE_ERROR_IF(CONDITION, ...) if (CONDITION) { repl_print_error(__VA_ARGS__); goto end; }
-#define FOR_REGION(R)\
-    int x_start = (R)->x.start > (R)->x.end ? (R)->x.end : (R)->x.start;\
-    int x_end   = (R)->x.start > (R)->x.end ? (R)->x.start : (R)->x.end;\
-    int y_start = (R)->y.start > (R)->y.end ? (R)->y.end : (R)->y.start;\
-    int y_end   = (R)->y.start > (R)->y.end ? (R)->y.start : (R)->y.end;\
-    int z_start = (R)->z.start > (R)->z.end ? (R)->z.end : (R)->z.start;\
-    int z_end   = (R)->z.start > (R)->z.end ? (R)->z.start : (R)->z.end;\
-    int x_step  = abs((R)->x.step);\
-    int y_step  = abs((R)->y.step);\
-    int z_step  = abs((R)->z.step);\
-    for (int x = x_start; x <= x_end; x += x_step)\
-    for (int y = y_start; y <= y_end; y += y_step)\
-    for (int z = z_start; z <= z_end; z += z_step)
 
 static bool direction_parse(const char* string, Direction* found_dir)
 {
@@ -136,15 +123,6 @@ static void node_field_set(Node* node, char* name, char* value)
     }
 }
 
-static void run_command_node_set(Location location, Type* type, CommandArgs* args)
-{
-    Node node;
-    world_set_node(world, location, type, &node);
-
-    for (unsigned int i = 0; i < args->index; i++)
-        node_field_set(&node, args->data[i].name, args->data[i].value);
-}
-
 CommandArgs* command_args_allocate(unsigned int count)
 {
     CommandArgs* args = malloc(sizeof(CommandArgs) + (sizeof(CommandArg) * count));
@@ -178,85 +156,110 @@ void command_status(void)
     world_stats_print(world_get_stats(world));
 }
 
+static void command_node_get_callback(Location location, Node* node, UNUSED void* args)
+{
+    if (NODE_IS_EMPTY(node) || node->data->type == NULL)
+    {
+        Type* type = type_data_get_default_type(world->type_data);
+        repl_print("%d,%d,%d %s\n", location.x, location.y, location.z, type->name);
+    }
+    else
+    {
+        node_print(node);
+    }
+}
+
 void command_node_get(Region* region)
 {
-    FOR_REGION(region)
-    {
-        Location location = location_create(x, y, z);
-        Node node;
-        world_get_node(world, location, &node);
-        if (NODE_IS_EMPTY(&node) || node.data->type == NULL)
-        {
-            Type* type = type_data_get_default_type(world->type_data);
-            repl_print("%d,%d,%d %s\n", location.x, location.y, location.z, type->name);
-        }
-        else
-        {
-            node_print(&node);
-        }
-    }
+    world_for_region(world, region, command_node_get_callback, NULL);
     free(region);
 }
 
-void command_node_set(Region* region, char* type_name, CommandArgs* args)
+struct command_node_set_args {
+    Type* type;
+    CommandArgs* fields;
+};
+
+static void command_node_set_callback(UNUSED Location location, Node* node, void* args)
+{
+    Type* type = ((struct command_node_set_args*)args)->type;
+    world_set_node(world, location, type, node);
+
+    CommandArgs* fields = ((struct command_node_set_args*)args)->fields;
+    for (unsigned int i = 0; i < fields->index; i++)
+        node_field_set(node, fields->data[i].name, fields->data[i].value);
+}
+
+void command_node_set(Region* region, char* type_name, CommandArgs* fields)
 {
     Type* type;
     if (type_parse(type_name, &type))
     {
-        FOR_REGION(region)
-            run_command_node_set(location_create(x, y, z), type, args);
+        struct command_node_set_args args = {type, fields};
+        world_for_region(world, region, command_node_set_callback, &args);
     }
+
     free(region);
-    command_args_free(args);
+    command_args_free(fields);
+}
+
+static void command_field_get_callback(Location location, Node* node, void* args)
+{
+    char* name = (char*)args;
+    Field* field;
+    unsigned int index;
+    if (node->data->type && (field = type_find_field(node->data->type, name, &index)))
+        node_print_field_value(node, field->type, node->data->fields->data[index]);
+    else
+        repl_print("%d,%d,%d nil\n", location.x, location.y, location.z);
 }
 
 void command_field_get(Region* region, char* name)
 {
-    FOR_REGION(region)
-    {
-        Location location = location_create(x, y, z);
-
-        Node node;
-        world_get_node(world, location, &node);
-
-        Field* field;
-        unsigned int index;
-        if (node.data->type && (field = type_find_field(node.data->type, name, &index)))
-            node_print_field_value(&node, field->type, node.data->fields->data[index]);
-        else
-            repl_print("%d,%d,%d nil\n", location.x, location.y, location.z);
-    }
+    world_for_region(world, region, command_field_get_callback, name);
     free(region);
     free(name);
 }
 
+struct command_field_set_args {
+    char* name;
+    char* value;
+};
+
+static void command_field_set_callback(UNUSED Location location, Node* node, void* args)
+{
+    char* name = ((struct command_field_set_args*)args)->name;
+    char* value = ((struct command_field_set_args*)args)->value;
+
+    if (!NODE_IS_EMPTY(node) && node->data->type)
+    {
+        node_field_set(node, name, value);
+    }
+    else
+    {
+        Type* type = type_data_get_default_type(world->type_data);
+        repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
+    }
+}
+
 void command_field_set(Region* region, char* name, char* value)
 {
-    FOR_REGION(region)
-    {
-        Location location = location_create(x, y, z);
-        Node node;
-        world_get_node(world, location, &node);
-        if (!NODE_IS_EMPTY(&node) && node.data->type)
-        {
-            node_field_set(&node, name, value);
-        }
-        else
-        {
-            Type* type = type_data_get_default_type(world->type_data);
-            repl_print_error("The type '%s' doesn't have the field '%s'\n", type->name, name);
-        }
-    }
+    struct command_field_set_args args = {name, value};
+    world_for_region(world, region, command_field_set_callback, &args);
 
     free(region);
     free(name);
     free(value);
 }
 
+static void command_delete_callback(Location location, UNUSED Node* node, UNUSED void* args)
+{
+    world_remove_node(world, location);
+}
+
 void command_delete(Region* region)
 {
-    FOR_REGION(region)
-        world_remove_node(world, location_create(x, y, z));
+    world_for_region(world, region, command_delete_callback, NULL);
     free(region);
 }
 

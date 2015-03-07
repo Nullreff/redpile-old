@@ -121,6 +121,28 @@ void world_get_adjacent_node(World* world, Node* current_node, Direction dir, No
     }
 }
 
+void world_for_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args)
+{
+    int x_start = region->x.start > region->x.end ? region->x.end : region->x.start;
+    int x_end   = region->x.start > region->x.end ? region->x.start : region->x.end;
+    int y_start = region->y.start > region->y.end ? region->y.end : region->y.start;
+    int y_end   = region->y.start > region->y.end ? region->y.start : region->y.end;
+    int z_start = region->z.start > region->z.end ? region->z.end : region->z.start;
+    int z_end   = region->z.start > region->z.end ? region->z.start : region->z.end;
+    int x_step  = abs(region->x.step);
+    int y_step  = abs(region->y.step);
+    int z_step  = abs(region->z.step);
+    for (int x = x_start; x <= x_end; x += x_step)
+    for (int y = y_start; y <= y_end; y += y_step)
+    for (int z = z_start; z <= z_end; z += z_step)
+    {
+        Location location = location_create(x, y, z);
+        Node node;
+        world_get_node(world, location, &node);
+        callback(location, &node, args);
+    }
+}
+
 WorldStats world_get_stats(World* world)
 {
     return (WorldStats){

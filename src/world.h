@@ -70,6 +70,7 @@ void world_set_node(World* world, Location location, Type* type, Node* node);
 void world_get_node(World* world, Location location, Node* node);
 void world_remove_node(World* world, Location location);
 void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node);
+void world_for_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args);
 WorldStats world_get_stats(World* world);
 void world_stats_print(WorldStats world);
 bool world_run_data(World* world, QueueData* data);
