@@ -293,9 +293,20 @@ void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
                 location.x >= 0 ? location.x : -(location.x + 1),
                 location.y >= 0 ? location.y : -(location.y + 1),
                 location.z >= 0 ? location.z : -(location.z + 1));
-        assert(sub_location.x < LEAF_WIDTH &&
-               sub_location.y < LEAF_WIDTH &&
-               sub_location.z < LEAF_WIDTH);
+
+        if (sub_location.x >= LEAF_WIDTH ||
+            sub_location.y >= LEAF_WIDTH ||
+            sub_location.z >= LEAF_WIDTH)
+        {
+            if (!create)
+            {
+                *node = node_empty();
+                return;
+            }
+
+            ERROR("Call into node_tree_get without first calling node_tree_ensure_depth");
+        }
+
         int leaf_offset = sub_location.x * LEAF_WIDTH * LEAF_WIDTH +
                                    sub_location.y * LEAF_WIDTH +
                                    sub_location.z;
