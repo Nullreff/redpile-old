@@ -54,6 +54,8 @@
     x |= x >> 16;\
     x++
 #define IS_POWER_OF_TWO(x) ((x & (x - 1)) == 0)
+#define MAX(A,B) (A >= B ? A : B)
+#define SWAP(A,B) do { int temp = A; A = B; B = temp; } while(0)
 
 void redpile_cleanup(void);
 

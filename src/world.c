@@ -121,25 +121,63 @@ void world_get_adjacent_node(World* world, Node* current_node, Direction dir, No
     }
 }
 
-void world_for_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args)
-{
-    int x_start = region->x.start > region->x.end ? region->x.end : region->x.start;
-    int x_end   = region->x.start > region->x.end ? region->x.start : region->x.end;
-    int y_start = region->y.start > region->y.end ? region->y.end : region->y.start;
-    int y_end   = region->y.start > region->y.end ? region->y.start : region->y.end;
-    int z_start = region->z.start > region->z.end ? region->z.end : region->z.start;
-    int z_end   = region->z.start > region->z.end ? region->z.start : region->z.end;
-    int x_step  = abs(region->x.step);
-    int y_step  = abs(region->y.step);
-    int z_step  = abs(region->z.step);
-    for (int x = x_start; x <= x_end; x += x_step)
-    for (int y = y_start; y <= y_end; y += y_step)
+#define FOR_REGION(R)\
+    int x_start = (R)->x.start > (R)->x.end ? (R)->x.end : (R)->x.start;\
+    int x_end   = (R)->x.start > (R)->x.end ? (R)->x.start : (R)->x.end;\
+    int y_start = (R)->y.start > (R)->y.end ? (R)->y.end : (R)->y.start;\
+    int y_end   = (R)->y.start > (R)->y.end ? (R)->y.start : (R)->y.end;\
+    int z_start = (R)->z.start > (R)->z.end ? (R)->z.end : (R)->z.start;\
+    int z_end   = (R)->z.start > (R)->z.end ? (R)->z.start : (R)->z.end;\
+    int x_step  = abs((R)->x.step);\
+    int y_step  = abs((R)->y.step);\
+    int z_step  = abs((R)->z.step);\
+    for (int x = x_start; x <= x_end; x += x_step)\
+    for (int y = y_start; y <= y_end; y += y_step)\
     for (int z = z_start; z <= z_end; z += z_step)
+
+void world_get_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args)
+{
+    FOR_REGION(region)
     {
         Location location = location_create(x, y, z);
         Node node;
         world_get_node(world, location, &node);
         callback(location, &node, args);
+    }
+}
+
+void world_set_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args)
+{
+    Location max_range = location_create(
+            MAX(abs(region->x.start), abs(region->x.end)),
+            MAX(abs(region->y.start), abs(region->y.end)),
+            MAX(abs(region->z.start), abs(region->z.end)));
+    world->tree = node_tree_ensure_depth(world->tree, max_range);
+
+    FOR_REGION(region)
+    {
+        Location location = location_create(x, y, z);
+        Node node;
+        node_tree_get(world->tree, location, &node, true);
+        assert(!NODE_IS_EMPTY(&node));
+        Type* oldType = node.data->type;
+
+        callback(location, &node, args);
+
+        if (oldType == NULL && node.data->type != NULL)
+        {
+            node_list_prepend(&world->nodes, &node);
+            world->total_nodes++;
+        }
+    }
+}
+
+void world_delete_region(World* world, Region* region)
+{
+    FOR_REGION(region)
+    {
+        Location location = location_create(x, y, z);
+        world_remove_node(world, location);
     }
 }
 

@@ -171,7 +171,7 @@ static void command_node_get_callback(Location location, Node* node, UNUSED void
 
 void command_node_get(Region* region)
 {
-    world_for_region(world, region, command_node_get_callback, NULL);
+    world_get_region(world, region, command_node_get_callback, NULL);
     free(region);
 }
 
@@ -183,7 +183,7 @@ struct command_node_set_args {
 static void command_node_set_callback(UNUSED Location location, Node* node, void* args)
 {
     Type* type = ((struct command_node_set_args*)args)->type;
-    world_set_node(world, location, type, node);
+    node->data->type = type;
 
     CommandArgs* fields = ((struct command_node_set_args*)args)->fields;
     for (unsigned int i = 0; i < fields->index; i++)
@@ -196,7 +196,7 @@ void command_node_set(Region* region, char* type_name, CommandArgs* fields)
     if (type_parse(type_name, &type))
     {
         struct command_node_set_args args = {type, fields};
-        world_for_region(world, region, command_node_set_callback, &args);
+        world_set_region(world, region, command_node_set_callback, &args);
     }
 
     free(region);
@@ -216,7 +216,7 @@ static void command_field_get_callback(Location location, Node* node, void* args
 
 void command_field_get(Region* region, char* name)
 {
-    world_for_region(world, region, command_field_get_callback, name);
+    world_get_region(world, region, command_field_get_callback, name);
     free(region);
     free(name);
 }
@@ -245,21 +245,16 @@ static void command_field_set_callback(UNUSED Location location, Node* node, voi
 void command_field_set(Region* region, char* name, char* value)
 {
     struct command_field_set_args args = {name, value};
-    world_for_region(world, region, command_field_set_callback, &args);
+    world_get_region(world, region, command_field_set_callback, &args);
 
     free(region);
     free(name);
     free(value);
 }
 
-static void command_delete_callback(Location location, UNUSED Node* node, UNUSED void* args)
-{
-    world_remove_node(world, location);
-}
-
 void command_delete(Region* region)
 {
-    world_for_region(world, region, command_delete_callback, NULL);
+    world_delete_region(world, region);
     free(region);
 }
 
