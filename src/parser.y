@@ -58,20 +58,20 @@ int yylex(void);
 }
 
 /* Symbols */
-%token LINE_BREAK
-%token COMMENT
-%token COMMA
-%token ELLIPSIS
-%token MODULUS
+%token LINE_BREAK "line break"
+%token COMMENT "comment"
+%token COMMA "comma"
+%token ELLIPSIS ".."
+%token MODULUS "%"
 
 /* Data */
-%token <integer> INT
-%token <string> STRING
-%token <string> VALUE
-%type  <range> range
-%type  <region> region
-%type  <args> set_args
-%type  <integer> tick_args
+%token <integer> INT "integer"
+%token <string> STRING "string"
+%token <string> VALUE "value"
+%type  <range> range "range"
+%type  <region> region "region"
+%type  <args> set_args "field list"
+%type  <integer> tick_args "tick count"
 
 /* Commands */
 %token PING
