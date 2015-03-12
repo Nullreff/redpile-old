@@ -258,6 +258,116 @@ void command_delete(Region* region)
     free(region);
 }
 
+struct command_plot_args {
+    char* field;
+    int start;
+    int end;
+};
+
+static void command_plot_field(Node* node, char* name)
+{
+    unsigned int index;
+    Field* field = NULL;
+    if (node->data != NULL)
+        field = type_find_field(node->data->type, name, &index);
+
+    if (field)
+    {
+        switch (field->type)
+        {
+            case FIELD_INTEGER: {
+                int value = FIELD_GET(node, index, integer);
+                printf("%3d ", value);
+                break;
+            }
+
+            case FIELD_DIRECTION: {
+                Direction dir = FIELD_GET(node, index, integer);
+                printf(" %c  ", direction_to_letter(dir));
+                break;
+            }
+
+            case FIELD_STRING: {
+                char* str = FIELD_GET(node, index, string);
+                if (str && str[0] != '\0')
+                    printf(" @  ");
+                else
+                    printf(" *  ");
+                break;
+            }
+        }
+    }
+    else
+    {
+        printf("    ");
+    }
+}
+
+static void command_plot_z_callback(Location location, Node* node, void* args)
+{
+    struct command_plot_args* data = (struct command_plot_args*)args;
+
+    if (location.z == data->start)
+        printf("|");
+
+    command_plot_field(node, data->field);
+
+    if (location.z == data->end)
+        printf("\n");
+}
+
+static void command_plot_y_callback(Location location, Node* node, void* args)
+{
+    struct command_plot_args* data = (struct command_plot_args*)args;
+
+    if (location.y == data->start)
+        printf("|");
+
+    command_plot_field(node, data->field);
+
+    if (location.y == data->end)
+        printf("\n");
+}
+
+void command_plot(Region* region, char* field)
+{
+    printf("+");
+    if (region->x.start == region->x.end)
+    {
+        for (int i = region->z.start; i <= region->z.end; i++)
+            printf("----");
+        printf("Z\n");
+        struct command_plot_args args = {field, region->z.start, region->z.end};
+        world_get_region(world, region, command_plot_z_callback, &args);
+        printf("Y\n");
+    }
+    else if (region->y.start == region->y.end)
+    {
+        for (int i = region->z.start; i <= region->z.end; i++)
+            printf("----");
+        printf("Z\n");
+        struct command_plot_args args = {field, region->z.start, region->z.end};
+        world_get_region(world, region, command_plot_z_callback, &args);
+        printf("X\n");
+    }
+    else if (region->z.start == region->z.end)
+    {
+        for (int i = region->y.start; i <= region->y.end; i++)
+            printf("----");
+        printf("Y\n");
+        struct command_plot_args args = {field, region->y.start, region->y.end};
+        world_get_region(world, region, command_plot_y_callback, &args);
+        printf("X\n");
+    }
+    else
+    {
+        repl_print_error("The region provided must be flat");
+    }
+
+    free(region);
+    free(field);
+}
+
 void command_tick(int count, LogLevel log_level)
 {
     if (count > 0)

@@ -50,6 +50,7 @@
 ^(?i:node)        { return NODE;        }
 ^(?i:field)       { return FIELD;       }
 ^(?i:delete)      { return DELETE;      }
+^(?i:plot)        { return PLOT;        }
 ^(?i:tick)        { return TICK;        }
 ^(?i:tickv)       { return TICKV;       }
 ^(?i:tickq)       { return TICKQ;       }

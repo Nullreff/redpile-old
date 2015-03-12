@@ -110,6 +110,20 @@ Location location_move(Location loc, Direction dir, int length)
     }
 }
 
+char direction_to_letter(Direction dir)
+{
+    switch (dir)
+    {
+        case NORTH: return 'N';
+        case SOUTH: return 'S';
+        case EAST:  return 'E';
+        case WEST:  return 'W';
+        case UP:    return 'U';
+        case DOWN:  return 'D';
+        default:    ERROR("Invalid direction provided to direction_to_char\n");
+    }
+}
+
 unsigned int location_hash_unbounded(Location loc)
 {
     unsigned int total = 0;
@@ -144,5 +158,19 @@ Region* region_allocate(Range x, Range y, Range z)
     region->y = y;
     region->z = z;
     return region;
+}
+
+int region_area(Region* region)
+{
+    return (abs(region->x.start - region->x.end) / region->x.step) +
+           (abs(region->y.start - region->y.end) / region->y.step) +
+           (abs(region->z.start - region->z.end) / region->z.step);
+}
+
+bool region_is_flat(Region* region)
+{
+    return region->x.start == region->x.end ||
+           region->y.start == region->y.end ||
+           region->z.start == region->z.end;
 }
 

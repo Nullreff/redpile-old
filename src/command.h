@@ -57,6 +57,7 @@ void command_node_set(Region* region, char* type, CommandArgs* fields);
 void command_field_get(Region* region, char* name);
 void command_field_set(Region* region, char* name, char* value);
 void command_delete(Region* region);
+void command_plot(Region* region, char* field);
 void command_tick(int count, LogLevel log_level);
 void command_message(void);
 void command_type_list(void);

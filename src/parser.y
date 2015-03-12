@@ -83,6 +83,7 @@ int yylex(void);
 %token FIELDR
 %token FIELDRS
 %token DELETE
+%token PLOT
 %token TICK
 %token TICKV
 %token TICKQ
@@ -129,6 +130,7 @@ command: PING                        { command_ping(); }
        | FIELD region STRING         { command_field_get($2, $3); }
        | FIELD region STRING VALUE   { command_field_set($2, $3, $4); }
        | DELETE region               { command_delete($2); }
+       | PLOT region STRING          { command_plot($2, $3); }
        | TICK tick_args              { command_tick($2, LOG_NORMAL); }
        | TICKV tick_args             { command_tick($2, LOG_VERBOSE); }
        | TICKQ tick_args             { command_tick($2, LOG_QUIET); }

@@ -81,6 +81,7 @@ Direction direction_invert(Direction dir);
 Direction direction_right(Direction dir);
 Direction direction_left(Direction dir);
 Direction direction_move(Direction direction, Movement move);
+char direction_to_letter(Direction dir);
 
 #define location_empty() (Location){COORD_EMPTY, COORD_EMPTY, COORD_EMPTY}
 #define location_from_values(X,Y,Z) location_create(values[0], values[1], values[2])
@@ -92,7 +93,9 @@ unsigned int location_hash_unbounded(Location loc);
 unsigned int location_hash(Location loc, unsigned int max);
 
 #define range_create(START, END, STEP) (Range){START, END, STEP}
+
 Region* region_allocate(Range x, Range y, Range z);
+int region_area(Region* region);
 
 #endif
 
