@@ -17,6 +17,7 @@ To install Redpile, open a shell and run the following commands.  Substitute `ap
 
 ~~~bash
 sudo apt-get install git gcc build-essential cmake bison flex
+curl -s https://static.rust-lang.org/rustup.sh | sudo sh
 git clone https://github.com/Nullreff/redpile.git
 cd redpile
 make

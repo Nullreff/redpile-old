@@ -14,6 +14,7 @@ Building & Usage
 Requires:
 
 * C compiler
+* Rust compiler
 * Make
 * CMake
 * Bison
@@ -35,6 +36,7 @@ Roadmap
 * ~~Scripting via [Lua](http://www.lua.org/)~~
 * ~~Field storage~~
 * ~~Octree storage~~
+* Convert parts to [Rust](http://www.rust-lang.org/)
 * Storage optimization
 * Message filtering
 * Tick optimization
@@ -42,7 +44,6 @@ Roadmap
 * Loading/saving
 * [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
 * Statistics & reporting
-* Convert parts to [Rust](http://www.rust-lang.org/) (once rust is stable)
 
 License
 -------
