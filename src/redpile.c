@@ -135,7 +135,10 @@ static unsigned short parse_port_number(char* string)
     return (unsigned short)value;
 }
 
-static bool load_config(int argc, char* argv[])
+#define CONFIG_SUCCESS 0
+#define CONFIG_FAIL 1
+#define CONFIG_EXIT 2
+static int load_config(int argc, char* argv[])
 {
     config = malloc(sizeof(RedpileConfig));
 
@@ -165,16 +168,16 @@ static bool load_config(int argc, char* argv[])
                 if (optind >= argc)
                 {
                     WARN("You must provide a configuration file\n");
-                    return false;
+                    return CONFIG_FAIL;
                 }
 
                 config->file = argv[optind];
-                return true;
+                return CONFIG_SUCCESS;
 
             case 'w':
                 config->world_size = parse_world_size(optarg);
                 if (config->world_size == 0)
-                    return false;
+                    return CONFIG_FAIL;
                 break;
 
             case 'i':
@@ -184,28 +187,25 @@ static bool load_config(int argc, char* argv[])
             case 'p':
                 config->port = parse_port_number(optarg);
                 if (config->port == 0)
-                    return false;
+                    return CONFIG_FAIL;
                 break;
 
             case 'b':
                 config->benchmark = parse_benchmark_size(optarg);
                 if (config->benchmark == 0)
-                    return false;
+                    return CONFIG_FAIL;
                 break;
 
             case 'v':
                 print_version();
-                free(config);
-                exit(EXIT_SUCCESS);
+                return CONFIG_EXIT;
 
             case 'h':
                 print_help();
-                free(config);
-                exit(EXIT_SUCCESS);
+                return CONFIG_EXIT;
 
             default:
-                free(config);
-                exit(EXIT_FAILURE);
+                return CONFIG_FAIL;
         }
     }
 }
@@ -239,10 +239,14 @@ void redpile_cleanup(void)
 int redpile_run(int argc, char** argv)
 {
     signal(SIGINT, signal_callback);
-    if (!load_config(argc, argv))
+    int result = load_config(argc, argv);
+    if (result != CONFIG_SUCCESS)
     {
         redpile_cleanup();
-        return EXIT_FAILURE;
+        if (result == CONFIG_FAIL)
+            return EXIT_FAILURE;
+        else
+            return EXIT_SUCCESS;
     }
 
     state = script_state_allocate();
