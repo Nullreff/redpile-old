@@ -1,6 +1,7 @@
 before_install:
   - sudo apt-get update
   - sudo apt-get install git gcc build-essential cmake bison flex ruby valgrind
+  - curl -s https://static.rust-lang.org/rustup.sh | sudo sh
   - gem install rspec
 
 compiler:
