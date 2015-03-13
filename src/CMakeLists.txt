@@ -9,8 +9,13 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 FILE(GLOB C_FILES *.c)
-FILE(GLOB RUST_FILES *.rs)
 ADD_LIBRARY(redpile-core STATIC ${C_FILES} ${FLEX_CommandScanner_OUTPUTS} ${BISON_CommandParser_OUTPUTS})
+
+FILE(GLOB RUST_FILES *.rs)
+SET(RUST_ARGS -L ./ -L ../deps/lua -L ../deps/linenoise)
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    SET(RUST_ARGS -g ${RUST_ARGS})
+ENDIF()
 ADD_CUSTOM_TARGET(redpile ALL
-    COMMAND rustc ${RUST_FILES} -L ./ -L ../deps/lua -L ../deps/linenoise
+    COMMAND rustc ${RUST_FILES} ${RUST_ARGS}
     DEPENDS redpile-core lua linenoise)
