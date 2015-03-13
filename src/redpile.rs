@@ -1,11 +1,11 @@
 #![feature(libc)]
-#![feature(env)]
-#![feature(std_misc)]
+#![feature(exit_status)]
 
 extern crate libc;
 use libc::{c_char, c_int};
 use std::env::args;
 use std::ffi::CString;
+use std::env::set_exit_status;
 
 #[link(name = "lua", kind= "static")]
 #[link(name = "linenoise", kind= "static")]
@@ -15,9 +15,12 @@ extern {
 }
 
 fn main() {
-    let args = args().map(|&:arg| CString::from_slice(arg.as_bytes()).as_ptr())
-                     .collect::<Vec<*const c_char>>();
-    unsafe {
-        redpile_run(args.len() as c_int, args.as_ptr());
-    }
+    let arg_ptrs = args().map(|arg| CString::new(arg).unwrap().as_ptr())
+                         .collect::<Vec<*const c_char>>();
+
+    let result = unsafe {
+        redpile_run(arg_ptrs.len() as c_int, arg_ptrs.as_ptr())
+    };
+
+    set_exit_status(result);
 }
