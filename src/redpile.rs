@@ -15,9 +15,8 @@ extern {
 }
 
 fn main() {
-    let arg_ptrs = args().map(|arg| CString::new(arg).unwrap().as_ptr())
-                         .collect::<Vec<*const c_char>>();
-
+    let arg_strs = args().map(|arg| CString::new(arg).unwrap()).collect::<Vec<_>>();
+    let arg_ptrs = arg_strs.iter().map(|arg| arg.as_ptr()).collect::<Vec<_>>();
     let result = unsafe {
         redpile_run(arg_ptrs.len() as c_int, arg_ptrs.as_ptr())
     };
