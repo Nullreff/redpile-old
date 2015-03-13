@@ -50,7 +50,9 @@ Direction direction_invert(Direction dir)
         case WEST:  return EAST;
         case UP:    return DOWN;
         case DOWN:  return UP;
-        default:    ERROR("Invalid direction provided to direction_invert: %d\n", dir);
+        default:
+            WARN("Invalid direction provided to direction_invert: %d\n", dir);
+            return dir;
     }
 }
 
@@ -65,7 +67,9 @@ Direction direction_right(Direction dir)
         case SOUTH: return WEST;
         case EAST:  return SOUTH;
         case WEST:  return NORTH;
-        default:    ERROR("Invalid direction provided to direction_right: %d\n", dir);
+        default:
+            WARN("Invalid direction provided to direction_right: %d\n", dir);
+            return dir;
     }
 }
 
@@ -80,19 +84,23 @@ Direction direction_left(Direction dir)
         case SOUTH: return EAST;
         case EAST:  return NORTH;
         case WEST:  return SOUTH;
-        default:    ERROR("Invalid direction provided to direction_left: %d\n", dir);
+        default:
+            WARN("Invalid direction provided to direction_left: %d\n", dir);
+            return dir;
     }
 }
 
-Direction direction_move(Direction direction, Movement move)
+Direction direction_move(Direction dir, Movement move)
 {
     switch (move)
     {
-        case FORWARDS: return direction;
-        case BEHIND:   return direction_invert(direction);
-        case LEFT:     return direction_left(direction);
-        case RIGHT:    return direction_right(direction);
-        default:       ERROR("Invalid movement provided to direction_move: %d\n", move);
+        case FORWARDS: return dir;
+        case BEHIND:   return direction_invert(dir);
+        case LEFT:     return direction_left(dir);
+        case RIGHT:    return direction_right(dir);
+        default:
+            WARN("Invalid movement provided to direction_move: %d\n", move);
+            return dir;
     }
 }
 
@@ -106,7 +114,9 @@ Location location_move(Location loc, Direction dir, int length)
         case WEST:  return (Location){loc.x - length, loc.y, loc.z};
         case UP:    return (Location){loc.x, loc.y + length, loc.z};
         case DOWN:  return (Location){loc.x, loc.y - length, loc.z};
-        default:    ERROR("Invalid direction provided to location_move\n");
+        default:
+            WARN("Invalid direction provided to location_move\n");
+            return loc;
     }
 }
 
@@ -120,7 +130,9 @@ char direction_to_letter(Direction dir)
         case WEST:  return 'W';
         case UP:    return 'U';
         case DOWN:  return 'D';
-        default:    ERROR("Invalid direction provided to direction_to_char\n");
+        default:
+            WARN("Invalid direction provided to direction_to_char\n");
+            return 'X';
     }
 }
 

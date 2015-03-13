@@ -107,7 +107,7 @@ static int script_define_type(ScriptState* state)
         LUA_ERROR_IF(behavior_count >= MAX_FIELDS, "Maximum number of behaviors exceeded");
         const char* name = luaL_checkstring(state, -1);
         Behavior* behavior = type_data_find_behavior(type_data, name);
-        ERROR_IF(behavior == NULL, "Could not find behavior");
+        LUA_ERROR_IF(behavior == NULL, "Could not find behavior");
         type->behaviors->data[behavior_count] = behavior;
         type->behavior_mask |= behavior->mask;
         lua_pop(state, 1);
@@ -182,18 +182,18 @@ static Location script_location_from_stack(ScriptState* state, unsigned int stac
     luaL_checktype(state, stack_index, LUA_TTABLE);
 
     lua_getfield(state, stack_index, "x");
-    ERROR_IF(lua_isnil(state, -1), "Missing field X");
-    ERROR_IF(!lua_isnumber(state, -1), "The field X must be a number");
+    LUA_ERROR_IF(lua_isnil(state, -1), "Missing field X");
+    LUA_ERROR_IF(!lua_isnumber(state, -1), "The field X must be a number");
     int x = lua_tointeger(state, -1);
 
     lua_getfield(state, stack_index, "y");
-    ERROR_IF(lua_isnil(state, -1), "Missing field Y");
-    ERROR_IF(!lua_isnumber(state, -1), "The field Y must be a number");
+    LUA_ERROR_IF(lua_isnil(state, -1), "Missing field Y");
+    LUA_ERROR_IF(!lua_isnumber(state, -1), "The field Y must be a number");
     int y = lua_tointeger(state, -1);
 
     lua_getfield(state, stack_index, "z");
-    ERROR_IF(lua_isnil(state, -1), "Missing field Z");
-    ERROR_IF(!lua_isnumber(state, -1), "The field Z must be a number");
+    LUA_ERROR_IF(lua_isnil(state, -1), "Missing field Z");
+    LUA_ERROR_IF(!lua_isnumber(state, -1), "The field Z must be a number");
     int z = lua_tointeger(state, -1);
 
     lua_pop(state, 3);

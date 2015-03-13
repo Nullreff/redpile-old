@@ -8,7 +8,9 @@ ADD_FLEX_BISON_DEPENDENCY(CommandScanner CommandParser)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-FILE(GLOB SOURCE_FILES *.c)
-ADD_EXECUTABLE(redpile ${SOURCE_FILES} ${FLEX_CommandScanner_OUTPUTS} ${BISON_CommandParser_OUTPUTS})
-TARGET_LINK_LIBRARIES(redpile lua linenoise)
-INSTALL_TARGETS(/bin redpile)
+FILE(GLOB C_FILES *.c)
+FILE(GLOB RUST_FILES *.rs)
+ADD_LIBRARY(redpile-core STATIC ${C_FILES} ${FLEX_CommandScanner_OUTPUTS} ${BISON_CommandParser_OUTPUTS})
+ADD_CUSTOM_TARGET(redpile ALL
+    COMMAND rustc ${RUST_FILES} -L ./ -L ../deps/lua -L ../deps/linenoise
+    DEPENDS redpile-core lua linenoise)

@@ -73,9 +73,21 @@ static unsigned int parse_world_size(char* string)
     char* parse_error = NULL;
     int value = strtol(string, &parse_error, 10);
 
-    ERROR_IF(*parse_error, "You must pass an integer as the world size\n");
-    ERROR_IF(value <= 0, "You must provide a world size larger than zero\n");
-    ERROR_IF(!IS_POWER_OF_TWO(value), "You must provide a world size that is a power of two\n");
+    if (*parse_error)
+    {
+        WARN("You must pass an integer as the world size\n");
+        value = 0;
+    }
+    else if (value <= 0)
+    {
+        WARN("You must provide a world size larger than zero\n");
+        value = 0;
+    }
+    else if (!IS_POWER_OF_TWO(value))
+    {
+        WARN("You must provide a world size that is a power of two\n");
+        value = 0;
+    }
 
     return (unsigned int)value;
 }
@@ -85,8 +97,16 @@ static unsigned int parse_benchmark_size(char* string)
     char* parse_error = NULL;
     int value = strtol(string, &parse_error, 10);
 
-    ERROR_IF(*parse_error, "You must pass an integer as the number of benchmarks to run\n");
-    ERROR_IF(value <= 0, "You must provide a benchmark size greater than zero\n");
+    if (*parse_error)
+    {
+        WARN("You must pass an integer as the number of benchmarks to run\n");
+        value = 0;
+    }
+    else if (value <= 0)
+    {
+        WARN("You must provide a benchmark size greater than zero\n");
+        value = 0;
+    }
 
     return (unsigned int)value;
 }
@@ -96,14 +116,29 @@ static unsigned short parse_port_number(char* string)
     char* parse_error = NULL;
     int value = strtol(string, &parse_error, 10);
 
-    ERROR_IF(*parse_error, "You must pass an integer as the port number\n");
-    ERROR_IF(value <= 0, "You must provide a port number greater than zero\n");
-    ERROR_IF(value > USHRT_MAX, "You must provide a port number less than or equal to %d\n", USHRT_MAX);
+    if (*parse_error)
+    {
+        WARN("You must pass an integer as the port number\n");
+        value = 0;
+    }
+    else if (value <= 0)
+    {
+        WARN("You must provide a port number greater than zero\n");
+        value = 0;
+    }
+    else if (value > USHRT_MAX)
+    {
+        WARN("You must provide a port number less than or equal to %d\n", USHRT_MAX);
+        value = 0;
+    }
 
     return (unsigned short)value;
 }
 
-static void load_config(int argc, char* argv[])
+#define CONFIG_SUCCESS 0
+#define CONFIG_FAIL 1
+#define CONFIG_EXIT 2
+static int load_config(int argc, char* argv[])
 {
     config = malloc(sizeof(RedpileConfig));
 
@@ -131,13 +166,18 @@ static void load_config(int argc, char* argv[])
         {
             case -1:
                 if (optind >= argc)
-                    ERROR("You must provide a configuration file\n");
+                {
+                    WARN("You must provide a configuration file\n");
+                    return CONFIG_FAIL;
+                }
 
                 config->file = argv[optind];
-                return;
+                return CONFIG_SUCCESS;
 
             case 'w':
                 config->world_size = parse_world_size(optarg);
+                if (config->world_size == 0)
+                    return CONFIG_FAIL;
                 break;
 
             case 'i':
@@ -146,25 +186,26 @@ static void load_config(int argc, char* argv[])
 
             case 'p':
                 config->port = parse_port_number(optarg);
+                if (config->port == 0)
+                    return CONFIG_FAIL;
                 break;
 
             case 'b':
                 config->benchmark = parse_benchmark_size(optarg);
+                if (config->benchmark == 0)
+                    return CONFIG_FAIL;
                 break;
 
             case 'v':
                 print_version();
-                free(config);
-                exit(EXIT_SUCCESS);
+                return CONFIG_EXIT;
 
             case 'h':
                 print_help();
-                free(config);
-                exit(EXIT_SUCCESS);
+                return CONFIG_EXIT;
 
             default:
-                free(config);
-                exit(EXIT_FAILURE);
+                return CONFIG_FAIL;
         }
     }
 }
@@ -195,10 +236,18 @@ void redpile_cleanup(void)
     printf("\n");
 }
 
-int main(int argc, char* argv[])
+int redpile_run(int argc, char** argv)
 {
     signal(SIGINT, signal_callback);
-    load_config(argc, argv);
+    int result = load_config(argc, argv);
+    if (result != CONFIG_SUCCESS)
+    {
+        redpile_cleanup();
+        if (result == CONFIG_FAIL)
+            return EXIT_FAILURE;
+        else
+            return EXIT_SUCCESS;
+    }
 
     state = script_state_allocate();
 
