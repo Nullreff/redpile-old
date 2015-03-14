@@ -46,7 +46,6 @@ RedpileConfig* config = NULL;
 
 static void print_version()
 {
-    printf("Redpile %s\n", REDPILE_VERSION);
 }
 
 static void print_help()
@@ -219,6 +218,11 @@ static void signal_callback(int signal)
     }
 }
 
+void setup_signals(void)
+{
+    signal(SIGINT, signal_callback);
+}
+
 // Referenced from common.h
 void redpile_cleanup(void)
 {
@@ -238,7 +242,7 @@ void redpile_cleanup(void)
 
 int redpile_run(int argc, char** argv)
 {
-    signal(SIGINT, signal_callback);
+    setup_signals();
     int result = load_config(argc, argv);
     if (result != CONFIG_SUCCESS)
     {

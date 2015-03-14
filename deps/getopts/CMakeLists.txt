@@ -1,0 +1,5 @@
+PROJECT(getopts)
+
+file(GLOB FILES *)
+file(COPY ${FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ADD_CUSTOM_TARGET(getopts ALL COMMAND cargo build --release)

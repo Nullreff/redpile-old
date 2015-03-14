@@ -34,8 +34,6 @@
 #include "script.h"
 #include "world.h"
 
-#define REDPILE_VERSION "0.5.0"
-
 typedef struct {
     int world_size;
     bool interactive;

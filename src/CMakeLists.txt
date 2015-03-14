@@ -12,7 +12,7 @@ FILE(GLOB C_FILES *.c)
 ADD_LIBRARY(redpile-core STATIC ${C_FILES} ${FLEX_CommandScanner_OUTPUTS} ${BISON_CommandParser_OUTPUTS})
 
 FILE(GLOB RUST_FILES *.rs)
-SET(RUST_ARGS -L ./ -L ../deps/lua -L ../deps/linenoise)
+SET(RUST_ARGS -L ./ -L ../deps/lua -L ../deps/linenoise --extern getopts=../deps/getopts/target/release/libgetopts-4f06c9c36f482ad0.rlib)
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     SET(RUST_ARGS -g ${RUST_ARGS})
 ENDIF()
