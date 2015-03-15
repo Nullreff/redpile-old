@@ -46,4 +46,7 @@ extern World* world;
 extern ScriptState* state;
 extern RedpileConfig* config;
 
+extern void setup_signals(void);
+extern int redpile_run(RedpileConfig* redpileConfig);
+
 #endif
