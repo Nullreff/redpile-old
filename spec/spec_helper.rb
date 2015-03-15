@@ -26,23 +26,24 @@ module Helpers
   end
 
   def redpile(args = nil)
+    opts = ''
+    config = REDPILE_CONF
+    result = 0
+
     if args.is_a?(String)
-      @opts = args
+      opts = args
     elsif args.is_a?(Hash)
-      @opts = args[:opts]
-      @config = args[:config]
-      @result = args[:result]
+      opts = args[:opts]
+      config = args[:config]
+      result = args[:result]
     end
 
-    @opts ||= ''
-    @config ||= REDPILE_CONF
-    @result ||= 0
-    @command ||= ENV['TEST_VALGRIND'] ? VALGRIND_CMD + REDPILE_CMD : REDPILE_CMD
-    @command += ' -i' if ENV['TEST_INTERACTIVE']
+    command = ENV['TEST_VALGRIND'] ? VALGRIND_CMD + REDPILE_CMD : REDPILE_CMD
+    command += ' -i' if ENV['TEST_INTERACTIVE']
 
-    cmd = "#{@command} #{@opts} #{@config} 2>&1"
+    cmd = "#{command} #{opts} #{config} 2>&1"
     process = IO.popen(cmd, 'r+')
-    Redpile.new(process, ENV['VALGRIND'], @result)
+    Redpile.new(process, ENV['VALGRIND'], result)
   end
   
   def run(*commands)

@@ -1,4 +1,4 @@
-/* redpile.c - Voxel logic simulator
+/* common.rs - Common functions and macros
  *
  * Copyright (C) 2014 Ryan Mendivil <ryan@nullreff.net>
  * All rights reserved.
@@ -28,70 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "redpile.h"
-#include "parser.h"
-#include "command.h"
-#include "bench.h"
-#include "type.h"
-#include "common.h"
-#include "repl.h"
-#include <getopt.h>
-#include <signal.h>
-#include <ctype.h>
-
-// All global state lives in these variables
-World* world = NULL;
-ScriptState* state = NULL;
-RedpileConfig* config = NULL;
-
-static void signal_callback(int signal)
-{
-    if (signal == SIGINT)
-    {
-        redpile_cleanup();
-        exit(EXIT_SUCCESS);
-    }
+pub fn is_power_of_two(x: u32) -> bool {
+    x & (x - 1) == 0
 }
-
-void setup_signals(void)
-{
-    signal(SIGINT, signal_callback);
-}
-
-// Referenced from common.h
-void redpile_cleanup(void)
-{
-    if (world != NULL)
-        world_free(world);
-
-    if (state != NULL)
-        script_state_free(state);
-
-    repl_cleanup();
-
-    printf("\n");
-}
-
-int redpile_run(RedpileConfig* redpileConfig)
-{
-    config = redpileConfig;
-    state = script_state_allocate();
-
-    TypeData* type_data = script_state_load_config(state, config->file);
-    if (type_data == NULL)
-    {
-        redpile_cleanup();
-        return EXIT_FAILURE;
-    }
-
-    world = world_allocate(config->world_size, type_data);
-
-    if (config->benchmark)
-        bench_run(world, config->benchmark);
-    else
-        repl_run();
-
-    redpile_cleanup();
-    return EXIT_SUCCESS;
-}
-

@@ -1,7 +1,7 @@
 require 'spec_helper'
 include Helpers
 
-REDPILE_VERSION = File.read('src/redpile.h')[/REDPILE_VERSION "(\d+\.\d+\.\d+)"/, 1]
+REDPILE_VERSION = File.read('src/redpile.rs')[/^static REDPILE_VERSION.+?"(\d+\.\d+\.\d+)"/, 1]
 BAD_NEGATIVES = [0, -1, -20]
 BAD_NUMBERS = ['abc', 'a12', '12c']
 BAD_POWERS = [3, 13, 28]
@@ -19,10 +19,6 @@ describe 'Options' do
         redpile(short ? '-h' : '--help').run.should =~ /^Redpile - A Voxel Logic Simulator/
       end
 
-      it 'runs in interactive mode' do
-        redpile(short ? '-i' : '--interactive').run.should == ''
-      end
-
       [1, 32, 1024].each do |size|
         it "runs with a custom world size of '#{size}'" do
           redpile("#{short ? '-w' : '--world-size'} #{size}").run.should == ''
@@ -32,42 +28,42 @@ describe 'Options' do
       BAD_NUMBERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
           redpile(opts: short ? "-w #{size}" : "--world-size #{size}", result: EXIT_FAILURE).
-          run.should == 'You must pass an integer as the world size'
+          run.should == 'You must pass a power of two between 1 and 4294967295 as the world size'
         end
       end
 
       BAD_NEGATIVES.each do |size|
         it "errors when run with a world size of '#{size}'" do
           redpile(opts: short ? "-w #{size}" : "--world-size #{size}", result: EXIT_FAILURE).
-          run.should == 'You must provide a world size larger than zero'
+          run.should == 'You must pass a power of two between 1 and 4294967295 as the world size'
         end
       end
 
       BAD_POWERS.each do |size|
         it "errors when run with a world size of '#{size}'" do
           redpile(opts: short ? "-w #{size}" : "--world-size #{size}", result: EXIT_FAILURE).
-          run.should == 'You must provide a world size that is a power of two'
+          run.should == 'You must pass a power of two between 1 and 4294967295 as the world size'
         end
       end
 
       BAD_NUMBERS.each do |port|
         it "errors when run on the port #{port}" do
           redpile(opts: short ? "-p #{port}" : "--port #{port}", result: EXIT_FAILURE).
-          run.should == 'You must pass an integer as the port number'
+          run.should == 'You must pass a number between 1 and 65535 as the port number'
         end
       end
 
       BAD_NEGATIVES.each do |port|
         it "errors when run on the port #{port}" do
           redpile(opts: short ? "-p #{port}" : "--port #{port}", result: EXIT_FAILURE).
-          run.should == 'You must provide a port number greater than zero'
+          run.should == 'You must pass a number between 1 and 65535 as the port number'
         end
       end
 
       BAD_PORTS.each do |port|
         it "errors when run on the port #{port}" do
           redpile(opts: short ? "-p #{port}" : "--port #{port}", result: EXIT_FAILURE).
-          run.should == 'You must provide a port number less than or equal to 65535'
+          run.should == 'You must pass a number between 1 and 65535 as the port number'
         end
       end
     end
@@ -84,14 +80,14 @@ describe 'Options' do
   BAD_NUMBERS.each do |count|
     it "errors when run with '#{count}' benchmarks" do
       redpile(opts: "--benchmark #{count}", result: EXIT_FAILURE).
-      run.should == 'You must pass an integer as the number of benchmarks to run'
+      run.should == 'You must pass a positive number of seconds to run each benchmark for'
     end
   end
 
   BAD_NEGATIVES.each do |count|
     it "errors when run with '#{count}' benchmarks" do
       redpile(opts: "--benchmark #{count}", result: EXIT_FAILURE).
-      run.should == 'You must provide a benchmark size greater than zero'
+      run.should == 'You must pass a positive number of seconds to run each benchmark for'
     end
   end
 

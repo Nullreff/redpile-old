@@ -35,8 +35,8 @@
 #include "world.h"
 
 typedef struct {
-    int world_size;
-    bool interactive;
+    unsigned int world_size;
+    int interactive;
     unsigned short port;
     unsigned int benchmark;
     char* file;
@@ -45,7 +45,5 @@ typedef struct {
 extern World* world;
 extern ScriptState* state;
 extern RedpileConfig* config;
-
-int redpile_run(int argc, char** argv);
 
 #endif
