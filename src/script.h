@@ -50,9 +50,9 @@ typedef struct {
     Queue* sets;
 } ScriptData;
 
-ScriptState* script_state_allocate(void);
-void script_state_free(ScriptState* state);
-TypeData* script_state_load_config(ScriptState* state, const char* config_file);
+extern ScriptState* script_state_allocate(void);
+extern void script_state_free(ScriptState* state);
+extern TypeData* script_state_load_config(ScriptState* state, const char* config_file);
 bool script_state_run_behavior(ScriptState* state, Behavior* behavior, ScriptData* data);
 
 #endif

@@ -35,18 +35,31 @@
 
 extern crate getopts;
 extern crate libc;
-mod common;
 
-use common::is_power_of_two;
 use getopts::Options;
-use libc::{c_char, c_int, c_uint, c_ushort, EXIT_FAILURE};
+use libc::{c_void, c_char, c_int, c_uint, c_ushort, EXIT_FAILURE, EXIT_SUCCESS};
+use std::ffi::CString;
 use std::env::args;
 use std::env::set_exit_status;
-use std::ffi::CString;
 use std::old_io::stderr;
 
 static REDPILE_VERSION: &'static str = "0.5.0";
 static DEFAULT_WORLD_SIZE: u32 = 1024;
+
+#[link(name = "lua", kind= "static")]
+#[link(name = "linenoise", kind= "static")]
+#[link(name = "redpile-core", kind= "static")]
+extern {
+    fn setup_signals();
+    fn set_globals(config: &ReplConfig, state: *mut c_void, world: *mut c_void);
+    fn redpile_cleanup();
+    fn bench_run(world: *mut c_void, count: c_uint);
+    fn repl_run();
+    fn script_state_allocate() -> *mut c_void;
+    fn script_state_free(state: *mut c_void);
+    fn script_state_load_config(state: *mut c_void, file: *const c_char) -> *mut c_void;
+    fn world_allocate(size: c_uint, type_data: *mut c_void) -> *mut c_void;
+}
 
 struct Config {
     world_size: u32,
@@ -62,20 +75,57 @@ enum ConfigStatus {
 }
 
 #[repr(C)]
-struct CConfig {
-    world_size: c_uint,
+struct ReplConfig {
     interactive: c_int,
     port: c_ushort,
-    benchmark: c_uint,
-    file: *const c_char,
 }
 
-#[link(name = "lua", kind= "static")]
-#[link(name = "linenoise", kind= "static")]
-#[link(name = "redpile-core", kind= "static")]
-extern {
-    fn setup_signals();
-    fn redpile_run(config: &CConfig) -> c_int;
+struct ScriptState {
+    ptr: *mut c_void,
+}
+
+struct TypeData {
+    ptr: *mut c_void,
+}
+
+struct World {
+    pub ptr: *mut c_void,
+}
+
+impl ScriptState {
+    pub fn new() -> ScriptState {
+        ScriptState {
+            ptr: unsafe { script_state_allocate() },
+        }
+    }
+
+    pub fn free(&self) {
+        unsafe {
+            script_state_free(self.ptr);
+        }
+    }
+
+    pub fn load(&self, file: &str) -> Option<TypeData> {
+        let file_string = CString::new(file).unwrap();
+        let data = unsafe { script_state_load_config(self.ptr, file_string.as_ptr()) };
+        if !data.is_null() {
+            Some(TypeData { ptr: data })
+        } else {
+            None
+        }
+    }
+}
+
+impl World {
+    pub fn new(size: u32, types: TypeData) -> World {
+        World {
+            ptr: unsafe { world_allocate(size, types.ptr) },
+        }
+    }
+}
+
+fn is_power_of_two(x: u32) -> bool {
+    x & (x - 1) == 0
 }
 
 fn print_help(program: &str, opts: Options) {
@@ -186,16 +236,31 @@ fn main() {
         },
     };
 
-    let file = CString::new(config.file).unwrap();
-
-    let c_config = CConfig {
-        world_size: config.world_size,
-        interactive: config.interactive as c_int,
-        port: config.port,
-        benchmark: config.benchmark,
-        file: file.as_ptr(),
+    let state = ScriptState::new();
+    let types = match state.load(&config.file) {
+        Some(t) => t,
+        None => {
+            state.free();
+            set_exit_status(EXIT_FAILURE);
+            return;
+        },
     };
 
-    let result = unsafe { redpile_run(&c_config) };
-    set_exit_status(result);
+    let world = World::new(config.world_size, types);
+
+    let repl_config = ReplConfig {
+        port: config.port,
+        interactive: config.interactive as c_int,
+    };
+
+    unsafe { set_globals(&repl_config, state.ptr, world.ptr); }
+
+    if config.benchmark > 0 {
+        unsafe { bench_run(world.ptr, config.benchmark); }
+    } else {
+        unsafe { repl_run(); }
+    }
+
+    unsafe { redpile_cleanup(); }
+    set_exit_status(EXIT_SUCCESS);
 }

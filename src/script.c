@@ -793,13 +793,13 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
 
     if (error)
     {
-        repl_print_error("%s\n", lua_tostring(state, -1));
+        WARN("%s\n", lua_tostring(state, -1));
         return NULL;
     }
 
     if (data->type_count == 0)
     {
-        repl_print_error("No types defined in configuration file %s\n", config_file);
+        WARN("No types defined in configuration file %s\n", config_file);
         free(data);
         return NULL;
     }

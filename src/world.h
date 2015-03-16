@@ -64,7 +64,7 @@ typedef struct {
     unsigned int message_max_queued;
 } WorldStats;
 
-World* world_allocate(unsigned int size, TypeData* type_data);
+extern World* world_allocate(unsigned int size, TypeData* type_data);
 void world_free(World* world);
 void world_set_node(World* world, Location location, Type* type, Node* node);
 void world_get_node(World* world, Location location, Node* node);

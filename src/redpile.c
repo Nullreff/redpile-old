@@ -42,7 +42,7 @@
 // All global state lives in these variables
 World* world = NULL;
 ScriptState* state = NULL;
-RedpileConfig* config = NULL;
+ReplConfig* config = NULL;
 
 static void signal_callback(int signal)
 {
@@ -72,26 +72,10 @@ void redpile_cleanup(void)
     printf("\n");
 }
 
-int redpile_run(RedpileConfig* redpileConfig)
+void set_globals(ReplConfig* config_ptr, ScriptState* state_ptr, World* world_ptr)
 {
-    config = redpileConfig;
-    state = script_state_allocate();
-
-    TypeData* type_data = script_state_load_config(state, config->file);
-    if (type_data == NULL)
-    {
-        redpile_cleanup();
-        return EXIT_FAILURE;
-    }
-
-    world = world_allocate(config->world_size, type_data);
-
-    if (config->benchmark)
-        bench_run(world, config->benchmark);
-    else
-        repl_run();
-
-    redpile_cleanup();
-    return EXIT_SUCCESS;
+    config = config_ptr;
+    state = state_ptr;
+    world = world_ptr;
 }
 

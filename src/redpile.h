@@ -35,18 +35,16 @@
 #include "world.h"
 
 typedef struct {
-    unsigned int world_size;
     int interactive;
     unsigned short port;
-    unsigned int benchmark;
-    char* file;
-} RedpileConfig;
+} ReplConfig;
 
 extern World* world;
 extern ScriptState* state;
-extern RedpileConfig* config;
+extern ReplConfig* config;
 
 extern void setup_signals(void);
-extern int redpile_run(RedpileConfig* redpileConfig);
+extern void set_globals(ReplConfig* config_ptr, ScriptState* state_ptr, World* world_ptr);
+extern void redpile_cleanup(void);
 
 #endif
