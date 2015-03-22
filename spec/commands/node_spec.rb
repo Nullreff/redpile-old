@@ -54,6 +54,10 @@ describe 'NODE' do
     run('NODE 0,0,0 INVALID').should == "Unknown type 'INVALID'"
   end
 
+  it 'errors if given a negative modulus' do
+    run('NODE 0..10%-2,0,0 AIR').should =~ /^Modulus must be greater than zero$/
+  end
+
   context 'inserts' do
     %w(AIR INSULATOR).each do |type|
       it type do

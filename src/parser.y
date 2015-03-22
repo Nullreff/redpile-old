@@ -90,6 +90,8 @@ int yylex(void);
 %token MESSAGE
 %token TYPE
 
+%start input
+
 %%
 input: /* empty */
      | input line
@@ -103,7 +105,8 @@ line: LINE_BREAK
 
 range: INT                          { $$ = range_create($1, $1, 1); }
      | INT ELLIPSIS INT             { $$ = range_create($1, $3, 1); }
-     | INT ELLIPSIS INT MODULUS INT { $$ = range_create($1, $3, $5); }
+     | INT ELLIPSIS INT MODULUS INT { PARSE_ERROR_IF($5 <= 0, "Modulus must be greater than zero\n");
+                                      $$ = range_create($1, $3, $5); }
 ;
 
 region: range COMMA range COMMA range { $$ = region_allocate($1, $3, $5); }
