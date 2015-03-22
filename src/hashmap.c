@@ -45,7 +45,21 @@ static Bucket* hashmap_add_next(Hashmap* hashmap, Bucket* bucket)
     return new_bucket;
 }
 
-static void hashmap_free_buckets(Hashmap* hashmap, void (*free_values)(void* value))
+
+Hashmap* hashmap_init(Hashmap* hashmap, unsigned int size)
+{
+    hashmap->size = size;
+    hashmap->min_size = size;
+    hashmap->overflow = 0;
+    hashmap->resizes = 0;
+    hashmap->max_depth = 0;
+    hashmap->data = calloc(1, size * sizeof(Bucket));
+    CHECK_OOM(hashmap->data);
+
+    return hashmap;
+}
+
+void hashmap_free(Hashmap* hashmap, void (*free_values)(void* value))
 {
     for (unsigned int i = 0; i < hashmap->size; i++)
     {
@@ -67,34 +81,12 @@ static void hashmap_free_buckets(Hashmap* hashmap, void (*free_values)(void* val
     free(hashmap->data);
 }
 
-Hashmap* hashmap_allocate(unsigned int size)
-{
-    Hashmap* hashmap = malloc(sizeof(Hashmap));
-    CHECK_OOM(hashmap);
-
-    // General
-    hashmap->size = size;
-    hashmap->min_size = size;
-    hashmap->overflow = 0;
-    hashmap->resizes = 0;
-    hashmap->max_depth = 0;
-    hashmap->data = calloc(1, size * sizeof(Bucket));
-    CHECK_OOM(hashmap->data);
-
-    return hashmap;
-}
-
-void hashmap_free(Hashmap* hashmap, void (*free_values)(void* value))
-{
-    hashmap_free_buckets(hashmap, free_values);
-    free(hashmap);
-}
-
 void hashmap_resize(Hashmap* hashmap, unsigned int new_size)
 {
-    Hashmap* new_hashmap = hashmap_allocate(new_size);
-    new_hashmap->resizes = hashmap->resizes + 1;
-    new_hashmap->min_size = hashmap->min_size;
+    Hashmap new_hashmap;
+    hashmap_init(&new_hashmap, new_size);
+    new_hashmap.resizes = hashmap->resizes + 1;
+    new_hashmap.min_size = hashmap->min_size;
 
     for (unsigned int i = 0; i < hashmap->size; i++)
     {
@@ -104,16 +96,15 @@ void hashmap_resize(Hashmap* hashmap, unsigned int new_size)
 
         do
         {
-            Bucket* new_bucket = hashmap_get(new_hashmap, bucket->key, true);
+            Bucket* new_bucket = hashmap_get(&new_hashmap, bucket->key, true);
             new_bucket->value = bucket->value;
             bucket = bucket->next;
         }
         while (bucket != NULL);
     }
 
-    hashmap_free_buckets(hashmap, NULL);
-    memcpy(hashmap, new_hashmap, sizeof(Hashmap));
-    free(new_hashmap);
+    hashmap_free(hashmap, NULL);
+    memcpy(hashmap, &new_hashmap, sizeof(Hashmap));
 }
 
 Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create)

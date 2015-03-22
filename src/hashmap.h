@@ -61,7 +61,7 @@ typedef struct {
     x |= x >> 16;\
     x++
 
-Hashmap* hashmap_allocate(unsigned int size);
+Hashmap* hashmap_init(Hashmap* hashmap, unsigned int size);
 void hashmap_free(Hashmap* hashmap, void (*free_values)(void* value));
 Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create);
 void* hashmap_remove(Hashmap* hashmap, Location key);

@@ -66,13 +66,13 @@ typedef struct {
 
 typedef struct {
     QueueNode* nodes;
-    Hashmap* targetmap;
-    Hashmap* sourcemap;
+    Hashmap targetmap;
+    Hashmap sourcemap;
 } Queue;
 
 #define FOR_QUEUE(NODE,QUEUE) for (QueueNode* (NODE) = (QUEUE)->nodes; (NODE) != NULL; (NODE) = (NODE)->next)
 
-Queue queue_empty(bool track_targets, bool track_sources, unsigned int size);
+void queue_init(Queue* queue, bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
 void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int index, FieldValue value);
 bool queue_contains(Queue* queue, QueueNode* node);

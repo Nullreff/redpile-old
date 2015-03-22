@@ -43,10 +43,10 @@ static bool queue_data_equals(QueueData* n1, QueueData* n2)
 
 static void queue_push(Queue* queue, QueueNode* node)
 {
-    if (queue->targetmap != NULL)
+    if (queue->targetmap.size > 0)
     {
         // Add the node to the list by it's target
-        Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, true);
+        Bucket* bucket = hashmap_get(&queue->targetmap, node->data.target.location, true);
         QueueNodeIndex* index;
         if (bucket->value == NULL)
         {
@@ -95,10 +95,10 @@ static void queue_push(Queue* queue, QueueNode* node)
         queue->nodes = node;
     }
 
-    if (queue->sourcemap != NULL)
+    if (queue->sourcemap.size > 0)
     {
         // Add a reference to it by source
-        Bucket* bucket = hashmap_get(queue->sourcemap, node->data.source.location, true);
+        Bucket* bucket = hashmap_get(&queue->sourcemap, node->data.source.location, true);
         if (bucket->value == NULL)
         {
             QueueNodeList* source_list = malloc(sizeof(QueueNodeList) +  sizeof(QueueNode));
@@ -124,9 +124,9 @@ static void queue_push(Queue* queue, QueueNode* node)
 
 static void queue_remove(Queue* queue, QueueNode* node)
 {
-    if (queue->targetmap != NULL)
+    if (queue->targetmap.size > 0)
     {
-        Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, false);
+        Bucket* bucket = hashmap_get(&queue->targetmap, node->data.target.location, false);
         assert(bucket != NULL);
 
         QueueNodeIndex* index = bucket->value;
@@ -159,11 +159,11 @@ static void queue_remove(Queue* queue, QueueNode* node)
     free(node);
 }
 
-Queue queue_empty(bool track_targets, bool track_sources, unsigned int size)
+void queue_init(Queue* queue, bool track_targets, bool track_sources, unsigned int size)
 {
-    Hashmap* targetmap = track_targets ? hashmap_allocate(size) : NULL;
-    Hashmap* sourcemap = track_sources ? hashmap_allocate(size) : NULL;
-    return (Queue){NULL, targetmap, sourcemap};
+    queue->nodes = NULL;
+    hashmap_init(&queue->targetmap, track_targets ? size : 0);
+    hashmap_init(&queue->sourcemap, track_sources ? size : 0);
 }
 
 void queue_free(Queue* queue)
@@ -178,10 +178,8 @@ void queue_free(Queue* queue)
         node = temp;
     }
 
-    if (queue->targetmap != NULL)
-        hashmap_free(queue->targetmap, free);
-    if (queue->sourcemap != NULL)
-        hashmap_free(queue->sourcemap, free);
+    hashmap_free(&queue->targetmap, free);
+    hashmap_free(&queue->sourcemap, free);
 }
 
 void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int index, FieldValue value)
@@ -200,7 +198,7 @@ void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* s
 
 bool queue_contains(Queue* queue, QueueNode* node)
 {
-    Bucket* bucket = hashmap_get(queue->targetmap, node->data.target.location, false);
+    Bucket* bucket = hashmap_get(&queue->targetmap, node->data.target.location, false);
     if (bucket == NULL)
         return false;
 
@@ -247,7 +245,7 @@ unsigned int queue_merge(Queue* queue, Queue* append)
 
 void queue_remove_source(Queue* queue, Location source)
 {
-    Bucket* bucket = hashmap_get(queue->sourcemap, source, false);
+    Bucket* bucket = hashmap_get(&queue->sourcemap, source, false);
     if (bucket == NULL)
         return;
 
@@ -260,7 +258,7 @@ void queue_remove_source(Queue* queue, Location source)
 
 void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, QueueNode** found_node, unsigned int* max_size)
 {
-    Bucket* bucket = hashmap_get(messages->targetmap, target->location, false);
+    Bucket* bucket = hashmap_get(&messages->targetmap, target->location, false);
     if (bucket == NULL)
         goto end;
 
