@@ -41,9 +41,6 @@
 #define TREE_WIDTH 2
 #define TREE_SIZE (TREE_WIDTH * TREE_WIDTH * TREE_WIDTH)
 
-#define LEAF_WIDTH 16
-#define LEAF_SIZE (LEAF_WIDTH * LEAF_WIDTH * LEAF_WIDTH)
-
 typedef struct {
     unsigned int count;
     FieldValue data[];
@@ -63,16 +60,14 @@ struct NodeLeaf;
 typedef struct NodeTree {
     struct NodeTree* parent;
     unsigned int level;
-    union {
-        struct NodeTree* children[TREE_SIZE];
-        struct NodeLeaf* leaves[TREE_SIZE];
-    } data;
+    NodeData* data;
+    struct NodeTree* children[TREE_SIZE];
 } NodeTree;
 
 typedef struct NodeLeaf {
     NodeTree* parent;
-    unsigned int ref_count;
-    NodeData data[LEAF_SIZE];
+    unsigned int level;
+    NodeData* data;
 } NodeLeaf;
 
 typedef struct {
@@ -100,6 +95,7 @@ typedef struct NodeList {
 void node_data_free(NodeData* data);
 
 Node node_empty(void);
+NodeData* node_data_allocate(Type* type);
 void node_initialize_fields(Node* node);
 Messages* node_find_messages(Node* node, unsigned long long tick);
 MessageStore* node_find_store(Node* node, unsigned long long tick);
@@ -108,7 +104,7 @@ void node_print_field(Field* field, FieldValue value);
 void node_print(Node* node);
 bool node_equals(Node* n1, Node* n2);
 
-NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent);
+NodeTree* node_tree_allocate(NodeTree* parent, unsigned int level, NodeData* data);
 void node_tree_free(NodeTree* tree);
 NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location);
 void node_tree_get(NodeTree* tree, Location location, Node* node, bool create);

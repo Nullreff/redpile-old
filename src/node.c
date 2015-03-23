@@ -37,6 +37,14 @@ Node node_empty(void)
     return (Node){location_empty(), NULL};
 }
 
+NodeData* node_data_allocate(Type* type)
+{
+    NodeData* data = calloc(1, sizeof(NodeData));
+    CHECK_OOM(data);
+    data->type = type;
+    return data;
+}
+
 void node_initialize_fields(Node* node)
 {
     if (node->data->fields != NULL)
@@ -154,26 +162,17 @@ void node_print(Node* node)
 
 bool node_equals(Node* n1, Node* n2)
 {
-    bool equal = (n1->data == n2->data);
-    assert(equal == location_equals(n1->location, n2->location));
-    return equal;
+    return location_equals(n1->location, n2->location);
 }
 
-NodeTree* node_tree_allocate(unsigned int level, NodeTree* parent)
+NodeTree* node_tree_allocate(NodeTree* parent, unsigned int level, NodeData* data)
 {
-    NodeTree* tree = calloc(1, sizeof(NodeTree));
+    NodeTree* tree = calloc(1, level != 0 ? sizeof(NodeTree) : sizeof(NodeLeaf));
     CHECK_OOM(tree);
-    tree->level = level;
     tree->parent = parent;
+    tree->level = level;
+    tree->data = data;
     return tree;
-}
-
-static NodeLeaf* node_leaf_allocate(NodeTree* parent)
-{
-    NodeLeaf* leaf = calloc(1, sizeof(NodeLeaf));
-    CHECK_OOM(leaf);
-    leaf->parent = parent;
-    return leaf;
 }
 
 void node_data_free(NodeData* data)
@@ -199,50 +198,36 @@ void node_tree_free(NodeTree* tree)
     {
         for (unsigned int i = 0; i < TREE_SIZE; i++)
         {
-            if (tree->data.children[i] != NULL)
-                node_tree_free(tree->data.children[i]);
+            if (tree->children[i] != NULL)
+                node_tree_free(tree->children[i]);
         }
     }
-    else
-    {
-        for (unsigned int i = 0; i < TREE_SIZE; i++)
-        {
-            NodeLeaf* leaf = tree->data.leaves[i];
-            if (leaf != NULL)
-            {
-                for (unsigned int i = 0; i < LEAF_SIZE; i++)
-                {
-                    if (leaf->data[i].type != NULL)
-                        node_data_free(leaf->data + i);
-                }
-                free(leaf);
-            }
-        }
-    }
+
     free(tree);
 }
 
 #define MOST_SIGNIFICANT_BIT(NUM) (NUM != 0 ? (sizeof(NUM) * CHAR_BIT) - __builtin_clz(NUM) : 0)
 NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location)
 {
+    assert(tree->level != 0);
+
     unsigned int x_abs = abs(location.x);
     unsigned int y_abs = abs(location.y);
     unsigned int z_abs = abs(location.z);
     unsigned int max = x_abs > y_abs ? x_abs : y_abs;
     max = max > z_abs ? max : z_abs;
-    max /= LEAF_WIDTH;
     unsigned int depth = MOST_SIGNIFICANT_BIT(max);
     while (depth > tree->level)
     {
         NodeTree* children[TREE_SIZE];
-        memcpy(&children, tree->data.children, sizeof(NodeTree*) * TREE_SIZE);
+        memcpy(&children, tree->children, sizeof(NodeTree*) * TREE_SIZE);
         for (unsigned int i = 0; i < TREE_SIZE; i++)
         {
-            NodeTree* new = node_tree_allocate(tree->level, tree);
-            new->data.children[(TREE_SIZE - 1) - i] = children[i];
+            NodeTree* new = node_tree_allocate(tree, tree->level, NULL);
+            new->children[(TREE_SIZE - 1) - i] = children[i];
             if (children[i] != NULL)
                 children[i]->parent = new;
-            tree->data.children[i] = new;
+            tree->children[i] = new;
         }
         tree->level++;
     }
@@ -250,69 +235,52 @@ NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location)
     return tree;
 }
 
-void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
+void node_tree_get_recursive(NodeTree* tree, Location l, Node* node, bool create)
 {
-    unsigned int offset = (location.x < 0 ? 1 : 0) + (location.y < 0 ? 2 : 0) + (location.z < 0 ? 4 : 0);
+    unsigned int offset = (l.x < 0 ? 1 : 0) + (l.y < 0 ? 2 : 0) + (l.z < 0 ? 4 : 0);
     if (tree->level != 0)
     {
-        NodeTree* sub_tree = tree->data.children[offset];
+        NodeTree* sub_tree = tree->children[offset];
         if (sub_tree == NULL)
         {
             if (!create)
-            {
-                *node = node_empty();
                 return;
-            }
 
-            sub_tree = tree->data.children[offset] = node_tree_allocate(tree->level - 1, tree);
+            sub_tree = tree->children[offset] = node_tree_allocate(tree, tree->level - 1, NULL);
         }
 
-        int shift = LEAF_WIDTH * (1 << (tree->level - 1));
+        int shift = 1 << (tree->level - 1);
         Location sub_location = location_create(
-                location.x >= 0 ? location.x - shift : location.x + shift,
-                location.y >= 0 ? location.y - shift : location.y + shift,
-                location.z >= 0 ? location.z - shift : location.z + shift);
+                l.x > 0 ? l.x - shift : (l.x < 0 ? l.x + shift : 0),
+                l.y > 0 ? l.y - shift : (l.y < 0 ? l.y + shift : 0),
+                l.z > 0 ? l.z - shift : (l.z < 0 ? l.z + shift : 0));
         node_tree_get(sub_tree, sub_location, node, create);
-        node->location = location;
+
+        if (node->data == NULL)
+            node->data = tree->data;
     }
     else
     {
-        NodeLeaf* leaf = tree->data.leaves[offset];
-        if (leaf == NULL)
+        if (!location_equals(l, location_create(0,0,0)))
         {
             if (!create)
-            {
-                *node = node_empty();
                 return;
-            }
 
-            leaf = tree->data.leaves[offset] = node_leaf_allocate(tree);
+            assert(!"Call into node_tree_get without first calling node_tree_ensure_depth");
         }
 
-        Location sub_location = location_create(
-                location.x >= 0 ? location.x : -(location.x + 1),
-                location.y >= 0 ? location.y : -(location.y + 1),
-                location.z >= 0 ? location.z : -(location.z + 1));
+        if (create && tree->data == NULL)
+            tree->data = node_data_allocate(NULL);
 
-        if (sub_location.x >= LEAF_WIDTH ||
-            sub_location.y >= LEAF_WIDTH ||
-            sub_location.z >= LEAF_WIDTH)
-        {
-            if (!create)
-            {
-                *node = node_empty();
-                return;
-            }
-
-            ERROR("Call into node_tree_get without first calling node_tree_ensure_depth");
-        }
-
-        int leaf_offset = sub_location.x * LEAF_WIDTH * LEAF_WIDTH +
-                                   sub_location.y * LEAF_WIDTH +
-                                   sub_location.z;
-        node->location = location;
-        node->data = leaf->data + leaf_offset;
+        node->data = tree->data;
     }
+}
+
+void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
+{
+    node->data = NULL;
+    node_tree_get_recursive(tree, location, node, create);
+    node->location = location;
 }
 
 NodeList* node_list_allocate(unsigned int count)

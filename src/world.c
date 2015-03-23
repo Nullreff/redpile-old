@@ -46,7 +46,8 @@ World* world_allocate(unsigned int size, TypeData* type_data)
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
 
-    world->tree = node_tree_allocate(0, NULL);
+    NodeData* data = node_data_allocate(type_data_get_default_type(type_data));
+    world->tree = node_tree_allocate(NULL, 1, data);
     world->nodes = node_list_allocate(size);
     world->total_nodes = 0;
     world->type_data = type_data;
@@ -110,15 +111,8 @@ void world_get_adjacent_node(World* world, Node* current_node, Direction dir, No
     Location location = location_move(current_node->location, dir, 1);
     world->tree = node_tree_ensure_depth(world->tree, location);
 
-    node_tree_get(world->tree, location, node, true);
+    node_tree_get(world->tree, location, node, false);
     assert(!NODE_IS_EMPTY(node));
-
-    if (node->data->type == NULL)
-    {
-        node->data->type = type_data_get_default_type(world->type_data);
-        node_list_prepend(&world->nodes, node);
-        world->total_nodes++;
-    }
 }
 
 #define FOR_REGION(R)\
