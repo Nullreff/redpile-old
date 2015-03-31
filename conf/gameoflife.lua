@@ -30,8 +30,16 @@
 
 redpile.behavior('cell_update', {'LIFE'}, function(node, messages)
     local count = 0
-    node:adjacent_each(function(found)
+    node:adjacent_each(NORTH, SOUTH, EAST, WEST, function(found)
         if found.alive == 1 then
+            count = count + found.alive
+        end
+    end)
+    node:adjacent_each(NORTH, SOUTH, function(found)
+        if found:adjacent(EAST).alive == 1 then
+            count = count + 1
+        end
+        if found:adjacent(WEST).alive == 1 then
             count = count + 1
         end
     end)
