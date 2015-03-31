@@ -7,7 +7,7 @@ describe 'TICK' do
   end
 
   it 'runs a verbose tick' do
-    run('TICKV').should =~ /^--- Tick 0 ---$/
+    run('TICKV').should =~ /^=== Tick 0 ===$/
   end
 
   it 'runs a quiet tick' do

@@ -41,7 +41,8 @@ typedef struct {
     // All nodes are stored in an octree
     // See node.c for more information.
     NodeTree* tree;
-    NodeList* nodes;
+    NodePool nodes;
+    NodeData* root;
 
     // Type and behavior information
     // see type.c for more information.
@@ -59,6 +60,7 @@ typedef struct {
     unsigned long long ticks;
     unsigned int nodes;
     unsigned int tree_depth;
+    unsigned int hashmap_size;
     unsigned int message_max_inputs;
     unsigned int message_max_outputs;
     unsigned int message_max_queued;

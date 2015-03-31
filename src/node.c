@@ -45,6 +45,25 @@ NodeData* node_data_allocate(Type* type)
     return data;
 }
 
+void node_data_free(NodeData* data)
+{
+    message_store_free(data->store);
+    free(data->last_input);
+
+    if (data->fields != NULL)
+    {
+        for (unsigned int i = 0; i < data->type->fields->count; i++)
+        {
+            Field* field = data->type->fields->data + i;
+            if (field->type == FIELD_STRING)
+                free(data->fields->data[i].string);
+        }
+        free(data->fields);
+    }
+    free(data);
+}
+
+
 void node_initialize_fields(Node* node)
 {
     if (node->data->fields != NULL)
@@ -167,29 +186,12 @@ bool node_equals(Node* n1, Node* n2)
 
 NodeTree* node_tree_allocate(NodeTree* parent, unsigned int level, NodeData* data)
 {
-    NodeTree* tree = calloc(1, level != 0 ? sizeof(NodeTree) : sizeof(NodeLeaf));
+    NodeTree* tree = calloc(1, sizeof(NodeTree));
     CHECK_OOM(tree);
     tree->parent = parent;
     tree->level = level;
     tree->data = data;
     return tree;
-}
-
-void node_data_free(NodeData* data)
-{
-    message_store_free(data->store);
-    free(data->last_input);
-
-    if (data->fields != NULL)
-    {
-        for (unsigned int i = 0; i < data->type->fields->count; i++)
-        {
-            Field* field = data->type->fields->data + i;
-            if (field->type == FIELD_STRING)
-                free(data->fields->data[i].string);
-        }
-        free(data->fields);
-    }
 }
 
 void node_tree_free(NodeTree* tree)
@@ -198,8 +200,8 @@ void node_tree_free(NodeTree* tree)
     {
         for (unsigned int i = 0; i < TREE_SIZE; i++)
         {
-            if (tree->children[i] != NULL)
-                node_tree_free(tree->children[i]);
+            if (tree->children.branches[i] != NULL)
+                node_tree_free(tree->children.branches[i]);
         }
     }
 
@@ -220,14 +222,14 @@ NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location)
     while (depth > tree->level)
     {
         NodeTree* children[TREE_SIZE];
-        memcpy(&children, tree->children, sizeof(NodeTree*) * TREE_SIZE);
+        memcpy(&children, tree->children.branches, sizeof(NodeTree*) * TREE_SIZE);
         for (unsigned int i = 0; i < TREE_SIZE; i++)
         {
             NodeTree* new = node_tree_allocate(tree, tree->level, NULL);
-            new->children[(TREE_SIZE - 1) - i] = children[i];
+            new->children.branches[(TREE_SIZE - 1) - i] = children[i];
             if (children[i] != NULL)
                 children[i]->parent = new;
-            tree->children[i] = new;
+            tree->children.branches[i] = new;
         }
         tree->level++;
     }
@@ -237,49 +239,93 @@ NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location)
 
 void node_tree_get_recursive(NodeTree* tree, Location l, Node* node, bool create)
 {
-    unsigned int offset = (l.x < 0 ? 1 : 0) + (l.y < 0 ? 2 : 0) + (l.z < 0 ? 4 : 0);
+    unsigned int offset = (l.x > 0 ? 1 : 0) + (l.y > 0 ? 2 : 0) + (l.z > 0 ? 4 : 0);
     if (tree->level != 0)
     {
-        NodeTree* sub_tree = tree->children[offset];
+        NodeTree* sub_tree = tree->children.branches[offset];
         if (sub_tree == NULL)
         {
             if (!create)
+            {
+                if (node->data == NULL)
+                    node->data = tree->data;
                 return;
+            }
 
-            sub_tree = tree->children[offset] = node_tree_allocate(tree, tree->level - 1, NULL);
+            sub_tree = tree->children.branches[offset] = node_tree_allocate(tree, tree->level - 1, NULL);
         }
 
         int shift = 1 << (tree->level - 1);
         Location sub_location = location_create(
-                l.x > 0 ? l.x - shift : (l.x < 0 ? l.x + shift : 0),
-                l.y > 0 ? l.y - shift : (l.y < 0 ? l.y + shift : 0),
-                l.z > 0 ? l.z - shift : (l.z < 0 ? l.z + shift : 0));
-        node_tree_get(sub_tree, sub_location, node, create);
-
-        if (node->data == NULL)
-            node->data = tree->data;
+                l.x > 0 ? l.x - shift : l.x + shift,
+                l.y > 0 ? l.y - shift : l.y + shift,
+                l.z > 0 ? l.z - shift : l.z + shift);
+        node_tree_get_recursive(sub_tree, sub_location, node, create);
     }
     else
     {
-        if (!location_equals(l, location_create(0,0,0)))
+        if (l.x > 1 || l.x < 0 || l.y > 1 || l.y < 0 || l.z > 1 || l.z < 0)
         {
             if (!create)
+            {
+                if (node->data == NULL)
+                    node->data = tree->data;
                 return;
+            }
 
             assert(!"Call into node_tree_get without first calling node_tree_ensure_depth");
         }
 
-        if (create && tree->data == NULL)
-            tree->data = node_data_allocate(NULL);
+        if (create && tree->children.leaves[offset] == NULL)
+            tree->children.leaves[offset] = node_data_allocate(NULL);
 
-        node->data = tree->data;
+        node->data = tree->children.leaves[offset];
     }
+
+    if (node->data == NULL)
+        node->data = tree->data;
 }
 
 void node_tree_get(NodeTree* tree, Location location, Node* node, bool create)
 {
     node->data = NULL;
     node_tree_get_recursive(tree, location, node, create);
+    node->location = location;
+}
+
+static NodeTree* node_tree_remove_recursive(NodeTree* tree, Location l, Node* node)
+{
+    if (tree == NULL)
+        return NULL;
+
+    unsigned int offset = (l.x > 0 ? 1 : 0) + (l.y > 0 ? 2 : 0) + (l.z > 0 ? 4 : 0);
+    if (tree->level != 0)
+    {
+        int shift = 1 << (tree->level - 1);
+        Location sub_location = location_create(
+                l.x > 0 ? l.x - shift : l.x + shift,
+                l.y > 0 ? l.y - shift : l.y + shift,
+                l.z > 0 ? l.z - shift : l.z + shift);
+
+        tree->children.branches[offset] = node_tree_remove_recursive(
+                tree->children.branches[offset], sub_location, node);
+    }
+    else
+    {
+        if (l.x > 1 || l.x < 0 || l.y > 1 || l.y < 0 || l.z > 1 || l.z < 0)
+            return tree;
+
+        node->data = tree->children.leaves[offset];
+        tree->children.leaves[offset] = NULL;
+    }
+
+    return tree;
+}
+
+void node_tree_remove(NodeTree* tree, Location location, Node* node)
+{
+    node->data = NULL;
+    node_tree_remove_recursive(tree, location, node);
     node->location = location;
 }
 
@@ -304,17 +350,10 @@ void node_list_free(NodeList* nodes)
     }
 }
 
-NodeList* node_list_flatten(NodeList* nodes)
-{
-    // TODO: Implement
-    return nodes;
-}
-
 unsigned int node_list_add(NodeList* list, Node* node)
 {
     assert(list->count != 0);
     assert(list->index >= -1);
-
     unsigned int offset = 0;
     while ((unsigned int)(list->index + 1) >= list->count)
     {
@@ -323,97 +362,8 @@ unsigned int node_list_add(NodeList* list, Node* node)
         offset += list->count;
         list = list->next;
     }
-
     list->nodes[++list->index] = *node;
     return offset + list->index;
-}
-
-void node_list_prepend(NodeList** list_ptr, Node* node)
-{
-    NodeList* list = *list_ptr;
-    assert(list->count != 0);
-    assert(list->index >= -1);
-
-    if ((unsigned int)(list->index + 1) >= list->count)
-    {
-        NodeList* new = node_list_allocate(list->count);
-        new->next = list;
-        list = new;
-        *list_ptr = list;
-    }
-
-    list->nodes[++list->index] = *node;
-}
-
-void node_list_remove(NodeList* nodes, Node* node, bool remove_multiple)
-{
-    for (NodeList* list = nodes; list != NULL; list = list->next)
-    {
-        for (unsigned int i = 0; i < list->count; i++)
-        {
-            if (location_equals(node->location, list->nodes[i].location))
-            {
-                list->nodes[i] = node_empty();
-                if (!remove_multiple)
-                    break;
-            }
-        }
-    }
-}
-
-static void node_list_insert_after_index(NodeList* nodes, unsigned int index, Node* node)
-{
-    assert(index <= nodes->count);
-
-    NodeList* list = nodes;
-    while (true)
-    {
-        for (int i = index; i <= list->index; i++)
-        {
-            if (location_equals(list->nodes[i].location, location_empty()))
-            {
-                list->nodes[i] = *node;
-                *node = node_empty();
-                return;
-            }
-        }
-
-        assert(list->index >= -1);
-        if ((unsigned int)(list->index + 1) < list->count)
-        {
-            list->index++;
-            list->nodes[list->index] = *node;
-            return;
-        }
-
-        if (list->next != NULL)
-        {
-            index = 0;
-            list = list->next;
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    list->next = node_list_allocate(list->count);
-    list = list->next;
-    list->index = 0;
-    list->nodes[0] = *node;
-}
-
-void node_list_insert_after(NodeList* nodes, Node* node, Node* target)
-{
-    for (NodeList* list = nodes; list != NULL; list = list->next)
-    {
-        int index = node - list->nodes;
-        if (index >= 0 && index <= list->index)
-        {
-            node_list_insert_after_index(list, index, target);
-            break;
-        }
-    }
 }
 
 Node* node_list_index(NodeList* nodes, unsigned int index)
@@ -428,7 +378,45 @@ Node* node_list_index(NodeList* nodes, unsigned int index)
         else
             index -= list->count;
     }
-
     return NULL;
+}
+
+void node_pool_init(NodePool* pool, unsigned int size)
+{
+    hashmap_init(&pool->map, size);
+    pool->count = 0;
+}
+
+void node_pool_free(NodePool* pool, bool freeData)
+{
+    if (freeData)
+        hashmap_free(&pool->map, (void (*)(void*))node_data_free);
+    else
+        hashmap_free(&pool->map, NULL);
+}
+
+void node_pool_add(NodePool* pool, Node* node)
+{
+    Bucket* bucket = hashmap_get(&pool->map, node->location, true);
+    if (bucket->value == NULL)
+        pool->count++;
+    bucket->value = node->data;
+}
+
+void node_pool_remove(NodePool* pool, Node* node)
+{
+    hashmap_remove(&pool->map, node->location);
+    if (node->data != NULL)
+        node_data_free(node->data);
+}
+
+Cursor node_pool_iterator(NodePool* pool)
+{
+    return hashmap_get_iterator(&pool->map);
+}
+
+bool node_cursor_next(Cursor* cursor, Node* node)
+{
+    return cursor_next(cursor, &node->location, (void**)&node->data);
 }
 

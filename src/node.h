@@ -55,25 +55,25 @@ typedef struct NodeData {
     unsigned long long last_input_tick;
 } NodeData;
 
-struct NodeLeaf;
-
 typedef struct NodeTree {
     struct NodeTree* parent;
     unsigned int level;
     NodeData* data;
-    struct NodeTree* children[TREE_SIZE];
+    union {
+        struct NodeTree* branches[TREE_SIZE];
+        NodeData* leaves[TREE_SIZE];
+    } children;
 } NodeTree;
-
-typedef struct NodeLeaf {
-    NodeTree* parent;
-    unsigned int level;
-    NodeData* data;
-} NodeLeaf;
 
 typedef struct {
     Location location;
     NodeData* data;
 } Node;
+
+typedef struct {
+    Hashmap map;
+    unsigned int count;
+} NodePool;
 
 typedef struct NodeList {
     unsigned int count;
@@ -86,11 +86,6 @@ typedef struct NodeList {
 #define NODE_FIELD(NODE,INDEX,TYPE) (NODE)->data->fields->data[INDEX].TYPE
 #define FIELD_GET(NODE,INDEX,TYPE) ((NODE)->data->fields != NULL ? NODE_FIELD(NODE,INDEX,TYPE) : 0)
 #define FIELD_SET(NODE,INDEX,TYPE,VALUE) (node_initialize_fields(NODE), NODE_FIELD(NODE,INDEX,TYPE) = VALUE)
-#define FOR_NODES(NODE,LIST)\
-    for (NodeList* node_list = LIST; node_list != NULL; node_list = node_list->next)\
-    for (int index = 0; index <= node_list->index; index++) {\
-        Node* NODE = node_list->nodes + index;
-#define FOR_NODES_END }
 
 void node_data_free(NodeData* data);
 
@@ -108,14 +103,18 @@ NodeTree* node_tree_allocate(NodeTree* parent, unsigned int level, NodeData* dat
 void node_tree_free(NodeTree* tree);
 NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location);
 void node_tree_get(NodeTree* tree, Location location, Node* node, bool create);
-void node_tree_remove(NodeTree* tree, Node* node);
+void node_tree_remove(NodeTree* tree, Location location, Node* node);
+
+void node_pool_init(NodePool* pool, unsigned int size);
+void node_pool_free(NodePool* pool, bool freeData);
+void node_pool_add(NodePool* pool, Node* node);
+void node_pool_remove(NodePool* pool, Node* node);
+Cursor node_pool_iterator(NodePool* pool);
 
 NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);
-NodeList* node_list_flatten(NodeList* nodes);
-unsigned int node_list_add(NodeList* stack, Node* node);
-void node_list_prepend(NodeList** list_ptr, Node* node);
-void node_list_insert_after(NodeList* nodes, Node* node, Node* target);
+unsigned int node_list_add(NodeList* list, Node* node);
 Node* node_list_index(NodeList* nodes, unsigned int index);
+bool node_cursor_next(Cursor* cursor, Node* node);
 
 #endif

@@ -114,7 +114,7 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
     }
 }
 
-static void process_output(World* world, Node* node, bool changed, Queue* output, Queue* messages, Queue* sets)
+static void process_output(World* world, bool changed, NodePool* rerun, Queue* output, Queue* messages, Queue* sets)
 {
     if (changed)
     {
@@ -127,7 +127,7 @@ static void process_output(World* world, Node* node, bool changed, Queue* output
                 assert(!location_equals(data->target.location, data->source.location));
                 queue_remove_source(messages, data->target.location);
                 queue_remove_source(sets, data->target.location);
-                node_list_insert_after(world->nodes, node, &data->target);
+                node_pool_add(rerun, &data->target);
             }
         }
     }
@@ -185,36 +185,68 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
     for (unsigned int i = 0; i < count; i++)
     {
         if (log_level == LOG_VERBOSE)
-            repl_print("--- Tick %llu ---\n", world->ticks);
+            repl_print("=== Tick %llu ===\n", world->ticks);
 
-        unsigned long long loops = 0;
         Queue messages;
         queue_init(&messages, true, true, 1024);
         Queue sets;
         queue_init(&sets, false, true, 1024);
 
-        if (log_level == LOG_VERBOSE)
-            repl_print("Nodes:\n");
+        NodePool* pool = &world->nodes;
+        NodePool* rerun = malloc(sizeof(NodePool));
+        CHECK_OOM(rerun);
+        node_pool_init(rerun, pool->map.size);
 
-        FOR_NODES(node, world->nodes)
+        unsigned int iterations = 0;
+        while (pool->count > 0)
+        {
             if (log_level == LOG_VERBOSE)
-                node_print(node);
+                repl_print("--- Pass %d (%d nodes)---\n", iterations, pool->count);
 
-            Queue output;
-            queue_init(&output, false, false, 0);
-            bool status = process_node(state, world, node, &output, &messages, &sets);
-            if (status == PROCESS_ERROR)
-                return;
+            Cursor cursor = node_pool_iterator(pool);
+            Node node;
 
-            process_output(world, node, status == PROCESS_CHANGED, &output, &messages, &sets);
+            while (node_cursor_next(&cursor, &node))
+            {
+                if (log_level == LOG_VERBOSE)
+                    node_print(&node);
 
-            loops++;
-            if (loops > world->total_nodes * 3)
+                Queue output;
+                queue_init(&output, false, false, 0);
+                bool status = process_node(state, world, &node, &output, &messages, &sets);
+                if (status == PROCESS_ERROR)
+                    return;
+
+                process_output(world, status == PROCESS_CHANGED, rerun, &output, &messages, &sets);
+                queue_free(&output);
+            }
+
+            if (pool != &world->nodes)
+            {
+                node_pool_free(pool, false);
+                free(pool);
+            }
+
+            pool = rerun;
+            rerun = malloc(sizeof(NodePool));
+            CHECK_OOM(rerun);
+            node_pool_init(rerun, pool->map.size);
+            
+            if (iterations > 16)
             {
                 repl_print_error("Logic loop detected while performing tick\n");
                 break;
             }
-        FOR_NODES_END
+            iterations++;
+        }
+
+        if (pool != &world->nodes)
+        {
+            node_pool_free(pool, false);
+            free(pool);
+        }
+        node_pool_free(rerun, false);
+        free(rerun);
 
         if (log_level == LOG_VERBOSE)
         {

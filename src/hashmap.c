@@ -196,3 +196,41 @@ void* hashmap_remove(Hashmap* hashmap, Location key)
 
     return value;
 }
+
+static void cursor_move_to_next(Cursor* cursor)
+{
+    cursor->current = cursor->current->next;
+    while (cursor->current == NULL || cursor->current->value == NULL)
+    {
+        cursor->remaining--;
+        if (cursor->remaining == 0)
+            return;
+
+        cursor->current = ++cursor->top;
+    }
+}
+
+Cursor hashmap_get_iterator(Hashmap* map)
+{
+    if (map->size == 0 || map->data == NULL)
+        return (Cursor){NULL, NULL, 0};
+
+    Cursor cursor = (Cursor){map->data, map->data, map->size};
+    if (map->data->value == NULL)
+        cursor_move_to_next(&cursor);
+
+    return cursor;
+}
+
+bool cursor_next(Cursor* cursor, Location* location, void** value)
+{
+    if (cursor->remaining == 0)
+        return false;
+
+    *location = cursor->current->key;
+    *value = cursor->current->value;
+
+    cursor_move_to_next(cursor);
+    return true;
+}
+

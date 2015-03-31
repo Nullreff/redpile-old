@@ -51,6 +51,12 @@ typedef struct {
     unsigned int max_depth;
 } Hashmap;
 
+typedef struct {
+    Bucket* top;
+    Bucket* current;
+    unsigned int remaining;
+} Cursor;
+
 // From http://stackoverflow.com/a/365068
 #define ROUND_TO_POW_2(x)\
     x--;\
@@ -65,5 +71,7 @@ Hashmap* hashmap_init(Hashmap* hashmap, unsigned int size);
 void hashmap_free(Hashmap* hashmap, void (*free_values)(void* value));
 Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create);
 void* hashmap_remove(Hashmap* hashmap, Location key);
+Cursor hashmap_get_iterator(Hashmap* map);
+bool cursor_next(Cursor* cursor, Location* location, void** value);
 
 #endif

@@ -108,7 +108,7 @@ static void load_config(int argc, char* argv[])
     config = malloc(sizeof(RedpileConfig));
 
     // Default options
-    config->world_size = 1024;
+    config->world_size = 1;
     config->interactive = false;
     config->port = 0;
     config->benchmark = 0;

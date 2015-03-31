@@ -46,9 +46,9 @@ World* world_allocate(unsigned int size, TypeData* type_data)
     World* world = malloc(sizeof(World));
     CHECK_OOM(world);
 
-    NodeData* data = node_data_allocate(type_data_get_default_type(type_data));
-    world->tree = node_tree_allocate(NULL, 1, data);
-    world->nodes = node_list_allocate(size);
+    world->root = node_data_allocate(type_data_get_default_type(type_data));
+    world->tree = node_tree_allocate(NULL, 1, world->root);
+    node_pool_init(&world->nodes, size);
     world->total_nodes = 0;
     world->type_data = type_data;
 
@@ -63,8 +63,9 @@ World* world_allocate(unsigned int size, TypeData* type_data)
 
 void world_free(World* world)
 {
+    node_data_free(world->root);
     node_tree_free(world->tree);
-    node_list_free(world->nodes);
+    node_pool_free(&world->nodes, true);
     type_data_free(world->type_data);
     free(world);
 }
@@ -79,7 +80,7 @@ void world_set_node(World* world, Location location, Type* type, Node* node)
 
     if (found.data->type == NULL)
     {
-        node_list_prepend(&world->nodes, &found);
+        node_pool_add(&world->nodes, &found);
         world->total_nodes++;
     }
 
@@ -97,20 +98,15 @@ void world_get_node(World* world, Location location, Node* node)
 void world_remove_node(World* world, Location location)
 {
     Node node;
-    world_get_node(world, location, &node);
-    if (!NODE_IS_EMPTY(&node))
-    {
-        node_data_free(node.data);
-        memset(node.data, 0, sizeof(NodeData));
+    node_tree_remove(world->tree, location, &node);
+    if (node.data != NULL)
         world->total_nodes--;
-    }
+    node_pool_remove(&world->nodes, &node);
 }
 
 void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node)
 {
     Location location = location_move(current_node->location, dir, 1);
-    world->tree = node_tree_ensure_depth(world->tree, location);
-
     node_tree_get(world->tree, location, node, false);
     assert(!NODE_IS_EMPTY(node));
 }
@@ -160,7 +156,7 @@ void world_set_region(World* world, Region* region, void (*callback)(Location l,
 
         if (oldType == NULL && node.data->type != NULL)
         {
-            node_list_prepend(&world->nodes, &node);
+            node_pool_add(&world->nodes, &node);
             world->total_nodes++;
         }
     }
@@ -181,6 +177,7 @@ WorldStats world_get_stats(World* world)
         world->ticks,
         world->total_nodes,
         world->tree->level,
+        world->nodes.map.size,
         world->max_inputs,
         world->max_outputs,
         world->max_queued,
@@ -193,6 +190,7 @@ void world_stats_print(WorldStats stats)
     STAT_PRINT(stats, ticks, llu);
     STAT_PRINT(stats, nodes, u);
     STAT_PRINT(stats, tree_depth, u);
+    STAT_PRINT(stats, hashmap_size, u);
     STAT_PRINT(stats, message_max_inputs, u);
     STAT_PRINT(stats, message_max_outputs, u);
     STAT_PRINT(stats, message_max_queued, u);
@@ -247,8 +245,11 @@ bool world_run_data(World* world, QueueData* data)
 
 void world_print_messages(World* world)
 {
-    FOR_NODES(node, world->nodes)
-        MessageStore* store = node->data->store;
+    Node node;
+    Cursor cursor = node_pool_iterator(&world->nodes);
+    while (node_cursor_next(&cursor, &node))
+    {
+        MessageStore* store = node.data->store;
         while (store != NULL)
         {
             if (store->tick >= world->ticks)
@@ -258,7 +259,7 @@ void world_print_messages(World* world)
                     Message* inst = store->messages->data + j;
                     QueueData data = (QueueData) {
                         .source = {inst->source.location, inst->source.type},
-                        .target = *node,
+                        .target = node,
                         .tick = store->tick,
                         .type = inst->type,
                         .index = 0,
@@ -269,7 +270,7 @@ void world_print_messages(World* world)
             }
             store = store->next;
         }
-    FOR_NODES_END
+    }
 }
 
 void world_print_types(World* world)
