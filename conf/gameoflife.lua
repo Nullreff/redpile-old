@@ -29,17 +29,14 @@
 --
 
 redpile.behavior('cell_update', {'LIFE'}, function(node, messages)
-    local count = 0
-    node:surrounding_each(function(found)
-        if found.alive == 1 then
-            count = count + found.alive
-        end
-    end)
     if node.alive == 1 then
-        if count < 2 or count > 3 then
+        node:surrounding_each(function(found)
+            found:send('LIFE', 0, 1)
+        end)
+        if messages.count < 2 or messages.count > 3 then
             node.alive = 0
         end
-    elseif count == 3 then
+    elseif messages.count == 3 then
         node.alive = 1
     end
 end)

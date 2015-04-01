@@ -114,7 +114,7 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
     }
 }
 
-static void process_output(World* world, bool changed, NodePool* rerun, Queue* output, Queue* messages, Queue* sets)
+static void process_output(World* world, bool changed, NodePool* rerun, Queue* output, Queue* messages)
 {
     if (changed)
     {
@@ -125,8 +125,6 @@ static void process_output(World* world, bool changed, NodePool* rerun, Queue* o
             if (data->tick == world->ticks && !queue_contains(messages, queue_node))
             {
                 assert(!location_equals(data->target.location, data->source.location));
-                queue_remove_source(messages, data->target.location);
-                queue_remove_source(sets, data->target.location);
                 node_pool_add(rerun, &data->target);
             }
         }
@@ -213,11 +211,17 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
 
                 Queue output;
                 queue_init(&output, false, false, 0);
+                if (iterations > 0)
+                {
+                    queue_remove_source(&messages, node.location);
+                    queue_remove_source(&sets, node.location);
+                }
+
                 bool status = process_node(state, world, &node, &output, &messages, &sets);
                 if (status == PROCESS_ERROR)
                     return;
 
-                process_output(world, status == PROCESS_CHANGED, rerun, &output, &messages, &sets);
+                process_output(world, status == PROCESS_CHANGED, rerun, &output, &messages);
                 queue_free(&output);
             }
 

@@ -57,20 +57,42 @@ Messages* messages_filter_copy(Messages* messages, unsigned int mask)
     return new;
 }
 
+static bool message_equal(Message* first,Message* second)
+{
+    return location_equals(first->source.location, second->source.location) &&
+           first->type == second->type &&
+           first->value == first->value;
+}
+
 bool messages_equal(Messages* first, Messages* second)
 {
     if (first->size != second->size)
         return false;
 
-    for (unsigned int i = 0; i < first->size; i++)
+    unsigned int size = first->size;
+
+    // TODO: Rewrite as something other than O(n^2)
+    bool* found = calloc(size, sizeof(int));
+    for (unsigned int i = 0; i < size; i++)
     {
-        if (!location_equals(first->data[i].source.location, second->data[i].source.location) ||
-            first->data[i].type != second->data[i].type ||
-            first->data[i].value != second->data[i].value)
+        bool match = false;
+        for (unsigned int j = 0; j < size; j++)
         {
-            return false;
+            if (found[j])
+                continue;
+
+            if (message_equal(first->data + i, second->data + j))
+            {
+                found[j] = true;
+                match = true;
+                break;
+            }
         }
+
+        if (!match)
+            return false;
     }
+
     return true;
 }
 
