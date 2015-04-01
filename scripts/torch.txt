@@ -1,0 +1,4 @@
+node 0..20,0,0..20 wire
+node 0,0,0 torch direction:up
+tickq 2
+plot 0..20,0,0..20 power
