@@ -73,9 +73,10 @@ bool messages_equal(Messages* first, Messages* second)
 
     // TODO: Rewrite as something other than O(n^2)
     bool* found = calloc(size, sizeof(int));
+    bool match = false;
     for (unsigned int i = 0; i < size; i++)
     {
-        bool match = false;
+        match = false;
         for (unsigned int j = 0; j < size; j++)
         {
             if (found[j])
@@ -90,10 +91,11 @@ bool messages_equal(Messages* first, Messages* second)
         }
 
         if (!match)
-            return false;
+            break;
     }
+    free(found);
 
-    return true;
+    return match;
 }
 
 Messages* messages_resize(Messages* messages, unsigned int size)
