@@ -352,6 +352,46 @@ static int script_node_adjacent_each(ScriptState* state)
     return 0;
 }
 
+struct script_node_surrounding_each_args {
+    ScriptState* state;
+    Location center;
+    int function_ref;
+};
+
+static void script_node_surrounding_each_callback(Location location, Node* node, void* args)
+{
+    Location center = ((struct script_node_surrounding_each_args*)args)->center;
+    if (location_equals(location, center))
+        return;
+
+    ScriptState* state = ((struct script_node_surrounding_each_args*)args)->state;
+    int function_ref = ((struct script_node_surrounding_each_args*)args)->function_ref;
+
+    lua_rawgeti(state, LUA_REGISTRYINDEX, function_ref);
+    script_create_node(state, node);
+    lua_call(state, 1, 0);
+}
+
+static int script_node_surrounding_each(ScriptState* state)
+{
+    assert(script_data != NULL);
+
+    Node* current = script_node_from_stack(state, 1);
+    int top = lua_gettop(state);
+    LUA_ERROR_IF(top != 2, "surrounding_each doesn't currently support the passing of directions");
+    int function_ref = luaL_ref(state, LUA_REGISTRYINDEX);
+
+    Region* region = region_allocate(
+            (Range){current->location.x - 1, current->location.x + 1, 1},
+            (Range){current->location.y - 1, current->location.y + 1, 1},
+            (Range){current->location.z - 1, current->location.z + 1, 1});
+
+    struct script_node_surrounding_each_args args = {state, current->location, function_ref};
+    world_get_region(script_data->world, region, script_node_surrounding_each_callback, &args);
+
+    return 0;
+}
+
 static int script_node_send(ScriptState* state)
 {
     assert(script_data != NULL);
@@ -551,6 +591,7 @@ static void script_create_node(ScriptState* state, Node* node)
     static const luaL_Reg node_funcs[] = {
         {"adjacent", script_node_adjacent},
         {"adjacent_each", script_node_adjacent_each},
+        {"surrounding_each", script_node_surrounding_each},
         {"send", script_node_send},
         {"move", script_node_move},
         {"remove", script_node_remove},

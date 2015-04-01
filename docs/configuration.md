@@ -87,6 +87,12 @@ Syntax: `node:adjacent_each(direction1, direction2, ..., callback)`
 
 Calls `callback` for each node adjacent to the current one in the directions listed.
 
+### node:surrounding_each
+
+Syntax: `node:surrounding_each(callback)`
+
+Calls `callback` for each node surrounding to the current one.
+
 ### node:send
 
 Syntax: `node:send(message, delay, value)`
