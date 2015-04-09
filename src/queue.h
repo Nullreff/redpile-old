@@ -37,10 +37,7 @@
 #include "type.h"
 
 typedef struct {
-    struct {
-        Location location;
-        Type* type;
-    } source;
+    Node source;
     Node target;
     unsigned long long tick;
     unsigned int type;
@@ -74,7 +71,8 @@ typedef struct {
 
 void queue_init(Queue* queue, bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int index, FieldValue value);
+void queue_add_system(Queue* queue, unsigned int type, Node* source, unsigned int index, FieldValue value);
+void queue_add_message(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, FieldValue value);
 bool queue_contains(Queue* queue, QueueNode* node);
 unsigned int queue_merge(Queue* queue, Queue* append);
 void queue_remove_source(Queue* queue, Location source);

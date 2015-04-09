@@ -33,7 +33,7 @@
 
 static Message message_create(QueueData* data)
 {
-    return (Message){{data->source.location, data->source.type}, data->type, data->value.integer};
+    return (Message){{data->source.location, data->source.data->type}, data->type, data->value.integer};
 }
 
 static Messages* find_input(World* world, Node* node, Queue* queue)
@@ -77,7 +77,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
 #define PROCESS_DONE 0
 #define PROCESS_CHANGED 1
 #define PROCESS_ERROR 2
-static int process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages, Queue* sets)
+static int process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages)
 {
     Messages* input = find_input(world, node, messages);
     NodeData* data = node->data;
@@ -86,7 +86,7 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
     {
         Behavior* behavior = data->type->behaviors->data[i];
         Messages* found = messages_filter_copy(input, behavior->mask);
-        ScriptData data = (ScriptData){world, node, found, output, sets};
+        ScriptData data = (ScriptData){world, node, found, output};
         bool success = script_state_run_behavior(state, behavior, &data);
         free(found);
         if (!success)
@@ -121,10 +121,10 @@ static void process_output(World* world, bool changed, NodePool* rerun, Queue* o
         FOR_QUEUE(queue_node, output)
         {
             QueueData* data = &queue_node->data;
-
-            if (data->tick == world->ticks && !queue_contains(messages, queue_node))
+            if (data->tick == world->ticks &&
+                !queue_contains(messages, queue_node) &&
+                !location_equals(data->target.location, location_empty()))
             {
-                assert(!location_equals(data->target.location, data->source.location));
                 node_pool_add(rerun, &data->target);
             }
         }
@@ -135,46 +135,44 @@ static void process_output(World* world, bool changed, NodePool* rerun, Queue* o
         world->max_outputs = count;
 }
 
-static void run_messages(World* world, Queue* queue)
+static void run_messages(World* world, Queue* queue, LogLevel log_level)
 {
     FOR_QUEUE(queue_node, queue)
     {
         QueueData* data = &queue_node->data;
 
-        assert(!location_equals(data->target.location, data->source.location));
-        MessageStore* store = node_find_store(&data->target, data->tick);
-
-        unsigned int count = 0;
-        QueueNode* iter = queue_node;
-        while (iter != NULL &&
-               iter->data.tick == store->tick &&
-               node_equals(&iter->data.target, &data->target))
+        if (location_equals(data->target.location, location_empty()))
         {
-            count++;
-            iter = iter->next;
+            if (world_run_data(world, data) && log_level != LOG_QUIET)
+                queue_data_print(data);
         }
-
-        unsigned int old_size = store->messages->size;
-        store->messages = messages_resize(store->messages, old_size + count);
-
-        store->messages->data[old_size] = message_create(data);
-        for (unsigned int i = 1; i < count; i++)
+        else
         {
-            queue_node = queue_node->next;
-            store->messages->data[old_size + i] = message_create(data);
+            MessageStore* store = node_find_store(&data->target, data->tick);
+
+            unsigned int count = 0;
+            QueueNode* iter = queue_node;
+            while (iter != NULL &&
+                   iter->data.tick == store->tick &&
+                   node_equals(&iter->data.target, &data->target))
+            {
+                count++;
+                iter = iter->next;
+            }
+
+            unsigned int old_size = store->messages->size;
+            store->messages = messages_resize(store->messages, old_size + count);
+
+            store->messages->data[old_size] = message_create(data);
+            for (unsigned int i = 1; i < count; i++)
+            {
+                queue_node = queue_node->next;
+                store->messages->data[old_size + i] = message_create(data);
+            }
+
+            if (world->max_queued < count)
+                world->max_queued = count;
         }
-
-        if (world->max_queued < count)
-            world->max_queued = count;
-    }
-}
-
-static void run_sets(World* world, Queue* sets, LogLevel log_level)
-{
-    FOR_QUEUE(set, sets)
-    {
-        if (world_run_data(world, &set->data) && log_level != LOG_QUIET)
-            queue_data_print(&set->data);
     }
 }
 
@@ -187,8 +185,6 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
 
         Queue messages;
         queue_init(&messages, true, true, 1024);
-        Queue sets;
-        queue_init(&sets, false, true, 1024);
 
         NodePool* pool = &world->nodes;
         NodePool* rerun = malloc(sizeof(NodePool));
@@ -212,12 +208,9 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
                 Queue output;
                 queue_init(&output, false, false, 0);
                 if (iterations > 0)
-                {
                     queue_remove_source(&messages, node.location);
-                    queue_remove_source(&sets, node.location);
-                }
 
-                bool status = process_node(state, world, &node, &output, &messages, &sets);
+                bool status = process_node(state, world, &node, &output, &messages);
                 if (status == PROCESS_ERROR)
                     return;
 
@@ -257,8 +250,11 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             repl_print("Messages:\n");
             FOR_QUEUE(message, &messages)
             {
-                if (message->data.tick == world->ticks)
+                if (message->data.tick == world->ticks &&
+                    !location_equals(message->data.target.location, location_empty()))
+                {
                     queue_data_print_message(&message->data, world->type_data, world->ticks);
+                }
             }
 
             repl_print("Queued:\n");
@@ -270,11 +266,9 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             repl_print("Output:\n");
         }
 
-        run_messages(world, &messages);
-        run_sets(world, &sets, log_level);
+        run_messages(world, &messages, log_level);
         
         queue_free(&messages);
-        queue_free(&sets);
         world->ticks++;
     }
 }

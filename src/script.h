@@ -47,7 +47,6 @@ typedef struct {
     Node* node;
     Messages* input;
     Queue* messages;
-    Queue* sets;
 } ScriptData;
 
 ScriptState* script_state_allocate(void);

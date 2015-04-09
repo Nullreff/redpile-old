@@ -182,15 +182,29 @@ void queue_free(Queue* queue)
     hashmap_free(&queue->sourcemap, free);
 }
 
-void queue_add(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, unsigned int index, FieldValue value)
+void queue_add_system(Queue* queue, unsigned int type, Node* source, unsigned int index, FieldValue value)
 {
     QueueNode* node = malloc(sizeof(QueueNode));
     node->data = (QueueData) {
-        .source = {source->location, source->data->type},
+        .source = *source,
+        .target = node_empty(),
+        .tick = 0,
+        .type = type,
+        .index = index,
+        .value = value
+    };
+    queue_push(queue, node);
+}
+
+void queue_add_message(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, FieldValue value)
+{
+    QueueNode* node = malloc(sizeof(QueueNode));
+    node->data = (QueueData) {
+        .source = *source,
         .target = *target,
         .tick = tick,
         .type = type,
-        .index = index,
+        .index = 0,
         .value = value
     };
     queue_push(queue, node);
@@ -298,7 +312,7 @@ static void queue_data_print_type(QueueData* data)
         case SM_FIELD:
             repl_print("FIELD");
             node_print_field(
-                data->source.type->fields->data + data->index,
+                data->source.data->type->fields->data + data->index,
                 data->value);
             repl_print("\n");
             break;
@@ -308,9 +322,9 @@ static void queue_data_print_type(QueueData* data)
 void queue_data_print(QueueData* data)
 {
     repl_print("%d,%d,%d ",
-        data->target.location.x,
-        data->target.location.y,
-        data->target.location.z);
+        data->source.location.x,
+        data->source.location.y,
+        data->source.location.z);
 
     queue_data_print_type(data);
 }

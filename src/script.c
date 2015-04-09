@@ -419,13 +419,12 @@ static int script_node_send(ScriptState* state)
     {
         unsigned int delay = raw_delay;
         FieldValue value = { .integer = raw_value };
-        queue_add(
+        queue_add_message(
             script_data->messages,
             message_type->id,
             script_data->world->ticks + delay,
             source,
             target,
-            0,
             value
         );
     }
@@ -444,15 +443,7 @@ static int script_node_move(ScriptState* state)
     LUA_ERROR_IF(!IS_UINT(raw_direction) || raw_direction >= DIRECTIONS_COUNT, "Invalid direction");
 
     FieldValue value = { .direction = raw_direction };
-    queue_add(
-        script_data->sets,
-        SM_MOVE,
-        script_data->world->ticks,
-        current,
-        current,
-        0,
-        value
-    );
+    queue_add_system(script_data->messages, SM_MOVE, current, 0, value);
 
     return 0;
 }
@@ -464,15 +455,7 @@ static int script_node_remove(ScriptState* state)
     Node* current = script_node_from_stack(state, 1);
 
     FieldValue value = {};
-    queue_add(
-        script_data->sets,
-        SM_REMOVE,
-        script_data->world->ticks,
-        current,
-        current,
-        0,
-        value
-    );
+    queue_add_system(script_data->messages, SM_REMOVE, current, 0, value);
 
     return 0;
 }
@@ -487,15 +470,7 @@ static int script_node_data(ScriptState* state)
     char* message = strdup(lua_tostring(state, 2));
 
     FieldValue value = { .string = message };
-    queue_add(
-        script_data->sets,
-        SM_DATA,
-        script_data->world->ticks,
-        current,
-        current,
-        0,
-        value
-    );
+    queue_add_system(script_data->messages, SM_DATA, current, 0, value);
 
     return 0;
 }
@@ -549,15 +524,7 @@ static int script_node_index_set(ScriptState* state)
             ERROR("Unknown field type");
     }
 
-    queue_add(
-        script_data->sets,
-        SM_FIELD,
-        script_data->world->ticks,
-        node,
-        node,
-        index,
-        value
-    );
+    queue_add_system(script_data->messages, SM_FIELD, node, index, value);
 
     // Save the new value in the metatable
     lua_getmetatable(state, 1);

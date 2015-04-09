@@ -59,6 +59,12 @@ TypeData* type_data_allocate(void)
     type_data->behaviors = NULL;
     type_data->message_types = NULL;
     type_data->default_type = NULL;
+
+    type_data_append_message_type(type_data, strdup("SYSTEM_MOVE"));
+    type_data_append_message_type(type_data, strdup("SYSTEM_FIELD"));
+    type_data_append_message_type(type_data, strdup("SYSTEM_REMOVE"));
+    type_data_append_message_type(type_data, strdup("SYSTEM_DATA"));
+
     return type_data;
 }
 

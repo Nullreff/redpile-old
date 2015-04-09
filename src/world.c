@@ -202,30 +202,30 @@ bool world_run_data(World* world, QueueData* data)
     {
         case SM_FIELD: {
             unsigned int field_index = data->index;
-            switch (data->target.data->type->fields->data[field_index].type)
+            switch (data->source.data->type->fields->data[field_index].type)
             {
                 case FIELD_INTEGER:
-                    if (data->value.integer == FIELD_GET(&data->target, field_index, integer))
+                    if (data->value.integer == FIELD_GET(&data->source, field_index, integer))
                         return false;
-                    FIELD_SET(&data->target, field_index, integer, data->value.integer);
+                    FIELD_SET(&data->source, field_index, integer, data->value.integer);
                     break;
 
                 case FIELD_DIRECTION:
-                    if (data->value.direction == FIELD_GET(&data->target, field_index, direction))
+                    if (data->value.direction == FIELD_GET(&data->source, field_index, direction))
                         return false;
-                    FIELD_SET(&data->target, field_index, direction, data->value.direction);
+                    FIELD_SET(&data->source, field_index, direction, data->value.direction);
                     break;
 
                 case FIELD_STRING:
-                    if (data->value.string == FIELD_GET(&data->target, field_index, string))
+                    if (data->value.string == FIELD_GET(&data->source, field_index, string))
                         return false;
-                    FIELD_SET(&data->target, field_index, string, data->value.string);
+                    FIELD_SET(&data->source, field_index, string, data->value.string);
                     break;
             }
         } break;
 
         case SM_MOVE:
-            world_node_move(world, &data->target, data->value.direction);
+            world_node_move(world, &data->source, data->value.direction);
             break;
 
         case SM_REMOVE:
@@ -252,22 +252,32 @@ void world_print_messages(World* world)
         MessageStore* store = node.data->store;
         while (store != NULL)
         {
-            if (store->tick >= world->ticks)
+            if (store->tick < world->ticks)
+                continue;
+
+            for (unsigned int j = 0; j < store->messages->size; j++)
             {
-                for (unsigned int j = 0; j < store->messages->size; j++)
+                Message* inst = store->messages->data + j;
+                repl_print("%llu %d,%d,%d => %d,%d,%d ",
+                        store->tick - world->ticks,
+                        inst->source.location.x,
+                        inst->source.location.y,
+                        inst->source.location.z,
+                        node.location.x,
+                        node.location.y,
+                        node.location.z);
+
+                for (MessageType* mt = world->type_data->message_types; mt != NULL; mt = mt->next)
                 {
-                    Message* inst = store->messages->data + j;
-                    QueueData data = (QueueData) {
-                        .source = {inst->source.location, inst->source.type},
-                        .target = node,
-                        .tick = store->tick,
-                        .type = inst->type,
-                        .index = 0,
-                        .value = { .integer = inst->value }
-                    };
-                    queue_data_print_message(&data, world->type_data, world->ticks);
+                    if (mt->id == inst->type)
+                    {
+                        // TODO: Print additional types
+                        repl_print("%s %d\n", mt->name, inst->value);
+                        break;
+                    }
                 }
             }
+
             store = store->next;
         }
     }
