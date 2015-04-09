@@ -403,6 +403,11 @@ void node_pool_add(NodePool* pool, Node* node)
     bucket->value = node->data;
 }
 
+bool node_pool_contains(NodePool* pool, Node* node)
+{
+    return hashmap_get(&pool->map, node->location, false) != NULL;
+}
+
 void node_pool_remove(NodePool* pool, Node* node)
 {
     hashmap_remove(&pool->map, node->location);

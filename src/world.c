@@ -235,11 +235,13 @@ bool world_run_data(World* world, QueueData* data)
         } break;
 
         case SM_MOVE:
-            world_node_move(world, &data->source, data->value.direction);
+            if (!node_pool_contains(&world->dead, &data->source))
+                world_node_move(world, &data->source, data->value.direction);
             break;
 
         case SM_REMOVE:
-            world_remove_node(world, data->source.location);
+            if (!node_pool_contains(&world->dead, &data->source))
+                world_remove_node(world, data->source.location);
             break;
 
         case SM_DATA:

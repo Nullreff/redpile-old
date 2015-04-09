@@ -108,6 +108,7 @@ void node_tree_remove(NodeTree* tree, Location location, Node* node);
 void node_pool_init(NodePool* pool, unsigned int size);
 void node_pool_free(NodePool* pool, bool freeData);
 void node_pool_add(NodePool* pool, Node* node);
+bool node_pool_contains(NodePool* pool, Node* node);
 void node_pool_remove(NodePool* pool, Node* node);
 Cursor node_pool_iterator(NodePool* pool);
 
