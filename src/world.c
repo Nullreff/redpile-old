@@ -49,6 +49,7 @@ World* world_allocate(unsigned int size, TypeData* type_data)
     world->root = node_data_allocate(type_data_get_default_type(type_data));
     world->tree = node_tree_allocate(NULL, 1, world->root);
     node_pool_init(&world->nodes, size);
+    node_pool_init(&world->dead, size);
     world->total_nodes = 0;
     world->type_data = type_data;
 
@@ -66,6 +67,7 @@ void world_free(World* world)
     node_data_free(world->root);
     node_tree_free(world->tree);
     node_pool_free(&world->nodes, true);
+    node_pool_free(&world->dead, true);
     type_data_free(world->type_data);
     free(world);
 }
@@ -102,6 +104,14 @@ void world_remove_node(World* world, Location location)
     if (node.data != NULL)
         world->total_nodes--;
     node_pool_remove(&world->nodes, &node);
+    node_pool_add(&world->dead, &node);
+}
+
+void world_gc_nodes(World* world)
+{
+    unsigned int size = world->dead.map.size;
+    node_pool_free(&world->dead, true);
+    node_pool_init(&world->dead, size);
 }
 
 void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node)

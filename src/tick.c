@@ -269,6 +269,7 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
         run_messages(world, &messages, log_level);
         
         queue_free(&messages);
+        world_gc_nodes(world);
         world->ticks++;
     }
 }

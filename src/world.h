@@ -42,6 +42,7 @@ typedef struct {
     // See node.c for more information.
     NodeTree* tree;
     NodePool nodes;
+    NodePool dead;
     NodeData* root;
 
     // Type and behavior information
@@ -71,6 +72,7 @@ void world_free(World* world);
 void world_set_node(World* world, Location location, Type* type, Node* node);
 void world_get_node(World* world, Location location, Node* node);
 void world_remove_node(World* world, Location location);
+void world_gc_nodes(World* world);
 void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node);
 void world_get_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args);
 void world_set_region(World* world, Region* region, void (*callback)(Location l, Node* n, void* args), void* args);

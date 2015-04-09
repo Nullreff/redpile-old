@@ -406,8 +406,6 @@ void node_pool_add(NodePool* pool, Node* node)
 void node_pool_remove(NodePool* pool, Node* node)
 {
     hashmap_remove(&pool->map, node->location);
-    if (node->data != NULL)
-        node_data_free(node->data);
 }
 
 Cursor node_pool_iterator(NodePool* pool)
