@@ -841,7 +841,7 @@ TypeData* script_state_load_config(ScriptState* state, const char* config_file)
     if (data->type_count == 0)
     {
         repl_print_error("No types defined in configuration file %s\n", config_file);
-        free(data);
+        type_data_free(data);
         return NULL;
     }
 
