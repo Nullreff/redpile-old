@@ -48,8 +48,8 @@ World* world_allocate(unsigned int size, TypeData* type_data)
 
     world->root = node_data_allocate(type_data_get_default_type(type_data));
     world->tree = node_tree_allocate(NULL, 1, world->root);
-    node_pool_init(&world->nodes, size);
-    node_pool_init(&world->dead, size);
+    hashmap_init(&world->nodes, size);
+    hashmap_init(&world->dead, size);
     world->total_nodes = 0;
     world->type_data = type_data;
 
@@ -66,8 +66,8 @@ void world_free(World* world)
 {
     node_data_free(world->root);
     node_tree_free(world->tree);
-    node_pool_free(&world->nodes, true);
-    node_pool_free(&world->dead, true);
+    hashmap_free(&world->nodes, (void (*)(void*))node_data_free);
+    hashmap_free(&world->dead, (void (*)(void*))node_data_free);
     type_data_free(world->type_data);
     free(world);
 }
@@ -82,7 +82,8 @@ void world_set_node(World* world, Location location, Type* type, Node* node)
 
     if (found.data->type == NULL)
     {
-        node_pool_add(&world->nodes, &found);
+        Bucket* bucket = hashmap_get(&world->nodes, found.location, true);
+        bucket->value = found.data;
         world->total_nodes++;
     }
 
@@ -103,15 +104,16 @@ void world_remove_node(World* world, Location location)
     node_tree_remove(world->tree, location, &node);
     if (node.data != NULL)
         world->total_nodes--;
-    node_pool_remove(&world->nodes, &node);
-    node_pool_add(&world->dead, &node);
+    hashmap_remove(&world->nodes, node.location);
+    Bucket* bucket = hashmap_get(&world->dead, node.location, true);
+    bucket->value = node.data;
 }
 
 void world_gc_nodes(World* world)
 {
-    unsigned int size = world->dead.map.size;
-    node_pool_free(&world->dead, true);
-    node_pool_init(&world->dead, size);
+    unsigned int size = world->dead.size;
+    hashmap_free(&world->dead, (void (*)(void*))node_data_free);
+    hashmap_init(&world->dead, size);
 }
 
 void world_get_adjacent_node(World* world, Node* current_node, Direction dir, Node* node)
@@ -166,7 +168,8 @@ void world_set_region(World* world, Region* region, void (*callback)(Location l,
 
         if (oldType == NULL && node.data->type != NULL)
         {
-            node_pool_add(&world->nodes, &node);
+            Bucket* bucket = hashmap_get(&world->nodes, node.location, true);
+            bucket->value = node.data;
             world->total_nodes++;
         }
     }
@@ -187,7 +190,7 @@ WorldStats world_get_stats(World* world)
         world->ticks,
         world->total_nodes,
         world->tree->level,
-        world->nodes.map.size,
+        world->nodes.size,
         world->max_inputs,
         world->max_outputs,
         world->max_queued,
@@ -235,12 +238,12 @@ bool world_run_data(World* world, QueueData* data)
         } break;
 
         case SM_MOVE:
-            if (!node_pool_contains(&world->dead, &data->source))
+            if (!hashmap_get(&world->dead, data->source.location, false))
                 world_node_move(world, &data->source, data->value.direction);
             break;
 
         case SM_REMOVE:
-            if (!node_pool_contains(&world->dead, &data->source))
+            if (!hashmap_get(&world->dead, data->source.location, false))
                 world_remove_node(world, data->source.location);
             break;
 
@@ -258,8 +261,8 @@ bool world_run_data(World* world, QueueData* data)
 void world_print_messages(World* world)
 {
     Node node;
-    Cursor cursor = node_pool_iterator(&world->nodes);
-    while (node_cursor_next(&cursor, &node))
+    Cursor cursor = hashmap_get_iterator(&world->nodes);
+    while (cursor_next(&cursor, &node.location, (void**)&node.data))
     {
         MessageStore* store = node.data->store;
         while (store != NULL)

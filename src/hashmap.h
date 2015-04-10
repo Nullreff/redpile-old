@@ -44,6 +44,7 @@ typedef struct {
     Bucket* data;
 
     // Stats
+    unsigned int count;
     unsigned int size;
     unsigned int min_size;
     unsigned int overflow;

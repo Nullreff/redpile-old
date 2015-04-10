@@ -38,6 +38,7 @@ static Bucket bucket_empty(void)
 static Bucket* hashmap_add_next(Hashmap* hashmap, Bucket* bucket)
 {
     hashmap->overflow++;
+    hashmap->count++;
     Bucket* new_bucket = malloc(sizeof(Bucket));
     CHECK_OOM(new_bucket);
     *new_bucket = bucket_empty();
@@ -48,6 +49,7 @@ static Bucket* hashmap_add_next(Hashmap* hashmap, Bucket* bucket)
 
 Hashmap* hashmap_init(Hashmap* hashmap, unsigned int size)
 {
+    hashmap->count = 0;
     hashmap->size = size;
     hashmap->min_size = size;
     hashmap->overflow = 0;
@@ -122,6 +124,7 @@ Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create)
             return NULL;
 
         bucket->key = key;
+        hashmap->count++;
     }
     else
     {
@@ -194,6 +197,7 @@ void* hashmap_remove(Hashmap* hashmap, Location key)
         *bucket = bucket_empty();
     }
 
+    hashmap->count--;
     return value;
 }
 

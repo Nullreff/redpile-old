@@ -114,7 +114,7 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
     }
 }
 
-static void process_output(World* world, bool changed, NodePool* rerun, Queue* output, Queue* messages)
+static void process_output(World* world, bool changed, Hashmap* rerun, Queue* output, Queue* messages)
 {
     if (changed)
     {
@@ -125,7 +125,8 @@ static void process_output(World* world, bool changed, NodePool* rerun, Queue* o
                 !queue_contains(messages, queue_node) &&
                 !location_equals(data->target.location, location_empty()))
             {
-                node_pool_add(rerun, &data->target);
+                Bucket* bucket = hashmap_get(rerun, data->target.location, true);
+                bucket->value = data->target.data;
             }
         }
     }
@@ -186,21 +187,21 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
         Queue messages;
         queue_init(&messages, true, true, 1024);
 
-        NodePool* pool = &world->nodes;
-        NodePool* rerun = malloc(sizeof(NodePool));
+        Hashmap* run = &world->nodes;
+        Hashmap* rerun = malloc(sizeof(Hashmap));
         CHECK_OOM(rerun);
-        node_pool_init(rerun, pool->map.size);
+        hashmap_init(rerun, run->size);
 
         unsigned int iterations = 0;
-        while (pool->count > 0)
+        while (run->count > 0)
         {
             if (log_level == LOG_VERBOSE)
-                repl_print("--- Pass %d (%d nodes)---\n", iterations, pool->count);
+                repl_print("--- Pass %d (%d nodes)---\n", iterations, run->count);
 
-            Cursor cursor = node_pool_iterator(pool);
+            Cursor cursor = hashmap_get_iterator(run);
             Node node;
 
-            while (node_cursor_next(&cursor, &node))
+            while (cursor_next(&cursor, &node.location, (void**)&node.data))
             {
                 if (log_level == LOG_VERBOSE)
                     node_print(&node);
@@ -218,16 +219,16 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
                 queue_free(&output);
             }
 
-            if (pool != &world->nodes)
+            if (run != &world->nodes)
             {
-                node_pool_free(pool, false);
-                free(pool);
+                hashmap_free(run, NULL);
+                free(run);
             }
 
-            pool = rerun;
-            rerun = malloc(sizeof(NodePool));
+            run = rerun;
+            rerun = malloc(sizeof(Hashmap));
             CHECK_OOM(rerun);
-            node_pool_init(rerun, pool->map.size);
+            hashmap_init(rerun, run->size);
             
             if (iterations > 16)
             {
@@ -237,12 +238,12 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
             iterations++;
         }
 
-        if (pool != &world->nodes)
+        if (run != &world->nodes)
         {
-            node_pool_free(pool, false);
-            free(pool);
+            hashmap_free(run, NULL);
+            free(run);
         }
-        node_pool_free(rerun, false);
+        hashmap_free(rerun, NULL);
         free(rerun);
 
         if (log_level == LOG_VERBOSE)

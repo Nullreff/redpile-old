@@ -70,11 +70,6 @@ typedef struct {
     NodeData* data;
 } Node;
 
-typedef struct {
-    Hashmap map;
-    unsigned int count;
-} NodePool;
-
 typedef struct NodeList {
     unsigned int count;
     int index;
@@ -104,13 +99,6 @@ void node_tree_free(NodeTree* tree);
 NodeTree* node_tree_ensure_depth(NodeTree* tree, Location location);
 void node_tree_get(NodeTree* tree, Location location, Node* node, bool create);
 void node_tree_remove(NodeTree* tree, Location location, Node* node);
-
-void node_pool_init(NodePool* pool, unsigned int size);
-void node_pool_free(NodePool* pool, bool freeData);
-void node_pool_add(NodePool* pool, Node* node);
-bool node_pool_contains(NodePool* pool, Node* node);
-void node_pool_remove(NodePool* pool, Node* node);
-Cursor node_pool_iterator(NodePool* pool);
 
 NodeList* node_list_allocate(unsigned int count);
 void node_list_free(NodeList* nodes);

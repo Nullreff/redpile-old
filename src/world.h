@@ -41,8 +41,8 @@ typedef struct {
     // All nodes are stored in an octree
     // See node.c for more information.
     NodeTree* tree;
-    NodePool nodes;
-    NodePool dead;
+    Hashmap nodes;
+    Hashmap dead;
     NodeData* root;
 
     // Type and behavior information
