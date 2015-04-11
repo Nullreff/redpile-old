@@ -69,7 +69,7 @@ end
 
 redpile.behavior('push_solid', {'PUSH', 'PULL'}, function(node, messages)
     if messages.count > 0 then
-        message = messages:first()
+        local message = messages:first()
         node:move(message.value)
     end
 end)
@@ -82,7 +82,7 @@ end)
 
 redpile.behavior('push_piston', {'PUSH', 'PULL'}, function(node, messages)
     if messages.count > 0 and node.state == RETRACTED then
-        message = messages:first()
+        local message = messages:first()
         node:move(message.value)
     end
 end)
