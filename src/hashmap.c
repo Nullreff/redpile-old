@@ -115,7 +115,7 @@ Bucket* hashmap_get(Hashmap* hashmap, Location key, bool create)
         hashmap_resize(hashmap, hashmap->size * 2);
 
     unsigned int depth = 0;
-    int hash = location_hash(key, hashmap->size);
+    unsigned int hash = location_hash(key, hashmap->size);
     Bucket* bucket = hashmap->data + hash;
 
     if (bucket->value == NULL)

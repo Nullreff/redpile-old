@@ -72,11 +72,11 @@ typedef struct {
 
 void queue_init(Queue* queue, bool track_targets, bool track_sources, unsigned int size);
 void queue_free(Queue* queue);
+void queue_push(Queue* queue, QueueNode* node);
+void queue_remove(Queue* queue, QueueNode* node);
 void queue_add_system(Queue* queue, unsigned int type, Node* source, unsigned int index, FieldValue value);
 void queue_add_message(Queue* queue, unsigned int type, unsigned long long tick, Node* source, Node* target, FieldValue value);
-bool queue_contains(Queue* queue, QueueNode* node);
-void queue_merge(Queue* queue, Queue* append);
-void queue_remove_source(Queue* queue, Location source);
+QueueNode* queue_find(Queue* queue, QueueNode* node);
 void queue_find_nodes(Queue* messages, Node* target, unsigned long long tick, QueueNode** found_node, unsigned int* max_size);
 void queue_data_print(QueueData* data);
 void queue_data_print_message(QueueData* data, TypeData* type_data, unsigned long long current_tick);

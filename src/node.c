@@ -48,7 +48,6 @@ NodeData* node_data_allocate(Type* type)
 void node_data_free(NodeData* data)
 {
     message_store_free(data->store);
-    free(data->last_input);
 
     if (data->fields != NULL)
     {

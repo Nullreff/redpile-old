@@ -51,8 +51,6 @@ typedef struct NodeData {
     FieldData* fields;
 
     MessageStore* store;
-    Messages* last_input;
-    unsigned long long last_input_tick;
 } NodeData;
 
 typedef struct NodeTree {

@@ -74,10 +74,7 @@ static Messages* find_input(World* world, Node* node, Queue* queue)
     return messages;
 }
 
-#define PROCESS_DONE 0
-#define PROCESS_CHANGED 1
-#define PROCESS_ERROR 2
-static int process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages)
+static bool process_node(ScriptState* state, World* world, Node* node, Queue* output, Queue* messages)
 {
     Messages* input = find_input(world, node, messages);
     NodeData* data = node->data;
@@ -90,51 +87,67 @@ static int process_node(ScriptState* state, World* world, Node* node, Queue* out
         bool success = script_state_run_behavior(state, behavior, &data);
         free(found);
         if (!success)
-            return PROCESS_ERROR;
+            return false;
     }
 
-    if (data->last_input == NULL)
-    {
-        data->last_input = input;
-        data->last_input_tick = world->ticks;
-        return PROCESS_CHANGED;
-    }
-    else if (data->last_input_tick != world->ticks ||
-            !messages_equal(data->last_input, input))
-    {
-        free(data->last_input);
-        data->last_input = input;
-        data->last_input_tick = world->ticks;
-        return PROCESS_CHANGED;
-    }
-    else
-    {
-        free(input);
-        return PROCESS_DONE;
-    }
+    free(input);
+    return true;
 }
 
-static void process_output(World* world, bool changed, Hashmap* rerun, Queue* output, Queue* messages)
+static void process_output(World* world, Node* node, Queue* messages, Queue* output, Hashmap* rerun)
 {
-    if (changed)
-    {
-        FOR_QUEUE(queue_node, output)
-        {
-            QueueData* data = &queue_node->data;
-            if (data->tick == world->ticks &&
-                !queue_contains(messages, queue_node) &&
-                !location_equals(data->target.location, location_empty()))
-            {
-                Bucket* bucket = hashmap_get(rerun, data->target.location, true);
-                bucket->value = data->target.data;
-            }
-        }
-    }
-
     if (world->max_outputs < output->count)
         world->max_outputs = output->count;
 
-    queue_merge(messages, output);
+    // Find messages that were removed
+    Bucket* bucket = hashmap_get(&messages->sourcemap, node->location, false);
+    if (bucket != NULL)
+    {
+        QueueNodeList* node_list = bucket->value;
+        int index = 0;
+        for (unsigned int i = 0; i < node_list->size; i++)
+        {
+            QueueNode* queue_node = node_list->nodes[i];
+            QueueNode* found = queue_find(output, queue_node);
+            if (!found)
+            {
+                QueueData* data = &queue_node->data;
+                if (data->tick == world->ticks &&
+                    !location_equals(data->target.location, location_empty()))
+                {
+                    Bucket* bucket = hashmap_get(rerun, data->target.location, true);
+                    bucket->value = data->target.data;
+                }
+                queue_remove(messages, queue_node);
+            }
+            else
+            {
+                queue_remove(output, found);
+                node_list->nodes[index] = node_list->nodes[i];
+                index++;
+            }
+        }
+
+        node_list->size = index;
+    }
+
+    // Find messages that were added
+    QueueNode* queue_node = output->nodes;
+    while (queue_node != NULL)
+    {
+        QueueData* data = &queue_node->data;
+        if (data->tick == world->ticks &&
+            !location_equals(data->target.location, location_empty()))
+        {
+            Bucket* bucket = hashmap_get(rerun, data->target.location, true);
+            bucket->value = data->target.data;
+        }
+        QueueNode* temp = queue_node;
+        queue_node = queue_node->next;
+        queue_push(messages, temp);
+    }
+
+    output->nodes = NULL;
 }
 
 static void run_messages(World* world, Queue* queue, LogLevel log_level)
@@ -208,15 +221,12 @@ void tick_run(ScriptState* state, World* world, unsigned int count, LogLevel log
                     node_print(&node);
 
                 Queue output;
-                queue_init(&output, false, false, 0);
-                if (iterations > 0)
-                    queue_remove_source(&messages, node.location);
-
+                queue_init(&output, true, false, 1024);
                 bool status = process_node(state, world, &node, &output, &messages);
-                if (status == PROCESS_ERROR)
+                if (!status)
                     return;
 
-                process_output(world, status == PROCESS_CHANGED, rerun, &output, &messages);
+                process_output(world, &node, &messages, &output, rerun);
                 queue_free(&output);
             }
 
