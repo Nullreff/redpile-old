@@ -96,6 +96,8 @@ static bool process_node(ScriptState* state, World* world, Node* node, Queue* ou
 
 static void process_output(World* world, Node* node, Queue* messages, Queue* output, Hashmap* rerun)
 {
+    hashmap_remove(rerun, node->location);
+
     if (world->max_outputs < output->count)
         world->max_outputs = output->count;
 
