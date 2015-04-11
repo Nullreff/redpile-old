@@ -120,6 +120,8 @@ static void queue_push(Queue* queue, QueueNode* node)
             bucket->value = source_list;
         }
     }
+
+    queue->count++;
 }
 
 static void queue_remove(Queue* queue, QueueNode* node)
@@ -157,11 +159,13 @@ static void queue_remove(Queue* queue, QueueNode* node)
         node->next->prev = node->prev;
 
     free(node);
+    queue->count--;
 }
 
 void queue_init(Queue* queue, bool track_targets, bool track_sources, unsigned int size)
 {
     queue->nodes = NULL;
+    queue->count = 0;
     hashmap_init(&queue->targetmap, track_targets ? size : 0);
     hashmap_init(&queue->sourcemap, track_sources ? size : 0);
 }
@@ -233,18 +237,16 @@ bool queue_contains(Queue* queue, QueueNode* node)
     return false;
 }
 
-unsigned int queue_merge(Queue* queue, Queue* append)
+void queue_merge(Queue* queue, Queue* append)
 {
     // Exit early if theres nothing to append
     if (append->nodes == NULL)
-        return 0;
+        return;
 
     // Merge in any that haven't already been added
     QueueNode* node = append->nodes;
-    unsigned int count = 0;
     while (node != NULL)
     {
-        count++;
         QueueNode* temp = node->next;
         if (!queue_contains(queue, node))
             queue_push(queue, node);
@@ -254,7 +256,6 @@ unsigned int queue_merge(Queue* queue, Queue* append)
     }
 
     append->nodes = NULL;
-    return count;
 }
 
 void queue_remove_source(Queue* queue, Location source)

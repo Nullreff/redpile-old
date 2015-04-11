@@ -131,9 +131,10 @@ static void process_output(World* world, bool changed, Hashmap* rerun, Queue* ou
         }
     }
 
-    unsigned int count = queue_merge(messages, output);
-    if (world->max_outputs < count)
-        world->max_outputs = count;
+    if (world->max_outputs < output->count)
+        world->max_outputs = output->count;
+
+    queue_merge(messages, output);
 }
 
 static void run_messages(World* world, Queue* queue, LogLevel log_level)
