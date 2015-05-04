@@ -43,6 +43,10 @@ bench: release
 docs:
 	./docs/generate.rb
 
+paper:
+	rubber --pdf --into ${BUILD_DIR} docs/redpile.tex
+	zathura build/redpile.pdf 2>/dev/null
+
 publish: docs
 	scp docs/*.html redpile:~/webapps/redpile_org
 
