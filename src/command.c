@@ -208,7 +208,7 @@ static void command_field_get_callback(Location location, Node* node, void* args
     char* name = (char*)args;
     Field* field;
     unsigned int index;
-    if (node->data->type && (field = type_find_field(node->data->type, name, &index)))
+    if (node->data->type && node->data->fields && (field = type_find_field(node->data->type, name, &index)))
         node_print_field_value(node, field->type, node->data->fields->data[index]);
     else
         repl_print("%d,%d,%d nil\n", location.x, location.y, location.z);

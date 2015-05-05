@@ -49,6 +49,13 @@ describe 'NODE' do
       ).should == '0,0,0 10'
     end
 
+    it 'a empty field on a single node' do
+      run(
+        'NODE 0,0,0 WIRE',
+        'FIELD 0,0,0 power'
+      ).should == '0,0,0 nil'
+    end
+
     it 'a field on a range of nodes' do
       run(
         'NODE -1..1,-1..1,-1..1 WIRE power:10',
