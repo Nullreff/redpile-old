@@ -43,6 +43,7 @@ Roadmap
 * [Tracing JIT](http://en.wikipedia.org/wiki/Tracing_just-in-time_compilation)
 * Statistics & reporting
 * Convert parts to [Rust](http://www.rust-lang.org/) (once rust is stable)
+* Port IO to LibUV
 
 License
 -------
