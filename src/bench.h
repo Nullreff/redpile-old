@@ -33,7 +33,7 @@
 
 #include "world.h"
 
-void bench_run(World* world, unsigned int count);
+void bench_run(unsigned int count);
 
 #endif
 

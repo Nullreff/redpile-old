@@ -28,8 +28,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bench.h"
-#include "tick.h"
+#include "command.h"
+#include "redpile.h"
+#include "repl.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -45,7 +46,7 @@
         {\
             for (int i = 0; i < PER_ITER; i++)\
             {\
-                benchmark_ ## METHOD(world);\
+                benchmark_ ## METHOD();\
             }\
             count += PER_ITER;\
             time = get_time() - start;\
@@ -54,11 +55,11 @@
         if (final > 1000)\
         {\
             final /= 1000;\
-            printf(#METHOD ": %.2fk / sec\n", final);\
+            printf(#METHOD ":\t%.2fk / sec\n", final);\
         }\
         else\
         {\
-            printf(#METHOD ": %.2f / sec\n", final);\
+            printf(#METHOD ":\t%.2f / sec\n", final);\
         }\
     } while (0) 
 
@@ -73,36 +74,44 @@ static long long get_time(void)
 }
 
 Type** indexes;
-static void benchmark_insert(World* world)
+static void benchmark_insert(void)
 {
-    Type* type = indexes[rand() % world->type_data->type_count];
-    world_set_node(world, location_random(), type, NULL);
+    Region region;
+    region_randomize(&region, 1);
+    char* type_name = indexes[rand() % world->type_data->type_count]->name;
+    CommandArgs* args = command_args_allocate(0);
+    command_node_set(&region, type_name, args);
 }
 
-static void benchmark_get(World* world)
+static void benchmark_get(void)
 {
-    Node node;
-    world_get_node(world, location_random(), &node);
+    Region region;
+    region_randomize(&region, 1);
+    command_node_get(&region);
 }
 
-static void benchmark_delete(World* world)
+static void benchmark_delete(void)
 {
-    world_remove_node(world, location_random());
+    Region region;
+    region_randomize(&region, 1);
+    command_delete(&region);
 }
 
-void bench_run(World* world, unsigned int count)
+void bench_run(unsigned int count)
 {
     indexes = type_data_type_indexes_allocate(world->type_data);
     srand(get_time());
 
     unsigned int limit = MILISECONDS(count);
     assert(limit > 0);
+    repl_mute(true);
 
     printf("--- Benchmark Start ---\n");
-    BENCHMARK(insert, 200, limit);
-    BENCHMARK(get,    200, limit);
-    BENCHMARK(delete, 200, limit);
+    BENCHMARK(insert, 100, limit);
+    BENCHMARK(get,    100, limit);
+    BENCHMARK(delete, 100, limit);
 
+    repl_mute(false);
     free(indexes);
 }
 

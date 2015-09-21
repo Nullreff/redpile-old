@@ -95,7 +95,9 @@ unsigned int location_hash(Location loc, unsigned int max);
 #define range_create(START, END, STEP) (Range){START, END, STEP}
 
 Region* region_allocate(Range x, Range y, Range z);
+void region_randomize(Region* region, int size);
 int region_area(Region* region);
+bool region_is_flat(Region* region);
 
 #endif
 

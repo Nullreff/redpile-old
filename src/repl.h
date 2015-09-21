@@ -36,5 +36,6 @@ void repl_cleanup(void);
 int repl_read(char *buff, int buffsize);
 void repl_print(const char* format, ...);
 void repl_print_error(const char* format, ...);
+void repl_mute(bool on);
 
 #endif

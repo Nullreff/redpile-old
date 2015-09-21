@@ -172,6 +172,16 @@ Region* region_allocate(Range x, Range y, Range z)
     return region;
 }
 
+void region_randomize(Region* region, int size)
+{
+    int x = rand() % 10000;
+    int y = rand() % 10000;
+    int z = rand() % 10000;
+    region->x = range_create(x, x + size, 1);
+    region->y = range_create(y, y + size, 1);
+    region->z = range_create(z, z + size, 1);
+}
+
 int region_area(Region* region)
 {
     return (abs(region->x.start - region->x.end) / region->x.step) +

@@ -69,13 +69,9 @@ static bool type_parse(char* string, Type** type)
 {
     *type = type_data_find_type(world->type_data, string);
     if (*type != NULL)
-    {
-        free(string);
         return true;
-    }
 
     repl_print_error("Unknown type '%s'\n", string);
-    free(string);
     return false;
 }
 
@@ -172,7 +168,6 @@ static void command_node_get_callback(Location location, Node* node, UNUSED void
 void command_node_get(Region* region)
 {
     world_get_region(world, region, command_node_get_callback, NULL);
-    free(region);
 }
 
 struct command_node_set_args {
@@ -198,9 +193,6 @@ void command_node_set(Region* region, char* type_name, CommandArgs* fields)
         struct command_node_set_args args = {type, fields};
         world_set_region(world, region, command_node_set_callback, &args);
     }
-
-    free(region);
-    command_args_free(fields);
 }
 
 static void command_field_get_callback(Location location, Node* node, void* args)
@@ -217,8 +209,6 @@ static void command_field_get_callback(Location location, Node* node, void* args
 void command_field_get(Region* region, char* name)
 {
     world_get_region(world, region, command_field_get_callback, name);
-    free(region);
-    free(name);
 }
 
 struct command_field_set_args {
@@ -246,16 +236,11 @@ void command_field_set(Region* region, char* name, char* value)
 {
     struct command_field_set_args args = {name, value};
     world_get_region(world, region, command_field_set_callback, &args);
-
-    free(region);
-    free(name);
-    free(value);
 }
 
 void command_delete(Region* region)
 {
     world_delete_region(world, region);
-    free(region);
 }
 
 struct command_plot_args {
@@ -363,9 +348,6 @@ void command_plot(Region* region, char* field)
     {
         repl_print_error("The region provided must be flat");
     }
-
-    free(region);
-    free(field);
 }
 
 void command_tick(int count, LogLevel log_level)
@@ -387,7 +369,6 @@ void command_type_list(void)
 void command_type_show(char* name)
 {
     world_print_type(world, name);
-    free(name);
 }
 
 void command_error(const char* message)

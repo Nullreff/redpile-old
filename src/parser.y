@@ -128,18 +128,18 @@ tick_args: /* empty */ { $$ = 1; }
 
 command: PING                        { command_ping(); }
        | STATUS                      { command_status(); }
-       | NODE region                 { command_node_get($2); }
-       | NODE region STRING set_args { command_node_set($2, $3, $4); }
-       | FIELD region STRING         { command_field_get($2, $3); }
-       | FIELD region STRING VALUE   { command_field_set($2, $3, $4); }
-       | DELETE region               { command_delete($2); }
-       | PLOT region STRING          { command_plot($2, $3); }
+       | NODE region                 { command_node_get($2); free($2); }
+       | NODE region STRING set_args { command_node_set($2, $3, $4); free($2); free($3); command_args_free($4); }
+       | FIELD region STRING         { command_field_get($2, $3); free($2); free($3); }
+       | FIELD region STRING VALUE   { command_field_set($2, $3, $4); free($2); free($3); free($4); }
+       | DELETE region               { command_delete($2); free($2); }
+       | PLOT region STRING          { command_plot($2, $3); free($2); free($3); }
        | TICK tick_args              { command_tick($2, LOG_NORMAL); }
        | TICKV tick_args             { command_tick($2, LOG_VERBOSE); }
        | TICKQ tick_args             { command_tick($2, LOG_QUIET); }
        | MESSAGE                     { command_message(); }
        | TYPE                        { command_type_list(); }
-       | TYPE STRING                 { command_type_show($2); }
+       | TYPE STRING                 { command_type_show($2); free($2); }
        | STRING anything             { PARSE_ERROR_FREE($1, "Unknown command '%s'\n", $1); }
 ;
 %%

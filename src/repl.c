@@ -40,6 +40,7 @@
 
 int listen_fd, comm_fd;
 struct sockaddr_in servaddr;
+bool muted = false;
 
 // See parser.y
 int yyparse(void);
@@ -178,6 +179,9 @@ int repl_read(char *buff, int buffsize)
 
 void repl_print(const char* format, ...)
 {
+    if (muted)
+        return;
+
     va_list ap;
     va_start(ap, format);
     if (config->port > 0)
@@ -189,6 +193,9 @@ void repl_print(const char* format, ...)
 
 void repl_print_error(const char* format, ...)
 {
+    if (muted)
+        return;
+
     va_list ap;
     va_start(ap, format);
     if (config->port > 0)
@@ -196,5 +203,10 @@ void repl_print_error(const char* format, ...)
     else
         repl_print_stderr(format, ap);
     va_end(ap);
+}
+
+void repl_mute(bool on)
+{
+    muted = on;
 }
 
