@@ -81,6 +81,7 @@ static void benchmark_insert(void)
     char* type_name = indexes[rand() % world->type_data->type_count]->name;
     CommandArgs* args = command_args_allocate(0);
     command_node_set(&region, type_name, args);
+    command_args_free(args);
 }
 
 static void benchmark_get(void)

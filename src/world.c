@@ -105,8 +105,6 @@ void world_remove_node(World* world, Location location)
     if (node.data != NULL)
         world->total_nodes--;
     hashmap_remove(&world->nodes, node.location);
-    Bucket* bucket = hashmap_get(&world->dead, node.location, true);
-    bucket->value = node.data;
 }
 
 void world_gc_nodes(World* world)
