@@ -184,9 +184,9 @@ void region_randomize(Region* region, int size)
 
 int region_area(Region* region)
 {
-    return (abs(region->x.start - region->x.end) / region->x.step) +
-           (abs(region->y.start - region->y.end) / region->y.step) +
-           (abs(region->z.start - region->z.end) / region->z.step);
+    return ((abs(region->x.start - region->x.end) + 1) / region->x.step) *
+           ((abs(region->y.start - region->y.end) + 1) / region->y.step) *
+           ((abs(region->z.start - region->z.end) + 1) / region->z.step);
 }
 
 bool region_is_flat(Region* region)
