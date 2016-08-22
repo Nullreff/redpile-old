@@ -61,7 +61,7 @@ static bool message_equal(Message* first,Message* second)
 {
     return location_equals(first->source.location, second->source.location) &&
            first->type == second->type &&
-           first->value == first->value;
+           first->value == second->value;
 }
 
 bool messages_equal(Messages* first, Messages* second)
